@@ -26,6 +26,18 @@ function color(delta: number, invert = false) {
   return "text-white/50";
 }
 
+function normalizeDigits(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.replace(/^0+(?=\d)/, "");
+}
+
+function parseNumeric(value: string, fallback = 0) {
+  if (!value) return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
+
 function TopMetricCard({
   title,
   value,
@@ -109,7 +121,7 @@ function Slider({
     <div className="glass-card soft-glow slider-card">
       <div>
         <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[68px] text-xs leading-snug text-white/42 md:min-h-[72px]">
+        <div className="mt-2 min-h-[56px] text-xs leading-snug text-white/42 md:min-h-[72px]">
           {subtitle}
         </div>
       </div>
@@ -132,8 +144,11 @@ function Slider({
 }
 
 export default function Home() {
-  const [clientsBase, setClientsBase] = useState(20);
-  const [checkBase, setCheckBase] = useState(2000);
+  const [clientsInput, setClientsInput] = useState("20");
+  const [checkInput, setCheckInput] = useState("2000");
+
+  const clientsBase = parseNumeric(clientsInput, 0);
+  const checkBase = parseNumeric(checkInput, 0);
 
   const [sales, setSales] = useState(0);
   const [retention, setRetention] = useState(0);
@@ -141,8 +156,11 @@ export default function Home() {
   const [opexEff, setOpexEff] = useState(0);
 
   const data = useMemo(() => {
-    const clients = clientsBase * (1 + sales * 0.6 + retention * 0.5);
-    const avgCheck = checkBase * (1 + upsell * 0.7);
+    const safeClients = Math.max(0, clientsBase);
+    const safeCheck = Math.max(0, checkBase);
+
+    const clients = safeClients * (1 + sales * 0.6 + retention * 0.5);
+    const avgCheck = safeCheck * (1 + upsell * 0.7);
     const revenue = clients * avgCheck;
 
     const salesCost = revenue * 0.18 * (1 + sales * 0.4);
@@ -175,17 +193,19 @@ export default function Home() {
     };
   }, [clientsBase, checkBase]);
 
-  const revDelta = ((data.revenue - base.revenue) / base.revenue) * 100;
-  const costDelta = ((data.costs - base.costs) / base.costs) * 100;
-  const profitDelta = ((data.profit - base.profit) / base.profit) * 100;
+  const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
 
-  const clientsDelta = ((data.clients - base.clients) / base.clients) * 100;
-  const avgCheckDelta = ((data.avgCheck - base.avgCheck) / base.avgCheck) * 100;
-  const salesCostDelta = ((data.salesCost - base.salesCost) / base.salesCost) * 100;
-  const opexSupportDelta =
-    ((data.opex + data.support - (base.opex + base.support)) /
-      (base.opex + base.support)) *
-    100;
+  const revDelta = safeDiv(data.revenue - base.revenue, base.revenue);
+  const costDelta = safeDiv(data.costs - base.costs, base.costs);
+  const profitDelta = safeDiv(data.profit - base.profit, base.profit);
+
+  const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
+  const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
+  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
+  const opexSupportDelta = safeDiv(
+    data.opex + data.support - (base.opex + base.support),
+    base.opex + base.support
+  );
 
   const strongestLever = useMemo(() => {
     const levers = [
@@ -194,7 +214,6 @@ export default function Home() {
       { name: "Апселлы", value: Math.abs(upsell * 0.7) },
       { name: "Операционная эффективность", value: Math.abs(opexEff * 0.8) },
     ];
-
     levers.sort((a, b) => b.value - a.value);
     return levers[0];
   }, [sales, retention, upsell, opexEff]);
@@ -205,10 +224,12 @@ export default function Home() {
     Math.abs(upsell) > 0.001 ||
     Math.abs(opexEff) > 0.001;
 
-  const telegramUrl = "https://t.me/Revenue_snapshot_bot";
+  const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
+  const tgContactUrl = "https://t.me/growth_avenue_company";
+  const waContactUrl = "https://wa.me/995555163833";
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#071932] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
       <div className="pointer-events-none absolute inset-0">
         <div className="aurora aurora-1" />
         <div className="aurora aurora-2" />
@@ -223,42 +244,77 @@ export default function Home() {
         <div className="vignette" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-5 py-8 md:px-8 md:py-10">
-        <div className="mb-8 flex items-start justify-between gap-4 md:mb-10">
-          <div className="flex items-start gap-4">
-            <img
-              src="/logo.svg"
-              alt="Growth Avenue"
-              className="logo-main shrink-0"
-            />
+      <div className="relative mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
+        <header className="sticky-header mb-7 md:mb-10">
+          <div className="flex items-center justify-between gap-4">
+            <img src="/logo.svg" alt="Growth Avenue" className="logo-main shrink-0" />
+
+            <div className="hidden items-center gap-2 md:flex">
+              <a
+                href={tgContactUrl}
+                className="contact-btn"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Telegram
+              </a>
+              <a
+                href={waContactUrl}
+                className="contact-btn"
+                target="_blank"
+                rel="noreferrer"
+              >
+                WhatsApp
+              </a>
+              <a
+                href={snapshotBotUrl}
+                className={[
+                  "rounded-full px-5 py-2 text-sm font-semibold transition",
+                  hasInteraction
+                    ? "bg-[#f7d237] text-black hover:brightness-95"
+                    : "pointer-events-none bg-white/10 text-white/45",
+                ].join(" ")}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Revenue Snapshot
+              </a>
+            </div>
           </div>
 
-          <a
-            href={telegramUrl}
-            className={[
-              "hidden rounded-full px-5 py-2 text-sm font-semibold transition md:inline-flex",
-              hasInteraction
-                ? "bg-[#f7d237] text-black hover:brightness-95"
-                : "pointer-events-none bg-white/10 text-white/45",
-            ].join(" ")}
-          >
-            Перейти в Telegram
-          </a>
-        </div>
+          <div className="mt-3 flex gap-2 md:hidden">
+            <a
+              href={tgContactUrl}
+              className="contact-btn mobile-contact"
+              target="_blank"
+              rel="noreferrer"
+            >
+              TG
+            </a>
+            <a
+              href={waContactUrl}
+              className="contact-btn mobile-contact"
+              target="_blank"
+              rel="noreferrer"
+            >
+              WA
+            </a>
+          </div>
+        </header>
 
         <div className="mb-8 max-w-3xl md:mb-12">
-          <div className="glass-pill inline-flex items-center gap-3 rounded-full px-5 py-3 text-sm font-semibold text-white">
+          <div className="glass-pill inline-flex items-center gap-3 rounded-full px-4 py-2.5 text-xs font-semibold text-white md:px-5 md:py-3 md:text-sm">
             <span className="dot-yellow" />
             Revenue Snapshot • интерактивная карта экономики
           </div>
 
-          <h1 className="mt-6 text-3xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
+          <h1 className="mt-5 text-2xl font-semibold leading-[1.02] tracking-tight md:mt-6 md:text-6xl">
             Найдите скрытый сдвиг
             <br />
             в экономике вашего бизнеса
           </h1>
 
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/68 md:text-lg">
+          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/68 md:mt-5 md:text-lg">
             Передвигайте рычаги и смотрите, как небольшие изменения влияют
             на выручку, расходы и прибыль.
           </p>
@@ -266,14 +322,14 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
           <div>
-            {/* INPUTS */}
-            <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-8">
               <label className="input-shell">
                 <span className="input-label">Клиентов / месяц</span>
                 <input
-                  type="number"
-                  value={clientsBase}
-                  onChange={(e) => setClientsBase(Number(e.target.value))}
+                  type="text"
+                  inputMode="numeric"
+                  value={clientsInput}
+                  onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
                   className="glass-input"
                   placeholder="Клиентов / месяц"
                 />
@@ -282,16 +338,16 @@ export default function Home() {
               <label className="input-shell">
                 <span className="input-label">Средний чек</span>
                 <input
-                  type="number"
-                  value={checkBase}
-                  onChange={(e) => setCheckBase(Number(e.target.value))}
+                  type="text"
+                  inputMode="numeric"
+                  value={checkInput}
+                  onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
                   className="glass-input"
                   placeholder="Средний чек"
                 />
               </label>
             </div>
 
-            {/* DASHBOARD */}
             <section className="dashboard-grid">
               <div className="dashboard-revenue">
                 <TopMetricCard
@@ -320,11 +376,10 @@ export default function Home() {
               </div>
             </section>
 
-            {/* MODEL */}
-            <div className="mt-8">
+            <div className="mt-7 md:mt-8">
               <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
 
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
                 <ModelCard
                   title="Клиенты"
                   value={Math.round(data.clients)}
@@ -349,8 +404,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* SLIDERS */}
-            <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 md:mt-10 md:gap-4">
               <Slider
                 title="Эффективность продаж"
                 subtitle="Влияет на поток клиентов и увеличивает нагрузку на sales cost."
@@ -377,22 +431,22 @@ export default function Home() {
               />
             </div>
 
-            {/* MOBILE CTA */}
             <a
-              href={telegramUrl}
+              href={snapshotBotUrl}
               className={[
-                "mt-6 block rounded-2xl py-3 text-center font-semibold transition md:hidden",
+                "mt-5 block rounded-2xl py-3 text-center font-semibold transition md:hidden",
                 hasInteraction
                   ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
                   : "pointer-events-none bg-white/10 text-white/45",
               ].join(" ")}
+              target="_blank"
+              rel="noreferrer"
             >
-              Перейти в Telegram
+              Перейти в Revenue Snapshot
             </a>
           </div>
 
-          {/* RIGHT PANEL */}
-          <aside className="glass-card h-fit lg:sticky lg:top-6">
+          <aside className="glass-card h-fit lg:sticky lg:top-24">
             <div className="text-xs uppercase tracking-[0.18em] text-white/45">
               Insight
             </div>
@@ -429,15 +483,17 @@ export default function Home() {
             </div>
 
             <a
-              href={telegramUrl}
+              href={snapshotBotUrl}
               className={[
                 "mt-7 hidden rounded-2xl py-3 text-center font-semibold transition md:block",
                 hasInteraction
                   ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
                   : "pointer-events-none bg-white/10 text-white/45",
               ].join(" ")}
+              target="_blank"
+              rel="noreferrer"
             >
-              Перейти в Telegram
+              Перейти в Revenue Snapshot
             </a>
 
             <div className="mt-3 text-xs text-white/40">
@@ -485,6 +541,44 @@ export default function Home() {
             0 0 0 1px rgba(255, 255, 255, 0.02);
         }
 
+        .sticky-header {
+          position: sticky;
+          top: 10px;
+          z-index: 30;
+          padding: 10px 0 8px;
+          backdrop-filter: blur(16px);
+          background: linear-gradient(
+            180deg,
+            rgba(11, 29, 58, 0.84),
+            rgba(11, 29, 58, 0.48)
+          );
+          border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .contact-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 9999px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.84);
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(14px);
+          transition: 0.2s ease;
+        }
+
+        .contact-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+        }
+
+        .mobile-contact {
+          padding: 8px 12px;
+          font-size: 12px;
+        }
+
         .logo-main {
           width: 216px;
           height: 60px;
@@ -525,6 +619,7 @@ export default function Home() {
             inset 0 1px 0 rgba(255, 255, 255, 0.05),
             0 0 0 1px rgba(255, 255, 255, 0.02);
           transition: 0.25s ease;
+          width: 100%;
         }
 
         .glass-input::placeholder {
@@ -548,23 +643,23 @@ export default function Home() {
         .dashboard-grid {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: 12px;
         }
 
         .metric-card {
-          min-height: 170px;
+          min-height: 150px;
         }
 
         .metric-card-large {
-          min-height: 170px;
+          min-height: 150px;
         }
 
         .model-card {
-          min-height: 140px;
+          min-height: 118px;
         }
 
         .slider-card {
-          min-height: 220px;
+          min-height: 178px;
           display: flex;
           flex-direction: column;
         }
@@ -592,14 +687,16 @@ export default function Home() {
         .noise-overlay {
           position: absolute;
           inset: 0;
+          pointer-events: none;
           opacity: 0.16;
           background-image:
-            radial-gradient(rgba(255, 255, 255, 0.16) 1.1px, transparent 1.1px),
-            radial-gradient(rgba(255, 255, 255, 0.07) 0.7px, transparent 0.7px);
-          background-size: 12px 12px, 18px 18px;
-          background-position: 0 0, 6px 6px;
+            radial-gradient(rgba(255, 255, 255, 0.055) 0.6px, transparent 0.6px),
+            radial-gradient(rgba(255, 255, 255, 0.035) 0.45px, transparent 0.45px),
+            radial-gradient(rgba(0, 0, 0, 0.06) 0.7px, transparent 0.7px);
+          background-size: 4px 4px, 6px 6px, 7px 7px;
+          background-position: 0 0, 1px 2px, 2px 1px;
           mix-blend-mode: soft-light;
-          transform: scale(1.08);
+          filter: contrast(115%) brightness(96%);
         }
 
         .aurora {
@@ -735,30 +832,6 @@ export default function Home() {
           animation-delay: 1.5s;
         }
 
-        .mesh {
-          position: absolute;
-          inset: auto;
-          border-radius: 9999px;
-          border: 1px solid rgba(255, 255, 255, 0.03);
-          opacity: 0.35;
-        }
-
-        .mesh-1 {
-          width: 620px;
-          height: 620px;
-          right: -180px;
-          top: -120px;
-          animation: spinSlow 50s linear infinite;
-        }
-
-        .mesh-2 {
-          width: 440px;
-          height: 440px;
-          left: -120px;
-          bottom: -120px;
-          animation: spinSlowReverse 42s linear infinite;
-        }
-
         .vignette {
           position: absolute;
           inset: 0;
@@ -865,39 +938,10 @@ export default function Home() {
           }
         }
 
-        @keyframes spinSlow {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @keyframes spinSlowReverse {
-          from {
-            transform: rotate(360deg);
-          }
-          to {
-            transform: rotate(0deg);
-          }
-        }
-
         @media (min-width: 768px) {
           .dashboard-grid {
             grid-template-columns: 1fr 1fr 1fr;
-          }
-
-          .dashboard-revenue {
-            grid-column: span 1;
-          }
-
-          .dashboard-profit {
-            grid-column: span 1;
-          }
-
-          .dashboard-costs {
-            grid-column: span 1;
+            gap: 16px;
           }
 
           .metric-card,
@@ -915,9 +959,15 @@ export default function Home() {
         }
 
         @media (max-width: 767px) {
+          .sticky-header {
+            top: 0;
+            margin: 0 -16px;
+            padding: 12px 16px 10px;
+          }
+
           .logo-main {
-            width: 160px;
-            height: 44px;
+            width: 210px;
+            height: 58px;
           }
 
           .dashboard-grid {
@@ -925,6 +975,7 @@ export default function Home() {
             grid-template-areas:
               "revenue revenue"
               "profit costs";
+            gap: 10px;
           }
 
           .dashboard-revenue {
@@ -941,31 +992,46 @@ export default function Home() {
 
           .metric-card,
           .metric-card-large {
-            min-height: 148px;
-            padding: 20px;
-            border-radius: 24px;
-          }
-
-          .model-card {
-            min-height: 120px;
-            padding: 18px;
+            min-height: 126px;
+            padding: 16px;
             border-radius: 22px;
           }
 
+          .metric-card .text-3xl,
+          .metric-card-large .text-3xl {
+            font-size: 2rem;
+            line-height: 1;
+          }
+
+          .model-card {
+            min-height: 108px;
+            padding: 16px;
+            border-radius: 20px;
+          }
+
+          .model-card .text-xl {
+            font-size: 1rem;
+            line-height: 1.2;
+          }
+
           .slider-card {
-            min-height: 196px;
-            padding: 18px;
-            border-radius: 24px;
+            min-height: 156px;
+            padding: 16px;
+            border-radius: 20px;
+          }
+
+          .slider-card .range-input {
+            margin-top: 10px;
           }
 
           .glass-card {
-            border-radius: 24px;
-            padding: 20px;
+            border-radius: 22px;
+            padding: 16px;
           }
 
           .glass-input {
             font-size: 18px;
-            padding: 16px 16px;
+            padding: 16px;
           }
 
           .aurora {
