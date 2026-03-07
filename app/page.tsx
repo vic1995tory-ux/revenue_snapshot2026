@@ -246,33 +246,33 @@ export default function Home() {
 
       <div className="relative mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
         <header className="sticky-header mb-7 md:mb-10">
-          <div className="flex items-center justify-between gap-4">
+          <div className="header-row">
             <img src="/logo.svg" alt="Growth Avenue" className="logo-main shrink-0" />
 
-            <div className="hidden items-center gap-2 md:flex">
+            <div className="header-actions">
               <a
                 href={tgContactUrl}
-                className="contact-btn"
+                className="contact-btn contact-btn-invert"
                 target="_blank"
                 rel="noreferrer"
               >
-                Telegram
+                TG
               </a>
+
               <a
                 href={waContactUrl}
-                className="contact-btn"
+                className="contact-btn contact-btn-invert"
                 target="_blank"
                 rel="noreferrer"
               >
-                WhatsApp
+                WA
               </a>
+
               <a
                 href={snapshotBotUrl}
                 className={[
-                  "rounded-full px-5 py-2 text-sm font-semibold transition",
-                  hasInteraction
-                    ? "bg-[#f7d237] text-black hover:brightness-95"
-                    : "pointer-events-none bg-white/10 text-white/45",
+                  "snapshot-btn hidden md:inline-flex",
+                  hasInteraction ? "snapshot-btn-active" : "snapshot-btn-disabled",
                 ].join(" ")}
                 target="_blank"
                 rel="noreferrer"
@@ -280,25 +280,6 @@ export default function Home() {
                 Revenue Snapshot
               </a>
             </div>
-          </div>
-
-          <div className="mt-3 flex gap-2 md:hidden">
-            <a
-              href={tgContactUrl}
-              className="contact-btn mobile-contact"
-              target="_blank"
-              rel="noreferrer"
-            >
-              TG
-            </a>
-            <a
-              href={waContactUrl}
-              className="contact-btn mobile-contact"
-              target="_blank"
-              rel="noreferrer"
-            >
-              WA
-            </a>
           </div>
         </header>
 
@@ -309,13 +290,13 @@ export default function Home() {
           </div>
 
           <h1 className="mt-5 text-2xl font-semibold leading-[1.02] tracking-tight md:mt-6 md:text-6xl">
-            Найдите скрытый сдвиг
+            Найдите скрытый рычаг
             <br />
             в экономике вашего бизнеса
           </h1>
 
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/68 md:mt-5 md:text-lg">
-            Передвигайте рычаги и смотрите, как небольшие изменения влияют
+            Управляйте показателями и смотрите, как небольшие изменения влияют
             на выручку, расходы и прибыль.
           </p>
         </div>
@@ -543,16 +524,31 @@ export default function Home() {
 
         .sticky-header {
           position: sticky;
-          top: 10px;
-          z-index: 30;
-          padding: 10px 0 8px;
-          backdrop-filter: blur(16px);
+          top: 0;
+          z-index: 40;
+          margin: 0 -16px 18px;
+          padding: 10px 16px 8px;
+          backdrop-filter: blur(14px);
           background: linear-gradient(
             180deg,
-            rgba(11, 29, 58, 0.84),
-            rgba(11, 29, 58, 0.48)
+            rgba(11, 29, 58, 0.82),
+            rgba(11, 29, 58, 0.34)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .header-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
         }
 
         .contact-btn {
@@ -560,23 +556,47 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           border-radius: 9999px;
+          padding: 9px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          transition: 0.2s ease;
+          border: 1px solid transparent;
+        }
+
+        .contact-btn-invert {
+          background: rgba(255, 255, 255, 0.92);
+          color: #0b1d3a;
+          border-color: rgba(255, 255, 255, 0.95);
+          box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        }
+
+        .contact-btn-invert:hover {
+          background: #ffffff;
+        }
+
+        .snapshot-btn {
+          border-radius: 9999px;
           padding: 10px 14px;
           font-size: 13px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.84);
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(14px);
+          font-weight: 700;
           transition: 0.2s ease;
         }
 
-        .contact-btn:hover {
-          background: rgba(255, 255, 255, 0.12);
+        .snapshot-btn-active {
+          background: #f7d237;
+          color: #0b1d3a;
         }
 
-        .mobile-contact {
-          padding: 8px 12px;
-          font-size: 12px;
+        .snapshot-btn-active:hover {
+          filter: brightness(0.97);
+        }
+
+        .snapshot-btn-disabled {
+          pointer-events: none;
+          background: rgba(255, 255, 255, 0.1);
+          color: rgba(255, 255, 255, 0.45);
         }
 
         .logo-main {
@@ -959,85 +979,96 @@ export default function Home() {
         }
 
         @media (max-width: 767px) {
-          .sticky-header {
-            top: 0;
-            margin: 0 -16px;
-            padding: 12px 16px 10px;
-          }
+  .sticky-header {
+    top: 0;
+    margin: 0 -16px 18px;
+    padding: 10px 16px 8px;
+  }
 
-          .logo-main {
-            width: 210px;
-            height: 58px;
-          }
+  .logo-main {
+    width: 170px;
+    height: 48px;
+  }
 
-          .dashboard-grid {
-            grid-template-columns: 1fr 1fr;
-            grid-template-areas:
-              "revenue revenue"
-              "profit costs";
-            gap: 10px;
-          }
+  .header-actions {
+    gap: 6px;
+  }
 
-          .dashboard-revenue {
-            grid-area: revenue;
-          }
+  .contact-btn {
+    min-width: 44px;
+    height: 40px;
+    padding: 0 12px;
+    font-size: 12px;
+  }
 
-          .dashboard-profit {
-            grid-area: profit;
-          }
+  .dashboard-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "revenue revenue"
+      "profit costs";
+    gap: 10px;
+  }
 
-          .dashboard-costs {
-            grid-area: costs;
-          }
+  .dashboard-revenue {
+    grid-area: revenue;
+  }
 
-          .metric-card,
-          .metric-card-large {
-            min-height: 126px;
-            padding: 16px;
-            border-radius: 22px;
-          }
+  .dashboard-profit {
+    grid-area: profit;
+  }
 
-          .metric-card .text-3xl,
-          .metric-card-large .text-3xl {
-            font-size: 2rem;
-            line-height: 1;
-          }
+  .dashboard-costs {
+    grid-area: costs;
+  }
 
-          .model-card {
-            min-height: 108px;
-            padding: 16px;
-            border-radius: 20px;
-          }
+  .metric-card,
+  .metric-card-large {
+    min-height: 126px;
+    padding: 16px;
+    border-radius: 22px;
+  }
 
-          .model-card .text-xl {
-            font-size: 1rem;
-            line-height: 1.2;
-          }
+  .metric-card .text-3xl,
+  .metric-card-large .text-3xl {
+    font-size: 2rem;
+    line-height: 1;
+  }
 
-          .slider-card {
-            min-height: 156px;
-            padding: 16px;
-            border-radius: 20px;
-          }
+  .model-card {
+    min-height: 108px;
+    padding: 16px;
+    border-radius: 20px;
+  }
 
-          .slider-card .range-input {
-            margin-top: 10px;
-          }
+  .model-card .text-xl {
+    font-size: 1rem;
+    line-height: 1.2;
+  }
 
-          .glass-card {
-            border-radius: 22px;
-            padding: 16px;
-          }
+  .slider-card {
+    min-height: 156px;
+    padding: 16px;
+    border-radius: 20px;
+  }
 
-          .glass-input {
-            font-size: 18px;
-            padding: 16px;
-          }
+  .slider-card .range-input {
+    margin-top: 10px;
+  }
 
-          .aurora {
-            filter: blur(72px);
-          }
-        }
+  .glass-card {
+    border-radius: 22px;
+    padding: 16px;
+  }
+
+  .glass-input {
+    font-size: 18px;
+    padding: 16px;
+  }
+
+  .aurora {
+    filter: blur(72px);
+  }
+}
       `}</style>
     </main>
   );
