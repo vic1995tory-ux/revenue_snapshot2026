@@ -498,6 +498,12 @@ export default function Home() {
                 ? "Диагностика займёт около 24 минут"
                 : "Кнопка станет активной после взаимодействия с рычагами"}
             </div>
+            <button
+  onClick={handleReset}
+  className="reset-insight-btn mt-4 w-full"
+>
+  Сбросить модель
+</button>
           </aside>
         </div>
       </div>
