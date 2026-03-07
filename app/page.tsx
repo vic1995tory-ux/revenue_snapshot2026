@@ -38,30 +38,81 @@ function parseNumeric(value: string, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
+function getMetricFlag(
+  type: "revenue" | "costs" | "profit",
+  delta: number
+): string {
+  if (type === "revenue") {
+    if (delta >= 10) return "Сильный рост";
+    if (delta >= 3) return "Рост";
+    if (delta <= -10) return "Сильное падение";
+    if (delta <= -3) return "Снижение";
+    return "Стабильно";
+  }
+
+  if (type === "costs") {
+    if (delta <= -10) return "Снижение затрат";
+    if (delta <= -3) return "Экономия";
+    if (delta >= 10) return "Рост затрат";
+    if (delta >= 3) return "Давление затрат";
+    return "Стабильно";
+  }
+
+  if (delta >= 10) return "Рост маржи";
+  if (delta >= 3) return "Позитивный сдвиг";
+  if (delta <= -10) return "Просадка маржи";
+  if (delta <= -3) return "Давление на маржу";
+  return "Стабильно";
+}
+
+function flagTone(
+  type: "revenue" | "costs" | "profit",
+  delta: number
+): string {
+  if (type === "costs") {
+    if (delta <= -3) return "flag-good";
+    if (delta >= 3) return "flag-bad";
+    return "flag-neutral";
+  }
+
+  if (delta >= 3) return "flag-good";
+  if (delta <= -3) return "flag-bad";
+  return "flag-neutral";
+}
+
 function TopMetricCard({
   title,
   value,
   delta,
+  type,
   invert = false,
   large = false,
 }: {
   title: string;
   value: string;
   delta: number;
+  type: "revenue" | "costs" | "profit";
   invert?: boolean;
   large?: boolean;
 }) {
   return (
     <div
       className={[
-        "glass-card soft-glow metric-card",
+        "glass-card soft-glow metric-card metric-card-main",
         large ? "metric-card-large" : "",
       ].join(" ")}
     >
-      <div className="text-sm text-white/55">{title}</div>
-      <div className="mt-3 text-3xl font-semibold tracking-tight md:text-2xl">
+      <div className="metric-head">
+        <div className="text-sm text-white/55">{title}</div>
+        <div className={`metric-flag ${flagTone(type, delta)}`}>
+          {getMetricFlag(type, delta)}
+        </div>
+      </div>
+
+      <div className="mt-4 text-3xl font-semibold tracking-tight md:text-2xl">
         {value}
       </div>
+
       <div className={`mt-3 text-base md:text-sm ${color(delta, invert)}`}>
         {pct(delta)}
       </div>
@@ -227,6 +278,7 @@ export default function Home() {
   const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
+
   const handleReset = () => {
     setClientsInput("20");
     setCheckInput("2000");
@@ -234,7 +286,8 @@ export default function Home() {
     setRetention(0);
     setUpsell(0);
     setOpexEff(0);
-};
+  };
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
       <div className="pointer-events-none absolute inset-0">
@@ -335,15 +388,6 @@ export default function Home() {
                 />
               </label>
             </div>
-            <div className="mb-5 flex justify-end md:mb-6">
-  <button
-    type="button"
-    onClick={handleReset}
-    className="reset-btn"
-  >
-    Сбросить
-  </button>
-</div>
 
             <section className="dashboard-grid">
               <div className="dashboard-revenue">
@@ -351,6 +395,7 @@ export default function Home() {
                   title="Выручка"
                   value={fmtMoney(data.revenue)}
                   delta={revDelta}
+                  type="revenue"
                   large
                 />
               </div>
@@ -360,6 +405,7 @@ export default function Home() {
                   title="Прибыль"
                   value={fmtMoney(data.profit)}
                   delta={profitDelta}
+                  type="profit"
                 />
               </div>
 
@@ -368,6 +414,7 @@ export default function Home() {
                   title="Расходы"
                   value={fmtMoney(data.costs)}
                   delta={costDelta}
+                  type="costs"
                   invert
                 />
               </div>
@@ -401,7 +448,18 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 md:mt-10 md:gap-4">
+            <div className="mt-8 flex items-center justify-between md:mt-10">
+              <div className="text-sm text-white/58">Рычаги управления</div>
+              <button
+                type="button"
+                onClick={handleReset}
+                className="reset-link"
+              >
+                Сбросить
+              </button>
+            </div>
+
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 md:gap-4">
               <Slider
                 title="Эффективность продаж"
                 subtitle="Влияет на поток клиентов и увеличивает нагрузку на sales cost."
@@ -427,20 +485,6 @@ export default function Home() {
                 set={setOpexEff}
               />
             </div>
-
-            <a
-              href={snapshotBotUrl}
-              className={[
-                "mt-5 block rounded-2xl py-3 text-center font-semibold transition md:hidden",
-                hasInteraction
-                  ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
-                  : "pointer-events-none bg-white/10 text-white/45",
-              ].join(" ")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Перейти в Revenue Snapshot
-            </a>
           </div>
 
           <aside className="glass-card h-fit lg:sticky lg:top-24">
@@ -479,31 +523,34 @@ export default function Home() {
               <Row label="Прибыль" delta={profitDelta} />
             </div>
 
-            <a
-              href={snapshotBotUrl}
-              className={[
-                "mt-7 hidden rounded-2xl py-3 text-center font-semibold transition md:block",
-                hasInteraction
-                  ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
-                  : "pointer-events-none bg-white/10 text-white/45",
-              ].join(" ")}
-              target="_blank"
-              rel="noreferrer"
-            >
-              Перейти в Revenue Snapshot
-            </a>
+            <div className="mt-6 space-y-3">
+              <a
+                href={snapshotBotUrl}
+                className={[
+                  "block rounded-2xl py-3 text-center font-semibold transition",
+                  hasInteraction
+                    ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
+                    : "pointer-events-none bg-white/10 text-white/45",
+                ].join(" ")}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Перейти в Revenue Snapshot
+              </a>
+
+              <button
+                onClick={handleReset}
+                className="reset-insight-btn w-full"
+              >
+                Сбросить модель
+              </button>
+            </div>
 
             <div className="mt-3 text-xs text-white/40">
               {hasInteraction
                 ? "Диагностика займёт около 24 минут"
                 : "Кнопка станет активной после взаимодействия с рычагами"}
             </div>
-            <button
-  onClick={handleReset}
-  className="reset-insight-btn mt-4 w-full"
->
-  Сбросить модель
-</button>
           </aside>
         </div>
       </div>
@@ -553,8 +600,8 @@ export default function Home() {
           backdrop-filter: blur(14px);
           background: linear-gradient(
             180deg,
-            rgba(11, 29, 58, 0.82),
-            rgba(11, 29, 58, 0.34)
+            rgba(11, 29, 58, 0.86),
+            rgba(11, 29, 58, 0.42)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
@@ -677,24 +724,36 @@ export default function Home() {
             0 10px 30px rgba(0, 0, 0, 0.08);
           transform: translateY(-1px);
         }
-        .reset-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  padding: 10px 14px;
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.86);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px);
-  transition: 0.2s ease;
-}
 
-.reset-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
-}
+        .reset-link {
+          background: transparent;
+          border: 0;
+          padding: 0;
+          color: rgba(255, 255, 255, 0.72);
+          font-size: 14px;
+          font-weight: 600;
+          transition: 0.2s ease;
+        }
+
+        .reset-link:hover {
+          color: #ffffff;
+        }
+
+        .reset-insight-btn {
+          border-radius: 16px;
+          padding: 12px 16px;
+          font-size: 14px;
+          font-weight: 600;
+          background: rgba(255, 255, 255, 0.06);
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(12px);
+          color: rgba(255, 255, 255, 0.9);
+          transition: 0.2s ease;
+        }
+
+        .reset-insight-btn:hover {
+          background: rgba(255, 255, 255, 0.12);
+        }
 
         .range-input {
           cursor: pointer;
@@ -712,6 +771,50 @@ export default function Home() {
 
         .metric-card-large {
           min-height: 150px;
+        }
+
+        .metric-card-main {
+          position: relative;
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow:
+            0 14px 48px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
+            0 0 0 1px rgba(255, 255, 255, 0.02);
+        }
+
+        .metric-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+        }
+
+        .metric-flag {
+          flex-shrink: 0;
+          border-radius: 9999px;
+          padding: 6px 10px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          border: 1px solid transparent;
+        }
+
+        .flag-good {
+          background: rgba(74, 222, 128, 0.12);
+          color: rgb(167, 243, 208);
+          border-color: rgba(74, 222, 128, 0.2);
+        }
+
+        .flag-bad {
+          background: rgba(251, 113, 133, 0.12);
+          color: rgb(253, 164, 175);
+          border-color: rgba(251, 113, 133, 0.2);
+        }
+
+        .flag-neutral {
+          background: rgba(255, 255, 255, 0.08);
+          color: rgba(255, 255, 255, 0.72);
+          border-color: rgba(255, 255, 255, 0.1);
         }
 
         .model-card {
@@ -1019,96 +1122,107 @@ export default function Home() {
         }
 
         @media (max-width: 767px) {
-  .sticky-header {
-    top: 0;
-    margin: 0 -16px 18px;
-    padding: 10px 16px 8px;
-  }
+          .sticky-header {
+            top: 0;
+            margin: 0 -16px 18px;
+            padding: 10px 16px 8px;
+          }
 
-  .logo-main {
-    width: 170px;
-    height: 48px;
-  }
+          .logo-main {
+            width: 170px;
+            height: 48px;
+          }
 
-  .header-actions {
-    gap: 6px;
-  }
+          .header-actions {
+            gap: 6px;
+          }
 
-  .contact-btn {
-    min-width: 44px;
-    height: 40px;
-    padding: 0 12px;
-    font-size: 12px;
-  }
+          .contact-btn {
+            min-width: 44px;
+            height: 40px;
+            padding: 0 12px;
+            font-size: 12px;
+          }
 
-  .dashboard-grid {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas:
-      "revenue revenue"
-      "profit costs";
-    gap: 10px;
-  }
+          .dashboard-grid {
+            grid-template-columns: 1fr 1fr;
+            grid-template-areas:
+              "revenue revenue"
+              "profit costs";
+            gap: 10px;
+          }
 
-  .dashboard-revenue {
-    grid-area: revenue;
-  }
+          .dashboard-revenue {
+            grid-area: revenue;
+          }
 
-  .dashboard-profit {
-    grid-area: profit;
-  }
+          .dashboard-profit {
+            grid-area: profit;
+          }
 
-  .dashboard-costs {
-    grid-area: costs;
-  }
+          .dashboard-costs {
+            grid-area: costs;
+          }
 
-  .metric-card,
-  .metric-card-large {
-    min-height: 126px;
-    padding: 16px;
-    border-radius: 22px;
-  }
+          .metric-card,
+          .metric-card-large {
+            min-height: 126px;
+            padding: 16px;
+            border-radius: 22px;
+          }
 
-  .metric-card .text-3xl,
-  .metric-card-large .text-3xl {
-    font-size: 2rem;
-    line-height: 1;
-  }
+          .metric-card .text-3xl,
+          .metric-card-large .text-3xl {
+            font-size: 2rem;
+            line-height: 1;
+          }
 
-  .model-card {
-    min-height: 108px;
-    padding: 16px;
-    border-radius: 20px;
-  }
+          .metric-head {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
 
-  .model-card .text-xl {
-    font-size: 1rem;
-    line-height: 1.2;
-  }
+          .metric-flag {
+            font-size: 10px;
+            padding: 5px 8px;
+          }
 
-  .slider-card {
-    min-height: 156px;
-    padding: 16px;
-    border-radius: 20px;
-  }
+          .model-card {
+            min-height: 108px;
+            padding: 16px;
+            border-radius: 20px;
+          }
 
-  .slider-card .range-input {
-    margin-top: 10px;
-  }
+          .model-card .text-xl {
+            font-size: 1rem;
+            line-height: 1.2;
+          }
 
-  .glass-card {
-    border-radius: 22px;
-    padding: 16px;
-  }
+          .slider-card {
+            min-height: 156px;
+            padding: 16px;
+            border-radius: 20px;
+          }
 
-  .glass-input {
-    font-size: 18px;
-    padding: 16px;
-  }
+          .slider-card .range-input {
+            margin-top: 10px;
+          }
 
-  .aurora {
-    filter: blur(72px);
-  }
-}
+          .glass-card {
+            border-radius: 22px;
+            padding: 16px;
+          }
+
+          .glass-input {
+            font-size: 18px;
+            padding: 16px;
+          }
+
+          .aurora {
+            filter: blur(72px);
+          }
+        }
       `}</style>
     </main>
   );
