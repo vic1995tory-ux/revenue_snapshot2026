@@ -194,7 +194,12 @@ function Slider({
   );
 }
 
-export default function Home() {
+export default function Home()
+const trackTelegramClick = () => {
+  if (typeof window !== "undefined" && (window as any).fbq) {
+    (window as any).fbq("trackCustom", "ClickRevenueSnapshotTelegram");
+  }
+};{
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
 
