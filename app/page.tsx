@@ -227,7 +227,14 @@ export default function Home() {
   const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
-
+  const handleReset = () => {
+    setClientsInput("20");
+    setCheckInput("2000");
+    setSales(0);
+    setRetention(0);
+    setUpsell(0);
+    setOpexEff(0);
+};
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
       <div className="pointer-events-none absolute inset-0">
@@ -328,6 +335,15 @@ export default function Home() {
                 />
               </label>
             </div>
+            <div className="mb-5 flex justify-end md:mb-6">
+  <button
+    type="button"
+    onClick={handleReset}
+    className="reset-btn"
+  >
+    Сбросить
+  </button>
+</div>
 
             <section className="dashboard-grid">
               <div className="dashboard-revenue">
@@ -655,6 +671,24 @@ export default function Home() {
             0 10px 30px rgba(0, 0, 0, 0.08);
           transform: translateY(-1px);
         }
+        .reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px);
+  transition: 0.2s ease;
+}
+
+.reset-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
 
         .range-input {
           cursor: pointer;
