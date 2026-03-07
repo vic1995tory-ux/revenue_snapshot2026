@@ -363,7 +363,7 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
           <div>
-            <div className="mb-7 grid grid-cols-1 gap-3 sm:grid-cols-2 md:mb-8">
+            <div className="input-grid mb-7 gap-3 md:mb-8">
               <label className="input-shell">
                 <span className="input-label">Клиентов / месяц</span>
                 <input
@@ -523,7 +523,7 @@ export default function Home() {
               <Row label="Прибыль" delta={profitDelta} />
             </div>
 
-            <div className="mt-6 space-y-3">
+            <div className="mt-6">
               <a
                 href={snapshotBotUrl}
                 className={[
@@ -537,13 +537,6 @@ export default function Home() {
               >
                 Перейти в Revenue Snapshot
               </a>
-
-              <button
-                onClick={handleReset}
-                className="reset-insight-btn w-full"
-              >
-                Сбросить модель
-              </button>
             </div>
 
             <div className="mt-3 text-xs text-white/40">
@@ -676,6 +669,11 @@ export default function Home() {
           display: block;
         }
 
+        .input-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
         .input-shell {
           display: flex;
           flex-direction: column;
@@ -737,22 +735,6 @@ export default function Home() {
 
         .reset-link:hover {
           color: #ffffff;
-        }
-
-        .reset-insight-btn {
-          border-radius: 16px;
-          padding: 12px 16px;
-          font-size: 14px;
-          font-weight: 600;
-          background: rgba(255, 255, 255, 0.06);
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          backdrop-filter: blur(12px);
-          color: rgba(255, 255, 255, 0.9);
-          transition: 0.2s ease;
-        }
-
-        .reset-insight-btn:hover {
-          background: rgba(255, 255, 255, 0.12);
         }
 
         .range-input {
@@ -1142,6 +1124,10 @@ export default function Home() {
             height: 40px;
             padding: 0 12px;
             font-size: 12px;
+          }
+
+          .input-grid {
+            grid-template-columns: 1fr 1fr;
           }
 
           .dashboard-grid {
