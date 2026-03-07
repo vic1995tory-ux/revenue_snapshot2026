@@ -187,19 +187,13 @@ function Slider({
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-
         <div className="mt-2 text-xs text-white/50">{Math.round(value * 100)}%</div>
       </div>
     </div>
   );
 }
 
-export default function Home()
-const trackTelegramClick = () => {
-  if (typeof window !== "undefined" && (window as any).fbq) {
-    (window as any).fbq("trackCustom", "ClickRevenueSnapshotTelegram");
-  }
-};{
+export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
 
@@ -210,6 +204,25 @@ const trackTelegramClick = () => {
   const [retention, setRetention] = useState(0);
   const [upsell, setUpsell] = useState(0);
   const [opexEff, setOpexEff] = useState(0);
+
+  const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
+  const tgContactUrl = "https://t.me/growth_avenue_company";
+  const waContactUrl = "https://wa.me/995555163833";
+
+  const trackTelegramClick = () => {
+    if (typeof window !== "undefined" && (window as any).fbq) {
+      (window as any).fbq("trackCustom", "ClickRevenueSnapshotTelegram");
+    }
+  };
+
+  const handleReset = () => {
+    setClientsInput("20");
+    setCheckInput("2000");
+    setSales(0);
+    setRetention(0);
+    setUpsell(0);
+    setOpexEff(0);
+  };
 
   const data = useMemo(() => {
     const safeClients = Math.max(0, clientsBase);
@@ -280,19 +293,6 @@ const trackTelegramClick = () => {
     Math.abs(upsell) > 0.001 ||
     Math.abs(opexEff) > 0.001;
 
-  const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
-  const tgContactUrl = "https://t.me/growth_avenue_company";
-  const waContactUrl = "https://wa.me/995555163833";
-
-  const handleReset = () => {
-    setClientsInput("20");
-    setCheckInput("2000");
-    setSales(0);
-    setRetention(0);
-    setUpsell(0);
-    setOpexEff(0);
-  };
-
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
       <div className="pointer-events-none absolute inset-0">
@@ -335,6 +335,7 @@ const trackTelegramClick = () => {
 
               <a
                 href={snapshotBotUrl}
+                onClick={trackTelegramClick}
                 className={[
                   "snapshot-btn hidden md:inline-flex",
                   hasInteraction ? "snapshot-btn-active" : "snapshot-btn-disabled",
@@ -455,11 +456,7 @@ const trackTelegramClick = () => {
 
             <div className="mt-8 flex items-center justify-between md:mt-10">
               <div className="text-sm text-white/58">Рычаги управления</div>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="reset-link"
-              >
+              <button type="button" onClick={handleReset} className="reset-link">
                 Сбросить
               </button>
             </div>
@@ -531,6 +528,7 @@ const trackTelegramClick = () => {
             <div className="mt-6">
               <a
                 href={snapshotBotUrl}
+                onClick={trackTelegramClick}
                 className={[
                   "block rounded-2xl py-3 text-center font-semibold transition",
                   hasInteraction
@@ -1218,3 +1216,5 @@ const trackTelegramClick = () => {
     </main>
   );
 }
+вот так вставила. ошибки. проверь и испарвь пожалуйста как должно быть. 
+и можно ли как-то сделать так чтобы мета засчитывала лид только при переходе в тг? а то просто нажатие на кнопку это не совсем то
