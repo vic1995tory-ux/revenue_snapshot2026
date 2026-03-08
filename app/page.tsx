@@ -370,28 +370,36 @@ export default function Home() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
           <div>
             <div className="input-grid mb-7 gap-3 md:mb-8">
-              <label className="input-shell">
-                <span className="input-label">Клиентов / месяц</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={clientsInput}
-                  onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
-                  className="glass-input"
-                  placeholder="Клиентов / месяц"
-                />
+              <label className="input-shell input-shell-highlight">
+                <span className="input-label input-label-strong">Клиентов / месяц</span>
+
+                <div className="input-wrap input-wrap-primary">
+                  <span className="input-badge">ввод</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={clientsInput}
+                    onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+                    className="glass-input glass-input-primary"
+                    placeholder="Например, 20"
+                  />
+                </div>
               </label>
 
-              <label className="input-shell">
-                <span className="input-label">Средний чек</span>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  value={checkInput}
-                  onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
-                  className="glass-input"
-                  placeholder="Средний чек"
-                />
+              <label className="input-shell input-shell-highlight">
+                <span className="input-label input-label-strong">Средний чек</span>
+
+                <div className="input-wrap input-wrap-primary">
+                  <span className="input-badge">ввод</span>
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={checkInput}
+                    onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+                    className="glass-input glass-input-primary"
+                    placeholder="Например, 2000"
+                  />
+                </div>
               </label>
             </div>
 
@@ -639,29 +647,6 @@ export default function Home() {
           background: #ffffff;
         }
 
-        .snapshot-btn {
-          border-radius: 9999px;
-          padding: 10px 14px;
-          font-size: 13px;
-          font-weight: 700;
-          transition: 0.2s ease;
-        }
-
-        .snapshot-btn-active {
-          background: #f7d237;
-          color: #0b1d3a;
-        }
-
-        .snapshot-btn-active:hover {
-          filter: brightness(0.97);
-        }
-
-        .snapshot-btn-disabled {
-          pointer-events: none;
-          background: rgba(255, 255, 255, 0.1);
-          color: rgba(255, 255, 255, 0.45);
-        }
-
         .tg-gradient-btn {
           position: relative;
           overflow: hidden;
@@ -747,12 +732,59 @@ export default function Home() {
           gap: 8px;
         }
 
+        .input-shell-highlight {
+          position: relative;
+        }
+
         .input-label {
           font-size: 12px;
           letter-spacing: 0.04em;
           text-transform: uppercase;
           color: rgba(255, 255, 255, 0.52);
           padding-left: 4px;
+        }
+
+        .input-label-strong {
+          color: rgba(255, 255, 255, 0.82);
+          font-weight: 700;
+          letter-spacing: 0.06em;
+        }
+
+        .input-wrap {
+          position: relative;
+        }
+
+        .input-wrap-primary::before {
+          content: "";
+          position: absolute;
+          inset: -2px;
+          border-radius: 20px;
+          background: linear-gradient(
+            135deg,
+            rgba(247, 210, 55, 0.52),
+            rgba(120, 132, 255, 0.16),
+            rgba(255, 255, 255, 0.08)
+          );
+          opacity: 0.95;
+          z-index: 0;
+        }
+
+        .input-badge {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          z-index: 3;
+          border-radius: 9999px;
+          padding: 4px 8px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: #0b1d3a;
+          background: rgba(247, 210, 55, 0.95);
+          box-shadow:
+            0 4px 14px rgba(247, 210, 55, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
         }
 
         .glass-input {
@@ -776,8 +808,28 @@ export default function Home() {
           width: 100%;
         }
 
+        .glass-input-primary {
+          position: relative;
+          z-index: 1;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0.075)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.2),
+            0 12px 34px rgba(0, 0, 0, 0.12),
+            0 0 28px rgba(247, 210, 55, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
         .glass-input::placeholder {
           color: rgba(255, 255, 255, 0.35);
+        }
+
+        .glass-input-primary::placeholder {
+          color: rgba(255, 255, 255, 0.42);
         }
 
         .glass-input:focus {
@@ -788,6 +840,15 @@ export default function Home() {
             0 0 30px rgba(247, 210, 55, 0.12),
             0 10px 30px rgba(0, 0, 0, 0.08);
           transform: translateY(-1px);
+        }
+
+        .glass-input-primary:hover {
+          border-color: rgba(247, 210, 55, 0.45);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.24),
+            0 12px 34px rgba(0, 0, 0, 0.12),
+            0 0 34px rgba(247, 210, 55, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
         .reset-link {
@@ -1231,6 +1292,23 @@ export default function Home() {
             grid-template-columns: 1fr 1fr;
           }
 
+          .input-badge {
+            top: 8px;
+            right: 10px;
+            font-size: 9px;
+            padding: 3px 7px;
+          }
+
+          .glass-input-primary {
+            font-size: 19px;
+            padding-top: 18px;
+            padding-bottom: 18px;
+          }
+
+          .input-label-strong {
+            font-size: 11px;
+          }
+
           .dashboard-grid {
             grid-template-columns: 1fr 1fr;
             grid-template-areas:
@@ -1314,3 +1392,4 @@ export default function Home() {
     </main>
   );
 }
+вот мой текущий код. внеси туда изменения и верни уже готовым чтобы мне надо было только вставить иной код и все.  ну и укажи где он должен быть. page.tsx же? нормально что он такой длинный получился? be careful with your answer. There are many things you could do, but only one of them is best.
