@@ -527,19 +527,17 @@ export default function Home() {
 
             <div className="mt-6">
               <a
-                href={snapshotBotUrl}
-                onClick={trackTelegramClick}
-                className={[
-                  "block rounded-2xl py-3 text-center font-semibold transition",
-                  hasInteraction
-                    ? "bg-[#f7d237] text-[#0b1d3a] hover:brightness-95"
-                    : "pointer-events-none bg-white/10 text-white/45",
-                ].join(" ")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Попробовать Revenue Snapshot в TG
-              </a>
+  href={snapshotBotUrl}
+  onClick={trackTelegramClick}
+  className={[
+    "tg-gradient-btn block text-center font-semibold transition",
+    hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
+  ].join(" ")}
+  target="_blank"
+  rel="noreferrer"
+>
+  Попробовать Revenue Snapshot в ТГ
+</a>
             </div>
 
             <div className="mt-3 text-xs text-white/40">
