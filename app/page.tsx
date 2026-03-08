@@ -337,13 +337,13 @@ export default function Home() {
                 href={snapshotBotUrl}
                 onClick={trackTelegramClick}
                 className={[
-                  "snapshot-btn hidden md:inline-flex",
-                  hasInteraction ? "snapshot-btn-active" : "snapshot-btn-disabled",
+                  "tg-gradient-btn tg-gradient-btn-header hidden md:inline-flex",
+                  hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
                 ].join(" ")}
                 target="_blank"
                 rel="noreferrer"
               >
-                Revenue Snapshot
+                Попробовать в ТГ
               </a>
             </div>
           </div>
@@ -527,17 +527,17 @@ export default function Home() {
 
             <div className="mt-6">
               <a
-  href={snapshotBotUrl}
-  onClick={trackTelegramClick}
-  className={[
-    "tg-gradient-btn block text-center font-semibold transition",
-    hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
-  ].join(" ")}
-  target="_blank"
-  rel="noreferrer"
->
-  Revenue Snapshot в ТГ
-</a>
+                href={snapshotBotUrl}
+                onClick={trackTelegramClick}
+                className={[
+                  "tg-gradient-btn block text-center font-semibold transition",
+                  hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
+                ].join(" ")}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Попробовать Revenue Snapshot в ТГ
+              </a>
             </div>
 
             <div className="mt-3 text-xs text-white/40">
@@ -660,6 +660,72 @@ export default function Home() {
           pointer-events: none;
           background: rgba(255, 255, 255, 0.1);
           color: rgba(255, 255, 255, 0.45);
+        }
+
+        .tg-gradient-btn {
+          position: relative;
+          overflow: hidden;
+          border-radius: 9999px;
+          padding: 14px 20px;
+          color: white;
+          font-size: 16px;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #5da7ff 22%,
+            #7c84ff 48%,
+            #9c6dff 72%,
+            #c25cf3 100%
+          );
+          background-size: 220% 220%;
+          box-shadow:
+            0 10px 30px rgba(71, 96, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+        }
+
+        .tg-gradient-btn::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.22) 25%,
+            transparent 50%
+          );
+          transform: translateX(-130%);
+          animation: tgShine 3.8s ease-in-out infinite;
+        }
+
+        .tg-gradient-btn > * {
+          position: relative;
+          z-index: 1;
+        }
+
+        .tg-gradient-btn:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.03);
+        }
+
+        .tg-gradient-btn-active {
+          pointer-events: auto;
+          opacity: 1;
+        }
+
+        .tg-gradient-btn-disabled {
+          pointer-events: none;
+          opacity: 0.48;
+          filter: grayscale(0.1);
+        }
+
+        .tg-gradient-btn-header {
+          padding: 11px 16px;
+          font-size: 13px;
+          white-space: nowrap;
         }
 
         .logo-main {
@@ -1084,6 +1150,30 @@ export default function Home() {
           }
         }
 
+        @keyframes tgGradientFlow {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        @keyframes tgShine {
+          0% {
+            transform: translateX(-130%);
+          }
+          55% {
+            transform: translateX(130%);
+          }
+          100% {
+            transform: translateX(130%);
+          }
+        }
+
         @media (min-width: 768px) {
           .dashboard-grid {
             grid-template-columns: 1fr 1fr 1fr;
@@ -1124,6 +1214,16 @@ export default function Home() {
             min-width: 44px;
             height: 40px;
             padding: 0 12px;
+            font-size: 12px;
+          }
+
+          .tg-gradient-btn {
+            padding: 13px 16px;
+            font-size: 15px;
+          }
+
+          .tg-gradient-btn-header {
+            padding: 9px 12px;
             font-size: 12px;
           }
 
