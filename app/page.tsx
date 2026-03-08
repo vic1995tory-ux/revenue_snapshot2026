@@ -508,7 +508,7 @@ export default function Home() {
                   <div className="mt-3 text-sm leading-relaxed text-white/68">
                     Сейчас именно этот драйвер сильнее всего влияет на общую
                     динамику модели. Чтобы подтвердить эффект, нужно уточнить
-                    реальные параметры бизнеса.
+                    реальные параметры бизнеса, ответив на вопросы в ТГ.
                   </div>
                 </>
               ) : (
@@ -538,7 +538,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Перейти в Revenue Snapshot
+                Попробовать Revenue Snapshot в TG
               </a>
             </div>
 
