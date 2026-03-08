@@ -536,7 +536,7 @@ export default function Home() {
                 target="_blank"
                 rel="noreferrer"
               >
-                Попробовать Revenue Snapshot в ТГ
+                Revenue Snapshot в ТГ
               </a>
             </div>
 
