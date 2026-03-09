@@ -224,22 +224,34 @@ export default function Home() {
     setOpexEff(0);
   };
 
-  const data = useMemo(() => {
-const newClients = safeClients * (1 + sales * 0.6);
-const retainedRevenueLift = 1 + retention * 0.35;
-const avgCheck = safeCheck * (1 + upsell * 0.7);
+const data = useMemo(() => {
+  const safeClients = Math.max(0, clientsBase);
+  const safeCheck = Math.max(0, checkBase);
 
-const revenue = newClients * avgCheck * retainedRevenueLift;
+  const newClients = safeClients * (1 + sales * 0.6);
+  const retainedRevenueLift = 1 + retention * 0.35;
+  const avgCheck = safeCheck * (1 + upsell * 0.7);
 
-    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
-    const support = revenue * 0.06 * (1 + retention * 0.4);
-    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
+  const revenue = newClients * avgCheck * retainedRevenueLift;
 
-    const costs = salesCost + support + opex;
-    const profit = revenue - costs;
+  const salesCost = revenue * 0.18 * (1 + sales * 0.4);
+  const support = revenue * 0.06 * (1 + retention * 0.25);
+  const opex = revenue * 0.35 * (1 - opexEff * 0.8);
 
-    return { clients, avgCheck, revenue, salesCost, support, opex, costs, profit };
-  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
+  const costs = salesCost + support + opex;
+  const profit = revenue - costs;
+
+  return {
+    newClients,
+    avgCheck,
+    revenue,
+    salesCost,
+    support,
+    opex,
+    costs,
+    profit,
+  };
+}, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
 
   const base = useMemo(() => {
     const revenue = clientsBase * checkBase;
