@@ -1392,4 +1392,3 @@ export default function Home() {
     </main>
   );
 }
-вот мой текущий код. внеси туда изменения и верни уже готовым чтобы мне надо было только вставить иной код и все.  ну и укажи где он должен быть. page.tsx же? нормально что он такой длинный получился? be careful with your answer. There are many things you could do, but only one of them is best.
