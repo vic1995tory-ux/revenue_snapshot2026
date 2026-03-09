@@ -225,12 +225,11 @@ export default function Home() {
   };
 
   const data = useMemo(() => {
-    const safeClients = Math.max(0, clientsBase);
-    const safeCheck = Math.max(0, checkBase);
+const newClients = safeClients * (1 + sales * 0.6);
+const retainedRevenueLift = 1 + retention * 0.35;
+const avgCheck = safeCheck * (1 + upsell * 0.7);
 
-    const clients = safeClients * (1 + sales * 0.6 + retention * 0.5);
-    const avgCheck = safeCheck * (1 + upsell * 0.7);
-    const revenue = clients * avgCheck;
+const revenue = newClients * avgCheck * retainedRevenueLift;
 
     const salesCost = revenue * 0.18 * (1 + sales * 0.4);
     const support = revenue * 0.06 * (1 + retention * 0.4);
