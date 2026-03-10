@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -86,22 +86,15 @@ function TopMetricCard({
   delta,
   type,
   invert = false,
-  large = false,
 }: {
   title: string;
   value: string;
   delta: number;
   type: "revenue" | "costs" | "profit";
   invert?: boolean;
-  large?: boolean;
 }) {
   return (
-    <div
-      className={[
-        "glass-card soft-glow metric-card metric-card-main",
-        large ? "metric-card-large" : "",
-      ].join(" ")}
-    >
+    <div className="glass-card soft-glow metric-card metric-card-main">
       <div className="metric-head">
         <div className="text-sm text-white/55">{title}</div>
         <div className={`metric-flag ${flagTone(type, delta)}`}>
@@ -109,9 +102,7 @@ function TopMetricCard({
         </div>
       </div>
 
-      <div className="mt-3 text-[2.1rem] font-semibold tracking-tight md:text-[2rem]">
-        {value}
-      </div>
+      <div className="mt-3 text-[2rem] font-semibold tracking-tight">{value}</div>
 
       <div className={`mt-2 text-sm ${color(delta, invert)}`}>{pct(delta)}</div>
     </div>
@@ -170,7 +161,7 @@ function Slider({
     <div className="glass-card soft-glow slider-card">
       <div>
         <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[38px] text-xs leading-snug text-white/42">
+        <div className="mt-2 min-h-[36px] text-xs leading-snug text-white/42">
           {subtitle}
         </div>
       </div>
@@ -189,22 +180,6 @@ function Slider({
           {Math.round(value * 100)}%
         </div>
       </div>
-    </div>
-  );
-}
-
-function ResultDocCard({
-  title,
-  text,
-}: {
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="result-doc-card">
-      <div className="result-doc-tab">Документ</div>
-      <div className="result-doc-title">{title}</div>
-      <div className="result-doc-text">{text}</div>
     </div>
   );
 }
@@ -447,12 +422,12 @@ function HeroEconomyChart() {
 
 function SnapshotStructure() {
   const topics = [
-    { title: "Продукт", cls: "topic-1" },
-    { title: "Трафик", cls: "topic-2" },
-    { title: "Продажи", cls: "topic-3" },
-    { title: "Экономика", cls: "topic-4" },
-    { title: "Операционные ограничения", cls: "topic-5" },
-    { title: "Цели роста", cls: "topic-6" },
+    { title: "Продукт", cls: "topic-top-left" },
+    { title: "Трафик", cls: "topic-top-right" },
+    { title: "Продажи", cls: "topic-middle-left" },
+    { title: "Экономика", cls: "topic-middle-right" },
+    { title: "Операционные ограничения", cls: "topic-bottom-left" },
+    { title: "Цели роста", cls: "topic-bottom-right" },
   ];
 
   return (
@@ -468,12 +443,12 @@ function SnapshotStructure() {
           </div>
         ))}
 
-        <span className="snapshot-line line-1" />
-        <span className="snapshot-line line-2" />
-        <span className="snapshot-line line-3" />
-        <span className="snapshot-line line-4" />
-        <span className="snapshot-line line-5" />
-        <span className="snapshot-line line-6" />
+        <span className="arrow arrow-1" />
+        <span className="arrow arrow-2" />
+        <span className="arrow arrow-3" />
+        <span className="arrow arrow-4" />
+        <span className="arrow arrow-5" />
+        <span className="arrow arrow-6" />
       </div>
     </div>
   );
@@ -491,42 +466,38 @@ export default function Home() {
   const [upsell, setUpsell] = useState(0);
   const [opexEff, setOpexEff] = useState(0);
 
+  const [activeDoc, setActiveDoc] = useState(0);
+
   const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
-  const resultScrollRef = useRef<HTMLDivElement | null>(null);
-
-  const highlightItems = [
-    "Найти утечки",
-    "Увидеть главный рычаг",
-    "Выбрать фокус",
-  ];
-
-  const highlightDescriptions = [
-    "в экономике бизнеса",
-    "усиления и роста модели",
-    "вместо хаотичных гипотез",
+  const nicheText = [
+    "SaaS",
+    "E-com",
+    "FinTech",
+    "EdTech",
+    "HealthTech",
+    "B2B",
   ];
 
   const stageCards = [
     {
-      title: "#SeedStage",
-      subtitle:
-        "Работа над идеей, создание прототипа и проверка рынка.",
+      title: "Seed Stage",
+      subtitle: "Работа над идеей, создание прототипа и проверка рынка.",
     },
     {
-      title: "#StartupStage",
+      title: "Startup Stage",
       subtitle:
         "Официальный выход на рынок, первые продажи и привлечение клиентов.",
     },
     {
-      title: "#GrowthStage",
+      title: "Growth Stage",
       subtitle:
         "Период стабильного увеличения выручки и расширения клиентской базы.",
     },
     {
-      title: "#ExpansionStage",
+      title: "Expansion Stage",
       subtitle:
         "Выход на новые уровни: захват новых рынков, добавление линеек продуктов или международная экспансия.",
     },
@@ -650,27 +621,23 @@ export default function Home() {
     )
   );
 
-  const scrollDocs = (dir: "left" | "right") => {
-    if (!resultScrollRef.current) return;
-    resultScrollRef.current.scrollBy({
-      left: dir === "left" ? -420 : 420,
-      behavior: "smooth",
-    });
-  };
-
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#041a3d] text-white">
       <div className="pointer-events-none absolute inset-0">
         <div className="aurora aurora-1" />
         <div className="aurora aurora-2" />
         <div className="aurora aurora-3" />
         <div className="aurora aurora-4" />
-        <div className="beam beam-1" />
-        <div className="beam beam-2" />
         <div className="orb orb-1" />
         <div className="orb orb-2" />
+        <div className="orb orb-3" />
+        <div className="beam beam-1" />
+        <div className="beam beam-2" />
         <div className="grid-overlay" />
         <div className="noise-overlay" />
+        <div className="noise-overlay-strong" />
+        <div className="grain-cloud cloud-1" />
+        <div className="grain-cloud cloud-2" />
         <div className="vignette" />
       </div>
 
@@ -739,19 +706,21 @@ export default function Home() {
             </p>
 
             <div className="hero-highlights-row">
-              {highlightItems.map((item, index) => (
-                <div key={item} className="hero-highlight-chip">
-                  {item}
-                </div>
-              ))}
+              <div className="hero-highlight-chip hero-chip-shimmer">
+                Найти утечки
+              </div>
+              <div className="hero-highlight-chip hero-chip-shimmer">
+                Увидеть главный рычаг
+              </div>
+              <div className="hero-highlight-chip hero-chip-shimmer">
+                Выбрать фокус
+              </div>
             </div>
 
             <div className="hero-highlights-sub">
-              {highlightDescriptions.map((item) => (
-                <div key={item} className="hero-highlight-subtext">
-                  {item}
-                </div>
-              ))}
+              <div className="hero-highlight-subtext">в экономике бизнеса</div>
+              <div className="hero-highlight-subtext">усиления и роста модели</div>
+              <div className="hero-highlight-subtext">вместо хаотичных гипотез</div>
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -834,7 +803,6 @@ export default function Home() {
                     value={fmtMoney(data.revenue)}
                     delta={revDelta}
                     type="revenue"
-                    large
                   />
                 </div>
 
@@ -928,27 +896,13 @@ export default function Home() {
             </div>
 
             <aside className="glass-card h-fit lg:sticky lg:top-24">
-              <div className="preview-top-row">
-                <div>
-                  <div className="text-sm text-white/55">
-                    Пример предварительного сигнала
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-white">
-                    Potential revenue gap detected
-                  </div>
-                </div>
-                <div className="preview-chip">Preview</div>
-              </div>
+              <div className="reserve-kicker">Оценочный резерв</div>
 
-              <div className="hero-preview-box mt-5">
-                <div className="text-sm text-white/55">Оценочный резерв</div>
-                <div className="mt-2 text-4xl font-semibold text-[#f7d237]">
-                  ≈ {fmtMoney(estimatedGap)} / мес
-                </div>
-                <p className="mt-3 text-sm leading-6 text-white/65">
-                  Full diagnostic reveals where it comes from. На посадочной вы
-                  видите только механику и возможное направление — полный разбор
-                  раскрывает, за счет чего появляется этот резерв.
+              <div className="hero-preview-box mt-4">
+                <div className="reserve-amount">≈ {fmtMoney(estimatedGap)} / мес</div>
+                <p className="mt-4 text-sm leading-7 text-white/65">
+                  Это только лишь механика, полный разбор раскрывает ваши реальные
+                  возможности при текущей ситуации вашего бизнеса.
                 </p>
               </div>
 
@@ -999,31 +953,30 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="results-carousel-head">
-            <div className="results-carousel-actions">
-              <button
-                type="button"
-                className="carousel-btn"
-                onClick={() => scrollDocs("left")}
-              >
-                ←
-              </button>
-              <button
-                type="button"
-                className="carousel-btn"
-                onClick={() => scrollDocs("right")}
-              >
-                →
-              </button>
-            </div>
-          </div>
+          <div className="stacked-docs">
+            {resultDocs.map((doc, index) => {
+              const order = index === activeDoc ? 100 : index;
+              const left = index * 120;
 
-          <div className="results-carousel-wrap">
-            <div className="results-carousel" ref={resultScrollRef}>
-              {resultDocs.map((doc) => (
-                <ResultDocCard key={doc.title} title={doc.title} text={doc.text} />
-              ))}
-            </div>
+              return (
+                <button
+                  key={doc.title}
+                  type="button"
+                  onClick={() => setActiveDoc(index)}
+                  className={`stacked-doc-btn ${index === activeDoc ? "is-active" : ""}`}
+                  style={{
+                    zIndex: order,
+                    left: `${left}px`,
+                    transform:
+                      index === activeDoc
+                        ? "translateY(0px) scale(1)"
+                        : `translateY(${index * 8}px) scale(0.98)`,
+                  }}
+                >
+                  <ResultDocCard title={doc.title} text={doc.text} />
+                </button>
+              );
+            })}
           </div>
         </section>
 
@@ -1064,10 +1017,19 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="stage-grid">
+          <div className="niche-inline-text">
+            {nicheText.map((item, index) => (
+              <span key={item} className="niche-gradient-text">
+                {item}
+                {index < nicheText.length - 1 ? " · " : ""}
+              </span>
+            ))}
+          </div>
+
+          <div className="stage-grid mt-6">
             {stageCards.map((item) => (
               <div key={item.title} className="stage-card">
-                <div className="stage-card-title">{item.title}</div>
+                <div className="stage-card-title-text">{item.title}</div>
                 <div className="stage-card-subtitle">{item.subtitle}</div>
               </div>
             ))}
@@ -1197,8 +1159,8 @@ export default function Home() {
           backdrop-filter: blur(14px);
           background: linear-gradient(
             180deg,
-            rgba(11, 29, 58, 0.86),
-            rgba(11, 29, 58, 0.42)
+            rgba(4, 26, 61, 0.9),
+            rgba(4, 26, 61, 0.46)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.04);
         }
@@ -1229,6 +1191,11 @@ export default function Home() {
           min-height: 100%;
         }
 
+        .hero-chart-card {
+          display: flex;
+          flex-direction: column;
+        }
+
         .hero-highlights-row {
           margin-top: 28px;
           display: grid;
@@ -1238,13 +1205,33 @@ export default function Home() {
 
         .hero-highlight-chip {
           border-radius: 16px;
-          padding: 14px 14px;
+          padding: 14px 16px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
           color: white;
           font-size: 15px;
           font-weight: 700;
           text-align: center;
+          white-space: nowrap;
+          line-height: 1.2;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .hero-chip-shimmer::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            115deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.06) 20%,
+            rgba(247, 210, 55, 0.2) 35%,
+            rgba(162, 105, 255, 0.18) 55%,
+            transparent 72%
+          );
+          transform: translateX(-130%);
+          animation: chipShimmer 5.8s ease-in-out infinite;
         }
 
         .hero-highlights-sub {
@@ -1259,11 +1246,6 @@ export default function Home() {
           line-height: 1.5;
           text-align: center;
           color: rgba(255, 255, 255, 0.56);
-        }
-
-        .hero-chart-card {
-          display: flex;
-          flex-direction: column;
         }
 
         .hero-levers-inline {
@@ -1635,18 +1617,8 @@ export default function Home() {
           gap: 10px;
         }
 
-        .dashboard-revenue,
-        .dashboard-profit,
-        .dashboard-costs {
-          grid-column: span 1;
-        }
-
         .metric-card {
-          min-height: 100px;
-        }
-
-        .metric-card-large {
-          min-height: 100px;
+          min-height: 96px;
         }
 
         .metric-card-main {
@@ -1723,21 +1695,12 @@ export default function Home() {
           cursor: pointer;
         }
 
-        .preview-top-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .preview-chip {
-          flex-shrink: 0;
-          border-radius: 9999px;
-          padding: 7px 12px;
-          font-size: 12px;
+        .reserve-kicker {
+          font-size: 14px;
           font-weight: 700;
-          color: #0b1d3a;
-          background: #f7d237;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          color: #f7d237;
         }
 
         .hero-preview-box {
@@ -1747,54 +1710,37 @@ export default function Home() {
           padding: 18px;
         }
 
-        .results-carousel-head {
-          display: flex;
-          justify-content: flex-end;
-          margin-bottom: 12px;
+        .reserve-amount {
+          font-size: 3rem;
+          line-height: 1.02;
+          font-weight: 700;
+          color: #f7d237;
+          text-shadow: 0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-        .results-carousel-actions {
-          display: flex;
-          gap: 8px;
-        }
-
-        .carousel-btn {
-          width: 42px;
-          height: 42px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.06);
-          color: white;
-          font-size: 18px;
-          transition: 0.2s ease;
-        }
-
-        .carousel-btn:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-
-        .results-carousel-wrap {
+        .stacked-docs {
+          position: relative;
+          height: 420px;
           overflow: hidden;
         }
 
-        .results-carousel {
-          display: grid;
-          grid-auto-flow: column;
-          grid-auto-columns: minmax(320px, 460px);
-          gap: 16px;
-          overflow-x: auto;
-          scroll-snap-type: x mandatory;
-          padding: 0 0 10px 0;
-          scrollbar-width: none;
+        .stacked-doc-btn {
+          position: absolute;
+          top: 0;
+          width: 420px;
+          border: 0;
+          padding: 0;
+          background: transparent;
+          cursor: pointer;
+          transition: transform 0.28s ease, box-shadow 0.28s ease;
         }
 
-        .results-carousel::-webkit-scrollbar {
-          display: none;
+        .stacked-doc-btn.is-active {
+          filter: brightness(1.02);
         }
 
         .result-doc-card {
-          scroll-snap-align: start;
-          min-height: 280px;
+          min-height: 370px;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
@@ -1808,6 +1754,7 @@ export default function Home() {
           box-shadow:
             0 20px 44px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          text-align: left;
         }
 
         .result-doc-card::after {
@@ -1863,6 +1810,27 @@ export default function Home() {
           max-width: 620px;
         }
 
+        .niche-inline-text {
+          margin-top: 10px;
+          font-size: 18px;
+          line-height: 1.8;
+        }
+
+        .niche-gradient-text {
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #5da7ff 24%,
+            #7c84ff 48%,
+            #9c6dff 72%,
+            #c25cf3 100%
+          );
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+          font-weight: 700;
+        }
+
         .stage-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
@@ -1881,20 +1849,24 @@ export default function Home() {
           min-height: 170px;
         }
 
-        .stage-card-title {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 9px 14px;
-          border-radius: 999px;
-          background: #f7d237;
-          color: #0b1d3a;
-          font-size: 13px;
+        .stage-card-title-text {
+          font-size: 18px;
           font-weight: 800;
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #5da7ff 24%,
+            #7c84ff 48%,
+            #9c6dff 72%,
+            #c25cf3 100%
+          );
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
         }
 
         .stage-card-subtitle {
-          margin-top: 16px;
+          margin-top: 14px;
           font-size: 18px;
           line-height: 1.75;
           color: rgba(255, 255, 255, 0.74);
@@ -1907,12 +1879,12 @@ export default function Home() {
         }
 
         .snapshot-structure-card {
-          min-height: 430px;
+          min-height: 460px;
         }
 
         .snapshot-structure {
           position: relative;
-          height: 330px;
+          height: 350px;
           margin-top: 22px;
         }
 
@@ -1921,29 +1893,30 @@ export default function Home() {
           left: 50%;
           top: 50%;
           transform: translate(-50%, -50%);
-          min-width: 210px;
+          min-width: 230px;
           text-align: center;
-          padding: 18px 20px;
-          border-radius: 24px;
+          padding: 18px 22px;
+          border-radius: 26px;
           background: linear-gradient(
             180deg,
-            rgba(247, 210, 55, 0.18),
-            rgba(255, 255, 255, 0.05)
+            rgba(247, 210, 55, 0.96),
+            rgba(235, 198, 38, 0.94)
           );
-          border: 1px solid rgba(247, 210, 55, 0.22);
           font-size: 24px;
           font-weight: 700;
-          color: white;
-          z-index: 4;
-          box-shadow: 0 0 30px rgba(247, 210, 55, 0.08);
+          color: #0b1d3a;
+          z-index: 5;
+          box-shadow:
+            0 0 24px rgba(247, 210, 55, 0.22),
+            0 18px 40px rgba(0, 0, 0, 0.12);
         }
 
         .snapshot-topic {
           position: absolute;
-          min-width: 170px;
+          min-width: 185px;
           text-align: center;
           padding: 12px 14px;
-          border-radius: 18px;
+          border-radius: 22px;
           background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
           font-size: 14px;
@@ -1952,102 +1925,102 @@ export default function Home() {
           z-index: 3;
         }
 
-        .topic-1 {
-          left: 6%;
-          top: 8%;
+        .topic-top-left {
+          left: 8%;
+          top: 2%;
         }
 
-        .topic-2 {
-          right: 6%;
-          top: 8%;
+        .topic-top-right {
+          right: 8%;
+          top: 2%;
         }
 
-        .topic-3 {
+        .topic-middle-left {
           left: 0%;
-          top: 46%;
+          top: 36%;
         }
 
-        .topic-4 {
+        .topic-middle-right {
           right: 0%;
-          top: 46%;
+          top: 36%;
         }
 
-        .topic-5 {
-          left: 7%;
-          bottom: 8%;
+        .topic-bottom-left {
+          left: 10%;
+          bottom: 4%;
         }
 
-        .topic-6 {
-          right: 7%;
-          bottom: 8%;
+        .topic-bottom-right {
+          right: 10%;
+          bottom: 4%;
         }
 
-        .snapshot-line {
+        .arrow {
           position: absolute;
-          height: 2px;
+          height: 3px;
           background: linear-gradient(
             90deg,
-            rgba(247, 210, 55, 0.16),
-            rgba(247, 210, 55, 0.95)
+            rgba(247, 210, 55, 0.2),
+            rgba(247, 210, 55, 0.96)
           );
           border-radius: 999px;
           z-index: 2;
           transform-origin: left center;
-          opacity: 0.9;
+          opacity: 0.95;
         }
 
-        .snapshot-line::after {
+        .arrow::after {
           content: "";
           position: absolute;
-          right: -1px;
+          right: -2px;
           top: 50%;
-          width: 8px;
-          height: 8px;
-          border-top: 2px solid #f7d237;
-          border-right: 2px solid #f7d237;
+          width: 10px;
+          height: 10px;
+          border-top: 3px solid #f7d237;
+          border-right: 3px solid #f7d237;
           transform: translateY(-50%) rotate(45deg);
         }
 
-        .line-1 {
-          width: 112px;
-          left: 34%;
-          top: 28%;
-          transform: rotate(-29deg);
+        .arrow-1 {
+          width: 126px;
+          left: 49%;
+          top: 31%;
+          transform: rotate(-148deg);
         }
 
-        .line-2 {
-          width: 112px;
-          right: 34%;
-          top: 28%;
-          transform: rotate(29deg);
+        .arrow-2 {
+          width: 126px;
+          left: 52%;
+          top: 31%;
+          transform: rotate(-32deg);
         }
 
-        .line-3 {
-          width: 104px;
-          left: 27%;
-          top: 50%;
-          transform: rotate(0deg);
-        }
-
-        .line-4 {
-          width: 104px;
-          right: 27%;
-          top: 50%;
+        .arrow-3 {
+          width: 120px;
+          left: 43%;
+          top: 51%;
           transform: rotate(180deg);
         }
 
-        .line-5 {
-          width: 112px;
-          left: 34%;
-          bottom: 28%;
-          transform: rotate(29deg);
+        .arrow-4 {
+          width: 120px;
+          left: 57%;
+          top: 51%;
+          transform: rotate(0deg);
         }
 
-        .line-6 {
-          width: 112px;
-          right: 34%;
-          bottom: 28%;
-          transform: rotate(-29deg);
+        .arrow-5 {
+          width: 128px;
+          left: 49%;
+          top: 68%;
+          transform: rotate(148deg);
+        }
+
+        .arrow-6 {
+          width: 128px;
+          left: 52%;
+          top: 68%;
+          transform: rotate(32deg);
         }
 
         .cta-card {
@@ -2079,10 +2052,10 @@ export default function Home() {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
           background-size: 72px 72px;
-          opacity: 0.18;
+          opacity: 0.22;
           mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
         }
 
@@ -2090,15 +2063,59 @@ export default function Home() {
           position: absolute;
           inset: 0;
           pointer-events: none;
-          opacity: 0.16;
+          opacity: 0.18;
           background-image:
-            radial-gradient(rgba(255, 255, 255, 0.055) 0.6px, transparent 0.6px),
-            radial-gradient(rgba(255, 255, 255, 0.035) 0.45px, transparent 0.45px),
+            radial-gradient(rgba(255, 255, 255, 0.06) 0.6px, transparent 0.6px),
+            radial-gradient(rgba(255, 255, 255, 0.038) 0.45px, transparent 0.45px),
             radial-gradient(rgba(0, 0, 0, 0.06) 0.7px, transparent 0.7px);
           background-size: 4px 4px, 6px 6px, 7px 7px;
           background-position: 0 0, 1px 2px, 2px 1px;
           mix-blend-mode: soft-light;
-          filter: contrast(115%) brightness(96%);
+        }
+
+        .noise-overlay-strong {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.12;
+          background-image:
+            radial-gradient(rgba(255, 255, 255, 0.12) 0.45px, transparent 0.45px),
+            radial-gradient(rgba(255, 255, 255, 0.08) 0.3px, transparent 0.3px);
+          background-size: 3px 3px, 5px 5px;
+          background-position: 0 0, 2px 1px;
+          mix-blend-mode: overlay;
+          filter: contrast(120%);
+        }
+
+        .grain-cloud {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(80px);
+          opacity: 0.18;
+        }
+
+        .cloud-1 {
+          width: 520px;
+          height: 280px;
+          left: -40px;
+          top: 120px;
+          background: radial-gradient(
+            circle,
+            rgba(118, 129, 255, 0.34),
+            transparent 70%
+          );
+        }
+
+        .cloud-2 {
+          width: 520px;
+          height: 320px;
+          right: -60px;
+          bottom: 140px;
+          background: radial-gradient(
+            circle,
+            rgba(247, 210, 55, 0.22),
+            transparent 72%
+          );
         }
 
         .aurora {
@@ -2234,14 +2251,36 @@ export default function Home() {
           animation-delay: 1.5s;
         }
 
+        .orb-3 {
+          width: 300px;
+          height: 300px;
+          left: 42%;
+          top: 30%;
+          background: rgba(124, 132, 255, 0.12);
+          animation: pulseOrb 12s infinite ease-in-out;
+          animation-delay: 0.6s;
+        }
+
         .vignette {
           position: absolute;
           inset: 0;
           background: radial-gradient(
             ellipse at center,
             transparent 45%,
-            rgba(0, 0, 0, 0.22) 100%
+            rgba(0, 0, 0, 0.24) 100%
           );
+        }
+
+        @keyframes chipShimmer {
+          0% {
+            transform: translateX(-130%);
+          }
+          50% {
+            transform: translateX(130%);
+          }
+          100% {
+            transform: translateX(130%);
+          }
         }
 
         @keyframes pulseYellow {
@@ -2377,21 +2416,12 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .snapshot-structure-card {
-            min-height: auto;
+          .stacked-docs {
+            height: 390px;
           }
 
-          .snapshot-structure {
-            height: 420px;
-          }
-
-          .line-1,
-          .line-2,
-          .line-3,
-          .line-4,
-          .line-5,
-          .line-6 {
-            display: none;
+          .stacked-doc-btn {
+            width: 360px;
           }
         }
 
@@ -2401,14 +2431,13 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .cta-box {
-            max-width: 100%;
-            min-width: 100%;
-          }
-
           .hero-highlights-row,
           .hero-highlights-sub {
             grid-template-columns: 1fr;
+          }
+
+          .hero-highlight-chip {
+            white-space: normal;
           }
 
           .hero-chart-metrics-row {
@@ -2423,15 +2452,33 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .dashboard-revenue,
-          .dashboard-profit,
-          .dashboard-costs {
-            grid-column: span 1;
+          .analysis-grid {
+            grid-template-columns: 1fr;
           }
 
-          .snapshot-topic {
-            min-width: 140px;
-            font-size: 13px;
+          .stacked-docs {
+            height: auto;
+            display: grid;
+            gap: 14px;
+          }
+
+          .stacked-doc-btn {
+            position: relative;
+            left: 0 !important;
+            width: 100%;
+            transform: none !important;
+          }
+
+          .result-doc-card {
+            min-height: 280px;
+          }
+
+          .snapshot-structure {
+            height: 460px;
+          }
+
+          .arrow {
+            display: none;
           }
         }
 
@@ -2476,15 +2523,8 @@ export default function Home() {
             font-size: 28px;
           }
 
-          .hero-metric-square strong {
-            font-size: 16px;
-          }
-
-          .metric-card,
-          .metric-card-large {
-            min-height: 110px;
-            padding: 16px;
-            border-radius: 22px;
+          .hero-chart-metrics-row {
+            grid-template-columns: 1fr 1fr;
           }
 
           .metric-head {
@@ -2493,26 +2533,13 @@ export default function Home() {
             gap: 8px;
           }
 
-          .model-card {
-            min-height: 90px;
-            padding: 14px;
-            border-radius: 18px;
-          }
-
-          .slider-card {
-            min-height: 132px;
-            padding: 14px;
-            border-radius: 18px;
-          }
-
           .glass-card {
             border-radius: 22px;
             padding: 16px;
           }
 
-          .result-doc-card {
-            min-height: 250px;
-            padding: 20px;
+          .reserve-amount {
+            font-size: 2.4rem;
           }
 
           .result-doc-title {
@@ -2524,17 +2551,8 @@ export default function Home() {
             line-height: 1.7;
           }
 
-          .stage-card {
-            min-height: 150px;
-          }
-
-          .stage-card-subtitle {
-            font-size: 16px;
-            line-height: 1.7;
-          }
-
           .snapshot-structure {
-            height: 520px;
+            height: 560px;
           }
 
           .snapshot-center {
@@ -2542,33 +2560,38 @@ export default function Home() {
             font-size: 20px;
           }
 
-          .topic-1 {
-            left: 0%;
+          .snapshot-topic {
+            min-width: 150px;
+            font-size: 13px;
+          }
+
+          .topic-top-left {
+            left: 4%;
             top: 0%;
           }
 
-          .topic-2 {
-            right: 0%;
+          .topic-top-right {
+            right: 4%;
             top: 0%;
           }
 
-          .topic-3 {
+          .topic-middle-left {
             left: 0%;
-            top: 30%;
+            top: 34%;
           }
 
-          .topic-4 {
+          .topic-middle-right {
             right: 0%;
-            top: 30%;
+            top: 34%;
           }
 
-          .topic-5 {
-            left: 0%;
+          .topic-bottom-left {
+            left: 6%;
             bottom: 4%;
           }
 
-          .topic-6 {
-            right: 0%;
+          .topic-bottom-right {
+            right: 6%;
             bottom: 4%;
           }
 
