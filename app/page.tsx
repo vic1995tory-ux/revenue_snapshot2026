@@ -453,7 +453,21 @@ function SnapshotStructure() {
     </div>
   );
 }
-
+function ResultDocCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="result-doc-card">
+      <div className="result-doc-tab">Документ</div>
+      <div className="result-doc-title">{title}</div>
+      <div className="result-doc-text">{text}</div>
+    </div>
+  );
+}
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
