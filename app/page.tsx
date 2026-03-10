@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -59,7 +59,7 @@ function getMetricFlag(
   }
 
   if (delta >= 10) return "Рост маржи";
-  if (delta >= 3) return "Позитивный сдвиг";
+  if (delta >= 3) return "Позитивная динамика";
   if (delta <= -10) return "Просадка маржи";
   if (delta <= -3) return "Давление на маржу";
   return "Стабильно";
@@ -172,7 +172,7 @@ function Slider({
     <div className="glass-card soft-glow slider-card">
       <div>
         <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[56px] text-xs leading-snug text-white/42 md:min-h-[72px]">
+        <div className="mt-2 min-h-[42px] text-xs leading-snug text-white/42 md:min-h-[54px]">
           {subtitle}
         </div>
       </div>
@@ -187,9 +187,265 @@ function Slider({
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-        <div className="mt-2 text-xs text-white/50">{Math.round(value * 100)}%</div>
+        <div className="mt-2 text-xs text-white/50">
+          {Math.round(value * 100)}%
+        </div>
       </div>
     </div>
+  );
+}
+
+function ResultDocCard({
+  title,
+  text,
+}: {
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="result-doc-card">
+      <div className="result-doc-tab">Документ</div>
+      <div className="result-doc-title">{title}</div>
+      <div className="result-doc-text">{text}</div>
+    </div>
+  );
+}
+
+function HeroEconomyChart() {
+  const base = {
+    leads: 10,
+    deals: 2,
+    avgCheck: 6500,
+    margin: 0.3,
+  };
+
+  const scenarios = [
+    {
+      key: "offer",
+      label: "Упаковка и оффер",
+      short: "#Оффер",
+      hint: "увеличивает конверсию",
+      deals: 2.4,
+      avgCheck: 6500,
+      margin: 0.3,
+      deltaLabel: "+0.4 сделки",
+    },
+    {
+      key: "price",
+      label: "Средний чек",
+      short: "#СреднийЧек",
+      hint: "увеличивает выручку",
+      deals: 2,
+      avgCheck: 7600,
+      margin: 0.3,
+      deltaLabel: "+$1,100 к чеку",
+    },
+    {
+      key: "sales",
+      label: "Продажи",
+      short: "#Продажи",
+      hint: "усиливают закрытие",
+      deals: 2.8,
+      avgCheck: 6500,
+      margin: 0.3,
+      deltaLabel: "+0.8 сделки",
+    },
+    {
+      key: "ops",
+      label: "Операционка",
+      short: "#Операционка",
+      hint: "повышает маржу",
+      deals: 2,
+      avgCheck: 6500,
+      margin: 0.38,
+      deltaLabel: "+8 п.п. маржи",
+    },
+  ];
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActiveIndex((v) => (v + 1) % scenarios.length);
+    }, 2800);
+    return () => window.clearInterval(id);
+  }, [scenarios.length]);
+
+  const active = scenarios[activeIndex];
+
+  const baseRevenue = base.deals * base.avgCheck;
+  const baseProfit = baseRevenue * base.margin;
+  const activeRevenue = active.deals * active.avgCheck;
+  const activeProfit = activeRevenue * active.margin;
+
+  const points = [0, 1, 2, 3, 4, 5, 6].map((i) => {
+    const x = 18 + i * 58;
+    const activeSets = [
+      [168, 160, 150, 144, 130, 118, 104],
+      [168, 164, 158, 146, 136, 122, 110],
+      [168, 154, 142, 130, 116, 102, 88],
+      [168, 162, 156, 146, 134, 122, 106],
+    ];
+    const baseSet = [168, 164, 160, 154, 146, 138, 130];
+    return {
+      x,
+      baseY: baseSet[i],
+      activeY: activeSets[activeIndex][i],
+    };
+  });
+
+  const makeSmoothPath = (arr: { x: number; activeY?: number; baseY?: number }[], key: "baseY" | "activeY") => {
+    return arr
+      .map((p, i) => {
+        if (i === 0) return `M ${p.x} ${p[key]}`;
+        const prev = arr[i - 1];
+        const cx = (prev.x + p.x) / 2;
+        return `Q ${cx} ${prev[key]} ${p.x} ${p[key]}`;
+      })
+      .join(" ");
+  };
+
+  const basePath = makeSmoothPath(points, "baseY");
+  const activePath = makeSmoothPath(points, "activeY");
+
+  return (
+    <aside className="glass-card hero-chart-card">
+      <div className="text-sm text-white/55">Как двигается экономика</div>
+      <div className="mt-2 text-2xl font-semibold text-white md:text-[2rem] md:leading-[1.1]">
+        MVP-рычаги, которые меняют деньги в модели
+      </div>
+      <p className="mt-3 text-sm leading-7 text-white/64">
+        Здесь не нужно ничего нажимать. Блок показывает логику: отдельные
+        управляемые изменения перестраивают выручку и прибыль бизнеса.
+      </p>
+
+      <div className="hero-levers-inline">
+        {scenarios.map((item, index) => {
+          const isActive = index === activeIndex;
+          return (
+            <div
+              key={item.key}
+              className={`hero-tag ${isActive ? "hero-tag-active" : ""}`}
+            >
+              <span className="hero-tag-dot" />
+              {item.short}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hero-chart-box">
+        <div className="hero-chart-metrics-row">
+          <div className="hero-metric-square">
+            <span>Лидов / мес</span>
+            <strong>{base.leads}</strong>
+          </div>
+          <div className="hero-metric-square">
+            <span>Сделок / мес</span>
+            <strong>{active.deals.toFixed(1)}</strong>
+          </div>
+          <div className="hero-metric-square">
+            <span>Средний чек</span>
+            <strong>{fmtMoney(active.avgCheck)}</strong>
+          </div>
+          <div className="hero-metric-square">
+            <span>Маржа</span>
+            <strong>{Math.round(active.margin * 100)}%</strong>
+          </div>
+        </div>
+
+        <div className="hero-chart-svg-wrap">
+          <svg viewBox="0 0 390 220" className="hero-chart-svg" aria-hidden="true">
+            <defs>
+              <linearGradient id="chartBase" x1="0%" x2="100%">
+                <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
+                <stop offset="100%" stopColor="rgba(255,255,255,0.08)" />
+              </linearGradient>
+              <linearGradient id="chartActive" x1="0%" x2="100%">
+                <stop offset="0%" stopColor="#f7d237" />
+                <stop offset="60%" stopColor="#f4dd72" />
+                <stop offset="100%" stopColor="#7c84ff" />
+              </linearGradient>
+              <filter id="chartGlow">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+
+            {[0, 1, 2, 3].map((i) => (
+              <line
+                key={i}
+                x1="12"
+                x2="378"
+                y1={38 + i * 44}
+                y2={38 + i * 44}
+                stroke="rgba(255,255,255,0.07)"
+                strokeWidth="1"
+              />
+            ))}
+
+            <path
+              d={`${basePath} L 366 194 L 18 194 Z`}
+              fill="rgba(255,255,255,0.035)"
+            />
+            <path
+              d={`${activePath} L 366 194 L 18 194 Z`}
+              fill="rgba(247,210,55,0.08)"
+            />
+
+            <path
+              d={basePath}
+              fill="none"
+              stroke="url(#chartBase)"
+              strokeWidth="3"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d={activePath}
+              fill="none"
+              stroke="url(#chartActive)"
+              strokeWidth="4"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              filter="url(#chartGlow)"
+            />
+
+            {points.map((p, idx) => (
+              <circle
+                key={idx}
+                cx={p.x}
+                cy={p.activeY}
+                r="4.5"
+                fill="#f7d237"
+                opacity={0.95}
+              />
+            ))}
+          </svg>
+        </div>
+
+        <div className="hero-chart-bottom">
+          <div className="hero-money-card">
+            <span>База</span>
+            <strong>{fmtMoney(baseRevenue)}</strong>
+            <small>{fmtMoney(baseProfit)} прибыли / мес</small>
+          </div>
+
+          <div className="hero-money-card hero-money-card-accent">
+            <span>Активный рычаг</span>
+            <strong>{fmtMoney(activeRevenue)}</strong>
+            <small>{fmtMoney(activeProfit)} прибыли / мес</small>
+          </div>
+        </div>
+
+        <div className="hero-chart-note">
+          Сейчас подсвечен <span>{active.label}</span> — {active.deltaLabel}.
+        </div>
+      </div>
+    </aside>
   );
 }
 
@@ -205,15 +461,39 @@ export default function Home() {
   const [upsell, setUpsell] = useState(0);
   const [opexEff, setOpexEff] = useState(0);
 
-  const snapshotBotUrl = "https://t.me/Revenue_snapshot_bot";
+  const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
-  const trackTelegramClick = () => {
-    if (typeof window !== "undefined" && (window as any).fbq) {
-      (window as any).fbq("trackCustom", "ClickRevenueSnapshotTelegram");
-    }
-  };
+  const resultScrollRef = useRef<HTMLDivElement | null>(null);
+
+  const niches = ["SaaS", "E-com", "FinTech", "EdTech", "HealthTech", "B2B"];
+
+  const audienceCards = [
+    "Бизнес уже работает, но рост даётся слишком тяжело и каждый следующий шаг стоит всё дороже.",
+    "Есть ощущение, что экономика где-то течёт, но непонятно, в продукте ли проблема, в продажах или в операционной логике.",
+    "Нужно расширить продажи без глобальной перестройки бизнеса и без хаотичного роста расходов.",
+    "Важно понять, где именно находятся деньги компании, как они двигаются и что реально влияет на итоговую прибыль.",
+  ];
+
+  const resultDocs = [
+    {
+      title: "Executive Summary",
+      text: "Краткая стратегическая картина: как сейчас устроена экономика бизнеса и где сосредоточено главное напряжение.",
+    },
+    {
+      title: "Revenue Leaks",
+      text: "Разбор участков, в которых бизнес теряет деньги: продукт, конверсия, повторные продажи, цена и операционная логика.",
+    },
+    {
+      title: "Главное направление роста",
+      text: "Определение того, какое изменение способно дать наибольший финансовый эффект без хаотичного наращивания маркетинга.",
+    },
+    {
+      title: "Priority Actions",
+      text: "Очередность действий: что усиливать в первую очередь, а что пока не является главным ограничением.",
+    },
+  ];
 
   const handleReset = () => {
     setClientsInput("20");
@@ -224,34 +504,34 @@ export default function Home() {
     setOpexEff(0);
   };
 
-const data = useMemo(() => {
-  const safeClients = Math.max(0, clientsBase);
-  const safeCheck = Math.max(0, checkBase);
+  const data = useMemo(() => {
+    const safeClients = Math.max(0, clientsBase);
+    const safeCheck = Math.max(0, checkBase);
 
-  const newClients = safeClients * (1 + sales * 0.6);
-  const retainedRevenueLift = 1 + retention * 0.35;
-  const avgCheck = safeCheck * (1 + upsell * 0.7);
+    const newClients = safeClients * (1 + sales * 0.6);
+    const retainedRevenueLift = 1 + retention * 0.35;
+    const avgCheck = safeCheck * (1 + upsell * 0.7);
 
-  const revenue = newClients * avgCheck * retainedRevenueLift;
+    const revenue = newClients * avgCheck * retainedRevenueLift;
 
-  const salesCost = revenue * 0.18 * (1 + sales * 0.4);
-  const support = revenue * 0.06 * (1 + retention * 0.25);
-  const opex = revenue * 0.35 * (1 - opexEff * 0.8);
+    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
+    const support = revenue * 0.06 * (1 + retention * 0.25);
+    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
 
-  const costs = salesCost + support + opex;
-  const profit = revenue - costs;
+    const costs = salesCost + support + opex;
+    const profit = revenue - costs;
 
-  return {
-    newClients,
-    avgCheck,
-    revenue,
-    salesCost,
-    support,
-    opex,
-    costs,
-    profit,
-  };
-}, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
+    return {
+      clients: newClients,
+      avgCheck,
+      revenue,
+      salesCost,
+      support,
+      opex,
+      costs,
+      profit,
+    };
+  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
 
   const base = useMemo(() => {
     const revenue = clientsBase * checkBase;
@@ -281,7 +561,10 @@ const data = useMemo(() => {
 
   const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
   const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
+  const salesCostDelta = safeDiv(
+    data.salesCost - base.salesCost,
+    base.salesCost
+  );
   const opexSupportDelta = safeDiv(
     data.opex + data.support - (base.opex + base.support),
     base.opex + base.support
@@ -290,9 +573,9 @@ const data = useMemo(() => {
   const strongestLever = useMemo(() => {
     const levers = [
       { name: "Эффективность продаж", value: Math.abs(sales * 0.6) },
-      { name: "Удержание", value: Math.abs(retention * 0.5) },
-      { name: "Апселлы", value: Math.abs(upsell * 0.7) },
-      { name: "Операционная эффективность", value: Math.abs(opexEff * 0.8) },
+      { name: "Повторные продажи", value: Math.abs(retention * 0.5) },
+      { name: "Средний чек", value: Math.abs(upsell * 0.7) },
+      { name: "Загрузка команды", value: Math.abs(opexEff * 0.8) },
     ];
     levers.sort((a, b) => b.value - a.value);
     return levers[0];
@@ -303,6 +586,21 @@ const data = useMemo(() => {
     Math.abs(retention) > 0.001 ||
     Math.abs(upsell) > 0.001 ||
     Math.abs(opexEff) > 0.001;
+
+  const estimatedGap = Math.max(
+    0,
+    Math.round(
+      (data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45
+    )
+  );
+
+  const scrollDocs = (dir: "left" | "right") => {
+    if (!resultScrollRef.current) return;
+    resultScrollRef.current.scrollBy({
+      left: dir === "left" ? -420 : 420,
+      behavior: "smooth",
+    });
+  };
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#0b1d3a] text-white">
@@ -323,7 +621,11 @@ const data = useMemo(() => {
       <div className="relative mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
         <header className="sticky-header mb-7 md:mb-10">
           <div className="header-row">
-            <img src="/logo.svg" alt="Growth Avenue" className="logo-main shrink-0" />
+            <img
+              src="/logo-main.svg"
+              alt="Growth Avenue"
+              className="logo-main shrink-0"
+            />
 
             <div className="header-actions">
               <a
@@ -344,228 +646,477 @@ const data = useMemo(() => {
                 WA
               </a>
 
-              <a
-                href={snapshotBotUrl}
-                onClick={trackTelegramClick}
-                className={[
-                  "tg-gradient-btn tg-gradient-btn-header hidden md:inline-flex",
-                  hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
-                ].join(" ")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Попробовать в ТГ
+              <a href="#how-it-works" className="ghost-link hidden md:inline-flex">
+                Как это работает
+              </a>
+
+              <a href="#try" className="tg-gradient-btn tg-gradient-btn-header inline-flex">
+                Попробовать Snapshot
               </a>
             </div>
           </div>
         </header>
 
-        <div className="mb-8 max-w-3xl md:mb-12">
-          <div className="glass-pill inline-flex items-center gap-3 rounded-full px-4 py-2.5 text-xs font-semibold text-white md:px-5 md:py-3 md:text-sm">
-            <span className="dot-yellow" />
-            Revenue Snapshot • интерактивная карта экономики
-          </div>
-
-          <h1 className="mt-5 text-2xl font-semibold leading-[1.02] tracking-tight md:mt-6 md:text-6xl">
-            Найдите скрытый рычаг
-            <br />
-            в экономике вашего бизнеса
-          </h1>
-
-          <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/68 md:mt-5 md:text-lg">
-            Управляйте показателями и смотрите, как небольшие изменения влияют
-            на выручку, расходы и прибыль.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_340px]">
+        <section className="hero-grid mb-10 md:mb-14">
           <div>
-            <div className="input-grid mb-7 gap-3 md:mb-8">
-              <label className="input-shell input-shell-highlight">
-                <span className="input-label input-label-strong">Клиентов / месяц</span>
-
-                <div className="input-wrap input-wrap-primary">
-                  <span className="input-badge">ввод</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={clientsInput}
-                    onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
-                    className="glass-input glass-input-primary"
-                    placeholder="Например, 20"
-                  />
-                </div>
-              </label>
-
-              <label className="input-shell input-shell-highlight">
-                <span className="input-label input-label-strong">Средний чек</span>
-
-                <div className="input-wrap input-wrap-primary">
-                  <span className="input-badge">ввод</span>
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={checkInput}
-                    onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
-                    className="glass-input glass-input-primary"
-                    placeholder="Например, 2000"
-                  />
-                </div>
-              </label>
+            <div className="glass-pill inline-flex items-center gap-3 rounded-full px-4 py-2.5 text-xs font-semibold text-white md:px-5 md:py-3 md:text-sm">
+              <span className="dot-yellow" />
+              Revenue Snapshot • стратегическая диагностика экономики бизнеса
             </div>
 
-            <section className="dashboard-grid">
-              <div className="dashboard-revenue">
-                <TopMetricCard
-                  title="Выручка"
-                  value={fmtMoney(data.revenue)}
-                  delta={revDelta}
-                  type="revenue"
-                  large
-                />
+            <h1 className="mt-5 text-3xl font-semibold leading-[1.02] tracking-tight md:mt-6 md:text-6xl">
+              Revenue Snapshot
+              <br />
+              стратегическая диагностика
+              <br />
+              экономики вашего бизнеса
+            </h1>
+
+            <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/68 md:mt-5 md:text-lg">
+              Узнайте, какое изменение в модели способно дать наиболее сильный
+              эффект на выручку, и где сейчас скрываются главные точки потери
+              денег.
+            </p>
+
+            <div className="hero-highlights">
+              <div className="hero-highlight hero-highlight-yellow">
+                <strong>Найти утечки</strong>
+                <span>в экономике бизнеса</span>
               </div>
-
-              <div className="dashboard-profit">
-                <TopMetricCard
-                  title="Прибыль"
-                  value={fmtMoney(data.profit)}
-                  delta={profitDelta}
-                  type="profit"
-                />
+              <div className="hero-highlight hero-highlight-blue">
+                <strong>Увидеть главный рычаг</strong>
+                <span>усиления и роста модели</span>
               </div>
-
-              <div className="dashboard-costs">
-                <TopMetricCard
-                  title="Расходы"
-                  value={fmtMoney(data.costs)}
-                  delta={costDelta}
-                  type="costs"
-                  invert
-                />
-              </div>
-            </section>
-
-            <div className="mt-7 md:mt-8">
-              <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
-
-              <div className="grid grid-cols-2 gap-3 md:gap-4 md:grid-cols-4">
-                <ModelCard
-                  title="Клиенты"
-                  value={Math.round(data.clients)}
-                  delta={clientsDelta}
-                />
-                <ModelCard
-                  title="Средний чек"
-                  value={fmtMoney(data.avgCheck)}
-                  delta={avgCheckDelta}
-                />
-                <ModelCard
-                  title="Sales cost"
-                  value={fmtMoney(data.salesCost)}
-                  delta={salesCostDelta}
-                />
-                <ModelCard
-                  title="Opex + Support"
-                  value={fmtMoney(data.opex + data.support)}
-                  delta={opexSupportDelta}
-                  invert
-                />
+              <div className="hero-highlight hero-highlight-violet">
+                <strong>Выбрать фокус</strong>
+                <span>вместо хаотичных гипотез</span>
               </div>
             </div>
 
-            <div className="mt-8 flex items-center justify-between md:mt-10">
-              <div className="text-sm text-white/58">Рычаги управления</div>
-              <button type="button" onClick={handleReset} className="reset-link">
-                Сбросить
-              </button>
-            </div>
-
-            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 md:gap-4">
-              <Slider
-                title="Эффективность продаж"
-                subtitle="Влияет на поток клиентов и увеличивает нагрузку на sales cost."
-                value={sales}
-                set={setSales}
-              />
-              <Slider
-                title="Удержание"
-                subtitle="Меняет устойчивость клиентской базы и повышает индекс LTV."
-                value={retention}
-                set={setRetention}
-              />
-              <Slider
-                title="Апселлы"
-                subtitle="Увеличивают средний чек и усиливают итоговую выручку."
-                value={upsell}
-                set={setUpsell}
-              />
-              <Slider
-                title="Операционная эффективность"
-                subtitle="Снижает операционные издержки и влияет на итоговую маржинальность."
-                value={opexEff}
-                set={setOpexEff}
-              />
-            </div>
-          </div>
-
-          <aside className="glass-card h-fit lg:sticky lg:top-24">
-            <div className="text-xs uppercase tracking-[0.18em] text-white/45">
-              Insight
-            </div>
-
-            <div className="mt-3 text-lg font-semibold">Изменение динамики</div>
-
-            <div className="mt-3 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
-              {hasInteraction ? (
-                <>
-                  <div className="text-xs uppercase tracking-[0.14em] text-white/42">
-                    Ключевой рычаг
-                  </div>
-                  <div className="mt-2 text-base font-semibold text-white/92">
-                    {strongestLever.name}
-                  </div>
-                  <div className="mt-3 text-sm leading-relaxed text-white/68">
-                    Сейчас именно этот драйвер сильнее всего влияет на общую
-                    динамику модели. Чтобы подтвердить эффект, нужно уточнить
-                    реальные параметры бизнеса, ответив на вопросы в ТГ.
-                  </div>
-                </>
-              ) : (
-                <div className="text-sm leading-relaxed text-white/68">
-                  Подвигайте ползунки, чтобы увидеть какой рычаг сильнее всего
-                  меняет структуру вашей экономики.
-                </div>
-              )}
-            </div>
-
-            <div className="mt-5 space-y-3 text-sm">
-              <Row label="Выручка" delta={revDelta} />
-              <Row label="Расходы" delta={costDelta} invert />
-              <Row label="Прибыль" delta={profitDelta} />
-            </div>
-
-            <div className="mt-6">
-              <a
-                href={snapshotBotUrl}
-                onClick={trackTelegramClick}
-                className={[
-                  "tg-gradient-btn block text-center font-semibold transition",
-                  hasInteraction ? "tg-gradient-btn-active" : "tg-gradient-btn-disabled",
-                ].join(" ")}
-                target="_blank"
-                rel="noreferrer"
-              >
-                Revenue Snapshot в ТГ
+            <div className="mt-7 flex flex-wrap gap-3">
+              <a href="#try" className="tg-gradient-btn inline-flex">
+                Попробовать Snapshot
+              </a>
+              <a href="#preview" className="ghost-link ghost-link-large inline-flex">
+                Посмотреть превью
               </a>
             </div>
+          </div>
 
-            <div className="mt-3 text-xs text-white/40">
-              {hasInteraction
-                ? "Диагностика займёт около 24 минут"
-                : "Кнопка станет активной после взаимодействия с рычагами"}
+          <HeroEconomyChart />
+        </section>
+
+        <section id="how-it-works" className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Как это работает</div>
+            <h2 className="section-title">Путь от диагностики до результата</h2>
+            <p className="section-copy">
+              Пользователь проходит короткий маршрут: знакомится с логикой,
+              отвечает на вопросы и получает структурированный итог.
+            </p>
+          </div>
+
+          <div className="journey-compact">
+            <div className="journey-compact-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">1</div>
+                <div className="journey-compact-arrow" />
+              </div>
+              <div className="journey-compact-title">Знакомство с инструментом</div>
+              <div className="journey-compact-text">
+                На посадочной пользователь видит механику модели и понимает,
+                что влияет на деньги компании.
+              </div>
             </div>
-          </aside>
-        </div>
+
+            <div className="journey-compact-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">2</div>
+                <div className="journey-compact-arrow" />
+              </div>
+              <div className="journey-compact-title">Оплата и переход в Telegram</div>
+              <div className="journey-compact-text">
+                После оплаты бот собирает данные о продукте, трафике,
+                продажах, экономике и операционных ограничениях.
+              </div>
+            </div>
+
+            <div className="journey-compact-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">3</div>
+              </div>
+              <div className="journey-compact-title">Готовый Revenue Snapshot</div>
+              <div className="journey-compact-text">
+                На выходе — структурированный разбор с выводами,
+                проблемными зонами и приоритетом следующих действий.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="preview" className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Интерактивное превью</div>
+            <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
+            <p className="section-copy">
+              Здесь пользователь меняет ключевые параметры и видит предварительные
+              сигналы. Полный разбор открывается после оплаты.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
+            <div>
+              <section className="dashboard-grid">
+                <div className="dashboard-revenue">
+                  <TopMetricCard
+                    title="Выручка"
+                    value={fmtMoney(data.revenue)}
+                    delta={revDelta}
+                    type="revenue"
+                    large
+                  />
+                </div>
+
+                <div className="dashboard-profit">
+                  <TopMetricCard
+                    title="Прибыль"
+                    value={fmtMoney(data.profit)}
+                    delta={profitDelta}
+                    type="profit"
+                  />
+                </div>
+
+                <div className="dashboard-costs">
+                  <TopMetricCard
+                    title="Расходы"
+                    value={fmtMoney(data.costs)}
+                    delta={costDelta}
+                    type="costs"
+                    invert
+                  />
+                </div>
+              </section>
+
+              <div className="mt-6">
+                <div className="mb-3 text-sm text-white/58">
+                  Формирование экономики
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3">
+                  <ModelCard
+                    title="Клиенты"
+                    value={Math.round(data.clients)}
+                    delta={clientsDelta}
+                  />
+                  <ModelCard
+                    title="Средний чек"
+                    value={fmtMoney(data.avgCheck)}
+                    delta={avgCheckDelta}
+                  />
+                  <ModelCard
+                    title="Sales cost"
+                    value={fmtMoney(data.salesCost)}
+                    delta={salesCostDelta}
+                  />
+                  <ModelCard
+                    title="Opex + Support"
+                    value={fmtMoney(data.opex + data.support)}
+                    delta={opexSupportDelta}
+                    invert
+                  />
+                </div>
+              </div>
+
+              <div className="mt-7 flex items-center justify-between">
+                <div className="text-sm text-white/58">Рычаги управления</div>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="reset-link"
+                >
+                  Сбросить
+                </button>
+              </div>
+
+              <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
+                <Slider
+                  title="Эффективность продаж"
+                  subtitle="Влияние на конверсию и поток клиентов."
+                  value={sales}
+                  set={setSales}
+                />
+                <Slider
+                  title="Повторные продажи"
+                  subtitle="Влияние на устойчивость выручки."
+                  value={retention}
+                  set={setRetention}
+                />
+                <Slider
+                  title="Средний чек"
+                  subtitle="Рост денег без роста трафика."
+                  value={upsell}
+                  set={setUpsell}
+                />
+                <Slider
+                  title="Загрузка команды"
+                  subtitle="Влияние на расходы и маржу."
+                  value={opexEff}
+                  set={setOpexEff}
+                />
+              </div>
+            </div>
+
+            <aside className="glass-card h-fit lg:sticky lg:top-24">
+              <div className="preview-top-row">
+                <div>
+                  <div className="text-sm text-white/55">
+                    Пример предварительного сигнала
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-white">
+                    Potential revenue gap detected
+                  </div>
+                </div>
+                <div className="preview-chip">Preview</div>
+              </div>
+
+              <div className="hero-preview-box mt-5">
+                <div className="text-sm text-white/55">Оценочный резерв</div>
+                <div className="mt-2 text-4xl font-semibold text-[#f7d237]">
+                  ≈ {fmtMoney(estimatedGap)} / мес
+                </div>
+                <p className="mt-3 text-sm leading-6 text-white/65">
+                  Full diagnostic reveals where it comes from. На посадочной вы
+                  видите только механику и возможное направление — полный разбор
+                  раскрывает, за счет чего появляется этот резерв.
+                </p>
+              </div>
+
+              <div className="mt-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+                {hasInteraction ? (
+                  <>
+                    <div className="text-xs uppercase tracking-[0.14em] text-white/42">
+                      Наиболее заметный рычаг
+                    </div>
+                    <div className="mt-2 text-base font-semibold text-white/92">
+                      {strongestLever.name}
+                    </div>
+                    <div className="mt-3 text-sm leading-relaxed text-white/68">
+                      Сейчас именно этот параметр заметнее всего влияет на общую
+                      динамику модели.
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm leading-relaxed text-white/68">
+                    Подвигайте ползунки ниже, чтобы увидеть, какой рычаг
+                    заметнее всего влияет на экономику модели.
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <Row label="Выручка" delta={revDelta} />
+                <Row label="Расходы" delta={costDelta} invert />
+                <Row label="Прибыль" delta={profitDelta} />
+              </div>
+
+              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">
+                Попробовать Snapshot
+              </a>
+            </aside>
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Что вы получите</div>
+            <h2 className="section-title">
+              Структурированный результат, а не общие советы
+            </h2>
+            <p className="section-copy">
+              После анализа пользователь получает понятный разбор текущей модели,
+              проблемных зон и приоритета следующих действий.
+            </p>
+          </div>
+
+          <div className="results-carousel-head">
+            <div className="results-carousel-actions">
+              <button
+                type="button"
+                className="carousel-btn"
+                onClick={() => scrollDocs("left")}
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                className="carousel-btn"
+                onClick={() => scrollDocs("right")}
+              >
+                →
+              </button>
+            </div>
+          </div>
+
+          <div className="results-carousel" ref={resultScrollRef}>
+            {resultDocs.map((doc) => (
+              <ResultDocCard key={doc.title} title={doc.title} text={doc.text} />
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Пример результата</div>
+            <h2 className="section-title">
+              Покажите пример Snapshot прямо на посадочной
+            </h2>
+            <p className="section-copy">
+              Даже один хороший скриншот Notion-страницы заметно усиливает доверие.
+            </p>
+          </div>
+
+          <div className="glass-card notion-mock-card">
+            <div className="text-sm uppercase tracking-[0.18em] text-[#f7d237]">
+              Пример выдачи
+            </div>
+            <div className="mt-3 text-2xl font-semibold text-white">
+              Revenue Snapshot / Notion Report
+            </div>
+
+            <div className="mt-5 overflow-hidden rounded-[22px] border border-white/10 bg-[#11264b]/75">
+              <img
+                src="/result-preview.png"
+                alt="Пример результата Revenue Snapshot"
+                className="block h-auto w-full object-cover"
+              />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Для кого этот инструмент</div>
+            <h2 className="section-title">
+              Подходит, если вы узнаете себя в этом
+            </h2>
+          </div>
+
+          <div className="niche-row">
+            {niches.map((niche) => (
+              <div key={niche} className="niche-pill">
+                {niche}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 audience-grid">
+            {audienceCards.map((item, index) => (
+              <div key={index} className="audience-card">
+                <div className="audience-point" />
+                <div className="audience-text">{item}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="mb-12">
+          <div className="section-head">
+            <div className="section-kicker">Как проходит анализ</div>
+            <h2 className="section-title">
+              После оплаты пользователь переходит в Telegram
+            </h2>
+            <p className="section-copy">
+              Telegram используется как удобный интерфейс сбора данных. Ответы
+              анализируются автоматически и превращаются в структурированный результат.
+            </p>
+          </div>
+
+          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
+            <div className="glass-card">
+              <h3 className="text-lg font-semibold text-white">
+                О чем спрашивает бот
+              </h3>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {[
+                  "Продукт",
+                  "Трафик",
+                  "Продажи",
+                  "Экономика",
+                  "Операционные ограничения",
+                  "Цели роста",
+                ].map((item) => (
+                  <div
+                    key={item}
+                    className="rounded-[18px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70"
+                  >
+                    {item}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="glass-card">
+              <h3 className="text-lg font-semibold text-white">
+                Что происходит дальше
+              </h3>
+              <p className="mt-4 text-sm leading-7 text-white/68">
+                Ответы анализируются автоматически, после чего данные
+                собираются в итоговый Revenue Snapshot с выводами, ключевыми
+                точками потери выручки и приоритетом следующих шагов.
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-3">
+                <a
+                  href={tgContactUrl}
+                  className="contact-btn contact-btn-invert"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Написать в TG
+                </a>
+
+                <a
+                  href={waContactUrl}
+                  className="ghost-link ghost-link-large"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Связаться в WhatsApp
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="try" className="pb-8">
+          <div className="glass-card cta-card">
+            <div>
+              <div className="section-kicker">CTA</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
+                Откройте полный Revenue Snapshot
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
+                После оплаты пользователь переходит в Telegram, проходит
+                диагностику и получает структурированный результат с финансовой
+                логикой, проблемными зонами и главным направлением усиления.
+              </p>
+            </div>
+
+            <div className="cta-box">
+              <div className="text-sm text-white/55">Следующий шаг</div>
+              <div className="mt-2 text-2xl font-semibold text-white">
+                Попробовать Snapshot
+              </div>
+              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">
+                Получить Revenue Snapshot
+              </a>
+              <div className="mt-3 text-xs text-white/45">
+                Здесь можно поставить ссылку на оплату PayPal
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
 
       <style jsx global>{`
@@ -578,7 +1129,7 @@ const data = useMemo(() => {
           backdrop-filter: blur(18px);
           border: 1px solid rgba(255, 255, 255, 0.1);
           border-radius: 28px;
-          padding: 24px;
+          padding: 22px;
           box-shadow:
             0 10px 40px rgba(0, 0, 0, 0.14),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -633,6 +1184,249 @@ const data = useMemo(() => {
           flex-shrink: 0;
         }
 
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1fr 0.98fr;
+          gap: 20px;
+          align-items: start;
+        }
+
+        .hero-chart-card {
+          min-height: 100%;
+        }
+
+        .hero-highlights {
+          margin-top: 28px;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .hero-highlight {
+          border-radius: 20px;
+          padding: 16px 16px 14px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          min-height: 106px;
+          position: relative;
+          overflow: hidden;
+        }
+
+        .hero-highlight strong {
+          display: block;
+          font-size: 16px;
+          line-height: 1.25;
+          color: white;
+        }
+
+        .hero-highlight span {
+          display: block;
+          margin-top: 8px;
+          font-size: 14px;
+          line-height: 1.5;
+          color: rgba(255, 255, 255, 0.62);
+        }
+
+        .hero-highlight::after {
+          content: "";
+          position: absolute;
+          inset: auto auto -30px -20px;
+          width: 120px;
+          height: 120px;
+          border-radius: 999px;
+          filter: blur(22px);
+          opacity: 0.22;
+          animation: glowPulse 4.6s ease-in-out infinite;
+        }
+
+        .hero-highlight-yellow::after {
+          background: rgba(247, 210, 55, 0.9);
+        }
+
+        .hero-highlight-blue::after {
+          background: rgba(93, 167, 255, 0.9);
+        }
+
+        .hero-highlight-violet::after {
+          background: rgba(156, 109, 255, 0.9);
+        }
+
+        .hero-chart-layout {
+          margin-top: 18px;
+          display: grid;
+          gap: 14px;
+        }
+
+        .hero-levers-inline {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.04);
+          color: rgba(255, 255, 255, 0.68);
+          font-size: 13px;
+          font-weight: 700;
+          transition: 0.25s ease;
+        }
+
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: #f7d237;
+          border-color: rgba(247, 210, 55, 0.55);
+          box-shadow: 0 0 0 1px rgba(247, 210, 55, 0.08);
+        }
+
+        .hero-tag-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 999px;
+          background: currentColor;
+        }
+
+        .hero-chart-box {
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          padding: 14px;
+        }
+
+        .hero-chart-metrics-row {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        .hero-metric-square {
+          min-height: 86px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 12px;
+        }
+
+        .hero-metric-square span {
+          display: block;
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.52);
+        }
+
+        .hero-metric-square strong {
+          display: block;
+          margin-top: 8px;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 700;
+          color: white;
+        }
+
+        .hero-chart-svg-wrap {
+          margin-top: 12px;
+          overflow: hidden;
+          border-radius: 20px;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.05),
+            rgba(255, 255, 255, 0.02)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          padding: 10px;
+        }
+
+        .hero-chart-svg {
+          width: 100%;
+          height: auto;
+          display: block;
+        }
+
+        .hero-chart-bottom {
+          margin-top: 12px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
+
+        .hero-money-card {
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          padding: 12px;
+        }
+
+        .hero-money-card span {
+          display: block;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hero-money-card strong {
+          display: block;
+          margin-top: 8px;
+          font-size: 22px;
+          font-weight: 700;
+          color: white;
+        }
+
+        .hero-money-card small {
+          display: block;
+          margin-top: 5px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.58);
+        }
+
+        .hero-money-card-accent {
+          border-color: rgba(247, 210, 55, 0.22);
+        }
+
+        .hero-chart-note {
+          margin-top: 10px;
+          font-size: 13px;
+          line-height: 1.7;
+          color: rgba(255, 255, 255, 0.62);
+        }
+
+        .hero-chart-note span {
+          color: #f7d237;
+          font-weight: 700;
+        }
+
+        .section-head {
+          max-width: 860px;
+          margin-bottom: 18px;
+        }
+
+        .section-kicker {
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #f7d237;
+        }
+
+        .section-title {
+          margin-top: 12px;
+          font-size: 34px;
+          line-height: 1.08;
+          font-weight: 600;
+          color: white;
+        }
+
+        .section-copy {
+          margin-top: 14px;
+          font-size: 16px;
+          line-height: 1.8;
+          color: rgba(255, 255, 255, 0.68);
+        }
+
         .contact-btn {
           display: inline-flex;
           align-items: center;
@@ -656,6 +1450,30 @@ const data = useMemo(() => {
 
         .contact-btn-invert:hover {
           background: #ffffff;
+        }
+
+        .ghost-link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 9999px;
+          padding: 11px 16px;
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.82);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.05);
+          transition: 0.2s ease;
+        }
+
+        .ghost-link:hover {
+          background: rgba(255, 255, 255, 0.09);
+          color: white;
+        }
+
+        .ghost-link-large {
+          padding: 14px 20px;
+          font-size: 15px;
         }
 
         .tg-gradient-btn {
@@ -707,17 +1525,6 @@ const data = useMemo(() => {
           filter: brightness(1.03);
         }
 
-        .tg-gradient-btn-active {
-          pointer-events: auto;
-          opacity: 1;
-        }
-
-        .tg-gradient-btn-disabled {
-          pointer-events: none;
-          opacity: 0.48;
-          filter: grayscale(0.1);
-        }
-
         .tg-gradient-btn-header {
           padding: 11px 16px;
           font-size: 13px;
@@ -730,6 +1537,93 @@ const data = useMemo(() => {
           object-fit: contain;
           object-position: left center;
           display: block;
+        }
+
+        .journey-compact {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+        }
+
+        .journey-compact-card {
+          border-radius: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.045)
+          );
+          padding: 16px;
+          min-height: 168px;
+        }
+
+        .journey-compact-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+        }
+
+        .journey-compact-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 36px;
+          height: 36px;
+          border-radius: 12px;
+          background: #f7d237;
+          color: #0b1d3a;
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .journey-compact-arrow {
+          width: 48px;
+          height: 2px;
+          border-radius: 999px;
+          background: linear-gradient(
+            90deg,
+            rgba(247, 210, 55, 0.18),
+            rgba(247, 210, 55, 0.95)
+          );
+          position: relative;
+        }
+
+        .journey-compact-arrow::after {
+          content: "";
+          position: absolute;
+          right: -1px;
+          top: 50%;
+          width: 8px;
+          height: 8px;
+          border-top: 2px solid #f7d237;
+          border-right: 2px solid #f7d237;
+          transform: translateY(-50%) rotate(45deg);
+        }
+
+        .journey-compact-title {
+          margin-top: 14px;
+          font-size: 20px;
+          line-height: 1.2;
+          font-weight: 600;
+          color: white;
+        }
+
+        .journey-compact-text {
+          margin-top: 10px;
+          font-size: 14px;
+          line-height: 1.7;
+          color: rgba(255, 255, 255, 0.66);
+        }
+
+        .dashboard-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr 1fr;
+          gap: 10px;
+        }
+
+        .dashboard-revenue {
+          grid-column: span 3;
         }
 
         .input-grid {
@@ -853,15 +1747,6 @@ const data = useMemo(() => {
           transform: translateY(-1px);
         }
 
-        .glass-input-primary:hover {
-          border-color: rgba(247, 210, 55, 0.45);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.24),
-            0 12px 34px rgba(0, 0, 0, 0.12),
-            0 0 34px rgba(247, 210, 55, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        }
-
         .reset-link {
           background: transparent;
           border: 0;
@@ -880,18 +1765,36 @@ const data = useMemo(() => {
           cursor: pointer;
         }
 
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: 1fr;
+        .preview-top-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
           gap: 12px;
         }
 
+        .preview-chip {
+          flex-shrink: 0;
+          border-radius: 9999px;
+          padding: 7px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #0b1d3a;
+          background: #f7d237;
+        }
+
+        .hero-preview-box {
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          padding: 18px;
+        }
+
         .metric-card {
-          min-height: 150px;
+          min-height: 118px;
         }
 
         .metric-card-large {
-          min-height: 150px;
+          min-height: 122px;
         }
 
         .metric-card-main {
@@ -939,13 +1842,203 @@ const data = useMemo(() => {
         }
 
         .model-card {
-          min-height: 118px;
+          min-height: 102px;
+          padding: 16px;
         }
 
         .slider-card {
-          min-height: 178px;
+          min-height: 142px;
           display: flex;
           flex-direction: column;
+          padding: 16px;
+        }
+
+        .results-carousel-head {
+          display: flex;
+          justify-content: flex-end;
+          margin-bottom: 12px;
+        }
+
+        .results-carousel-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .carousel-btn {
+          width: 42px;
+          height: 42px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(255, 255, 255, 0.06);
+          color: white;
+          font-size: 18px;
+          transition: 0.2s ease;
+        }
+
+        .carousel-btn:hover {
+          background: rgba(255, 255, 255, 0.1);
+        }
+
+        .results-carousel {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: minmax(320px, 520px);
+          gap: 16px;
+          overflow-x: auto;
+          scroll-snap-type: x mandatory;
+          padding-bottom: 10px;
+          scrollbar-width: none;
+        }
+
+        .results-carousel::-webkit-scrollbar {
+          display: none;
+        }
+
+        .result-doc-card {
+          scroll-snap-align: start;
+          min-height: 280px;
+          border-radius: 30px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.11),
+            rgba(255, 255, 255, 0.05)
+          );
+          padding: 24px;
+          position: relative;
+          overflow: hidden;
+          box-shadow:
+            0 20px 44px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        .result-doc-card::after {
+          content: "";
+          position: absolute;
+          width: 180px;
+          height: 180px;
+          left: -20px;
+          top: 24px;
+          background: radial-gradient(
+            circle,
+            rgba(247, 210, 55, 0.32),
+            transparent 70%
+          );
+          filter: blur(18px);
+          opacity: 0.95;
+          pointer-events: none;
+        }
+
+        .result-doc-tab {
+          position: relative;
+          z-index: 2;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          padding: 8px 14px;
+          font-size: 11px;
+          font-weight: 800;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: #0b1d3a;
+          background: #f7d237;
+        }
+
+        .result-doc-title {
+          position: relative;
+          z-index: 2;
+          margin-top: 22px;
+          font-size: 32px;
+          line-height: 1.08;
+          font-weight: 600;
+          color: white;
+        }
+
+        .result-doc-text {
+          position: relative;
+          z-index: 2;
+          margin-top: 16px;
+          font-size: 17px;
+          line-height: 1.8;
+          color: rgba(255, 255, 255, 0.72);
+          max-width: 620px;
+        }
+
+        .niche-row {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+
+        .niche-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          padding: 10px 14px;
+          font-size: 13px;
+          font-weight: 700;
+          color: #0b1d3a;
+          background: #f7d237;
+        }
+
+        .audience-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 14px;
+        }
+
+        .audience-card {
+          display: flex;
+          align-items: flex-start;
+          gap: 14px;
+          min-height: 180px;
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.045)
+          );
+          padding: 18px;
+          backdrop-filter: blur(16px);
+        }
+
+        .audience-point {
+          width: 12px;
+          height: 12px;
+          margin-top: 7px;
+          flex-shrink: 0;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 18px rgba(247, 210, 55, 0.42);
+        }
+
+        .audience-text {
+          font-size: 18px;
+          line-height: 1.75;
+          color: rgba(255, 255, 255, 0.74);
+        }
+
+        .notion-mock-card img {
+          max-height: 640px;
+        }
+
+        .cta-card {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 24px;
+          align-items: center;
+        }
+
+        .cta-box {
+          min-width: 280px;
+          max-width: 320px;
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          padding: 22px;
         }
 
         .dot-yellow {
@@ -1126,6 +2219,21 @@ const data = useMemo(() => {
           );
         }
 
+        @keyframes glowPulse {
+          0% {
+            transform: scale(0.9);
+            opacity: 0.16;
+          }
+          50% {
+            transform: scale(1.08);
+            opacity: 0.28;
+          }
+          100% {
+            transform: scale(0.92);
+            opacity: 0.16;
+          }
+        }
+
         @keyframes pulseYellow {
           0% {
             transform: scale(1);
@@ -1246,23 +2354,37 @@ const data = useMemo(() => {
           }
         }
 
-        @media (min-width: 768px) {
-          .dashboard-grid {
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 16px;
+        @media (max-width: 1180px) {
+          .journey-compact {
+            grid-template-columns: 1fr;
           }
 
-          .metric-card,
-          .metric-card-large {
-            min-height: 170px;
+          .journey-compact-arrow {
+            display: none;
+          }
+        }
+
+        @media (max-width: 1023px) {
+          .hero-grid,
+          .cta-card {
+            grid-template-columns: 1fr;
           }
 
-          .model-card {
-            min-height: 140px;
+          .cta-box {
+            max-width: 100%;
+            min-width: 100%;
           }
 
-          .slider-card {
-            min-height: 220px;
+          .hero-highlights {
+            grid-template-columns: 1fr;
+          }
+
+          .hero-chart-metrics-row {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .audience-grid {
+            grid-template-columns: 1fr;
           }
         }
 
@@ -1289,6 +2411,10 @@ const data = useMemo(() => {
             font-size: 12px;
           }
 
+          .ghost-link {
+            display: none;
+          }
+
           .tg-gradient-btn {
             padding: 13px 16px;
             font-size: 15px;
@@ -1299,25 +2425,12 @@ const data = useMemo(() => {
             font-size: 12px;
           }
 
-          .input-grid {
-            grid-template-columns: 1fr 1fr;
+          .section-title {
+            font-size: 28px;
           }
 
-          .input-badge {
-            top: 8px;
-            right: 10px;
-            font-size: 9px;
-            padding: 3px 7px;
-          }
-
-          .glass-input-primary {
-            font-size: 19px;
-            padding-top: 18px;
-            padding-bottom: 18px;
-          }
-
-          .input-label-strong {
-            font-size: 11px;
+          .hero-metric-square strong {
+            font-size: 16px;
           }
 
           .dashboard-grid {
@@ -1342,7 +2455,7 @@ const data = useMemo(() => {
 
           .metric-card,
           .metric-card-large {
-            min-height: 126px;
+            min-height: 116px;
             padding: 16px;
             border-radius: 22px;
           }
@@ -1365,9 +2478,9 @@ const data = useMemo(() => {
           }
 
           .model-card {
-            min-height: 108px;
-            padding: 16px;
-            border-radius: 20px;
+            min-height: 98px;
+            padding: 14px;
+            border-radius: 18px;
           }
 
           .model-card .text-xl {
@@ -1376,13 +2489,9 @@ const data = useMemo(() => {
           }
 
           .slider-card {
-            min-height: 156px;
-            padding: 16px;
-            border-radius: 20px;
-          }
-
-          .slider-card .range-input {
-            margin-top: 10px;
+            min-height: 136px;
+            padding: 14px;
+            border-radius: 18px;
           }
 
           .glass-card {
@@ -1393,6 +2502,29 @@ const data = useMemo(() => {
           .glass-input {
             font-size: 18px;
             padding: 16px;
+          }
+
+          .result-doc-card {
+            min-height: 250px;
+            padding: 20px;
+          }
+
+          .result-doc-title {
+            font-size: 26px;
+          }
+
+          .result-doc-text {
+            font-size: 15px;
+            line-height: 1.7;
+          }
+
+          .audience-card {
+            min-height: 150px;
+          }
+
+          .audience-text {
+            font-size: 16px;
+            line-height: 1.7;
           }
 
           .aurora {
