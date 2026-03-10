@@ -109,13 +109,11 @@ function TopMetricCard({
         </div>
       </div>
 
-      <div className="mt-4 text-3xl font-semibold tracking-tight md:text-2xl">
+      <div className="mt-3 text-[2.1rem] font-semibold tracking-tight md:text-[2rem]">
         {value}
       </div>
 
-      <div className={`mt-3 text-base md:text-sm ${color(delta, invert)}`}>
-        {pct(delta)}
-      </div>
+      <div className={`mt-2 text-sm ${color(delta, invert)}`}>{pct(delta)}</div>
     </div>
   );
 }
@@ -134,7 +132,7 @@ function ModelCard({
   return (
     <div className="glass-card soft-glow model-card">
       <div className="text-xs text-white/55">{title}</div>
-      <div className="mt-2 text-xl font-medium md:text-lg">{value}</div>
+      <div className="mt-2 text-lg font-medium">{value}</div>
       <div className={`mt-2 text-sm ${color(delta, invert)}`}>{pct(delta)}</div>
     </div>
   );
@@ -172,7 +170,7 @@ function Slider({
     <div className="glass-card soft-glow slider-card">
       <div>
         <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[42px] text-xs leading-snug text-white/42 md:min-h-[54px]">
+        <div className="mt-2 min-h-[38px] text-xs leading-snug text-white/42">
           {subtitle}
         </div>
       </div>
@@ -222,42 +220,38 @@ function HeroEconomyChart() {
   const scenarios = [
     {
       key: "offer",
-      label: "Упаковка и оффер",
-      short: "#Оффер",
-      hint: "увеличивает конверсию",
+      label: "#Оффер",
       deals: 2.4,
       avgCheck: 6500,
       margin: 0.3,
+      full: "Упаковка и оффер",
       deltaLabel: "+0.4 сделки",
     },
     {
       key: "price",
-      label: "Средний чек",
-      short: "#СреднийЧек",
-      hint: "увеличивает выручку",
+      label: "#СреднийЧек",
       deals: 2,
       avgCheck: 7600,
       margin: 0.3,
+      full: "Средний чек",
       deltaLabel: "+$1,100 к чеку",
     },
     {
       key: "sales",
-      label: "Продажи",
-      short: "#Продажи",
-      hint: "усиливают закрытие",
+      label: "#Продажи",
       deals: 2.8,
       avgCheck: 6500,
       margin: 0.3,
+      full: "Продажи",
       deltaLabel: "+0.8 сделки",
     },
     {
       key: "ops",
-      label: "Операционка",
-      short: "#Операционка",
-      hint: "повышает маржу",
+      label: "#Операционка",
       deals: 2,
       avgCheck: 6500,
       margin: 0.38,
+      full: "Операционка",
       deltaLabel: "+8 п.п. маржи",
     },
   ];
@@ -267,7 +261,7 @@ function HeroEconomyChart() {
   useEffect(() => {
     const id = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % scenarios.length);
-    }, 2800);
+    }, 3000);
     return () => window.clearInterval(id);
   }, [scenarios.length]);
 
@@ -279,14 +273,14 @@ function HeroEconomyChart() {
   const activeProfit = activeRevenue * active.margin;
 
   const points = [0, 1, 2, 3, 4, 5, 6].map((i) => {
-    const x = 18 + i * 58;
+    const x = 16 + i * 56;
     const activeSets = [
-      [168, 160, 150, 144, 130, 118, 104],
-      [168, 164, 158, 146, 136, 122, 110],
-      [168, 154, 142, 130, 116, 102, 88],
-      [168, 162, 156, 146, 134, 122, 106],
+      [170, 164, 156, 146, 134, 120, 106],
+      [170, 166, 160, 152, 142, 128, 116],
+      [170, 156, 144, 130, 116, 100, 84],
+      [170, 164, 158, 148, 138, 124, 108],
     ];
-    const baseSet = [168, 164, 160, 154, 146, 138, 130];
+    const baseSet = [170, 166, 162, 156, 150, 142, 136];
     return {
       x,
       baseY: baseSet[i],
@@ -294,7 +288,10 @@ function HeroEconomyChart() {
     };
   });
 
-  const makeSmoothPath = (arr: { x: number; activeY?: number; baseY?: number }[], key: "baseY" | "activeY") => {
+  const makeSmoothPath = (
+    arr: { x: number; activeY?: number; baseY?: number }[],
+    key: "baseY" | "activeY"
+  ) => {
     return arr
       .map((p, i) => {
         if (i === 0) return `M ${p.x} ${p[key]}`;
@@ -327,8 +324,7 @@ function HeroEconomyChart() {
               key={item.key}
               className={`hero-tag ${isActive ? "hero-tag-active" : ""}`}
             >
-              <span className="hero-tag-dot" />
-              {item.short}
+              {item.label}
             </div>
           );
         })}
@@ -358,16 +354,16 @@ function HeroEconomyChart() {
           <svg viewBox="0 0 390 220" className="hero-chart-svg" aria-hidden="true">
             <defs>
               <linearGradient id="chartBase" x1="0%" x2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.18)" />
+                <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
                 <stop offset="100%" stopColor="rgba(255,255,255,0.08)" />
               </linearGradient>
               <linearGradient id="chartActive" x1="0%" x2="100%">
                 <stop offset="0%" stopColor="#f7d237" />
-                <stop offset="60%" stopColor="#f4dd72" />
-                <stop offset="100%" stopColor="#7c84ff" />
+                <stop offset="55%" stopColor="#f4dd72" />
+                <stop offset="100%" stopColor="#b08cff" />
               </linearGradient>
               <filter id="chartGlow">
-                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feGaussianBlur stdDeviation="5" result="blur" />
                 <feMerge>
                   <feMergeNode in="blur" />
                   <feMergeNode in="SourceGraphic" />
@@ -388,12 +384,12 @@ function HeroEconomyChart() {
             ))}
 
             <path
-              d={`${basePath} L 366 194 L 18 194 Z`}
-              fill="rgba(255,255,255,0.035)"
+              d={`${basePath} L 352 194 L 16 194 Z`}
+              fill="rgba(255,255,255,0.03)"
             />
             <path
-              d={`${activePath} L 366 194 L 18 194 Z`}
-              fill="rgba(247,210,55,0.08)"
+              d={`${activePath} L 352 194 L 16 194 Z`}
+              fill="rgba(247,210,55,0.085)"
             />
 
             <path
@@ -421,7 +417,7 @@ function HeroEconomyChart() {
                 cy={p.activeY}
                 r="4.5"
                 fill="#f7d237"
-                opacity={0.95}
+                opacity={0.96}
               />
             ))}
           </svg>
@@ -442,10 +438,44 @@ function HeroEconomyChart() {
         </div>
 
         <div className="hero-chart-note">
-          Сейчас подсвечен <span>{active.label}</span> — {active.deltaLabel}.
+          Сейчас подсвечен <span>{active.full}</span> — {active.deltaLabel}.
         </div>
       </div>
     </aside>
+  );
+}
+
+function SnapshotStructure() {
+  const topics = [
+    { title: "Продукт", cls: "topic-1" },
+    { title: "Трафик", cls: "topic-2" },
+    { title: "Продажи", cls: "topic-3" },
+    { title: "Экономика", cls: "topic-4" },
+    { title: "Операционные ограничения", cls: "topic-5" },
+    { title: "Цели роста", cls: "topic-6" },
+  ];
+
+  return (
+    <div className="glass-card snapshot-structure-card">
+      <h3 className="text-lg font-semibold text-white">Структура Revenue Snapshot</h3>
+
+      <div className="snapshot-structure">
+        <div className="snapshot-center">Revenue Snapshot</div>
+
+        {topics.map((item) => (
+          <div key={item.title} className={`snapshot-topic ${item.cls}`}>
+            {item.title}
+          </div>
+        ))}
+
+        <span className="snapshot-line line-1" />
+        <span className="snapshot-line line-2" />
+        <span className="snapshot-line line-3" />
+        <span className="snapshot-line line-4" />
+        <span className="snapshot-line line-5" />
+        <span className="snapshot-line line-6" />
+      </div>
+    </div>
   );
 }
 
@@ -467,13 +497,39 @@ export default function Home() {
 
   const resultScrollRef = useRef<HTMLDivElement | null>(null);
 
-  const niches = ["SaaS", "E-com", "FinTech", "EdTech", "HealthTech", "B2B"];
+  const highlightItems = [
+    "Найти утечки",
+    "Увидеть главный рычаг",
+    "Выбрать фокус",
+  ];
 
-  const audienceCards = [
-    "Бизнес уже работает, но рост даётся слишком тяжело и каждый следующий шаг стоит всё дороже.",
-    "Есть ощущение, что экономика где-то течёт, но непонятно, в продукте ли проблема, в продажах или в операционной логике.",
-    "Нужно расширить продажи без глобальной перестройки бизнеса и без хаотичного роста расходов.",
-    "Важно понять, где именно находятся деньги компании, как они двигаются и что реально влияет на итоговую прибыль.",
+  const highlightDescriptions = [
+    "в экономике бизнеса",
+    "усиления и роста модели",
+    "вместо хаотичных гипотез",
+  ];
+
+  const stageCards = [
+    {
+      title: "#SeedStage",
+      subtitle:
+        "Работа над идеей, создание прототипа и проверка рынка.",
+    },
+    {
+      title: "#StartupStage",
+      subtitle:
+        "Официальный выход на рынок, первые продажи и привлечение клиентов.",
+    },
+    {
+      title: "#GrowthStage",
+      subtitle:
+        "Период стабильного увеличения выручки и расширения клиентской базы.",
+    },
+    {
+      title: "#ExpansionStage",
+      subtitle:
+        "Выход на новые уровни: захват новых рынков, добавление линеек продуктов или международная экспансия.",
+    },
   ];
 
   const resultDocs = [
@@ -658,7 +714,7 @@ export default function Home() {
         </header>
 
         <section className="hero-grid mb-10 md:mb-14">
-          <div>
+          <div className="hero-left">
             <div className="glass-pill inline-flex items-center gap-3 rounded-full px-4 py-2.5 text-xs font-semibold text-white md:px-5 md:py-3 md:text-sm">
               <span className="dot-yellow" />
               Revenue Snapshot • стратегическая диагностика экономики бизнеса
@@ -667,9 +723,13 @@ export default function Home() {
             <h1 className="mt-5 text-3xl font-semibold leading-[1.02] tracking-tight md:mt-6 md:text-6xl">
               Revenue Snapshot
               <br />
-              стратегическая диагностика
+              стратегическая
               <br />
-              экономики вашего бизнеса
+              диагностика
+              <br />
+              экономики вашего
+              <br />
+              бизнеса
             </h1>
 
             <p className="mt-4 max-w-2xl text-base leading-relaxed text-white/68 md:mt-5 md:text-lg">
@@ -678,19 +738,20 @@ export default function Home() {
               денег.
             </p>
 
-            <div className="hero-highlights">
-              <div className="hero-highlight hero-highlight-yellow">
-                <strong>Найти утечки</strong>
-                <span>в экономике бизнеса</span>
-              </div>
-              <div className="hero-highlight hero-highlight-blue">
-                <strong>Увидеть главный рычаг</strong>
-                <span>усиления и роста модели</span>
-              </div>
-              <div className="hero-highlight hero-highlight-violet">
-                <strong>Выбрать фокус</strong>
-                <span>вместо хаотичных гипотез</span>
-              </div>
+            <div className="hero-highlights-row">
+              {highlightItems.map((item, index) => (
+                <div key={item} className="hero-highlight-chip">
+                  {item}
+                </div>
+              ))}
+            </div>
+
+            <div className="hero-highlights-sub">
+              {highlightDescriptions.map((item) => (
+                <div key={item} className="hero-highlight-subtext">
+                  {item}
+                </div>
+              ))}
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -797,12 +858,12 @@ export default function Home() {
                 </div>
               </section>
 
-              <div className="mt-6">
+              <div className="mt-5">
                 <div className="mb-3 text-sm text-white/58">
                   Формирование экономики
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-3">
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                   <ModelCard
                     title="Клиенты"
                     value={Math.round(data.clients)}
@@ -827,7 +888,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-7 flex items-center justify-between">
+              <div className="mt-6 flex items-center justify-between">
                 <div className="text-sm text-white/58">Рычаги управления</div>
                 <button
                   type="button"
@@ -957,10 +1018,12 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="results-carousel" ref={resultScrollRef}>
-            {resultDocs.map((doc) => (
-              <ResultDocCard key={doc.title} title={doc.title} text={doc.text} />
-            ))}
+          <div className="results-carousel-wrap">
+            <div className="results-carousel" ref={resultScrollRef}>
+              {resultDocs.map((doc) => (
+                <ResultDocCard key={doc.title} title={doc.title} text={doc.text} />
+              ))}
+            </div>
           </div>
         </section>
 
@@ -1001,19 +1064,11 @@ export default function Home() {
             </h2>
           </div>
 
-          <div className="niche-row">
-            {niches.map((niche) => (
-              <div key={niche} className="niche-pill">
-                {niche}
-              </div>
-            ))}
-          </div>
-
-          <div className="mt-6 audience-grid">
-            {audienceCards.map((item, index) => (
-              <div key={index} className="audience-card">
-                <div className="audience-point" />
-                <div className="audience-text">{item}</div>
+          <div className="stage-grid">
+            {stageCards.map((item) => (
+              <div key={item.title} className="stage-card">
+                <div className="stage-card-title">{item.title}</div>
+                <div className="stage-card-subtitle">{item.subtitle}</div>
               </div>
             ))}
           </div>
@@ -1031,36 +1086,14 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-[1fr_1fr]">
-            <div className="glass-card">
-              <h3 className="text-lg font-semibold text-white">
-                О чем спрашивает бот
-              </h3>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {[
-                  "Продукт",
-                  "Трафик",
-                  "Продажи",
-                  "Экономика",
-                  "Операционные ограничения",
-                  "Цели роста",
-                ].map((item) => (
-                  <div
-                    key={item}
-                    className="rounded-[18px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white/70"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="analysis-grid">
+            <SnapshotStructure />
 
             <div className="glass-card">
               <h3 className="text-lg font-semibold text-white">
                 Что происходит дальше
               </h3>
-              <p className="mt-4 text-sm leading-7 text-white/68">
+              <p className="mt-4 text-sm leading-8 text-white/68">
                 Ответы анализируются автоматически, после чего данные
                 собираются в итоговый Revenue Snapshot с выводами, ключевыми
                 точками потери выручки и приоритетом следующих шагов.
@@ -1188,92 +1221,76 @@ export default function Home() {
           display: grid;
           grid-template-columns: 1fr 0.98fr;
           gap: 20px;
-          align-items: start;
+          align-items: stretch;
         }
 
+        .hero-left,
         .hero-chart-card {
           min-height: 100%;
         }
 
-        .hero-highlights {
+        .hero-highlights-row {
           margin-top: 28px;
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 10px;
         }
 
-        .hero-highlight {
-          border-radius: 20px;
-          padding: 16px 16px 14px;
+        .hero-highlight-chip {
+          border-radius: 16px;
+          padding: 14px 14px;
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
-          min-height: 106px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .hero-highlight strong {
-          display: block;
-          font-size: 16px;
-          line-height: 1.25;
           color: white;
+          font-size: 15px;
+          font-weight: 700;
+          text-align: center;
         }
 
-        .hero-highlight span {
-          display: block;
-          margin-top: 8px;
-          font-size: 14px;
-          line-height: 1.5;
-          color: rgba(255, 255, 255, 0.62);
-        }
-
-        .hero-highlight::after {
-          content: "";
-          position: absolute;
-          inset: auto auto -30px -20px;
-          width: 120px;
-          height: 120px;
-          border-radius: 999px;
-          filter: blur(22px);
-          opacity: 0.22;
-          animation: glowPulse 4.6s ease-in-out infinite;
-        }
-
-        .hero-highlight-yellow::after {
-          background: rgba(247, 210, 55, 0.9);
-        }
-
-        .hero-highlight-blue::after {
-          background: rgba(93, 167, 255, 0.9);
-        }
-
-        .hero-highlight-violet::after {
-          background: rgba(156, 109, 255, 0.9);
-        }
-
-        .hero-chart-layout {
-          margin-top: 18px;
+        .hero-highlights-sub {
+          margin-top: 10px;
           display: grid;
-          gap: 14px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 10px;
+        }
+
+        .hero-highlight-subtext {
+          font-size: 13px;
+          line-height: 1.5;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.56);
+        }
+
+        .hero-chart-card {
+          display: flex;
+          flex-direction: column;
         }
 
         .hero-levers-inline {
           display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
+          flex-wrap: nowrap;
+          gap: 10px;
+          margin-top: 18px;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+
+        .hero-levers-inline::-webkit-scrollbar {
+          display: none;
         }
 
         .hero-tag {
           display: inline-flex;
           align-items: center;
-          gap: 8px;
-          padding: 10px 12px;
+          justify-content: center;
+          padding: 10px 14px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.08);
           background: rgba(255, 255, 255, 0.04);
           color: rgba(255, 255, 255, 0.68);
           font-size: 13px;
           font-weight: 700;
+          white-space: nowrap;
           transition: 0.25s ease;
         }
 
@@ -1281,31 +1298,28 @@ export default function Home() {
           color: #0b1d3a;
           background: #f7d237;
           border-color: rgba(247, 210, 55, 0.55);
-          box-shadow: 0 0 0 1px rgba(247, 210, 55, 0.08);
-        }
-
-        .hero-tag-dot {
-          width: 7px;
-          height: 7px;
-          border-radius: 999px;
-          background: currentColor;
         }
 
         .hero-chart-box {
+          margin-top: 18px;
           border-radius: 24px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: rgba(255, 255, 255, 0.04);
           padding: 14px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
         }
 
         .hero-chart-metrics-row {
           display: grid;
           grid-template-columns: repeat(4, minmax(0, 1fr));
           gap: 8px;
+          margin-bottom: 14px;
         }
 
         .hero-metric-square {
-          min-height: 86px;
+          min-height: 84px;
           border-radius: 18px;
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1328,7 +1342,6 @@ export default function Home() {
         }
 
         .hero-chart-svg-wrap {
-          margin-top: 12px;
           overflow: hidden;
           border-radius: 20px;
           background: linear-gradient(
@@ -1622,179 +1635,18 @@ export default function Home() {
           gap: 10px;
         }
 
-        .dashboard-revenue {
-          grid-column: span 3;
-        }
-
-        .input-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-        }
-
-        .input-shell {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .input-shell-highlight {
-          position: relative;
-        }
-
-        .input-label {
-          font-size: 12px;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.52);
-          padding-left: 4px;
-        }
-
-        .input-label-strong {
-          color: rgba(255, 255, 255, 0.82);
-          font-weight: 700;
-          letter-spacing: 0.06em;
-        }
-
-        .input-wrap {
-          position: relative;
-        }
-
-        .input-wrap-primary::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          border-radius: 20px;
-          background: linear-gradient(
-            135deg,
-            rgba(247, 210, 55, 0.52),
-            rgba(120, 132, 255, 0.16),
-            rgba(255, 255, 255, 0.08)
-          );
-          opacity: 0.95;
-          z-index: 0;
-        }
-
-        .input-badge {
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          z-index: 3;
-          border-radius: 9999px;
-          padding: 4px 8px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #0b1d3a;
-          background: rgba(247, 210, 55, 0.95);
-          box-shadow:
-            0 4px 14px rgba(247, 210, 55, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        }
-
-        .glass-input {
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.1),
-            rgba(255, 255, 255, 0.055)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          padding: 14px 16px;
-          border-radius: 18px;
-          backdrop-filter: blur(18px);
-          color: white;
-          font-size: 20px;
-          font-weight: 500;
-          box-shadow:
-            0 10px 30px rgba(0, 0, 0, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 0 0 1px rgba(255, 255, 255, 0.02);
-          transition: 0.25s ease;
-          width: 100%;
-        }
-
-        .glass-input-primary {
-          position: relative;
-          z-index: 1;
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.15),
-            rgba(255, 255, 255, 0.075)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.22);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.2),
-            0 12px 34px rgba(0, 0, 0, 0.12),
-            0 0 28px rgba(247, 210, 55, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        }
-
-        .glass-input::placeholder {
-          color: rgba(255, 255, 255, 0.35);
-        }
-
-        .glass-input-primary::placeholder {
-          color: rgba(255, 255, 255, 0.42);
-        }
-
-        .glass-input:focus {
-          outline: none;
-          border-color: rgba(247, 210, 55, 0.75);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.22),
-            0 0 30px rgba(247, 210, 55, 0.12),
-            0 10px 30px rgba(0, 0, 0, 0.08);
-          transform: translateY(-1px);
-        }
-
-        .reset-link {
-          background: transparent;
-          border: 0;
-          padding: 0;
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          font-weight: 600;
-          transition: 0.2s ease;
-        }
-
-        .reset-link:hover {
-          color: #ffffff;
-        }
-
-        .range-input {
-          cursor: pointer;
-        }
-
-        .preview-top-row {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 12px;
-        }
-
-        .preview-chip {
-          flex-shrink: 0;
-          border-radius: 9999px;
-          padding: 7px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          color: #0b1d3a;
-          background: #f7d237;
-        }
-
-        .hero-preview-box {
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
-          padding: 18px;
+        .dashboard-revenue,
+        .dashboard-profit,
+        .dashboard-costs {
+          grid-column: span 1;
         }
 
         .metric-card {
-          min-height: 118px;
+          min-height: 100px;
         }
 
         .metric-card-large {
-          min-height: 122px;
+          min-height: 100px;
         }
 
         .metric-card-main {
@@ -1842,15 +1694,57 @@ export default function Home() {
         }
 
         .model-card {
-          min-height: 102px;
-          padding: 16px;
+          min-height: 94px;
+          padding: 14px;
         }
 
         .slider-card {
-          min-height: 142px;
+          min-height: 136px;
           display: flex;
           flex-direction: column;
-          padding: 16px;
+          padding: 14px;
+        }
+
+        .reset-link {
+          background: transparent;
+          border: 0;
+          padding: 0;
+          color: rgba(255, 255, 255, 0.72);
+          font-size: 14px;
+          font-weight: 600;
+          transition: 0.2s ease;
+        }
+
+        .reset-link:hover {
+          color: #ffffff;
+        }
+
+        .range-input {
+          cursor: pointer;
+        }
+
+        .preview-top-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 12px;
+        }
+
+        .preview-chip {
+          flex-shrink: 0;
+          border-radius: 9999px;
+          padding: 7px 12px;
+          font-size: 12px;
+          font-weight: 700;
+          color: #0b1d3a;
+          background: #f7d237;
+        }
+
+        .hero-preview-box {
+          border-radius: 24px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: rgba(255, 255, 255, 0.04);
+          padding: 18px;
         }
 
         .results-carousel-head {
@@ -1879,14 +1773,18 @@ export default function Home() {
           background: rgba(255, 255, 255, 0.1);
         }
 
+        .results-carousel-wrap {
+          overflow: hidden;
+        }
+
         .results-carousel {
           display: grid;
           grid-auto-flow: column;
-          grid-auto-columns: minmax(320px, 520px);
+          grid-auto-columns: minmax(320px, 460px);
           gap: 16px;
           overflow-x: auto;
           scroll-snap-type: x mandatory;
-          padding-bottom: 10px;
+          padding: 0 0 10px 0;
           scrollbar-width: none;
         }
 
@@ -1965,35 +1863,13 @@ export default function Home() {
           max-width: 620px;
         }
 
-        .niche-row {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-
-        .niche-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          padding: 10px 14px;
-          font-size: 13px;
-          font-weight: 700;
-          color: #0b1d3a;
-          background: #f7d237;
-        }
-
-        .audience-grid {
+        .stage-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 14px;
         }
 
-        .audience-card {
-          display: flex;
-          align-items: flex-start;
-          gap: 14px;
-          min-height: 180px;
+        .stage-card {
           border-radius: 24px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
@@ -2002,27 +1878,176 @@ export default function Home() {
             rgba(255, 255, 255, 0.045)
           );
           padding: 18px;
-          backdrop-filter: blur(16px);
+          min-height: 170px;
         }
 
-        .audience-point {
-          width: 12px;
-          height: 12px;
-          margin-top: 7px;
-          flex-shrink: 0;
+        .stage-card-title {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 9px 14px;
           border-radius: 999px;
           background: #f7d237;
-          box-shadow: 0 0 18px rgba(247, 210, 55, 0.42);
+          color: #0b1d3a;
+          font-size: 13px;
+          font-weight: 800;
         }
 
-        .audience-text {
+        .stage-card-subtitle {
+          margin-top: 16px;
           font-size: 18px;
           line-height: 1.75;
           color: rgba(255, 255, 255, 0.74);
         }
 
-        .notion-mock-card img {
-          max-height: 640px;
+        .analysis-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+
+        .snapshot-structure-card {
+          min-height: 430px;
+        }
+
+        .snapshot-structure {
+          position: relative;
+          height: 330px;
+          margin-top: 22px;
+        }
+
+        .snapshot-center {
+          position: absolute;
+          left: 50%;
+          top: 50%;
+          transform: translate(-50%, -50%);
+          min-width: 210px;
+          text-align: center;
+          padding: 18px 20px;
+          border-radius: 24px;
+          background: linear-gradient(
+            180deg,
+            rgba(247, 210, 55, 0.18),
+            rgba(255, 255, 255, 0.05)
+          );
+          border: 1px solid rgba(247, 210, 55, 0.22);
+          font-size: 24px;
+          font-weight: 700;
+          color: white;
+          z-index: 4;
+          box-shadow: 0 0 30px rgba(247, 210, 55, 0.08);
+        }
+
+        .snapshot-topic {
+          position: absolute;
+          min-width: 170px;
+          text-align: center;
+          padding: 12px 14px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          font-size: 14px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.86);
+          z-index: 3;
+        }
+
+        .topic-1 {
+          left: 6%;
+          top: 8%;
+        }
+
+        .topic-2 {
+          right: 6%;
+          top: 8%;
+        }
+
+        .topic-3 {
+          left: 0%;
+          top: 46%;
+        }
+
+        .topic-4 {
+          right: 0%;
+          top: 46%;
+        }
+
+        .topic-5 {
+          left: 7%;
+          bottom: 8%;
+        }
+
+        .topic-6 {
+          right: 7%;
+          bottom: 8%;
+        }
+
+        .snapshot-line {
+          position: absolute;
+          height: 2px;
+          background: linear-gradient(
+            90deg,
+            rgba(247, 210, 55, 0.16),
+            rgba(247, 210, 55, 0.95)
+          );
+          border-radius: 999px;
+          z-index: 2;
+          transform-origin: left center;
+          opacity: 0.9;
+        }
+
+        .snapshot-line::after {
+          content: "";
+          position: absolute;
+          right: -1px;
+          top: 50%;
+          width: 8px;
+          height: 8px;
+          border-top: 2px solid #f7d237;
+          border-right: 2px solid #f7d237;
+          transform: translateY(-50%) rotate(45deg);
+        }
+
+        .line-1 {
+          width: 112px;
+          left: 34%;
+          top: 28%;
+          transform: rotate(-29deg);
+        }
+
+        .line-2 {
+          width: 112px;
+          right: 34%;
+          top: 28%;
+          transform: rotate(29deg);
+        }
+
+        .line-3 {
+          width: 104px;
+          left: 27%;
+          top: 50%;
+          transform: rotate(0deg);
+        }
+
+        .line-4 {
+          width: 104px;
+          right: 27%;
+          top: 50%;
+          transform: rotate(180deg);
+        }
+
+        .line-5 {
+          width: 112px;
+          left: 34%;
+          bottom: 28%;
+          transform: rotate(29deg);
+        }
+
+        .line-6 {
+          width: 112px;
+          right: 34%;
+          bottom: 28%;
+          transform: rotate(-29deg);
         }
 
         .cta-card {
@@ -2219,21 +2244,6 @@ export default function Home() {
           );
         }
 
-        @keyframes glowPulse {
-          0% {
-            transform: scale(0.9);
-            opacity: 0.16;
-          }
-          50% {
-            transform: scale(1.08);
-            opacity: 0.28;
-          }
-          100% {
-            transform: scale(0.92);
-            opacity: 0.16;
-          }
-        }
-
         @keyframes pulseYellow {
           0% {
             transform: scale(1);
@@ -2362,6 +2372,27 @@ export default function Home() {
           .journey-compact-arrow {
             display: none;
           }
+
+          .analysis-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .snapshot-structure-card {
+            min-height: auto;
+          }
+
+          .snapshot-structure {
+            height: 420px;
+          }
+
+          .line-1,
+          .line-2,
+          .line-3,
+          .line-4,
+          .line-5,
+          .line-6 {
+            display: none;
+          }
         }
 
         @media (max-width: 1023px) {
@@ -2375,7 +2406,8 @@ export default function Home() {
             min-width: 100%;
           }
 
-          .hero-highlights {
+          .hero-highlights-row,
+          .hero-highlights-sub {
             grid-template-columns: 1fr;
           }
 
@@ -2383,8 +2415,23 @@ export default function Home() {
             grid-template-columns: 1fr 1fr;
           }
 
-          .audience-grid {
+          .stage-grid {
             grid-template-columns: 1fr;
+          }
+
+          .dashboard-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .dashboard-revenue,
+          .dashboard-profit,
+          .dashboard-costs {
+            grid-column: span 1;
+          }
+
+          .snapshot-topic {
+            min-width: 140px;
+            font-size: 13px;
           }
         }
 
@@ -2433,37 +2480,11 @@ export default function Home() {
             font-size: 16px;
           }
 
-          .dashboard-grid {
-            grid-template-columns: 1fr 1fr;
-            grid-template-areas:
-              "revenue revenue"
-              "profit costs";
-            gap: 10px;
-          }
-
-          .dashboard-revenue {
-            grid-area: revenue;
-          }
-
-          .dashboard-profit {
-            grid-area: profit;
-          }
-
-          .dashboard-costs {
-            grid-area: costs;
-          }
-
           .metric-card,
           .metric-card-large {
-            min-height: 116px;
+            min-height: 110px;
             padding: 16px;
             border-radius: 22px;
-          }
-
-          .metric-card .text-3xl,
-          .metric-card-large .text-3xl {
-            font-size: 2rem;
-            line-height: 1;
           }
 
           .metric-head {
@@ -2472,35 +2493,20 @@ export default function Home() {
             gap: 8px;
           }
 
-          .metric-flag {
-            font-size: 10px;
-            padding: 5px 8px;
-          }
-
           .model-card {
-            min-height: 98px;
+            min-height: 90px;
             padding: 14px;
             border-radius: 18px;
           }
 
-          .model-card .text-xl {
-            font-size: 1rem;
-            line-height: 1.2;
-          }
-
           .slider-card {
-            min-height: 136px;
+            min-height: 132px;
             padding: 14px;
             border-radius: 18px;
           }
 
           .glass-card {
             border-radius: 22px;
-            padding: 16px;
-          }
-
-          .glass-input {
-            font-size: 18px;
             padding: 16px;
           }
 
@@ -2518,13 +2524,52 @@ export default function Home() {
             line-height: 1.7;
           }
 
-          .audience-card {
+          .stage-card {
             min-height: 150px;
           }
 
-          .audience-text {
+          .stage-card-subtitle {
             font-size: 16px;
             line-height: 1.7;
+          }
+
+          .snapshot-structure {
+            height: 520px;
+          }
+
+          .snapshot-center {
+            min-width: 170px;
+            font-size: 20px;
+          }
+
+          .topic-1 {
+            left: 0%;
+            top: 0%;
+          }
+
+          .topic-2 {
+            right: 0%;
+            top: 0%;
+          }
+
+          .topic-3 {
+            left: 0%;
+            top: 30%;
+          }
+
+          .topic-4 {
+            right: 0%;
+            top: 30%;
+          }
+
+          .topic-5 {
+            left: 0%;
+            bottom: 4%;
+          }
+
+          .topic-6 {
+            right: 0%;
+            bottom: 4%;
           }
 
           .aurora {
