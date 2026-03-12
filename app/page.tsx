@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -130,7 +130,9 @@ function ModelCard({
     <div className="glass-card soft-glow model-card">
       <div className="model-head">
         <div className="text-xs text-white/55">{title}</div>
-        <div className={`model-delta-top ${color(delta, invert)}`}>{pct(delta)}</div>
+        <div className={`model-delta-top ${color(delta, invert)}`}>
+          {pct(delta)}
+        </div>
       </div>
       <div className="model-main-value">{value}</div>
     </div>
@@ -202,7 +204,9 @@ function Slider({
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-        <div className="mt-2 text-xs text-white/50">{Math.round(value * 100)}%</div>
+        <div className="mt-2 text-xs text-white/50">
+          {Math.round(value * 100)}%
+        </div>
       </div>
     </div>
   );
@@ -334,7 +338,9 @@ function HeroEconomyChart() {
             key={item.key}
             type="button"
             onClick={() => setDriver(index)}
-            className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
+            className={`hero-tag ${
+              index === activeIndex ? "hero-tag-active" : ""
+            }`}
           >
             {item.label}
           </button>
@@ -376,7 +382,9 @@ function HeroEconomyChart() {
 
                   <div className="bar-chart-bar-shell">
                     <div
-                      className={`bar-chart-bar ${bar.good ? "bar-good" : "bar-bad"}`}
+                      className={`bar-chart-bar ${
+                        bar.good ? "bar-good" : "bar-bad"
+                      }`}
                       style={{ height: `${height}px` }}
                     />
                   </div>
@@ -388,7 +396,7 @@ function HeroEconomyChart() {
           </div>
         </div>
 
-        <div className="hero-chart-bottom no-border-cards">
+        <div className="hero-chart-bottom">
           <div className="hero-money-card hero-money-card-clean">
             <span>База</span>
             <strong>{fmtMoney(base.revenue)}</strong>
@@ -414,34 +422,34 @@ function HeroEconomyChart() {
 }
 
 function SnapshotStructure() {
-  const topics = [
-    { title: "Продукт", cls: "topic-top-left" },
-    { title: "Трафик", cls: "topic-top-right" },
-    { title: "Продажи", cls: "topic-middle-left" },
-    { title: "Экономика", cls: "topic-middle-right" },
-    { title: "Операционные ограничения", cls: "topic-bottom-left" },
-    { title: "Цели роста", cls: "topic-bottom-right" },
-  ];
-
   return (
-    <div className="glass-card snapshot-structure-card">
-      <h3 className="text-lg font-semibold text-white">Структура Revenue Snapshot</h3>
+    <div className="glass-card snapshot-structure-card snapshot-structure-card-builder">
+      <h3 className="text-lg font-semibold text-white">
+        Структура Revenue Snapshot
+      </h3>
 
-      <div className="snapshot-structure">
-        <div className="snapshot-center">Revenue Snapshot</div>
-
-        {topics.map((item) => (
-          <div key={item.title} className={`snapshot-topic ${item.cls}`}>
-            {item.title}
+      <div className="snapshot-builder">
+        <div className="builder-left">
+          <div className="builder-row builder-row-top">
+            <div className="builder-block builder-block-product">Продукт</div>
+            <div className="builder-block builder-block-clients">Клиенты</div>
           </div>
-        ))}
 
-        <span className="arrow arrow-1" />
-        <span className="arrow arrow-2" />
-        <span className="arrow arrow-3" />
-        <span className="arrow arrow-4" />
-        <span className="arrow arrow-5" />
-        <span className="arrow arrow-6" />
+          <div className="builder-block builder-block-economics">Экономика</div>
+
+          <div className="builder-block builder-block-positioning">
+            Позиционирование
+          </div>
+
+          <div className="builder-block builder-block-marketing">Маркетинг</div>
+        </div>
+
+        <div className="builder-right">
+          <div className="builder-block builder-block-structure">
+            <span>Структура</span>
+            <span>компании</span>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -456,10 +464,14 @@ function ResultDocCard({
   tab: string;
   title: string;
   text: string;
-  footer?: React.ReactNode;
+  footer?: ReactNode;
 }) {
   return (
-    <div className={`result-doc-card result-doc-card-grid ${footer ? "has-footer" : ""}`}>
+    <div
+      className={`result-doc-card result-doc-card-grid ${
+        footer ? "has-footer" : ""
+      }`}
+    >
       <div className="result-doc-tab">{tab}</div>
       <div className="result-doc-title">{title}</div>
       <div className="result-doc-text">{text}</div>
@@ -485,20 +497,18 @@ function StageCard({
 }) {
   return (
     <div className="stage-card stage-card-figure">
-      <div className="stage-figure-shell">
-        <div className="stage-figure-mask">
-          <div className="stage-figure-stage-mark">
-            <span>stage</span>
-            <strong>{stage}</strong>
-          </div>
+      <div className="stage-top-strip">
+        <div className="stage-top-strip-icon">
+          <img src={icon} alt={stage} className="stage-strip-icon" />
+        </div>
 
-          <div className="stage-figure-icon-wrap">
-            <img src={icon} alt={stage} className="stage-figure-icon" />
-          </div>
+        <div className="stage-top-strip-label">
+          <span>stage</span>
+          <strong>{stage}</strong>
         </div>
       </div>
 
-      <div className="stage-card-content">
+      <div className="stage-card-content stage-card-content-full">
         <div className="stage-line-block">
           <div className="stage-line-title">Запрос</div>
           <div className="stage-line-text">{request}</div>
@@ -701,7 +711,7 @@ export default function Home() {
       <div
         className="cursor-glow"
         style={{
-          transform: `translate(${cursor.x - 180}px, ${cursor.y - 180}px)`,
+          transform: `translate(${cursor.x - 100}px, ${cursor.y - 100}px)`,
         }}
       >
         <div className="cursor-glow-noise" />
@@ -719,10 +729,10 @@ export default function Home() {
         <div className="vignette" />
       </div>
 
-      <div className="relative mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
         <header className="sticky-header mb-7 md:mb-10">
           <div className="header-row">
-            <img src="/logo.svg" alt="Growth Avenue" className="logo-main shrink-0" />
+            <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
 
             <div className="header-actions">
               <a
@@ -826,7 +836,9 @@ export default function Home() {
                 <div className="journey-compact-badge">1</div>
                 <div className="journey-compact-arrow" />
               </div>
-              <div className="journey-compact-title">Фиксация параметров бизнеса</div>
+              <div className="journey-compact-title">
+                Фиксация параметров бизнеса
+              </div>
               <div className="journey-compact-text">
                 Определяются ключевые показатели текущей модели: экономика,
                 структура продаж, ресурсы и ограничения. Это формирует основу для
@@ -856,9 +868,9 @@ export default function Home() {
               <div className="journey-compact-title">Результат Snapshot</div>
               <div className="journey-compact-text">
                 Вы получаете аналитический срез бизнеса с ключевыми выводами:
-                приоритетной точкой роста, оценкой экономического эффекта изменений
-                и пониманием устойчивости текущей модели, следующий шаг для
-                реализации.
+                приоритетной точкой роста, оценкой экономического эффекта
+                изменений и пониманием устойчивости текущей модели, следующий шаг
+                для реализации.
               </div>
             </div>
           </div>
@@ -869,10 +881,10 @@ export default function Home() {
             <div className="section-kicker">Интерактивное превью</div>
             <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
             <p className="section-copy">
-              Здесь пользователь меняет ключевые параметры и видит предварительные
-              сигналы. Полный разбор открывается после оплаты. Модель на этой
-              странице не передает и не запоминает введенные вами данные, поэтому
-              сценарий безопасен для быстрого теста.
+              Здесь пользователь меняет ключевые параметры и видит
+              предварительные сигналы. Полный разбор открывается после оплаты.
+              Модель на этой странице не передает и не запоминает введенные вами
+              данные, поэтому сценарий безопасен для быстрого теста.
             </p>
           </div>
 
@@ -995,7 +1007,11 @@ export default function Home() {
                     Отменить действие
                   </button>
 
-                  <button type="button" onClick={handleReset} className="reset-link">
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="reset-link"
+                  >
                     Сбросить
                   </button>
                 </div>
@@ -1037,7 +1053,9 @@ export default function Home() {
               <div className="reserve-kicker">Оценочный резерв</div>
 
               <div className="hero-preview-box mt-4">
-                <div className="reserve-amount">≈ {fmtMoney(estimatedGap)} / мес</div>
+                <div className="reserve-amount">
+                  ≈ {fmtMoney(estimatedGap)} / мес
+                </div>
                 <p className="mt-4 text-sm leading-7 text-white/65">
                   Это только лишь механика, полный разбор раскрывает ваши реальные
                   возможности при текущей ситуации вашего бизнеса.
@@ -1110,19 +1128,14 @@ export default function Home() {
               tab="JTBD"
               title="RoadMap"
               text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP. Определение KPI для каждого из этапов в соответствие поставленным задачам и целям."
-              footer={
-                <div className="roadmap-footer-inline">
-                  <p className="roadmap-footer-text">
-                    После получения и изучения результатов у Вас есть возможность
-                    назначить 30-минутную встречу с нашими C-level специалистами в
-                    сфере Маркетинга и Продаж для декомпозиции результатов.
-                  </p>
-                  <a href="#try" className="tg-gradient-btn roadmap-footer-btn inline-flex">
-                    Начать
-                  </a>
-                </div>
-              }
             />
+          </div>
+
+          <div className="results-roadmap-note">
+            После получения и изучения результатов у Вас есть возможность
+            назначить <span>30-минутную встречу</span> с нашими C-level
+            специалистами в сфере Маркетинга и Продаж{" "}
+            <span>для декомпозиции результатов</span>.
           </div>
         </section>
 
@@ -1130,7 +1143,9 @@ export default function Home() {
           <div className="section-head">
             <div className="section-kicker">Для кого этот инструмент</div>
 
-            <h2 className="section-title">Где Revenue Snapshot показал результат</h2>
+            <h2 className="section-title">
+              Где Revenue Snapshot показал результат
+            </h2>
 
             <div className="industries-pills">
               <span className="industry-pill industry-saas">SaaS</span>
@@ -1281,21 +1296,26 @@ export default function Home() {
           position: fixed;
           left: 0;
           top: 0;
-          width: 360px;
-          height: 360px;
-          border-radius: 999px;
+          width: 200px;
+          height: 200px;
+          border-radius: 9999px;
           pointer-events: none;
           z-index: 1;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.08) 0%,
-            rgba(247, 210, 55, 0.05) 26%,
-            rgba(247, 210, 55, 0.02) 50%,
-            rgba(247, 210, 55, 0) 74%
-          );
-          filter: blur(42px);
+          background:
+            radial-gradient(
+              circle,
+              rgba(247, 210, 55, 0.1) 0%,
+              rgba(247, 210, 55, 0.06) 24%,
+              rgba(247, 210, 55, 0.025) 48%,
+              rgba(247, 210, 55, 0.01) 68%,
+              transparent 82%
+            );
+          filter: blur(26px);
+          opacity: 0.55;
           mix-blend-mode: screen;
-          opacity: 0.9;
+          transition:
+            transform 0.08s linear,
+            opacity 0.2s ease;
         }
 
         .cursor-glow-noise {
@@ -1303,12 +1323,13 @@ export default function Home() {
           inset: 0;
           border-radius: inherit;
           background-image:
-            radial-gradient(rgba(38, 54, 81, 0.26) 0.7px, transparent 0.7px),
-            radial-gradient(rgba(38, 54, 81, 0.18) 0.45px, transparent 0.45px);
-          background-size: 5px 5px, 7px 7px;
-          background-position: 0 0, 2px 1px;
+            radial-gradient(rgba(38, 54, 81, 0.22) 0.45px, transparent 0.85px),
+            radial-gradient(rgba(38, 54, 81, 0.16) 0.7px, transparent 1px),
+            radial-gradient(rgba(38, 54, 81, 0.12) 0.35px, transparent 0.7px);
+          background-size: 11px 11px, 17px 17px, 9px 9px;
+          background-position: 0 0, 5px 7px, 3px 2px;
+          opacity: 0.28;
           mix-blend-mode: multiply;
-          opacity: 0.45;
         }
 
         .glass-card {
@@ -2219,10 +2240,6 @@ export default function Home() {
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        .result-doc-card-grid.has-footer {
-          padding-bottom: 154px;
-        }
-
         .result-doc-card-grid::after {
           content: "";
           position: absolute;
@@ -2275,43 +2292,17 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.72);
         }
 
-        .result-doc-footer-panel {
-          position: absolute;
-          left: 22px;
-          right: 22px;
-          bottom: 22px;
-          z-index: 4;
-          border-radius: 26px;
-          padding: 18px 20px;
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.15),
-            rgba(255, 255, 255, 0.07)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          backdrop-filter: blur(18px);
-          box-shadow:
-            0 16px 34px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        .results-roadmap-note {
+          margin-top: 18px;
+          font-size: 16px;
+          line-height: 1.85;
+          color: rgba(255, 255, 255, 0.72);
+          max-width: 980px;
         }
 
-        .roadmap-footer-inline {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 18px;
-        }
-
-        .roadmap-footer-text {
-          margin: 0;
-          font-size: 14px;
-          line-height: 1.75;
-          color: rgba(255, 255, 255, 0.78);
-          max-width: 520px;
-        }
-
-        .roadmap-footer-btn {
-          flex-shrink: 0;
+        .results-roadmap-note span {
+          color: #f7d237;
+          font-weight: 700;
         }
 
         .industries-pills {
@@ -2404,10 +2395,9 @@ export default function Home() {
         }
 
         .stage-card-figure {
-          display: grid;
-          grid-template-columns: 280px 1fr;
+          display: flex;
+          flex-direction: column;
           gap: 24px;
-          align-items: stretch;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
@@ -2451,95 +2441,88 @@ export default function Home() {
           );
         }
 
-        .stage-figure-shell {
+        .stage-top-strip {
           position: relative;
+          z-index: 2;
+          min-height: 112px;
+          border-radius: 32px;
+          padding: 20px 26px;
           display: flex;
-          align-items: stretch;
-          justify-content: center;
-        }
-
-        .stage-figure-mask {
-          position: relative;
-          width: 100%;
-          min-height: 100%;
-          border-radius: 34px;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.11),
-            rgba(255, 255, 255, 0.06)
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.07)
           );
           border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.08),
             0 18px 34px rgba(0, 0, 0, 0.12);
-          overflow: hidden;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 24px 22px 22px;
         }
 
-        .stage-figure-mask::before {
+        .stage-top-strip::before {
           content: "";
           position: absolute;
           inset: 0;
+          border-radius: inherit;
           background:
             radial-gradient(
-              circle at 20% 20%,
-              rgba(247, 210, 55, 0.08),
-              transparent 34%
+              circle at 18% 50%,
+              rgba(247, 210, 55, 0.06),
+              transparent 24%
             ),
             radial-gradient(
-              circle at 78% 76%,
-              rgba(124, 132, 255, 0.12),
-              transparent 38%
+              circle at 82% 30%,
+              rgba(124, 132, 255, 0.1),
+              transparent 28%
             );
           pointer-events: none;
         }
 
-        .stage-figure-stage-mark {
+        .stage-top-strip-icon {
+          position: relative;
+          z-index: 2;
+          width: 72px;
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        }
+
+        .stage-strip-icon {
+          width: 64px;
+          height: 64px;
+          object-fit: contain;
+          opacity: 0.96;
+          filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.14));
+        }
+
+        .stage-top-strip-label {
           position: relative;
           z-index: 2;
           display: flex;
           flex-direction: column;
           align-items: flex-end;
           text-align: right;
+          min-width: 0;
         }
 
-        .stage-figure-stage-mark span {
-          font-size: 16px;
+        .stage-top-strip-label span {
+          font-size: 18px;
           line-height: 1;
-          color: rgba(255, 255, 255, 0.78);
+          color: rgba(255, 255, 255, 0.86);
         }
 
-        .stage-figure-stage-mark strong {
-          margin-top: 10px;
-          font-size: 26px;
-          line-height: 1;
-          font-weight: 700;
+        .stage-top-strip-label strong {
+          margin-top: 8px;
+          font-size: clamp(36px, 4vw, 64px);
+          line-height: 0.9;
+          font-weight: 300;
           color: #ffffff;
-        }
-
-        .stage-figure-icon-wrap {
-          position: relative;
-          z-index: 2;
-          flex: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px;
-        }
-
-        .stage-figure-icon {
-          display: block;
-          width: 74%;
-          max-width: 180px;
-          max-height: 180px;
-          object-fit: contain;
-          opacity: 0.96;
-          filter:
-            drop-shadow(0 8px 20px rgba(0, 0, 0, 0.14))
-            brightness(1.02);
+          letter-spacing: -0.04em;
         }
 
         .stage-card-content {
@@ -2549,6 +2532,9 @@ export default function Home() {
           flex-direction: column;
           justify-content: center;
           gap: 24px;
+        }
+
+        .stage-card-content-full {
           padding-right: 8px;
         }
 
@@ -2592,145 +2578,98 @@ export default function Home() {
           min-height: 460px;
         }
 
-        .snapshot-structure {
-          position: relative;
-          height: 350px;
-          margin-top: 22px;
+        .snapshot-structure-card-builder {
+          display: flex;
+          flex-direction: column;
         }
 
-        .snapshot-center {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          transform: translate(-50%, -50%);
-          min-width: 230px;
-          text-align: center;
-          padding: 18px 22px;
-          border-radius: 26px;
+        .snapshot-builder {
+          margin-top: 22px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 220px;
+          gap: 18px;
+          min-height: 340px;
+          align-items: stretch;
+        }
+
+        .builder-left {
+          display: grid;
+          grid-template-rows: auto 1fr auto auto;
+          gap: 14px;
+          min-width: 0;
+        }
+
+        .builder-row {
+          display: grid;
+          gap: 14px;
+        }
+
+        .builder-row-top {
+          grid-template-columns: 1.1fr 0.9fr;
+        }
+
+        .builder-block {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
             180deg,
-            rgba(247, 210, 55, 0.96),
-            rgba(235, 198, 38, 0.94)
+            rgba(255, 255, 255, 0.085),
+            rgba(255, 255, 255, 0.045)
           );
-          font-size: 24px;
-          font-weight: 700;
-          color: #0b1d3a;
-          z-index: 5;
           box-shadow:
-            0 0 24px rgba(247, 210, 55, 0.22),
-            0 18px 40px rgba(0, 0, 0, 0.12);
-        }
-
-        .snapshot-topic {
-          position: absolute;
-          min-width: 185px;
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 10px 26px rgba(0, 0, 0, 0.1);
+          color: rgba(255, 255, 255, 0.92);
           text-align: center;
-          padding: 12px 14px;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          font-size: 14px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.86);
-          z-index: 3;
+          letter-spacing: -0.02em;
         }
 
-        .topic-top-left {
-          left: 8%;
-          top: 2%;
+        .builder-block-product,
+        .builder-block-clients {
+          min-height: 78px;
+          font-size: 22px;
+          font-weight: 400;
         }
 
-        .topic-top-right {
-          right: 8%;
-          top: 2%;
+        .builder-block-economics {
+          min-height: 132px;
+          justify-content: flex-start;
+          padding-left: 36px;
+          font-size: clamp(48px, 5.2vw, 78px);
+          line-height: 0.95;
+          font-weight: 300;
+          letter-spacing: -0.05em;
         }
 
-        .topic-middle-left {
-          left: 0%;
-          top: 36%;
+        .builder-block-positioning,
+        .builder-block-marketing {
+          min-height: 76px;
+          justify-content: flex-start;
+          padding-left: 30px;
+          font-size: 26px;
+          line-height: 1;
+          font-weight: 350;
         }
 
-        .topic-middle-right {
-          right: 0%;
-          top: 36%;
+        .builder-right {
+          min-width: 0;
         }
 
-        .topic-bottom-left {
-          left: 10%;
-          bottom: 4%;
-        }
-
-        .topic-bottom-right {
-          right: 10%;
-          bottom: 4%;
-        }
-
-        .arrow {
-          position: absolute;
-          height: 3px;
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.2),
-            rgba(247, 210, 55, 0.96)
-          );
-          border-radius: 999px;
-          z-index: 2;
-          transform-origin: left center;
-          opacity: 0.95;
-        }
-
-        .arrow::after {
-          content: "";
-          position: absolute;
-          right: -2px;
-          top: 50%;
-          width: 10px;
-          height: 10px;
-          border-top: 3px solid #f7d237;
-          border-right: 3px solid #f7d237;
-          transform: translateY(-50%) rotate(45deg);
-        }
-
-        .arrow-1 {
-          width: 126px;
-          left: 49%;
-          top: 31%;
-          transform: rotate(-148deg);
-        }
-
-        .arrow-2 {
-          width: 126px;
-          left: 52%;
-          top: 31%;
-          transform: rotate(-32deg);
-        }
-
-        .arrow-3 {
-          width: 120px;
-          left: 43%;
-          top: 51%;
+        .builder-block-structure {
+          height: 100%;
+          min-height: 100%;
+          padding: 18px 12px;
+          writing-mode: vertical-rl;
+          text-orientation: mixed;
           transform: rotate(180deg);
-        }
-
-        .arrow-4 {
-          width: 120px;
-          left: 57%;
-          top: 51%;
-          transform: rotate(0deg);
-        }
-
-        .arrow-5 {
-          width: 128px;
-          left: 49%;
-          top: 68%;
-          transform: rotate(148deg);
-        }
-
-        .arrow-6 {
-          width: 128px;
-          left: 52%;
-          top: 68%;
-          transform: rotate(32deg);
+          font-size: clamp(36px, 4.6vw, 70px);
+          line-height: 0.9;
+          font-weight: 300;
+          letter-spacing: -0.05em;
+          gap: 10px;
         }
 
         .cta-card {
@@ -2749,27 +2688,18 @@ export default function Home() {
           padding: 22px;
         }
 
-        .dot-yellow {
-          width: 10px;
-          height: 10px;
-          border-radius: 9999px;
-          background: #f7d237;
-          animation: pulseYellow 1.8s ease-in-out infinite;
-          box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
-        }
-
         .grid-overlay {
           position: absolute;
           inset: 0;
           background-image:
-            linear-gradient(rgba(255, 255, 255, 0.022) 1px, transparent 1px),
+            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
             linear-gradient(
               90deg,
-              rgba(255, 255, 255, 0.022) 1px,
+              rgba(255, 255, 255, 0.02) 1px,
               transparent 1px
             );
           background-size: 72px 72px;
-          opacity: 0.18;
+          opacity: 0.16;
           mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
         }
 
@@ -2932,18 +2862,27 @@ export default function Home() {
           }
         }
 
-        @keyframes pulseYellow {
+        @keyframes tgGradientFlow {
           0% {
-            transform: scale(1);
-            opacity: 1;
+            background-position: 0% 50%;
           }
           50% {
-            transform: scale(1.25);
-            opacity: 0.7;
+            background-position: 100% 50%;
           }
           100% {
-            transform: scale(1);
-            opacity: 1;
+            background-position: 0% 50%;
+          }
+        }
+
+        @keyframes tgShine {
+          0% {
+            transform: translateX(-130%);
+          }
+          55% {
+            transform: translateX(130%);
+          }
+          100% {
+            transform: translateX(130%);
           }
         }
 
@@ -3004,30 +2943,6 @@ export default function Home() {
           }
         }
 
-        @keyframes tgGradientFlow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        @keyframes tgShine {
-          0% {
-            transform: translateX(-130%);
-          }
-          55% {
-            transform: translateX(130%);
-          }
-          100% {
-            transform: translateX(130%);
-          }
-        }
-
         @media (max-width: 1180px) {
           .journey-compact {
             grid-template-columns: 1fr;
@@ -3069,23 +2984,27 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .snapshot-structure {
-            height: 460px;
+          .snapshot-builder {
+            grid-template-columns: 1fr;
           }
 
-          .arrow {
-            display: none;
+          .builder-right {
+            min-height: 180px;
+          }
+
+          .builder-block-structure {
+            writing-mode: horizontal-tb;
+            text-orientation: initial;
+            transform: none;
+            min-height: 180px;
+            flex-direction: column;
+            font-size: clamp(34px, 7vw, 54px);
           }
         }
 
         @media (max-width: 900px) {
           .stage-card-figure {
-            grid-template-columns: 1fr;
             min-height: auto;
-          }
-
-          .stage-figure-shell {
-            min-height: 240px;
           }
         }
 
@@ -3166,23 +3085,6 @@ export default function Home() {
             padding: 20px;
           }
 
-          .result-doc-card-grid.has-footer {
-            padding-bottom: 20px;
-          }
-
-          .result-doc-footer-panel {
-            position: relative;
-            left: auto;
-            right: auto;
-            bottom: auto;
-            margin-top: 18px;
-          }
-
-          .roadmap-footer-inline {
-            flex-direction: column;
-            align-items: flex-start;
-          }
-
           .result-doc-title {
             font-size: 28px;
           }
@@ -3190,50 +3092,6 @@ export default function Home() {
           .result-doc-text {
             font-size: 15px;
             line-height: 1.7;
-          }
-
-          .snapshot-structure {
-            height: 560px;
-          }
-
-          .snapshot-center {
-            min-width: 170px;
-            font-size: 20px;
-          }
-
-          .snapshot-topic {
-            min-width: 150px;
-            font-size: 13px;
-          }
-
-          .topic-top-left {
-            left: 4%;
-            top: 0%;
-          }
-
-          .topic-top-right {
-            right: 4%;
-            top: 0%;
-          }
-
-          .topic-middle-left {
-            left: 0%;
-            top: 34%;
-          }
-
-          .topic-middle-right {
-            right: 0%;
-            top: 34%;
-          }
-
-          .topic-bottom-left {
-            left: 6%;
-            bottom: 4%;
-          }
-
-          .topic-bottom-right {
-            right: 6%;
-            bottom: 4%;
           }
 
           .input-grid {
@@ -3271,6 +3129,69 @@ export default function Home() {
 
           .cursor-glow {
             display: none;
+          }
+
+          .builder-row-top {
+            grid-template-columns: 1fr 1fr;
+          }
+
+          .builder-block-product,
+          .builder-block-clients {
+            min-height: 66px;
+            font-size: 18px;
+          }
+
+          .builder-block-economics {
+            min-height: 108px;
+            padding-left: 20px;
+            font-size: 48px;
+          }
+
+          .builder-block-positioning,
+          .builder-block-marketing {
+            min-height: 64px;
+            padding-left: 20px;
+            font-size: 20px;
+          }
+
+          .builder-right {
+            min-height: 132px;
+          }
+
+          .builder-block-structure {
+            min-height: 132px;
+            font-size: 34px;
+          }
+
+          .stage-top-strip {
+            min-height: 92px;
+            padding: 16px 18px;
+          }
+
+          .stage-top-strip-icon {
+            width: 54px;
+            height: 54px;
+          }
+
+          .stage-strip-icon {
+            width: 46px;
+            height: 46px;
+          }
+
+          .stage-top-strip-label span {
+            font-size: 14px;
+          }
+
+          .stage-top-strip-label strong {
+            font-size: 34px;
+          }
+
+          .stage-line-title {
+            font-size: 16px;
+          }
+
+          .stage-line-text {
+            font-size: 16px;
           }
         }
       `}</style>
