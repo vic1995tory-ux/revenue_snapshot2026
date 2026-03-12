@@ -96,15 +96,21 @@ function TopMetricCard({
   return (
     <div className="glass-card soft-glow metric-card metric-card-main">
       <div className="metric-head">
-        <div className="text-sm text-white/55">{title}</div>
-        <div className={`metric-flag ${flagTone(type, delta)}`}>
-          {getMetricFlag(type, delta)}
+        <div className="metric-title-wrap">
+          <div className="text-sm text-white/55">{title}</div>
+        </div>
+
+        <div className="metric-right-meta">
+          <div className={`metric-flag ${flagTone(type, delta)}`}>
+            {getMetricFlag(type, delta)}
+          </div>
+          <div className={`metric-delta-top ${color(delta, invert)}`}>
+            {pct(delta)}
+          </div>
         </div>
       </div>
 
-      <div className="mt-3 text-[2rem] font-semibold tracking-tight">{value}</div>
-
-      <div className={`mt-2 text-sm ${color(delta, invert)}`}>{pct(delta)}</div>
+      <div className="metric-main-value">{value}</div>
     </div>
   );
 }
@@ -122,9 +128,11 @@ function ModelCard({
 }) {
   return (
     <div className="glass-card soft-glow model-card">
-      <div className="text-xs text-white/55">{title}</div>
-      <div className="mt-2 text-lg font-medium">{value}</div>
-      <div className={`mt-2 text-sm ${color(delta, invert)}`}>{pct(delta)}</div>
+      <div className="model-head">
+        <div className="text-xs text-white/55">{title}</div>
+        <div className={`model-delta-top ${color(delta, invert)}`}>{pct(delta)}</div>
+      </div>
+      <div className="model-main-value">{value}</div>
     </div>
   );
 }
@@ -151,12 +159,16 @@ function Slider({
   subtitle,
   value,
   set,
+  onStart,
 }: {
   title: string;
   subtitle: string;
   value: number;
   set: (v: number) => void;
+  onStart: () => void;
 }) {
+  const [started, setStarted] = useState(false);
+
   return (
     <div className="glass-card soft-glow slider-card">
       <div>
@@ -173,12 +185,24 @@ function Slider({
           max="0.3"
           step="0.01"
           value={value}
+          onMouseDown={() => {
+            if (!started) {
+              onStart();
+              setStarted(true);
+            }
+          }}
+          onTouchStart={() => {
+            if (!started) {
+              onStart();
+              setStarted(true);
+            }
+          }}
+          onMouseUp={() => setStarted(false)}
+          onTouchEnd={() => setStarted(false)}
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-        <div className="mt-2 text-xs text-white/50">
-          {Math.round(value * 100)}%
-        </div>
+        <div className="mt-2 text-xs text-white/50">{Math.round(value * 100)}%</div>
       </div>
     </div>
   );
@@ -189,45 +213,69 @@ function HeroEconomyChart() {
     leads: 10,
     deals: 2,
     avgCheck: 6500,
-    margin: 0.3,
+    margin: 30,
+    revenue: 13000,
+    opex: 3500,
+    cogs: 3900,
+    grossProfit: 5600,
   };
 
-  const scenarios = [
+  const drivers = [
     {
-      key: "offer",
-      label: "#Оффер",
+      key: "positioning",
+      label: "#Позиционирование",
+      full: "Позиционирование",
+      deltaLabel: "+рост спроса и конверсии",
+      leads: 10,
       deals: 2.4,
       avgCheck: 6500,
-      margin: 0.3,
-      full: "Упаковка и оффер",
-      deltaLabel: "+0.4 сделки",
+      margin: 48,
+      revenue: 15600,
+      opex: 3900,
+      cogs: 4200,
+      grossProfit: 7500,
     },
     {
-      key: "price",
+      key: "check",
       label: "#СреднийЧек",
-      deals: 2,
-      avgCheck: 7600,
-      margin: 0.3,
       full: "Средний чек",
       deltaLabel: "+$1,100 к чеку",
+      leads: 10,
+      deals: 2.0,
+      avgCheck: 7600,
+      margin: 49,
+      revenue: 15200,
+      opex: 3600,
+      cogs: 4200,
+      grossProfit: 7400,
     },
     {
       key: "sales",
       label: "#Продажи",
-      deals: 2.8,
-      avgCheck: 6500,
-      margin: 0.3,
       full: "Продажи",
       deltaLabel: "+0.8 сделки",
+      leads: 10,
+      deals: 2.8,
+      avgCheck: 6500,
+      margin: 47,
+      revenue: 18200,
+      opex: 4600,
+      cogs: 5100,
+      grossProfit: 8500,
     },
     {
-      key: "ops",
-      label: "#Операционка",
-      deals: 2,
+      key: "costs",
+      label: "#УправлениеРасходами",
+      full: "Управление расходами",
+      deltaLabel: "-давление на OPEX и Margin",
+      leads: 10,
+      deals: 2.0,
       avgCheck: 6500,
-      margin: 0.38,
-      full: "Операционка",
-      deltaLabel: "+8 п.п. маржи",
+      margin: 51,
+      revenue: 13000,
+      opex: 2500,
+      cogs: 3900,
+      grossProfit: 6600,
     },
   ];
 
@@ -235,81 +283,50 @@ function HeroEconomyChart() {
 
   useEffect(() => {
     const id = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % scenarios.length);
-    }, 3000);
+      setActiveIndex((v) => (v + 1) % drivers.length);
+    }, 3200);
     return () => window.clearInterval(id);
-  }, [scenarios.length]);
+  }, [drivers.length]);
 
-  const active = scenarios[activeIndex];
+  const active = drivers[activeIndex];
 
-  const baseRevenue = base.deals * base.avgCheck;
-  const baseProfit = baseRevenue * base.margin;
-  const activeRevenue = active.deals * active.avgCheck;
-  const activeProfit = activeRevenue * active.margin;
+  const bars = [
+    { name: "Revenue", value: active.revenue, good: true, isPercent: false },
+    { name: "OPEX", value: active.opex, good: false, isPercent: false },
+    { name: "COGS", value: active.cogs, good: false, isPercent: false },
+    { name: "Gross Profit", value: active.grossProfit, good: true, isPercent: false },
+    { name: "Margin", value: active.margin, good: true, isPercent: true },
+  ];
 
-  const points = [0, 1, 2, 3, 4, 5, 6].map((i) => {
-    const x = 16 + i * 56;
-    const activeSets = [
-      [170, 164, 156, 146, 134, 120, 106],
-      [170, 166, 160, 152, 142, 128, 116],
-      [170, 156, 144, 130, 116, 100, 84],
-      [170, 164, 158, 148, 138, 124, 108],
-    ];
-    const baseSet = [170, 166, 162, 156, 150, 142, 136];
-    return {
-      x,
-      baseY: baseSet[i],
-      activeY: activeSets[activeIndex][i],
-    };
-  });
-
-  const makeSmoothPath = (
-    arr: { x: number; activeY?: number; baseY?: number }[],
-    key: "baseY" | "activeY"
-  ) => {
-    return arr
-      .map((p, i) => {
-        if (i === 0) return `M ${p.x} ${p[key]}`;
-        const prev = arr[i - 1];
-        const cx = (prev.x + p.x) / 2;
-        return `Q ${cx} ${prev[key]} ${p.x} ${p[key]}`;
-      })
-      .join(" ");
-  };
-
-  const basePath = makeSmoothPath(points, "baseY");
-  const activePath = makeSmoothPath(points, "activeY");
+  const maxBar = Math.max(...bars.map((b) => b.value));
 
   return (
     <aside className="glass-card hero-chart-card">
       <div className="text-sm text-white/55">Как двигается экономика</div>
       <div className="mt-2 text-2xl font-semibold text-white md:text-[2rem] md:leading-[1.1]">
-        MVP-рычаги, которые меняют деньги в модели
+        MVP-драйверы, которые меняют деньги в модели
       </div>
       <p className="mt-3 text-sm leading-7 text-white/64">
-        Здесь не нужно ничего нажимать. Блок показывает логику: отдельные
-        управляемые изменения перестраивают выручку и прибыль бизнеса.
+        Здесь не нужно ничего нажимать. Сверху меняется драйвер, а диаграмма
+        показывает, какие блоки экономики он перестраивает сильнее всего.
       </p>
 
       <div className="hero-levers-inline">
-        {scenarios.map((item, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <div
-              key={item.key}
-              className={`hero-tag ${isActive ? "hero-tag-active" : ""}`}
-            >
-              {item.label}
-            </div>
-          );
-        })}
+        {drivers.map((item, index) => (
+          <div
+            key={item.key}
+            className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
+          >
+            {item.label}
+          </div>
+        ))}
       </div>
 
       <div className="hero-chart-box">
         <div className="hero-chart-metrics-row">
           <div className="hero-metric-square">
             <span>Лидов / мес</span>
-            <strong>{base.leads}</strong>
+            <strong>{active.leads}</strong>
           </div>
           <div className="hero-metric-square">
             <span>Сделок / мес</span>
@@ -321,99 +338,55 @@ function HeroEconomyChart() {
           </div>
           <div className="hero-metric-square">
             <span>Маржа</span>
-            <strong>{Math.round(active.margin * 100)}%</strong>
+            <strong>{active.margin}%</strong>
           </div>
         </div>
 
-        <div className="hero-chart-svg-wrap">
-          <svg viewBox="0 0 390 220" className="hero-chart-svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="chartBase" x1="0%" x2="100%">
-                <stop offset="0%" stopColor="rgba(255,255,255,0.16)" />
-                <stop offset="100%" stopColor="rgba(255,255,255,0.08)" />
-              </linearGradient>
-              <linearGradient id="chartActive" x1="0%" x2="100%">
-                <stop offset="0%" stopColor="#f7d237" />
-                <stop offset="55%" stopColor="#f4dd72" />
-                <stop offset="100%" stopColor="#b08cff" />
-              </linearGradient>
-              <filter id="chartGlow">
-                <feGaussianBlur stdDeviation="5" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
+        <div className="bar-chart-wrap">
+          <div className="bar-chart-grid" />
+          <div className="bar-chart-columns">
+            {bars.map((bar) => {
+              const height = Math.max(18, (bar.value / maxBar) * 160);
 
-            {[0, 1, 2, 3].map((i) => (
-              <line
-                key={i}
-                x1="12"
-                x2="378"
-                y1={38 + i * 44}
-                y2={38 + i * 44}
-                stroke="rgba(255,255,255,0.07)"
-                strokeWidth="1"
-              />
-            ))}
+              return (
+                <div key={bar.name} className="bar-chart-col">
+                  <div className="bar-chart-value">
+                    {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+                  </div>
 
-            <path
-              d={`${basePath} L 352 194 L 16 194 Z`}
-              fill="rgba(255,255,255,0.03)"
-            />
-            <path
-              d={`${activePath} L 352 194 L 16 194 Z`}
-              fill="rgba(247,210,55,0.085)"
-            />
+                  <div className="bar-chart-bar-shell">
+                    <div
+                      className={`bar-chart-bar ${bar.good ? "bar-good" : "bar-bad"}`}
+                      style={{ height: `${height}px` }}
+                    />
+                  </div>
 
-            <path
-              d={basePath}
-              fill="none"
-              stroke="url(#chartBase)"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d={activePath}
-              fill="none"
-              stroke="url(#chartActive)"
-              strokeWidth="4"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              filter="url(#chartGlow)"
-            />
-
-            {points.map((p, idx) => (
-              <circle
-                key={idx}
-                cx={p.x}
-                cy={p.activeY}
-                r="4.5"
-                fill="#f7d237"
-                opacity={0.96}
-              />
-            ))}
-          </svg>
+                  <div className="bar-chart-label">{bar.name}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        <div className="hero-chart-bottom">
-          <div className="hero-money-card">
+        <div className="hero-chart-bottom no-border-cards">
+          <div className="hero-money-card hero-money-card-clean">
             <span>База</span>
-            <strong>{fmtMoney(baseRevenue)}</strong>
-            <small>{fmtMoney(baseProfit)} прибыли / мес</small>
+            <strong>{fmtMoney(base.revenue)}</strong>
+            <small>{fmtMoney(base.grossProfit)} gross profit / мес</small>
           </div>
 
-          <div className="hero-money-card hero-money-card-accent">
-            <span>Активный рычаг</span>
-            <strong>{fmtMoney(activeRevenue)}</strong>
-            <small>{fmtMoney(activeProfit)} прибыли / мес</small>
+          <div className="hero-money-card hero-money-card-clean">
+            <span>Активный драйвер</span>
+            <strong>{fmtMoney(active.revenue)}</strong>
+            <small>{fmtMoney(active.grossProfit)} gross profit / мес</small>
           </div>
         </div>
 
-        <div className="hero-chart-note">
-          Сейчас подсвечен <span>{active.full}</span> — {active.deltaLabel}.
+        <div className="hero-active-note">
+          <span className="hero-active-note-dot" />
+          <span>
+            Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
+          </span>
         </div>
       </div>
     </aside>
@@ -453,21 +426,79 @@ function SnapshotStructure() {
     </div>
   );
 }
+
 function ResultDocCard({
+  tab,
   title,
   text,
 }: {
+  tab: string;
   title: string;
   text: string;
 }) {
   return (
-    <div className="result-doc-card">
-      <div className="result-doc-tab">Документ</div>
+    <div className="result-doc-card result-doc-card-grid">
+      <div className="result-doc-tab">{tab}</div>
       <div className="result-doc-title">{title}</div>
       <div className="result-doc-text">{text}</div>
     </div>
   );
 }
+
+function StageCard({
+  stage,
+  icon,
+  request,
+  goal,
+  path,
+  result,
+}: {
+  stage: string;
+  icon: string;
+  request: string;
+  goal: string;
+  path: string;
+  result: string;
+}) {
+  return (
+    <div className="stage-card stage-card-animated">
+      <div className="stage-card-glow" />
+
+      <div className="stage-icon">
+        <img src={icon} alt={stage} />
+        <div className="stage-label">
+          <span>stage</span>
+          <b>{stage}</b>
+        </div>
+      </div>
+
+      <div className="stage-content">
+        <div className="stage-row">
+          <div className="stage-title">Запрос</div>
+          <div className="stage-text">{request}</div>
+        </div>
+
+        <div className="stage-row">
+          <div className="stage-title">Выявленная цель</div>
+          <div className="stage-text">{goal}</div>
+        </div>
+
+        <div className="stage-row">
+          <div className="stage-title">
+            Как достичь цели в рамках текущих ресурсов
+          </div>
+          <div className="stage-text">{path}</div>
+        </div>
+
+        <div className="stage-row">
+          <div className="stage-title">Решение</div>
+          <div className="stage-text">{result}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
@@ -480,63 +511,76 @@ export default function Home() {
   const [upsell, setUpsell] = useState(0);
   const [opexEff, setOpexEff] = useState(0);
 
-  const [activeDoc, setActiveDoc] = useState(0);
+  const [history, setHistory] = useState<
+    Array<{
+      clientsInput: string;
+      checkInput: string;
+      sales: number;
+      retention: number;
+      upsell: number;
+      opexEff: number;
+    }>
+  >([]);
 
   const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
-  const nicheText = [
-    "SaaS",
-    "E-com",
-    "FinTech",
-    "EdTech",
-    "HealthTech",
-    "B2B",
-  ];
-
-  const stageCards = [
-    {
-      title: "Seed Stage",
-      subtitle: "Работа над идеей, создание прототипа и проверка рынка.",
-    },
-    {
-      title: "Startup Stage",
-      subtitle:
-        "Официальный выход на рынок, первые продажи и привлечение клиентов.",
-    },
-    {
-      title: "Growth Stage",
-      subtitle:
-        "Период стабильного увеличения выручки и расширения клиентской базы.",
-    },
-    {
-      title: "Expansion Stage",
-      subtitle:
-        "Выход на новые уровни: захват новых рынков, добавление линеек продуктов или международная экспансия.",
-    },
-  ];
-
   const resultDocs = [
     {
+      tab: "Economic Rate",
       title: "Executive Summary",
-      text: "Краткая стратегическая картина: как сейчас устроена экономика бизнеса и где сосредоточено главное напряжение.",
+      text: "Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент.",
     },
     {
-      title: "Revenue Leaks",
-      text: "Разбор участков, в которых бизнес теряет деньги: продукт, конверсия, повторные продажи, цена и операционная логика.",
+      tab: "Growth Limit",
+      title: "Key Conclusions",
+      text: "Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели.",
     },
     {
-      title: "Главное направление роста",
-      text: "Определение того, какое изменение способно дать наибольший финансовый эффект без хаотичного наращивания маркетинга.",
+      tab: "Solution",
+      title: "Strategy&Practice",
+      text: "На основе проведенного анализа данных определяется первичная задача: целью по сути всегда является повышение дохода, но так как доход строится на огромном количестве факторов, то и первостепенные действия направлены на закрытие текущих точек риска. Предлагается продуктовый MVP в соответствие с ресурсами компании.",
     },
     {
-      title: "Priority Actions",
-      text: "Очередность действий: что усиливать в первую очередь, а что пока не является главным ограничением.",
+      tab: "JTBD",
+      title: "RoadMap",
+      text: "Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP. Определение KPI для каждого из этапов в соответствие поставленным задачам и целям.",
     },
   ];
 
+  const pushHistory = () => {
+    setHistory((prev) => [
+      ...prev,
+      {
+        clientsInput,
+        checkInput,
+        sales,
+        retention,
+        upsell,
+        opexEff,
+      },
+    ]);
+  };
+
+  const handleUndo = () => {
+    setHistory((prev) => {
+      if (!prev.length) return prev;
+      const last = prev[prev.length - 1];
+
+      setClientsInput(last.clientsInput);
+      setCheckInput(last.checkInput);
+      setSales(last.sales);
+      setRetention(last.retention);
+      setUpsell(last.upsell);
+      setOpexEff(last.opexEff);
+
+      return prev.slice(0, -1);
+    });
+  };
+
   const handleReset = () => {
+    pushHistory();
     setClientsInput("20");
     setCheckInput("2000");
     setSales(0);
@@ -554,7 +598,6 @@ export default function Home() {
     const avgCheck = safeCheck * (1 + upsell * 0.7);
 
     const revenue = newClients * avgCheck * retainedRevenueLift;
-
     const salesCost = revenue * 0.18 * (1 + sales * 0.4);
     const support = revenue * 0.06 * (1 + retention * 0.25);
     const opex = revenue * 0.35 * (1 - opexEff * 0.8);
@@ -602,10 +645,7 @@ export default function Home() {
 
   const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
   const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(
-    data.salesCost - base.salesCost,
-    base.salesCost
-  );
+  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
   const opexSupportDelta = safeDiv(
     data.opex + data.support - (base.opex + base.support),
     base.opex + base.support
@@ -687,7 +727,10 @@ export default function Home() {
                 Как это работает
               </a>
 
-              <a href="#try" className="tg-gradient-btn tg-gradient-btn-header inline-flex">
+              <a
+                href="#try"
+                className="tg-gradient-btn tg-gradient-btn-header inline-flex"
+              >
                 Попробовать Snapshot
               </a>
             </div>
@@ -719,22 +762,16 @@ export default function Home() {
               денег.
             </p>
 
-            <div className="hero-highlights-row">
-              <div className="hero-highlight-chip hero-chip-shimmer">
-                Найти утечки
+            <div className="hero-highlights-row hero-highlights-row-unified">
+              <div className="hero-highlight-chip hero-chip-unified">
+                Упущенная выгода
               </div>
-              <div className="hero-highlight-chip hero-chip-shimmer">
-                Увидеть главный рычаг
+              <div className="hero-highlight-chip hero-chip-unified">
+                Драйвер роста
               </div>
-              <div className="hero-highlight-chip hero-chip-shimmer">
-                Выбрать фокус
+              <div className="hero-highlight-chip hero-chip-unified">
+                Главный фокус
               </div>
-            </div>
-
-            <div className="hero-highlights-sub">
-              <div className="hero-highlight-subtext">в экономике бизнеса</div>
-              <div className="hero-highlight-subtext">усиления и роста модели</div>
-              <div className="hero-highlight-subtext">вместо хаотичных гипотез</div>
             </div>
 
             <div className="mt-7 flex flex-wrap gap-3">
@@ -768,8 +805,8 @@ export default function Home() {
               </div>
               <div className="journey-compact-title">Знакомство с инструментом</div>
               <div className="journey-compact-text">
-                На посадочной пользователь видит механику модели и понимает,
-                что влияет на деньги компании.
+                На посадочной пользователь видит механику модели и понимает, что
+                влияет на деньги компании.
               </div>
             </div>
 
@@ -780,8 +817,8 @@ export default function Home() {
               </div>
               <div className="journey-compact-title">Оплата и переход в Telegram</div>
               <div className="journey-compact-text">
-                После оплаты бот собирает данные о продукте, трафике,
-                продажах, экономике и операционных ограничениях.
+                После оплаты бот собирает данные о продукте, трафике, продажах,
+                экономике и операционных ограничениях.
               </div>
             </div>
 
@@ -791,8 +828,8 @@ export default function Home() {
               </div>
               <div className="journey-compact-title">Готовый Revenue Snapshot</div>
               <div className="journey-compact-text">
-                На выходе — структурированный разбор с выводами,
-                проблемными зонами и приоритетом следующих действий.
+                На выходе — структурированный разбор с выводами, проблемными зонами
+                и приоритетом следующих действий.
               </div>
             </div>
           </div>
@@ -804,12 +841,58 @@ export default function Home() {
             <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
             <p className="section-copy">
               Здесь пользователь меняет ключевые параметры и видит предварительные
-              сигналы. Полный разбор открывается после оплаты.
+              сигналы. Полный разбор открывается после оплаты. Модель на этой
+              странице не передает и не запоминает введенные вами данные, поэтому
+              сценарий безопасен для быстрого теста.
             </p>
           </div>
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
             <div>
+              <div className="input-grid mb-6 gap-3">
+                <label className="input-shell input-shell-highlight">
+                  <span className="input-label input-label-strong">
+                    Клиентов / месяц
+                  </span>
+
+                  <div className="input-wrap input-wrap-primary">
+                    <span className="input-badge">ввод</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={clientsInput}
+                      onFocus={pushHistory}
+                      onChange={(e) =>
+                        setClientsInput(normalizeDigits(e.target.value))
+                      }
+                      className="glass-input glass-input-primary"
+                      placeholder="Например, 20"
+                    />
+                  </div>
+                </label>
+
+                <label className="input-shell input-shell-highlight">
+                  <span className="input-label input-label-strong">
+                    Средний чек
+                  </span>
+
+                  <div className="input-wrap input-wrap-primary">
+                    <span className="input-badge">ввод</span>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={checkInput}
+                      onFocus={pushHistory}
+                      onChange={(e) =>
+                        setCheckInput(normalizeDigits(e.target.value))
+                      }
+                      className="glass-input glass-input-primary"
+                      placeholder="Например, 2000"
+                    />
+                  </div>
+                </label>
+              </div>
+
               <section className="dashboard-grid">
                 <div className="dashboard-revenue">
                   <TopMetricCard
@@ -872,13 +955,21 @@ export default function Home() {
 
               <div className="mt-6 flex items-center justify-between">
                 <div className="text-sm text-white/58">Рычаги управления</div>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="reset-link"
-                >
-                  Сбросить
-                </button>
+
+                <div className="preview-actions-inline">
+                  <button
+                    type="button"
+                    onClick={handleUndo}
+                    className="reset-link"
+                    disabled={!history.length}
+                  >
+                    Отменить действие
+                  </button>
+
+                  <button type="button" onClick={handleReset} className="reset-link">
+                    Сбросить
+                  </button>
+                </div>
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
@@ -887,24 +978,28 @@ export default function Home() {
                   subtitle="Влияние на конверсию и поток клиентов."
                   value={sales}
                   set={setSales}
+                  onStart={pushHistory}
                 />
                 <Slider
                   title="Повторные продажи"
                   subtitle="Влияние на устойчивость выручки."
                   value={retention}
                   set={setRetention}
+                  onStart={pushHistory}
                 />
                 <Slider
                   title="Средний чек"
                   subtitle="Рост денег без роста трафика."
                   value={upsell}
                   set={setUpsell}
+                  onStart={pushHistory}
                 />
                 <Slider
                   title="Загрузка команды"
                   subtitle="Влияние на расходы и маржу."
                   value={opexEff}
                   set={setOpexEff}
+                  onStart={pushHistory}
                 />
               </div>
             </div>
@@ -936,8 +1031,8 @@ export default function Home() {
                   </>
                 ) : (
                   <div className="text-sm leading-relaxed text-white/68">
-                    Подвигайте ползунки ниже, чтобы увидеть, какой рычаг
-                    заметнее всего влияет на экономику модели.
+                    Подвигайте ползунки ниже, чтобы увидеть, какой рычаг заметнее
+                    всего влияет на экономику модели.
                   </div>
                 )}
               </div>
@@ -958,95 +1053,95 @@ export default function Home() {
         <section className="mb-12">
           <div className="section-head">
             <div className="section-kicker">Что вы получите</div>
-            <h2 className="section-title">
-              Структурированный результат, а не общие советы
-            </h2>
+            <h2 className="section-title">Цели Revenue Snapshot</h2>
             <p className="section-copy">
-              После анализа пользователь получает понятный разбор текущей модели,
-              проблемных зон и приоритета следующих действий.
+              Понять, каким должен быть первый{" "}
+              <span className="accent-word">верный</span> шаг к построению новой
+              стратегии для новых рубежей.
             </p>
           </div>
 
-          <div className="stacked-docs">
-            {resultDocs.map((doc, index) => {
-              const order = index === activeDoc ? 100 : index;
-              const left = index * 120;
-
-              return (
-                <button
-                  key={doc.title}
-                  type="button"
-                  onClick={() => setActiveDoc(index)}
-                  className={`stacked-doc-btn ${index === activeDoc ? "is-active" : ""}`}
-                  style={{
-                    zIndex: order,
-                    left: `${left}px`,
-                    transform:
-                      index === activeDoc
-                        ? "translateY(0px) scale(1)"
-                        : `translateY(${index * 8}px) scale(0.98)`,
-                  }}
-                >
-                  <ResultDocCard title={doc.title} text={doc.text} />
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="mb-12">
-          <div className="section-head">
-            <div className="section-kicker">Пример результата</div>
-            <h2 className="section-title">
-              Покажите пример Snapshot прямо на посадочной
-            </h2>
-            <p className="section-copy">
-              Даже один хороший скриншот Notion-страницы заметно усиливает доверие.
-            </p>
-          </div>
-
-          <div className="glass-card notion-mock-card">
-            <div className="text-sm uppercase tracking-[0.18em] text-[#f7d237]">
-              Пример выдачи
-            </div>
-            <div className="mt-3 text-2xl font-semibold text-white">
-              Revenue Snapshot / Notion Report
-            </div>
-
-            <div className="mt-5 overflow-hidden rounded-[22px] border border-white/10 bg-[#11264b]/75">
-              <img
-                src="/result-preview.png"
-                alt="Пример результата Revenue Snapshot"
-                className="block h-auto w-full object-cover"
+          <div className="results-grid-2x2">
+            {resultDocs.map((doc) => (
+              <ResultDocCard
+                key={doc.title}
+                tab={doc.tab}
+                title={doc.title}
+                text={doc.text}
               />
-            </div>
+            ))}
+          </div>
+
+          <div className="results-footer-cta">
+            <p className="results-footer-text">
+              После получения и изучения результатов у Вас есть возможность
+              назначить 30-минутную встречу с нашими C-level специалистами в сфере
+              Маркетинга и Продаж для декомпозиции результатов.
+            </p>
+
+            <a href="#try" className="tg-gradient-btn inline-flex">
+              Начать
+            </a>
           </div>
         </section>
 
-        <section className="mb-12">
+        <section className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Для кого этот инструмент</div>
+
             <h2 className="section-title">
-              Подходит, если вы узнаете себя в этом
+              Revenue Snapshot проверен на таких направлениях как
             </h2>
+
+            <div className="industries-row">
+              SaaS · E-com · FinTech · EdTech · HealthTech · B2B
+            </div>
           </div>
 
-          <div className="niche-inline-text">
-            {nicheText.map((item, index) => (
-              <span key={item} className="niche-gradient-text">
-                {item}
-                {index < nicheText.length - 1 ? " · " : ""}
-              </span>
-            ))}
-          </div>
+          <div className="stage-grid stage-grid-detailed">
+            <div className="stage-delay-1">
+              <StageCard
+                stage="Seed"
+                icon="/stages/seed.svg"
+                request="Проверка идеи продукта"
+                goal="Найти первую рабочую экономику"
+                path="Как выйти на первые продажи"
+                result="Понимание MVP-модели"
+              />
+            </div>
 
-          <div className="stage-grid mt-6">
-            {stageCards.map((item) => (
-              <div key={item.title} className="stage-card">
-                <div className="stage-card-title-text">{item.title}</div>
-                <div className="stage-card-subtitle">{item.subtitle}</div>
-              </div>
-            ))}
+            <div className="stage-delay-2">
+              <StageCard
+                stage="Startup"
+                icon="/stages/startup.svg"
+                request="Рост первых продаж"
+                goal="Увеличить поток клиентов"
+                path="Как масштабировать спрос"
+                result="Определение ключевых рычагов"
+              />
+            </div>
+
+            <div className="stage-delay-3">
+              <StageCard
+                stage="Growth"
+                icon="/stages/growth.svg"
+                request="Ускорение роста"
+                goal="Повысить доходность бизнеса"
+                path="Оптимизация unit-экономики"
+                result="Сильная экономическая модель"
+              />
+            </div>
+
+            <div className="stage-delay-4">
+              <StageCard
+                stage="Expansion"
+                icon="/stages/expansion.svg"
+                request="Выход на новые рынки"
+                goal="Найти новый уровень роста"
+                path="Стратегия масштабирования"
+                result="Новая стратегия роста"
+              />
+            </div>
           </div>
         </section>
 
@@ -1058,7 +1153,8 @@ export default function Home() {
             </h2>
             <p className="section-copy">
               Telegram используется как удобный интерфейс сбора данных. Ответы
-              анализируются автоматически и превращаются в структурированный результат.
+              анализируются автоматически и превращаются в структурированный
+              результат.
             </p>
           </div>
 
@@ -1070,9 +1166,9 @@ export default function Home() {
                 Что происходит дальше
               </h3>
               <p className="mt-4 text-sm leading-8 text-white/68">
-                Ответы анализируются автоматически, после чего данные
-                собираются в итоговый Revenue Snapshot с выводами, ключевыми
-                точками потери выручки и приоритетом следующих шагов.
+                Ответы анализируются автоматически, после чего данные собираются в
+                итоговый Revenue Snapshot с выводами, ключевыми точками потери
+                выручки и приоритетом следующих шагов.
               </p>
 
               <div className="mt-5 flex flex-wrap gap-3">
@@ -1214,52 +1310,52 @@ export default function Home() {
           margin-top: 28px;
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 10px;
+          gap: 0;
+          border-radius: 20px;
+          overflow: hidden;
+          position: relative;
+        }
+
+        .hero-highlights-row-unified {
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background:
+            linear-gradient(
+              115deg,
+              rgba(255, 255, 255, 0.04) 0%,
+              rgba(255, 255, 255, 0.06) 20%,
+              rgba(247, 210, 55, 0.12) 40%,
+              rgba(123, 132, 255, 0.12) 62%,
+              rgba(194, 92, 243, 0.12) 84%,
+              rgba(255, 255, 255, 0.05) 100%
+            );
+          background-size: 220% 220%;
+          animation: unifiedGradientFlow 10s ease-in-out infinite;
         }
 
         .hero-highlight-chip {
-          border-radius: 16px;
-          padding: 14px 16px;
-          background: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          padding: 16px 18px;
           color: white;
           font-size: 15px;
           font-weight: 700;
           text-align: center;
           white-space: nowrap;
           line-height: 1.2;
-          overflow: hidden;
           position: relative;
+          background: transparent;
         }
 
-        .hero-chip-shimmer::before {
+        .hero-highlight-chip:not(:last-child)::after {
           content: "";
           position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            115deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.06) 20%,
-            rgba(247, 210, 55, 0.2) 35%,
-            rgba(162, 105, 255, 0.18) 55%,
-            transparent 72%
-          );
-          transform: translateX(-130%);
-          animation: chipShimmer 5.8s ease-in-out infinite;
+          top: 12px;
+          right: 0;
+          width: 1px;
+          height: calc(100% - 24px);
+          background: rgba(255, 255, 255, 0.09);
         }
 
-        .hero-highlights-sub {
-          margin-top: 10px;
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 10px;
-        }
-
-        .hero-highlight-subtext {
-          font-size: 13px;
-          line-height: 1.5;
-          text-align: center;
-          color: rgba(255, 255, 255, 0.56);
+        .hero-chip-unified {
+          backdrop-filter: blur(2px);
         }
 
         .hero-levers-inline {
@@ -1335,31 +1431,118 @@ export default function Home() {
           line-height: 1.2;
           font-weight: 700;
           color: white;
+          white-space: nowrap;
         }
 
-        .hero-chart-svg-wrap {
-          overflow: hidden;
-          border-radius: 20px;
+        .bar-chart-wrap {
+          position: relative;
+          margin-top: 6px;
+          border-radius: 22px;
+          padding: 18px 14px 14px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.05),
+            rgba(255, 255, 255, 0.045),
             rgba(255, 255, 255, 0.02)
           );
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          padding: 10px;
+          overflow: hidden;
         }
 
-        .hero-chart-svg {
+        .bar-chart-grid {
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
+          background-size: 100% 40px;
+          mask-image: linear-gradient(
+            180deg,
+            rgba(0, 0, 0, 0.95),
+            rgba(0, 0, 0, 0.8)
+          );
+          pointer-events: none;
+        }
+
+        .bar-chart-columns {
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: repeat(5, minmax(0, 1fr));
+          gap: 10px;
+          align-items: end;
+          min-height: 240px;
+        }
+
+        .bar-chart-col {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          min-height: 240px;
+        }
+
+        .bar-chart-value {
+          font-size: 11px;
+          line-height: 1.3;
+          color: rgba(255, 255, 255, 0.7);
+          text-align: center;
+          min-height: 28px;
+        }
+
+        .bar-chart-bar-shell {
           width: 100%;
-          height: auto;
-          display: block;
+          max-width: 54px;
+          height: 170px;
+          display: flex;
+          align-items: flex-end;
+          justify-content: center;
+        }
+
+        .bar-chart-bar {
+          width: 100%;
+          border-radius: 14px 14px 6px 6px;
+          transition: height 0.8s ease, transform 0.8s ease;
+          box-shadow:
+            0 10px 24px rgba(0, 0, 0, 0.14),
+            0 0 18px rgba(255, 255, 255, 0.04);
+        }
+
+        .bar-good {
+          background: linear-gradient(
+            180deg,
+            rgba(247, 210, 55, 1) 0%,
+            rgba(244, 221, 114, 1) 55%,
+            rgba(176, 140, 255, 0.95) 100%
+          );
+        }
+
+        .bar-bad {
+          background: linear-gradient(
+            180deg,
+            rgba(95, 179, 179, 0.95) 0%,
+            rgba(93, 167, 255, 0.95) 60%,
+            rgba(124, 132, 255, 0.9) 100%
+          );
+        }
+
+        .bar-chart-label {
+          font-size: 11px;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.62);
+          text-align: center;
+          line-height: 1.35;
+          min-height: 32px;
         }
 
         .hero-chart-bottom {
-          margin-top: 12px;
+          margin-top: 14px;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 10px;
+        }
+
+        .no-border-cards {
+          margin-top: 14px;
         }
 
         .hero-money-card {
@@ -1367,6 +1550,12 @@ export default function Home() {
           border: 1px solid rgba(255, 255, 255, 0.08);
           background: rgba(255, 255, 255, 0.03);
           padding: 12px;
+        }
+
+        .hero-money-card-clean {
+          border: 0;
+          background: transparent;
+          padding: 0;
         }
 
         .hero-money-card span {
@@ -1383,6 +1572,7 @@ export default function Home() {
           font-size: 22px;
           font-weight: 700;
           color: white;
+          white-space: nowrap;
         }
 
         .hero-money-card small {
@@ -1392,24 +1582,36 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.58);
         }
 
-        .hero-money-card-accent {
-          border-color: rgba(247, 210, 55, 0.22);
-        }
-
-        .hero-chart-note {
-          margin-top: 10px;
+        .hero-active-note {
+          margin-top: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(247, 210, 55, 0.18);
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 999px;
+          padding: 9px 12px;
+          color: rgba(255, 255, 255, 0.72);
           font-size: 13px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.62);
+          line-height: 1.45;
         }
 
-        .hero-chart-note span {
+        .hero-active-note b {
           color: #f7d237;
-          font-weight: 700;
+        }
+
+        .hero-active-note-dot {
+          width: 7px;
+          height: 7px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
+          animation: pulseTinyYellow 1.8s ease-in-out infinite;
+          flex-shrink: 0;
         }
 
         .section-head {
-          max-width: 860px;
+          max-width: 920px;
           margin-bottom: 18px;
         }
 
@@ -1625,6 +1827,118 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.66);
         }
 
+        .input-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        .input-shell {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .input-shell-highlight {
+          position: relative;
+        }
+
+        .input-label {
+          font-size: 12px;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.52);
+          padding-left: 4px;
+        }
+
+        .input-label-strong {
+          color: rgba(255, 255, 255, 0.82);
+          font-weight: 700;
+          letter-spacing: 0.06em;
+        }
+
+        .input-wrap {
+          position: relative;
+        }
+
+        .input-wrap-primary::before {
+          content: "";
+          position: absolute;
+          inset: -2px;
+          border-radius: 20px;
+          background: linear-gradient(
+            135deg,
+            rgba(247, 210, 55, 0.52),
+            rgba(120, 132, 255, 0.16),
+            rgba(255, 255, 255, 0.08)
+          );
+          opacity: 0.95;
+          z-index: 0;
+        }
+
+        .input-badge {
+          position: absolute;
+          top: 10px;
+          right: 12px;
+          z-index: 3;
+          border-radius: 9999px;
+          padding: 4px 8px;
+          font-size: 10px;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          text-transform: uppercase;
+          color: #0b1d3a;
+          background: rgba(247, 210, 55, 0.95);
+          box-shadow:
+            0 4px 14px rgba(247, 210, 55, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .glass-input {
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.055)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          padding: 14px 16px;
+          border-radius: 18px;
+          backdrop-filter: blur(18px);
+          color: white;
+          font-size: 20px;
+          font-weight: 500;
+          width: 100%;
+          transition: 0.25s ease;
+        }
+
+        .glass-input-primary {
+          position: relative;
+          z-index: 1;
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.15),
+            rgba(255, 255, 255, 0.075)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.22);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.2),
+            0 12px 34px rgba(0, 0, 0, 0.12),
+            0 0 28px rgba(247, 210, 55, 0.08),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-input::placeholder {
+          color: rgba(255, 255, 255, 0.35);
+        }
+
+        .glass-input:focus {
+          outline: none;
+          border-color: rgba(247, 210, 55, 0.75);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.22),
+            0 0 30px rgba(247, 210, 55, 0.12),
+            0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
         .dashboard-grid {
           display: grid;
           grid-template-columns: 1fr 1fr 1fr;
@@ -1632,7 +1946,7 @@ export default function Home() {
         }
 
         .metric-card {
-          min-height: 96px;
+          min-height: 102px;
         }
 
         .metric-card-main {
@@ -1644,11 +1958,23 @@ export default function Home() {
             0 0 0 1px rgba(255, 255, 255, 0.02);
         }
 
-        .metric-head {
+        .metric-head,
+        .model-head {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
           gap: 10px;
+        }
+
+        .metric-title-wrap {
+          min-width: 0;
+        }
+
+        .metric-right-meta {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-shrink: 0;
         }
 
         .metric-flag {
@@ -1659,6 +1985,32 @@ export default function Home() {
           font-weight: 700;
           letter-spacing: 0.01em;
           border: 1px solid transparent;
+        }
+
+        .metric-delta-top,
+        .model-delta-top {
+          font-size: 15px;
+          font-weight: 700;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        .metric-main-value {
+          margin-top: 16px;
+          font-size: clamp(1.6rem, 2.1vw, 2.4rem);
+          line-height: 1.05;
+          font-weight: 700;
+          white-space: nowrap;
+          letter-spacing: -0.02em;
+        }
+
+        .model-main-value {
+          margin-top: 14px;
+          font-size: clamp(1.2rem, 1.55vw, 1.65rem);
+          line-height: 1.05;
+          font-weight: 600;
+          white-space: nowrap;
+          letter-spacing: -0.01em;
         }
 
         .flag-good {
@@ -1680,7 +2032,7 @@ export default function Home() {
         }
 
         .model-card {
-          min-height: 94px;
+          min-height: 92px;
           padding: 14px;
         }
 
@@ -1703,6 +2055,17 @@ export default function Home() {
 
         .reset-link:hover {
           color: #ffffff;
+        }
+
+        .reset-link:disabled {
+          opacity: 0.35;
+          cursor: not-allowed;
+        }
+
+        .preview-actions-inline {
+          display: flex;
+          align-items: center;
+          gap: 14px;
         }
 
         .range-input {
@@ -1732,29 +2095,20 @@ export default function Home() {
           text-shadow: 0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-        .stacked-docs {
-          position: relative;
-          height: 420px;
-          overflow: hidden;
+        .accent-word {
+          color: #f7d237;
+          font-weight: 700;
         }
 
-        .stacked-doc-btn {
-          position: absolute;
-          top: 0;
-          width: 420px;
-          border: 0;
-          padding: 0;
-          background: transparent;
-          cursor: pointer;
-          transition: transform 0.28s ease, box-shadow 0.28s ease;
+        .results-grid-2x2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 18px;
+          margin-top: 18px;
         }
 
-        .stacked-doc-btn.is-active {
-          filter: brightness(1.02);
-        }
-
-        .result-doc-card {
-          min-height: 370px;
+        .result-doc-card-grid {
+          min-height: 320px;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
@@ -1768,10 +2122,9 @@ export default function Home() {
           box-shadow:
             0 20px 44px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          text-align: left;
         }
 
-        .result-doc-card::after {
+        .result-doc-card-grid::after {
           content: "";
           position: absolute;
           width: 180px;
@@ -1780,11 +2133,11 @@ export default function Home() {
           top: 24px;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.32),
+            rgba(247, 210, 55, 0.24),
             transparent 70%
           );
           filter: blur(18px);
-          opacity: 0.95;
+          opacity: 0.9;
           pointer-events: none;
         }
 
@@ -1808,7 +2161,7 @@ export default function Home() {
           position: relative;
           z-index: 2;
           margin-top: 22px;
-          font-size: 32px;
+          font-size: 34px;
           line-height: 1.08;
           font-weight: 600;
           color: white;
@@ -1817,73 +2170,238 @@ export default function Home() {
         .result-doc-text {
           position: relative;
           z-index: 2;
-          margin-top: 16px;
+          margin-top: 18px;
           font-size: 17px;
           line-height: 1.8;
           color: rgba(255, 255, 255, 0.72);
-          max-width: 620px;
         }
 
-        .niche-inline-text {
-          margin-top: 10px;
-          font-size: 18px;
+        .results-footer-cta {
+          margin-top: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 20px;
+          border-radius: 26px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.035);
+          padding: 20px 22px;
+        }
+
+        .results-footer-text {
+          max-width: 860px;
+          font-size: 15px;
           line-height: 1.8;
+          color: rgba(255, 255, 255, 0.72);
         }
 
-        .niche-gradient-text {
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 24%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          font-weight: 700;
+        .industries-row {
+          margin-top: 10px;
+          font-size: 20px;
+          color: #f7d237;
+          font-weight: 600;
+          letter-spacing: 0.02em;
         }
 
         .stage-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 14px;
+          gap: 22px;
+        }
+
+        .stage-grid-detailed {
+          margin-top: 30px;
+        }
+
+        .stage-delay-1,
+        .stage-delay-2,
+        .stage-delay-3,
+        .stage-delay-4 {
+          opacity: 0;
+          transform: translateY(24px) scale(0.985);
+          animation: stageReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .stage-delay-1 {
+          animation-delay: 0.05s;
+        }
+
+        .stage-delay-2 {
+          animation-delay: 0.16s;
+        }
+
+        .stage-delay-3 {
+          animation-delay: 0.28s;
+        }
+
+        .stage-delay-4 {
+          animation-delay: 0.4s;
         }
 
         .stage-card {
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.045)
-          );
-          padding: 18px;
-          min-height: 170px;
+          display: grid;
+          grid-template-columns: 180px 1fr;
+          gap: 30px;
+          padding: 28px;
+          border-radius: 26px;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(255, 255, 255, 0.09),
+              rgba(255, 255, 255, 0.035)
+            ),
+            radial-gradient(
+              circle at top left,
+              rgba(124, 132, 255, 0.08),
+              transparent 38%
+            );
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          position: relative;
+          overflow: hidden;
+          transition:
+            transform 0.35s ease,
+            border-color 0.35s ease,
+            box-shadow 0.35s ease,
+            background 0.35s ease;
         }
 
-        .stage-card-title-text {
-          font-size: 18px;
-          font-weight: 800;
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 24%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
+        .stage-card-animated {
+          box-shadow:
+            0 18px 40px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        .stage-card-subtitle {
-          margin-top: 14px;
+        .stage-card-glow {
+          position: absolute;
+          width: 220px;
+          height: 220px;
+          right: -60px;
+          top: -70px;
+          border-radius: 999px;
+          background: radial-gradient(
+            circle,
+            rgba(247, 210, 55, 0.16),
+            rgba(124, 132, 255, 0.08),
+            transparent 72%
+          );
+          filter: blur(24px);
+          opacity: 0;
+          transform: scale(0.9);
+          transition:
+            opacity 0.35s ease,
+            transform 0.35s ease;
+          pointer-events: none;
+        }
+
+        .stage-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          border-radius: inherit;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.04),
+            transparent 30%,
+            transparent 70%,
+            rgba(255, 255, 255, 0.035)
+          );
+          opacity: 0.8;
+          pointer-events: none;
+        }
+
+        .stage-card:hover {
+          transform: translateY(-6px);
+          border-color: rgba(247, 210, 55, 0.18);
+          box-shadow:
+            0 26px 54px rgba(0, 0, 0, 0.22),
+            0 0 0 1px rgba(247, 210, 55, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+        }
+
+        .stage-card:hover .stage-card-glow {
+          opacity: 1;
+          transform: scale(1);
+        }
+
+        .stage-card:hover .stage-title {
+          color: #ffe16e;
+        }
+
+        .stage-icon {
+          position: relative;
+          background: white;
+          border-radius: 22px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          transition:
+            transform 0.35s ease,
+            box-shadow 0.35s ease;
+        }
+
+        .stage-card:hover .stage-icon {
+          transform: translateY(-2px);
+          box-shadow:
+            0 18px 34px rgba(0, 0, 0, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.55);
+        }
+
+        .stage-icon img {
+          width: 90px;
+          transition: transform 0.35s ease;
+        }
+
+        .stage-card:hover .stage-icon img {
+          transform: scale(1.035);
+        }
+
+        .stage-label {
+          position: absolute;
+          top: 16px;
+          right: 16px;
+          text-align: right;
+          color: #0b1d3a;
+        }
+
+        .stage-label span {
+          font-size: 12px;
+        }
+
+        .stage-label b {
+          display: block;
           font-size: 18px;
-          line-height: 1.75;
-          color: rgba(255, 255, 255, 0.74);
+        }
+
+        .stage-content {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+        }
+
+        .stage-row {
+          transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .stage-card:hover .stage-row {
+          transform: translateX(2px);
+        }
+
+        .stage-title {
+          font-size: 18px;
+          font-weight: 600;
+          color: #f7d237;
+        }
+
+        .stage-text {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.75);
+          line-height: 1.7;
+          transition: color 0.3s ease;
+        }
+
+        .stage-card:hover .stage-text {
+          color: rgba(255, 255, 255, 0.84);
         }
 
         .analysis-grid {
@@ -2067,7 +2585,11 @@ export default function Home() {
           inset: 0;
           background-image:
             linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+            linear-gradient(
+              90deg,
+              rgba(255, 255, 255, 0.028) 1px,
+              transparent 1px
+            );
           background-size: 72px 72px;
           opacity: 0.22;
           mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
@@ -2079,8 +2601,14 @@ export default function Home() {
           pointer-events: none;
           opacity: 0.18;
           background-image:
-            radial-gradient(rgba(255, 255, 255, 0.06) 0.6px, transparent 0.6px),
-            radial-gradient(rgba(255, 255, 255, 0.038) 0.45px, transparent 0.45px),
+            radial-gradient(
+              rgba(255, 255, 255, 0.06) 0.6px,
+              transparent 0.6px
+            ),
+            radial-gradient(
+              rgba(255, 255, 255, 0.038) 0.45px,
+              transparent 0.45px
+            ),
             radial-gradient(rgba(0, 0, 0, 0.06) 0.7px, transparent 0.7px);
           background-size: 4px 4px, 6px 6px, 7px 7px;
           background-position: 0 0, 1px 2px, 2px 1px;
@@ -2093,8 +2621,14 @@ export default function Home() {
           pointer-events: none;
           opacity: 0.12;
           background-image:
-            radial-gradient(rgba(255, 255, 255, 0.12) 0.45px, transparent 0.45px),
-            radial-gradient(rgba(255, 255, 255, 0.08) 0.3px, transparent 0.3px);
+            radial-gradient(
+              rgba(255, 255, 255, 0.12) 0.45px,
+              transparent 0.45px
+            ),
+            radial-gradient(
+              rgba(255, 255, 255, 0.08) 0.3px,
+              transparent 0.3px
+            );
           background-size: 3px 3px, 5px 5px;
           background-position: 0 0, 2px 1px;
           mix-blend-mode: overlay;
@@ -2285,15 +2819,41 @@ export default function Home() {
           );
         }
 
-        @keyframes chipShimmer {
+        @keyframes unifiedGradientFlow {
           0% {
-            transform: translateX(-130%);
+            background-position: 0% 50%;
           }
           50% {
-            transform: translateX(130%);
+            background-position: 100% 50%;
           }
           100% {
-            transform: translateX(130%);
+            background-position: 0% 50%;
+          }
+        }
+
+        @keyframes pulseTinyYellow {
+          0% {
+            transform: scale(1);
+            opacity: 1;
+          }
+          50% {
+            transform: scale(1.22);
+            opacity: 0.72;
+          }
+          100% {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
+
+        @keyframes stageReveal {
+          0% {
+            opacity: 0;
+            transform: translateY(24px) scale(0.985);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
           }
         }
 
@@ -2430,12 +2990,14 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .stacked-docs {
-            height: 390px;
+          .results-grid-2x2,
+          .stage-grid {
+            grid-template-columns: 1fr;
           }
 
-          .stacked-doc-btn {
-            width: 360px;
+          .results-footer-cta {
+            flex-direction: column;
+            align-items: flex-start;
           }
         }
 
@@ -2445,21 +3007,8 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .hero-highlights-row,
-          .hero-highlights-sub {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-highlight-chip {
-            white-space: normal;
-          }
-
           .hero-chart-metrics-row {
             grid-template-columns: 1fr 1fr;
-          }
-
-          .stage-grid {
-            grid-template-columns: 1fr;
           }
 
           .dashboard-grid {
@@ -2470,29 +3019,22 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .stacked-docs {
-            height: auto;
-            display: grid;
-            gap: 14px;
-          }
-
-          .stacked-doc-btn {
-            position: relative;
-            left: 0 !important;
-            width: 100%;
-            transform: none !important;
-          }
-
-          .result-doc-card {
-            min-height: 280px;
-          }
-
           .snapshot-structure {
             height: 460px;
           }
 
           .arrow {
             display: none;
+          }
+        }
+
+        @media (max-width: 900px) {
+          .stage-card {
+            grid-template-columns: 120px 1fr;
+          }
+
+          .stage-icon img {
+            width: 60px;
           }
         }
 
@@ -2537,8 +3079,20 @@ export default function Home() {
             font-size: 28px;
           }
 
+          .hero-highlights-row {
+            grid-template-columns: 1fr;
+          }
+
+          .hero-highlight-chip {
+            white-space: normal;
+          }
+
           .hero-chart-metrics-row {
             grid-template-columns: 1fr 1fr;
+          }
+
+          .bar-chart-columns {
+            gap: 6px;
           }
 
           .metric-head {
@@ -2556,13 +3110,23 @@ export default function Home() {
             font-size: 2.4rem;
           }
 
+          .result-doc-card-grid {
+            min-height: auto;
+            padding: 20px;
+          }
+
           .result-doc-title {
-            font-size: 26px;
+            font-size: 28px;
           }
 
           .result-doc-text {
             font-size: 15px;
             line-height: 1.7;
+          }
+
+          .results-footer-text {
+            font-size: 14px;
+            line-height: 1.75;
           }
 
           .snapshot-structure {
@@ -2607,6 +3171,33 @@ export default function Home() {
           .topic-bottom-right {
             right: 6%;
             bottom: 4%;
+          }
+
+          .input-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .metric-main-value {
+            font-size: 1.85rem;
+          }
+
+          .model-main-value {
+            font-size: 1.2rem;
+          }
+
+          .metric-right-meta {
+            gap: 6px;
+          }
+
+          .metric-delta-top,
+          .model-delta-top {
+            font-size: 13px;
+          }
+
+          .preview-actions-inline {
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
           }
 
           .aurora {
