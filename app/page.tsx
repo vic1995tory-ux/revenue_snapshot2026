@@ -1146,7 +1146,7 @@ export default function Home() {
             <div className="stage-delay-1 stage-linked-card stage-seed">
               <StageCard
                 stage="Seed"
-                icon="/public/seed.svg"
+                icon="/seed.svg"
                 request="Проверка идеи продукта"
                 goal="Найти первую рабочую экономику"
                 path="Как выйти на первые продажи"
@@ -1157,7 +1157,7 @@ export default function Home() {
             <div className="stage-delay-2 stage-linked-card stage-startup">
               <StageCard
                 stage="Startup"
-                icon="/public/startup.svg"
+                icon="/startup.svg"
                 request="Рост первых продаж"
                 goal="Увеличить поток клиентов"
                 path="Как масштабировать спрос"
@@ -1168,7 +1168,7 @@ export default function Home() {
             <div className="stage-delay-3 stage-linked-card stage-growth">
               <StageCard
                 stage="Growth"
-                icon="/public/growth.svg"
+                icon="/growth.svg"
                 request="Ускорение роста"
                 goal="Повысить доходность бизнеса"
                 path="Оптимизация unit-экономики"
@@ -1179,7 +1179,7 @@ export default function Home() {
             <div className="stage-delay-4 stage-linked-card stage-expansion">
               <StageCard
                 stage="Expansion"
-                icon="/public/expansion.svg"
+                icon="/expansion.svg"
                 request="Выход на новые рынки"
                 goal="Найти новый уровень роста"
                 path="Стратегия масштабирования"
