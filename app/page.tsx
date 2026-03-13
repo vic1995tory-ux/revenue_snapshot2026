@@ -215,13 +215,13 @@ function Slider({
 function HeroEconomyChart() {
   const base = {
     leads: 10,
-    deals: 2,
-    avgCheck: 6500,
-    margin: 30,
-    revenue: 13000,
-    opex: 3500,
-    cogs: 3900,
-    grossProfit: 5600,
+    deals: 2.0,
+    aov: 3200,
+    margin: 31,
+    revenue: 6400,
+    opex: 2100,
+    cogs: 1800,
+    grossProfit: 2500,
   };
 
   const drivers = [
@@ -231,27 +231,27 @@ function HeroEconomyChart() {
       full: "Позиционирование",
       deltaLabel: "+рост спроса и конверсии",
       leads: 10,
-      deals: 2.4,
-      avgCheck: 6500,
-      margin: 48,
-      revenue: 15600,
-      opex: 3900,
-      cogs: 4200,
-      grossProfit: 7500,
+      deals: 2.3,
+      aov: 3200,
+      margin: 39,
+      revenue: 7360,
+      opex: 2300,
+      cogs: 1950,
+      grossProfit: 3110,
     },
     {
-      key: "check",
-      label: "#СреднийЧек",
-      full: "Средний чек",
-      deltaLabel: "+$1,100 к чеку",
+      key: "aov",
+      label: "#AOV",
+      full: "AOV",
+      deltaLabel: "+$800 к среднему чеку",
       leads: 10,
       deals: 2.0,
-      avgCheck: 7600,
-      margin: 49,
-      revenue: 15200,
-      opex: 3600,
-      cogs: 4200,
-      grossProfit: 7400,
+      aov: 4000,
+      margin: 42,
+      revenue: 8000,
+      opex: 2300,
+      cogs: 2100,
+      grossProfit: 3600,
     },
     {
       key: "sales",
@@ -260,26 +260,26 @@ function HeroEconomyChart() {
       deltaLabel: "+0.8 сделки",
       leads: 10,
       deals: 2.8,
-      avgCheck: 6500,
-      margin: 47,
-      revenue: 18200,
-      opex: 4600,
-      cogs: 5100,
-      grossProfit: 8500,
+      aov: 3200,
+      margin: 41,
+      revenue: 8960,
+      opex: 2550,
+      cogs: 2280,
+      grossProfit: 4130,
     },
     {
       key: "costs",
       label: "#УправлениеРасходами",
       full: "Управление расходами",
-      deltaLabel: "-давление на OPEX и Margin",
+      deltaLabel: "ниже нагрузка на OPEX",
       leads: 10,
       deals: 2.0,
-      avgCheck: 6500,
-      margin: 51,
-      revenue: 13000,
-      opex: 2500,
-      cogs: 3900,
-      grossProfit: 6600,
+      aov: 3200,
+      margin: 45,
+      revenue: 6400,
+      opex: 1500,
+      cogs: 1700,
+      grossProfit: 3200,
     },
   ];
 
@@ -289,7 +289,7 @@ function HeroEconomyChart() {
   useEffect(() => {
     timerRef.current = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3200);
+    }, 3400);
 
     return () => {
       if (timerRef.current) window.clearInterval(timerRef.current);
@@ -301,7 +301,7 @@ function HeroEconomyChart() {
     if (timerRef.current) window.clearInterval(timerRef.current);
     timerRef.current = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3200);
+    }, 3400);
   };
 
   const active = drivers[activeIndex];
@@ -310,45 +310,33 @@ function HeroEconomyChart() {
     { name: "Revenue", value: active.revenue, good: true, isPercent: false },
     { name: "OPEX", value: active.opex, good: false, isPercent: false },
     { name: "COGS", value: active.cogs, good: false, isPercent: false },
-    {
-      name: "Gross Profit",
-      value: active.grossProfit,
-      good: true,
-      isPercent: false,
-    },
+    { name: "Gross Profit", value: active.grossProfit, good: true, isPercent: false },
     { name: "Margin", value: active.margin, good: true, isPercent: true },
   ];
 
   const maxBar = Math.max(...bars.map((b) => b.value));
 
   return (
-    <aside className="glass-card hero-chart-card">
-      <div className="text-sm text-white/55">Как двигается экономика</div>
-      <div className="mt-2 text-2xl font-semibold text-white md:text-[2rem] md:leading-[1.1]">
-        MVP-драйверы, которые меняют деньги в модели
-      </div>
-      <p className="mt-3 text-sm leading-7 text-white/64">
-        Сверху меняется драйвер, а диаграмма показывает, какие блоки экономики он
-        перестраивает сильнее всего.
-      </p>
+    <aside className="hero-visual-shell">
+      <img src="/hero.svg" alt="" className="hero-visual-bg" />
 
-      <div className="hero-levers-inline">
-        {drivers.map((item, index) => (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => setDriver(index)}
-            className={`hero-tag ${
-              index === activeIndex ? "hero-tag-active" : ""
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
+      <div className="hero-visual-content">
+        <div className="hero-visual-topline">MVP-Drivers</div>
 
-      <div className="hero-chart-box">
-        <div className="hero-chart-metrics-row">
+        <div className="hero-levers-inline hero-levers-inline-clean">
+          {drivers.map((item, index) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setDriver(index)}
+              className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="hero-chart-metrics-row hero-chart-metrics-row-clean">
           <div className="hero-metric-square">
             <span>Лидов / мес</span>
             <strong>{active.leads}</strong>
@@ -358,8 +346,8 @@ function HeroEconomyChart() {
             <strong>{active.deals.toFixed(1)}</strong>
           </div>
           <div className="hero-metric-square">
-            <span>Средний чек</span>
-            <strong>{fmtMoney(active.avgCheck)}</strong>
+            <span>AOV</span>
+            <strong>{fmtMoney(active.aov)}</strong>
           </div>
           <div className="hero-metric-square">
             <span>Маржа</span>
@@ -367,12 +355,11 @@ function HeroEconomyChart() {
           </div>
         </div>
 
-        <div className="bar-chart-wrap">
+        <div className="hero-bars-standalone">
           <div className="bar-chart-grid" />
-
           <div className="bar-chart-columns">
             {bars.map((bar) => {
-              const height = Math.max(14, (bar.value / maxBar) * 116);
+              const height = Math.max(14, (bar.value / maxBar) * 138);
 
               return (
                 <div key={bar.name} className="bar-chart-col">
@@ -382,9 +369,7 @@ function HeroEconomyChart() {
 
                   <div className="bar-chart-bar-shell">
                     <div
-                      className={`bar-chart-bar ${
-                        bar.good ? "bar-good" : "bar-bad"
-                      }`}
+                      className={`bar-chart-bar ${bar.good ? "bar-good" : "bar-bad"}`}
                       style={{ height: `${height}px` }}
                     />
                   </div>
@@ -396,7 +381,7 @@ function HeroEconomyChart() {
           </div>
         </div>
 
-        <div className="hero-chart-bottom">
+        <div className="hero-chart-bottom hero-chart-bottom-clean">
           <div className="hero-money-card hero-money-card-clean">
             <span>База</span>
             <strong>{fmtMoney(base.revenue)}</strong>
@@ -787,20 +772,14 @@ export default function Home() {
 
             <div className="hero-highlights-row hero-highlights-row-unified">
               <div className="hero-highlight-chip hero-chip-unified">
-                Упущенная выгода
+                MVP
               </div>
               <div className="hero-highlight-chip hero-chip-unified">
-                Драйвер роста
+                CashCow
               </div>
               <div className="hero-highlight-chip hero-chip-unified">
-                Главный фокус
+                Scaling
               </div>
-            </div>
-
-            <div className="hero-stage-mini">
-              <span>MVP</span>
-              <span>CashCow</span>
-              <span>Scaling</span>
             </div>
 
             <div className="hero-actions">
