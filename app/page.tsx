@@ -97,7 +97,7 @@ function TopMetricCard({
     <div className="glass-card soft-glow metric-card metric-card-main">
       <div className="metric-head">
         <div className="metric-title-wrap">
-          <div className="text-sm text-white/55">{title}</div>
+          <div className="metric-title">{title}</div>
         </div>
 
         <div className="metric-right-meta">
@@ -423,10 +423,8 @@ function HeroEconomyChart() {
 
 function SnapshotStructure() {
   return (
-    <div className="glass-card snapshot-structure-card snapshot-structure-card-builder">
-      <h3 className="text-lg font-semibold text-white">
-        Структура Revenue Snapshot
-      </h3>
+    <div className="snapshot-structure-plain">
+      <h3 className="snapshot-structure-title">Структура Revenue Snapshot</h3>
 
       <div className="snapshot-builder">
         <div className="builder-left">
@@ -496,7 +494,7 @@ function StageCard({
   result: string;
 }) {
   return (
-    <div className="stage-card stage-card-figure">
+    <div className="stage-card-clean">
       <div className="stage-top-strip">
         <div className="stage-top-strip-icon">
           <img src={icon} alt={stage} className="stage-strip-icon" />
@@ -1205,15 +1203,12 @@ export default function Home() {
         </section>
 
         <section className="mb-16">
-          <div className="section-head">
+          <div className="section-head section-head-analysis">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title">
-              После оплаты пользователь переходит в Telegram
-            </h2>
+            <h2 className="section-title">Из чего состоит Revenue Snapshot</h2>
             <p className="section-copy">
-              Telegram используется как удобный интерфейс сбора данных. Ответы
-              анализируются автоматически и превращаются в структурированный
-              результат.
+              ваши данные под защищенными протоколами обрабатываются инструментом
+              для формирования стратегический решений вашего бизнеса
             </p>
           </div>
 
@@ -1729,6 +1724,10 @@ export default function Home() {
           margin-bottom: 18px;
         }
 
+        .section-head-analysis {
+          max-width: 1080px;
+        }
+
         .section-kicker {
           font-size: 12px;
           font-weight: 700;
@@ -2061,7 +2060,7 @@ export default function Home() {
         }
 
         .metric-card {
-          min-height: 102px;
+          min-height: 124px;
         }
 
         .metric-card-main {
@@ -2078,28 +2077,44 @@ export default function Home() {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 10px;
+          gap: 12px;
         }
 
         .metric-title-wrap {
           min-width: 0;
+          flex: 1;
+          padding-top: 2px;
+        }
+
+        .metric-title {
+          font-size: 18px;
+          line-height: 1;
+          color: rgba(255, 255, 255, 0.62);
+          white-space: nowrap;
         }
 
         .metric-right-meta {
           display: flex;
           align-items: center;
-          gap: 8px;
+          justify-content: flex-end;
+          gap: 12px;
           flex-shrink: 0;
+          min-width: 0;
         }
 
         .metric-flag {
-          flex-shrink: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 56px;
+          padding: 0 22px;
           border-radius: 9999px;
-          padding: 6px 10px;
-          font-size: 11px;
+          font-size: 13px;
           font-weight: 700;
           letter-spacing: 0.01em;
           border: 1px solid transparent;
+          white-space: nowrap;
+          line-height: 1;
         }
 
         .metric-delta-top,
@@ -2110,13 +2125,20 @@ export default function Home() {
           white-space: nowrap;
         }
 
+        .metric-delta-top {
+          min-width: 72px;
+          text-align: right;
+          font-size: 18px;
+          font-weight: 800;
+        }
+
         .metric-main-value {
-          margin-top: 16px;
-          font-size: clamp(1.6rem, 2.1vw, 2.4rem);
-          line-height: 1.05;
+          margin-top: 22px;
+          font-size: clamp(2.2rem, 3vw, 4.15rem);
+          line-height: 0.95;
           font-weight: 700;
           white-space: nowrap;
-          letter-spacing: -0.02em;
+          letter-spacing: -0.04em;
         }
 
         .model-main-value {
@@ -2394,51 +2416,11 @@ export default function Home() {
           animation-delay: 0.4s;
         }
 
-        .stage-card-figure {
+        .stage-card-clean {
           display: flex;
           flex-direction: column;
-          gap: 24px;
-          border-radius: 30px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.045)
-          );
-          padding: 28px;
-          box-shadow:
-            0 18px 44px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          gap: 22px;
           min-height: 390px;
-          position: relative;
-          overflow: hidden;
-          transition:
-            transform 0.35s ease,
-            border-color 0.35s ease,
-            box-shadow 0.35s ease;
-        }
-
-        .stage-card-figure:hover {
-          transform: translateY(-4px);
-          border-color: rgba(247, 210, 55, 0.18);
-          box-shadow:
-            0 22px 50px rgba(0, 0, 0, 0.2),
-            0 0 0 1px rgba(247, 210, 55, 0.05),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-        }
-
-        .stage-card-figure::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: linear-gradient(
-            120deg,
-            rgba(255, 255, 255, 0.03),
-            transparent 24%,
-            transparent 76%,
-            rgba(255, 255, 255, 0.025)
-          );
         }
 
         .stage-top-strip {
@@ -2549,42 +2531,37 @@ export default function Home() {
           line-height: 1.35;
           font-weight: 800;
           color: #f7d237;
-          transition: color 0.3s ease;
-        }
-
-        .stage-card-figure:hover .stage-line-title {
-          color: #ffe16e;
         }
 
         .stage-line-text {
           font-size: 18px;
           line-height: 1.65;
           color: rgba(255, 255, 255, 0.76);
-          transition: color 0.3s ease, transform 0.3s ease;
-        }
-
-        .stage-card-figure:hover .stage-line-text {
-          color: rgba(255, 255, 255, 0.86);
-          transform: translateX(2px);
         }
 
         .analysis-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 16px;
+          align-items: start;
         }
 
-        .snapshot-structure-card {
-          min-height: 460px;
-        }
-
-        .snapshot-structure-card-builder {
+        .snapshot-structure-plain {
           display: flex;
           flex-direction: column;
+          min-height: 460px;
+          padding: 10px 4px 0 0;
+        }
+
+        .snapshot-structure-title {
+          margin: 0 0 22px;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 600;
+          color: white;
         }
 
         .snapshot-builder {
-          margin-top: 22px;
           display: grid;
           grid-template-columns: minmax(0, 1fr) 220px;
           gap: 18px;
@@ -3003,7 +2980,7 @@ export default function Home() {
         }
 
         @media (max-width: 900px) {
-          .stage-card-figure {
+          .stage-card-clean {
             min-height: auto;
           }
         }
@@ -3065,12 +3042,6 @@ export default function Home() {
             gap: 6px;
           }
 
-          .metric-head {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-
           .glass-card {
             border-radius: 22px;
             padding: 16px;
@@ -3098,16 +3069,34 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
+          .metric-head {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+
+          .metric-title {
+            font-size: 16px;
+          }
+
+          .metric-right-meta {
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
+          }
+
+          .metric-flag {
+            min-height: 46px;
+            padding: 0 16px;
+            font-size: 12px;
+          }
+
           .metric-main-value {
             font-size: 1.85rem;
           }
 
           .model-main-value {
             font-size: 1.2rem;
-          }
-
-          .metric-right-meta {
-            gap: 6px;
           }
 
           .metric-delta-top,
