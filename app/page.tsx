@@ -559,6 +559,16 @@ function StartCard({
     <a href={href} className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner">
         <img src={icon} alt={title} className="start-card-frame" />
+
+        <div className="start-card-overlay start-card-overlay-plain">
+          <div className="start-card-price-float">{price}</div>
+
+          <div className="start-card-btn-row">
+            <span className="start-card-btn start-card-btn-floating">
+              Попробовать Snapshot
+            </span>
+          </div>
+        </div>
       </div>
     </a>
   );
@@ -2819,7 +2829,7 @@ export default function Home() {
           font-size: 28px;
         }
 
-     .analysis-right-card {
+  .analysis-right-card {
   min-height: auto;
 }
 
@@ -2872,16 +2882,68 @@ export default function Home() {
   object-position: center;
 }
 
-.start-card-overlay,
-.start-card-overlay-top,
-.start-card-overlay-bottom,
-.start-card-overlay-top-right,
-.start-card-overlay-bottom-left,
+.start-card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.start-card-overlay-plain {
+  background: none;
+}
+
+.start-card-price-float {
+  position: absolute;
+  top: 34px;
+  right: 42px;
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 700;
+  color: #ffffff;
+  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+  white-space: nowrap;
+}
+
+.start-card-btn-row {
+  position: absolute;
+  left: 34px;
+  bottom: 94px;
+}
+
+.start-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #47b6f6 0%,
+    #7c84ff 55%,
+    #c25cf3 100%
+  );
+  color: #fff;
+  font-weight: 700;
+  box-shadow:
+    0 10px 24px rgba(85, 104, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.start-card-btn-floating {
+  min-width: 174px;
+  padding: 12px 18px;
+  font-size: 14px;
+  line-height: 1;
+}
+
 .start-card-title,
 .start-card-subtitle,
 .start-card-price,
-.start-card-btn,
-.start-card-btn-compact {
+.start-card-btn-compact,
+.start-card-overlay-top,
+.start-card-overlay-bottom,
+.start-card-overlay-top-right,
+.start-card-overlay-bottom-left {
   display: none;
 }
         .cta-card {
