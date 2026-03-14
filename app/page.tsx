@@ -1582,12 +1582,11 @@ export default function Home() {
 }
 
 .hero-levers-inline {
-  display: flex;
-  flex-wrap: nowrap;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
-  padding-bottom: 4px;
+  width: 100%;
 }
-
 .hero-levers-inline::-webkit-scrollbar {
   display: none;
 }
@@ -1597,24 +1596,38 @@ export default function Home() {
 }
 
 .hero-tag {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  min-width: 0;
-  min-height: 48px;
-  padding: 10px 12px;
+
+  height: 48px;
+
+  padding: 0 16px;
+
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(34, 47, 74, 0.82);
-  color: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  background: rgba(34,47,74,0.82);
+  color: rgba(255,255,255,0.68);
+
   font-size: 13px;
   font-weight: 700;
+
   text-align: center;
+
   white-space: nowrap;
-  transition: 0.25s ease;
+}
+.hero-tag {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.hero-tag {
+  transition: all 0.2s ease;
 }
 
+.hero-tag:hover {
+  transform: translateY(-1px);
+}
 .hero-tag:last-child {
   letter-spacing: -0.01em;
 }
