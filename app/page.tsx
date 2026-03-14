@@ -773,7 +773,7 @@ export default function Home() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#040813] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#060723] text-[#fefefe]>
       <div
         className="cursor-glow"
         style={{
