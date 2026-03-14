@@ -314,15 +314,10 @@ function HeroEconomyChart() {
   const active = drivers[activeIndex];
 
   const bars = [
-    { name: "Revenue", value: active.revenue, good: true, isPercent: false },
-    { name: "OPEX", value: active.opex, good: false, isPercent: false },
-    { name: "COGS", value: active.cogs, good: false, isPercent: false },
-    {
-      name: "Gross Profit",
-      value: active.grossProfit,
-      good: true,
-      isPercent: false,
-    },
+    { name: "Revenue", value: active.revenue, good: true },
+    { name: "OPEX", value: active.opex, good: false },
+    { name: "COGS", value: active.cogs, good: false },
+    { name: "Gross Profit", value: active.grossProfit, good: true },
   ];
 
   const maxBar = 20000;
@@ -370,31 +365,27 @@ function HeroEconomyChart() {
             </div>
           </div>
 
-      <div className="bar-chart-wrap">
-  <div className="bar-chart-scale">
-    <span>0</span>
-    <span>5 000</span>
-    <span>10 000</span>
-    <span>15 000</span>
-    <span>20 000</span>
-  </div>
+          <div className="bar-chart-wrap">
+            <div className="bar-chart-scale">
+              <span>$0</span>
+              <span>$5 000</span>
+              <span>$10 000</span>
+              <span>$15 000</span>
+              <span>$20 000</span>
+            </div>
 
-  <div className="bar-chart-grid" />
+            <div className="bar-chart-grid" />
 
-  <div className="bar-chart-columns bar-chart-columns-horizontal">
+            <div className="bar-chart-columns bar-chart-columns-horizontal">
               {bars.map((bar) => {
-                const baseWidth = (bar.value / maxBar) * 100;
-                const width =
-                  bar.name === "Revenue"
-                    ? Math.min(100, Math.max(8, baseWidth * 1.04))
-                    : Math.max(8, baseWidth);
+                const width = Math.max(6, (bar.value / maxBar) * 100);
 
                 return (
                   <div key={bar.name} className="bar-chart-row">
                     <div className="bar-chart-row-top">
                       <div className="bar-chart-label">{bar.name}</div>
                       <div className="bar-chart-value">
-                        {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+                        {fmtMoney(bar.value)}
                       </div>
                     </div>
 
@@ -1565,36 +1556,44 @@ export default function Home() {
           align-items: center;
         }
 
-        .hero-visual-shell {
-          position: relative;
-          min-height: 100%;
-          display: flex;
-          align-items: flex-start;
-          justify-content: flex-end;
-        }
+.hero-visual-shell {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
 
-        .hero-chart-float {
-          position: relative;
-          width: min(760px, 100%);
-          margin-left: auto;
-          padding-top: 8px;
-        }
+.hero-chart-float {
+  position: relative;
+  width: min(760px, 100%);
+  margin-left: auto;
+  padding-top: 8px;
+}
 
-        .hero-chart-float-title {
-          font-size: 32px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 14px;
-          text-align: right;
-          padding-right: 8px;
-        }
+.hero-chart-float-title {
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 14px;
+  text-align: right;
+  padding-right: 8px;
+}
 
 .hero-levers-inline {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 8px;
   padding-bottom: 4px;
+}
+
+.hero-levers-inline::-webkit-scrollbar {
+  display: none;
+}
+
+.hero-levers-inline-float {
+  margin-bottom: 12px;
 }
 
 .hero-tag {
@@ -1609,72 +1608,74 @@ export default function Home() {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(34, 47, 74, 0.82);
   color: rgba(255, 255, 255, 0.68);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
   transition: 0.25s ease;
 }
+
 .hero-tag:last-child {
   letter-spacing: -0.01em;
 }
-        .hero-tag-active {
-          color: #0b1d3a;
-          background: #f7d237;
-          border-color: rgba(247, 210, 55, 0.55);
-        }
 
-        .hero-chart-box {
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(36, 49, 76, 0.88);
-          padding: 14px;
-          display: flex;
-          flex-direction: column;
-          box-shadow:
-            0 22px 60px rgba(0, 0, 0, 0.28),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
+.hero-tag-active {
+  color: #0b1d3a;
+  background: #f7d237;
+  border-color: rgba(247, 210, 55, 0.55);
+}
 
-        .hero-chart-metrics-row {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-          margin-bottom: 12px;
-        }
+.hero-chart-box {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(36, 49, 76, 0.88);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 22px 60px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
 
-        .hero-metric-square {
-          min-height: 86px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-        }
+.hero-chart-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
-        .hero-metric-square span {
-          display: block;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.52);
-        }
+.hero-metric-square {
+  min-height: 86px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 
-        .hero-metric-square strong {
-          display: block;
-          margin-top: 10px;
-          font-size: 22px;
-          line-height: 1.1;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
+.hero-metric-square span {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.52);
+}
 
-      .bar-chart-wrap {
+.hero-metric-square strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+.bar-chart-wrap {
   position: relative;
   margin-top: 4px;
   border-radius: 24px;
-  padding: 46px 14px 14px;
+  padding: 52px 18px 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: linear-gradient(
     180deg,
@@ -1686,13 +1687,12 @@ export default function Home() {
 
 .bar-chart-scale {
   position: absolute;
-  top: 14px;
-  left: 14px;
-  right: 14px;
+  top: 16px;
+  left: 18px;
+  right: 18px;
   z-index: 3;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  align-items: center;
   pointer-events: none;
 }
 
@@ -1702,7 +1702,7 @@ export default function Home() {
   color: rgba(255, 255, 255, 0.42);
 }
 
-.bar-chart-scale span:nth-child(1) {
+.bar-chart-scale span:first-child {
   text-align: left;
 }
 
@@ -1713,21 +1713,20 @@ export default function Home() {
 .bar-chart-scale span:last-child {
   text-align: right;
 }
-       .bar-chart-grid {
+
+.bar-chart-grid {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(
-      to right,
-      rgba(255, 255, 255, 0.06) 1px,
-      transparent 1px
-    );
+  background-image: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0.06) 1px,
+    transparent 1px
+  );
   background-size: 25% 100%;
   background-position: left top;
   pointer-events: none;
   opacity: 0.65;
 }
-        }
 
 .bar-chart-columns {
   position: relative;
@@ -1735,7 +1734,10 @@ export default function Home() {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  min-height: auto;
+}
+
+.bar-chart-columns-horizontal {
+  width: 100%;
 }
 
 .bar-chart-row {
@@ -1765,6 +1767,7 @@ export default function Home() {
   color: rgba(255, 255, 255, 0.72);
   text-align: right;
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .bar-chart-bar-shell {
@@ -1773,7 +1776,7 @@ export default function Home() {
 
 .bar-chart-bar-shell-horizontal {
   width: 100%;
-  height: 34px;
+  height: 30px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -1783,6 +1786,9 @@ export default function Home() {
 }
 
 .bar-chart-bar {
+  display: block;
+  height: 100%;
+  min-width: 8px;
   box-shadow:
     0 10px 24px rgba(0, 0, 0, 0.14),
     0 0 18px rgba(255, 255, 255, 0.04);
@@ -1795,81 +1801,99 @@ export default function Home() {
 }
 
 .bar-revenue {
-  transform: scaleY(1.02);
+  transform: scaleY(1.04);
   transform-origin: left center;
 }
-        .hero-chart-bottom {
-          margin-top: 14px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
 
-        .hero-money-card {
-          border-radius: 18px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(255, 255, 255, 0.03);
-          padding: 12px;
-        }
+.bar-good {
+  background: linear-gradient(
+    90deg,
+    rgba(176, 140, 255, 0.95) 0%,
+    rgba(244, 221, 114, 1) 48%,
+    rgba(247, 210, 55, 1) 100%
+  );
+}
 
-        .hero-money-card-clean {
-          border: 0;
-          background: transparent;
-          padding: 0;
-        }
+.bar-bad {
+  background: linear-gradient(
+    90deg,
+    rgba(124, 132, 255, 0.9) 0%,
+    rgba(93, 167, 255, 0.95) 55%,
+    rgba(95, 179, 179, 0.95) 100%
+  );
+}
 
-        .hero-money-card span {
-          display: block;
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.5);
-        }
+.hero-chart-bottom {
+  margin-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
 
-        .hero-money-card strong {
-          display: block;
-          margin-top: 8px;
-          font-size: 22px;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
+.hero-money-card {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 12px;
+}
 
-        .hero-money-card small {
-          display: block;
-          margin-top: 5px;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.58);
-        }
+.hero-money-card-clean {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
 
-        .hero-active-note {
-          margin-top: 12px;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          border: 1px solid rgba(247, 210, 55, 0.18);
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 999px;
-          padding: 10px 14px;
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          line-height: 1.45;
-        }
+.hero-money-card span {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.5);
+}
 
-        .hero-active-note b {
-          color: #f7d237;
-        }
+.hero-money-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
 
-        .hero-active-note-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 999px;
-          background: #f7d237;
-          box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
-          animation: pulseTinyYellow 1.8s ease-in-out infinite;
-          flex-shrink: 0;
-        }
+.hero-money-card small {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.58);
+}
 
+.hero-active-note {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(247, 210, 55, 0.18);
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.hero-active-note b {
+  color: #f7d237;
+}
+
+.hero-active-note-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #f7d237;
+  box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
+  animation: pulseTinyYellow 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
         .section-head {
           max-width: 1080px;
           margin-bottom: 18px;
