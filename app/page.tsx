@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   type ReactNode,
-  type CSSProperties,
 } from "react";
 
 function fmtMoney(n: number) {
@@ -326,7 +325,7 @@ function HeroEconomyChart() {
     },
   ];
 
-  const maxBar = Math.max(...bars.map((b) => b.value));
+ const maxBar = 20000;
 
   return (
     <div className="hero-visual-shell">
@@ -365,55 +364,43 @@ function HeroEconomyChart() {
               <strong>{fmtMoney(active.aov)}</strong>
             </div>
 
-            <div className="hero-metric-square hero-metric-square-ring">
-              <span>Маржа</span>
-
-              <div
-                className="hero-margin-ring"
-                style={
-                  {
-                    "--p": active.margin,
-                  } as CSSProperties
-                }
-              >
-                <div className="hero-margin-ring-inner">
-                  <strong>{active.margin}%</strong>
-                </div>
-              </div>
-            </div>
-          </div>
+           <div className="hero-metric-square">
+  <span>Маржа</span>
+  <strong>{active.margin}%</strong>
+</div>
 
           <div className="bar-chart-wrap">
             <div className="bar-chart-grid" />
 
-            <div className="bar-chart-columns">
-              {bars.map((bar) => {
-                const baseHeight = (bar.value / maxBar) * 138;
-                const height = Math.max(
-                  18,
-                  bar.name === "Revenue" ? baseHeight * 1.16 : baseHeight
-                );
+          <div className="bar-chart-columns bar-chart-columns-horizontal">
+  {bars.map((bar) => {
+    const baseWidth = (bar.value / maxBar) * 100;
+    const width =
+      bar.name === "Revenue"
+        ? Math.min(100, Math.max(8, baseWidth * 1.04))
+        : Math.max(8, baseWidth);
 
-                return (
-                  <div key={bar.name} className="bar-chart-col">
-                    <div className="bar-chart-value">
-                      {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
-                    </div>
+    return (
+      <div key={bar.name} className="bar-chart-row">
+        <div className="bar-chart-row-top">
+          <div className="bar-chart-label">{bar.name}</div>
+          <div className="bar-chart-value">
+            {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+          </div>
+        </div>
 
-                    <div className="bar-chart-bar-shell">
-                      <div
-                        className={`bar-chart-bar ${
-                          bar.good ? "bar-good" : "bar-bad"
-                        } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
-                        style={{ height: `${height}px` }}
-                      />
-                    </div>
-
-                    <div className="bar-chart-label">{bar.name}</div>
-                  </div>
-                );
-              })}
-            </div>
+        <div className="bar-chart-bar-shell bar-chart-bar-shell-horizontal">
+          <div
+            className={`bar-chart-bar bar-chart-bar-horizontal ${
+              bar.good ? "bar-good" : "bar-bad"
+            } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+            style={{ width: `${width}%` }}
+          />
+        </div>
+      </div>
+    );
+  })}
+</div>
           </div>
 
           <div className="hero-chart-bottom">
@@ -1680,69 +1667,6 @@ export default function Home() {
           white-space: nowrap;
         }
 
-        .hero-metric-square-ring {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .hero-margin-ring {
-          --size: 82px;
-          --thickness: 10px;
-          --p: 42;
-          position: relative;
-          width: var(--size);
-          height: var(--size);
-          margin-top: 10px;
-          border-radius: 50%;
-          background:
-            radial-gradient(
-              farthest-side,
-              rgba(36, 49, 76, 0.98) calc(100% - var(--thickness)),
-              transparent calc(100% - var(--thickness) + 1px)
-            ),
-            conic-gradient(
-              from -90deg,
-              rgba(247, 210, 55, 1) 0deg,
-              rgba(244, 221, 114, 1) 120deg,
-              rgba(176, 140, 255, 0.95) calc(var(--p) * 3.6deg),
-              rgba(255, 255, 255, 0.08) 0deg
-            );
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.04),
-            0 0 20px rgba(247, 210, 55, 0.08);
-          transition: background 0.8s ease, transform 0.3s ease;
-        }
-
-        .hero-margin-ring::before {
-          content: "";
-          position: absolute;
-          inset: 8px;
-          border-radius: 50%;
-          background: rgba(36, 49, 76, 0.96);
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
-
-        .hero-margin-ring-inner {
-          position: relative;
-          z-index: 1;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .hero-margin-ring-inner strong {
-          margin: 0;
-          font-size: 20px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          white-space: nowrap;
-        }
-
         .bar-chart-wrap {
           position: relative;
           margin-top: 4px;
@@ -1768,83 +1692,79 @@ export default function Home() {
           pointer-events: none;
         }
 
-        .bar-chart-columns {
-          position: relative;
-          z-index: 2;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 14px;
-          align-items: end;
-          min-height: 250px;
-        }
+     .bar-chart-columns {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: auto;
+}
 
-        .bar-chart-col {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: flex-end;
-          gap: 8px;
-          min-height: 250px;
-        }
+.bar-chart-columns-horizontal {
+  width: 100%;
+}
 
-        .bar-chart-value {
-          font-size: 12px;
-          line-height: 1.3;
-          color: rgba(255, 255, 255, 0.7);
-          text-align: center;
-          min-height: 28px;
-        }
+.bar-chart-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 
-        .bar-chart-bar-shell {
-          width: 100%;
-          max-width: 74px;
-          height: 140px;
-          display: flex;
-          align-items: flex-end;
-          justify-content: center;
-        }
+.bar-chart-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
 
-        .bar-chart-bar {
-          width: 100%;
-          border-radius: 16px 16px 8px 8px;
-          transition: height 0.8s ease, transform 0.8s ease;
-          box-shadow:
-            0 10px 24px rgba(0, 0, 0, 0.14),
-            0 0 18px rgba(255, 255, 255, 0.04);
-        }
+.bar-chart-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.78);
+  text-align: left;
+  line-height: 1.35;
+}
 
-        .bar-revenue {
-          transform: scaleY(1.03);
-          transform-origin: bottom;
-        }
+.bar-chart-value {
+  font-size: 14px;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: right;
+  white-space: nowrap;
+}
 
-        .bar-good {
-          background: linear-gradient(
-            180deg,
-            rgba(247, 210, 55, 1) 0%,
-            rgba(244, 221, 114, 1) 55%,
-            rgba(176, 140, 255, 0.95) 100%
-          );
-        }
+.bar-chart-bar-shell {
+  width: 100%;
+}
 
-        .bar-bad {
-          background: linear-gradient(
-            180deg,
-            rgba(95, 179, 179, 0.95) 0%,
-            rgba(93, 167, 255, 0.95) 60%,
-            rgba(124, 132, 255, 0.9) 100%
-          );
-        }
+.bar-chart-bar-shell-horizontal {
+  width: 100%;
+  height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
 
-        .bar-chart-label {
-          font-size: 12px;
-          font-weight: 700;
-          color: rgba(255, 255, 255, 0.68);
-          text-align: center;
-          line-height: 1.35;
-          min-height: 32px;
-        }
+.bar-chart-bar {
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.14),
+    0 0 18px rgba(255, 255, 255, 0.04);
+}
 
+.bar-chart-bar-horizontal {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.8s ease, transform 0.8s ease;
+}
+
+.bar-revenue {
+  transform: scaleY(1.02);
+  transform-origin: left center;
+}
         .hero-chart-bottom {
           margin-top: 14px;
           display: grid;
