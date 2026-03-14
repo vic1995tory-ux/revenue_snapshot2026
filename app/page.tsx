@@ -1582,11 +1582,15 @@ export default function Home() {
 }
 
 .hero-levers-inline {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 8px;
   width: 100%;
+  padding-bottom: 4px;
 }
+
 .hero-levers-inline::-webkit-scrollbar {
   display: none;
 }
@@ -1596,40 +1600,27 @@ export default function Home() {
 }
 
 .hero-tag {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex: 0 0 auto;
 
-  height: 48px;
-
-  padding: 0 16px;
+  min-height: 48px;
+  padding: 10px 18px;
 
   border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 
-  background: rgba(34,47,74,0.82);
-  color: rgba(255,255,255,0.68);
+  background: rgba(34, 47, 74, 0.82);
+  color: rgba(255, 255, 255, 0.68);
 
   font-size: 13px;
   font-weight: 700;
-
+  line-height: 1;
   text-align: center;
-
   white-space: nowrap;
-}
-.hero-tag {
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.hero-tag {
-  transition: all 0.2s ease;
-}
 
-.hero-tag:hover {
-  transform: translateY(-1px);
-}
-.hero-tag:last-child {
-  letter-spacing: -0.01em;
+  transition: 0.25s ease;
 }
 
 .hero-tag-active {
