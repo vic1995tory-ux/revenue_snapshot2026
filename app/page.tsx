@@ -270,8 +270,8 @@ function HeroEconomyChart() {
     },
     {
       key: "costs",
-      label: "#УправлениеРасходами",
-      full: "Управление расходами",
+      label: "#Модель расходов",
+      full: "Модель расходов",
       deltaLabel: "−давление на OPEX и Margin",
       leads: 10,
       deals: 2.0,
