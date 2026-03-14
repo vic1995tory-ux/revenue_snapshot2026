@@ -565,7 +565,7 @@ function StartCard({
 
           <div className="start-card-btn-row">
             <a href={href} className="start-card-btn start-card-btn-floating">
-              Попробовать Snapshot
+              Оплатить
             </a>
           </div>
         </div>
