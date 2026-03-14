@@ -616,9 +616,13 @@ function StageCarousel() {
     return diff;
   };
 
-  const next = () =>
-    setActiveIndex((prev) => Math.min(prev + 1, items.length - 1));
-  const prev = () => setActiveIndex((prev) => Math.max(prev - 1, 0));
+  const next = () => {
+    setActiveIndex((prev) => (prev + 1) % items.length);
+  };
+
+  const prev = () => {
+    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
 
   const activeIndustries = new Set(items[activeIndex].industries);
 
@@ -686,7 +690,6 @@ function StageCarousel() {
           type="button"
           className="stage-carousel-nav stage-carousel-nav-left"
           onClick={prev}
-          disabled={activeIndex === 0}
           aria-label="Предыдущая карточка"
         >
           ‹
@@ -700,8 +703,9 @@ function StageCarousel() {
             if (offset === 0) positionClass = "stage-card-center";
             else if (offset === -1) positionClass = "stage-card-left";
             else if (offset === 1) positionClass = "stage-card-right";
-            else if (offset === 2 || offset === -2)
+            else if (offset === 2 || offset === -2) {
               positionClass = "stage-card-back";
+            }
 
             return (
               <div
@@ -726,7 +730,6 @@ function StageCarousel() {
           type="button"
           className="stage-carousel-nav stage-carousel-nav-right"
           onClick={next}
-          disabled={activeIndex === items.length - 1}
           aria-label="Следующая карточка"
         >
           ›
