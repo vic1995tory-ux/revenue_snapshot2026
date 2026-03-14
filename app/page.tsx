@@ -101,20 +101,18 @@ function TopMetricCard({
 }) {
   return (
     <div className="glass-card soft-glow metric-card metric-card-main">
-      <div className="metric-head">
-        <div className="metric-title-wrap">
-          <div className="metric-label">{title}</div>
-        </div>
+   <div className="metric-head">
+  <div className="metric-title-wrap">
+    <div className="metric-label">{title}</div>
+    <div className={`metric-flag ${flagTone(type, delta)}`}>
+      {getMetricFlag(type, delta)}
+    </div>
+  </div>
 
-        <div className="metric-right-meta">
-          <div className={`metric-flag ${flagTone(type, delta)}`}>
-            {getMetricFlag(type, delta)}
-          </div>
-          <div className={`metric-delta-top ${color(delta, invert)}`}>
-            {pct(delta)}
-          </div>
-        </div>
-      </div>
+  <div className={`metric-delta-top ${color(delta, invert)}`}>
+    {pct(delta)}
+  </div>
+</div>
 
       <div className="metric-main-value">{value}</div>
     </div>
@@ -2230,53 +2228,44 @@ export default function Home() {
           min-height: 116px;
         }
 
-        .metric-head,
-        .model-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 10px;
-        }
+      .metric-head,
+.model-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
 
-        .metric-title-wrap {
-          min-width: 0;
-          flex: 1;
-        }
+.metric-title-wrap {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
 
-        .metric-label,
-        .model-label {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.58);
-          line-height: 1.2;
-          padding-top: 2px;
-        }
+.metric-flag {
+  margin-top: 8px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  border: 1px solid transparent;
+  line-height: 1;
+  max-width: 100%;
+}
 
-        .metric-right-meta {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          flex-shrink: 0;
-        }
-
-        .metric-flag {
-          flex-shrink: 0;
-          border-radius: 9999px;
-          padding: 8px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          letter-spacing: 0.01em;
-          border: 1px solid transparent;
-          line-height: 1;
-        }
-
-        .metric-delta-top,
-        .model-delta-top {
-          font-size: 18px;
-          font-weight: 700;
-          line-height: 1;
-          white-space: nowrap;
-          padding-top: 2px;
-        }
+.metric-delta-top,
+.model-delta-top {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  padding-top: 2px;
+  flex-shrink: 0;
+}
 
         .metric-main-value {
           margin-top: 20px;
@@ -3322,11 +3311,6 @@ export default function Home() {
             flex-direction: column;
             align-items: flex-start;
             gap: 8px;
-          }
-
-          .metric-right-meta {
-            width: 100%;
-            justify-content: space-between;
           }
 
           .glass-card {
