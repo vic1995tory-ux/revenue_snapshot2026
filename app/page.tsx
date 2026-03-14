@@ -365,34 +365,19 @@ function HeroEconomyChart() {
           <div className="bar-chart-wrap">
             <div className="bar-chart-grid" />
 
-         <div className="bar-chart-columns">
-  {bars.map((bar) => {
-    const baseHeight = (bar.value / maxBar) * 130;
-    const height = Math.max(
-      16,
-      bar.name === "Revenue" ? baseHeight * 1.12 : baseHeight
-    );
+            <div className="bar-chart-columns">
+              {bars.map((bar) => {
+               const baseHeight = (bar.value / maxBar) * 130;
+const height = Math.max(
+  16,
+  bar.name === "Revenue" ? baseHeight * 1.12 : baseHeight
+);
 
-    return (
-      <div key={bar.name} className="bar-chart-col">
-        <div className="bar-chart-value">
-          {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
-        </div>
-
-        <div className="bar-chart-bar-shell">
-          <div
-            className={`bar-chart-bar ${
-              bar.good ? "bar-good" : "bar-bad"
-            }`}
-            style={{ height: `${height}px` }}
-          />
-        </div>
-
-        <div className="bar-chart-label">{bar.name}</div>
-      </div>
-    );
-  })}
-</div>
+                return (
+                  <div key={bar.name} className="bar-chart-col">
+                    <div className="bar-chart-value">
+                      {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+                    </div>
 
                     <div className="bar-chart-bar-shell">
                       <div
