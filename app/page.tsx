@@ -215,9 +215,9 @@ function Slider({
 function HeroEconomyChart() {
   const base = {
     leads: 10,
-    deals: 2,
+    deals: 2.0,
     aov: 3200,
-    margin: 30,
+    margin: 40,
     revenue: 13000,
     opex: 3500,
     cogs: 3900,
@@ -298,6 +298,7 @@ function HeroEconomyChart() {
 
   const setDriver = (index: number) => {
     setActiveIndex(index);
+
     if (timerRef.current) window.clearInterval(timerRef.current);
     timerRef.current = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % drivers.length);
@@ -419,9 +420,7 @@ function HeroEconomyChart() {
 function SnapshotStructure() {
   return (
     <div className="glass-card snapshot-structure-card">
-      <h3 className="text-lg font-semibold text-white">
-        Из чего состоит Revenue Snapshot
-      </h3>
+      <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
 
       <p className="snapshot-builder-copy">
         ваши данные под защищенными протоколами обрабатываются инструментом для
@@ -434,7 +433,6 @@ function SnapshotStructure() {
         <div className="builder-block builder-block-3">Экономика</div>
         <div className="builder-block builder-block-4">Структура компании</div>
         <div className="builder-block builder-block-5">Позиционирование</div>
-        <div className="builder-block builder-block-6">Маркетинг</div>
       </div>
     </div>
   );
@@ -444,15 +442,21 @@ function ResultDocCard({
   tab,
   title,
   text,
+  cta,
 }: {
   tab: string;
   title: string;
   text: string;
+  cta?: ReactNode;
 }) {
   return (
-    <div className="result-doc-card result-doc-card-grid">
-      <div className="result-doc-card-inner">
-        <div className="result-doc-tab">{tab}</div>
+    <div className="result-doc-card tilt-card">
+      <div className="result-doc-card-inner tilt-inner">
+        <div className="result-doc-top">
+          <div className="result-doc-tab">{tab}</div>
+          {cta ? <div className="result-doc-cta">{cta}</div> : null}
+        </div>
+
         <div className="result-doc-title">{title}</div>
         <div className="result-doc-text">{text}</div>
       </div>
@@ -529,76 +533,29 @@ function StartCard({
   href: string;
 }) {
   return (
-    <a href={href} className="start-card">
-      <div className="start-card-bg" />
-      <div className="start-card-top">
-        <img src={icon} alt="" className="start-card-icon" />
-        <div className="start-card-meta">
-          <div className="start-card-title">{title}</div>
-          <div className="start-card-subtitle">{subtitle}</div>
-        </div>
-      </div>
+    <a href={href} className="start-card tilt-card">
+      <div className="start-card-inner tilt-inner">
+        <img src={icon} alt={title} className="start-card-frame" />
 
-      <div className="start-card-bottom">
-        <div className="start-card-price">{price}</div>
-        <span className="start-card-btn">Начать</span>
+        <div className="start-card-overlay">
+          <div className="start-card-overlay-top">
+            <div>
+              <div className="start-card-title">{title}</div>
+              <div className="start-card-subtitle">{subtitle}</div>
+            </div>
+          </div>
+
+          <div className="start-card-overlay-bottom">
+            <div className="start-card-price">{price}</div>
+            <span className="start-card-btn">Начать</span>
+          </div>
+        </div>
       </div>
     </a>
   );
 }
 
-export default function Home() {"use client";
-
-import { useEffect } from "react";
-
 export default function Home() {
-
-  useEffect(() => {
-
-    const cards = document.querySelectorAll(".tilt-card");
-
-    cards.forEach(card => {
-
-      card.addEventListener("mousemove", (e) => {
-
-        const rect = card.getBoundingClientRect();
-
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const centerX = rect.width / 2;
-        const centerY = rect.height / 2;
-
-        const rotateX = (y - centerY) / 14;
-        const rotateY = (centerX - x) / 14;
-
-        const inner = card.querySelector(".tilt-inner");
-
-        inner.style.transform =
-          `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
-
-      });
-
-      card.addEventListener("mouseleave", () => {
-
-        const inner = card.querySelector(".tilt-inner");
-
-        inner.style.transform =
-          `rotateX(0deg) rotateY(0deg) scale(1)`;
-
-      });
-
-    });
-
-  }, []);
-
-
-  return (
-    <>
-      {https://revenue-snapshot2026.vercel.app/}
-    </>
-  );
-}
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
 
@@ -640,6 +597,51 @@ export default function Home() {
     return () => {
       window.removeEventListener("mousemove", onMove);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const tiltCards = Array.from(
+      document.querySelectorAll<HTMLElement>(".tilt-card")
+    );
+
+    const cleanups: Array<() => void> = [];
+
+    tiltCards.forEach((card) => {
+      const inner = card.querySelector<HTMLElement>(".tilt-inner");
+      if (!inner) return;
+
+      const handleMove = (e: MouseEvent) => {
+        const rect = card.getBoundingClientRect();
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const px = x / rect.width;
+        const py = y / rect.height;
+
+        const rotateY = (px - 0.5) * 12;
+        const rotateX = (0.5 - py) * 12;
+
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.01)`;
+      };
+
+      const handleLeave = () => {
+        inner.style.transform =
+          "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+      };
+
+      card.addEventListener("mousemove", handleMove);
+      card.addEventListener("mouseleave", handleLeave);
+
+      cleanups.push(() => {
+        card.removeEventListener("mousemove", handleMove);
+        card.removeEventListener("mouseleave", handleLeave);
+      });
+    });
+
+    return () => {
+      cleanups.forEach((fn) => fn());
     };
   }, []);
 
@@ -739,10 +741,7 @@ export default function Home() {
 
   const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
   const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(
-    data.salesCost - base.salesCost,
-    base.salesCost
-  );
+  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
   const opexSupportDelta = safeDiv(
     data.opex + data.support - (base.opex + base.support),
     base.opex + base.support
@@ -773,7 +772,7 @@ export default function Home() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#060723] text-[#fefefe]>
+    <main className="relative min-h-screen overflow-hidden bg-[#050f28] text-[#fefefe]">
       <div
         className="cursor-glow"
         style={{
@@ -831,35 +830,42 @@ export default function Home() {
         <section className="hero-section mb-16">
           <div className="hero-grid hero-grid-frame">
             <div className="hero-left">
-  <h1 className="hero-main-title">Revenue Snapshot</h1>
+              <h1 className="hero-main-title">Revenue Snapshot</h1>
 
-  <div className="hero-main-subtitle">
-    стратегическая диагностика
-    <br />
-    экономики вашего бизнеса
-  </div>
+              <div className="hero-main-subtitle">
+                стратегическая диагностика
+                <br />
+                экономики вашего бизнеса
+              </div>
 
-  <p className="hero-main-copy">
-    Узнайте, какое изменение в модели способно дать наиболее сильный
-    эффект на выручку, и где сейчас скрываются главные точки потери
-    денег.
-  </p>
+              <p className="hero-main-copy">
+                Узнайте, какое изменение в модели способно дать наиболее сильный
+                эффект на выручку, и где сейчас скрываются главные точки потери
+                денег.
+              </p>
 
-  <div className="hero-highlights-row hero-highlights-row-unified">
-    <div className="hero-highlight-chip hero-chip-unified">MVP</div>
-    <div className="hero-highlight-chip hero-chip-unified">CashCow</div>
-    <div className="hero-highlight-chip hero-chip-unified">Scaling</div>
-  </div>
+              <div className="hero-highlights-row hero-highlights-row-unified">
+                <div className="hero-highlight-chip hero-chip-unified">MVP</div>
+                <div className="hero-highlight-chip hero-chip-unified">
+                  CashCow
+                </div>
+                <div className="hero-highlight-chip hero-chip-unified">
+                  Scaling
+                </div>
+              </div>
 
-  <div className="hero-actions">
-    <a href="#try" className="tg-gradient-btn inline-flex">
-      Попробовать Snapshot
-    </a>
-    <a href="#preview" className="ghost-link ghost-link-large inline-flex">
-      Посмотреть превью
-    </a>
-  </div>
-</div>
+              <div className="hero-actions">
+                <a href="#try" className="tg-gradient-btn inline-flex">
+                  Попробовать Snapshot
+                </a>
+                <a
+                  href="#preview"
+                  className="ghost-link ghost-link-large inline-flex"
+                >
+                  Посмотреть превью
+                </a>
+              </div>
+            </div>
 
             <HeroEconomyChart />
           </div>
@@ -1154,66 +1160,37 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="snapshot-grid">
+          <div className="results-grid-2x2">
+            <ResultDocCard
+              tab="ECONOMIC RATE"
+              title="Executive Summary"
+              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
+            />
 
-  <div className="snapshot-card tilt-card">
-    <div className="tilt-inner">
-      <div className="card-badge">ECONOMIC RATE</div>
+            <ResultDocCard
+              tab="GROWTH LIMIT"
+              title="Key Conclusions"
+              text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
+            />
 
-      <h3>Executive Summary</h3>
+            <ResultDocCard
+              tab="SOLUTION"
+              title="Strategy&Practice"
+              text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
+            />
 
-      <p>
-        Данные о вашем продукте, его маржинальности и спросе выявляют
-        сильные и слабые стороны бизнеса и определяется главный фокус
-        на данный момент.
-      </p>
-    </div>
-  </div>
+            <ResultDocCard
+              tab="JTBD"
+              title="RoadMap"
+              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+              cta={
+                <a href={payUrl} className="result-doc-start-btn">
+                  Начать
+                </a>
+              }
+            />
+          </div>
 
-
-  <div className="snapshot-card tilt-card">
-    <div className="tilt-inner">
-      <div className="card-badge">GROWTH LIMIT</div>
-
-      <h3>Key Conclusions</h3>
-
-      <p>
-        Ключевые выводы из фактов о компании определяют, как достичь
-        текущей цели бизнеса. Формируется управленческий вывод об
-        экономической модели.
-      </p>
-    </div>
-  </div>
-
-
-  <div className="snapshot-card tilt-card">
-    <div className="tilt-inner">
-      <div className="card-badge">SOLUTION</div>
-
-      <h3>Strategy&Practice</h3>
-
-      <p>
-        Проведённый анализ данных определяет первичную задачу: целью
-        всегда является повышение дохода.
-      </p>
-    </div>
-  </div>
-
-
-  <div className="snapshot-card tilt-card">
-    <div className="tilt-inner">
-      <div className="card-badge">JTBD</div>
-
-      <h3>RoadMap</h3>
-
-      <p>
-        Тезисный план действий на следующие 6 месяцев по запуску
-        конкретного MVP.
-      </p>
-    </div>
-  </div>
-
-</div>
           <div className="results-roadmap-note">
             После получения и изучения результатов у Вас есть возможность
             назначить <span>30-минутную встречу</span> с нашими C-level
@@ -1321,14 +1298,15 @@ export default function Home() {
                   title="Страт сессия"
                   subtitle="быстрый вход через созвон"
                   icon="/stratsession.svg"
-                  price="$49"
+                  price="$770"
                   href={tgContactUrl}
                 />
+
                 <StartCard
                   title="Snapshot"
                   subtitle="сразу через инструмент"
                   icon="/snapshot.svg"
-                  price="$99"
+                  price="$114"
                   href={payUrl}
                 />
               </div>
@@ -1372,7 +1350,7 @@ export default function Home() {
         }
 
         body {
-          background: #040813;
+          background: #050f28;
         }
 
         .cursor-glow {
@@ -1428,8 +1406,8 @@ export default function Home() {
           backdrop-filter: blur(18px);
           background: linear-gradient(
             180deg,
-            rgba(4, 8, 19, 0.92),
-            rgba(4, 8, 19, 0.62)
+            rgba(5, 15, 40, 0.92),
+            rgba(5, 15, 40, 0.62)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -1458,171 +1436,172 @@ export default function Home() {
         }
 
         .hero-section {
-  position: relative;
-  border-radius: 36px;
-  overflow: hidden;
-  padding: 34px 28px 30px;
-  min-height: 860px;
-}
+          position: relative;
+          border-radius: 36px;
+          overflow: hidden;
+          padding: 34px 28px 30px;
+          min-height: 860px;
+        }
 
-.hero-section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: url("/hero.svg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 1;
-  z-index: 0;
-}
+        .hero-section::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: url("/hero.svg");
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          opacity: 1;
+          z-index: 0;
+        }
 
-.hero-section::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      90deg,
-      rgba(4, 8, 19, 0.28) 0%,
-      rgba(4, 8, 19, 0.12) 38%,
-      rgba(4, 8, 19, 0.04) 62%,
-      rgba(4, 8, 19, 0.08) 100%
-    );
-  z-index: 1;
-}
+        .hero-section::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            90deg,
+            rgba(5, 15, 40, 0.18) 0%,
+            rgba(5, 15, 40, 0.07) 38%,
+            rgba(5, 15, 40, 0.02) 62%,
+            rgba(5, 15, 40, 0.04) 100%
+          );
+          z-index: 1;
+        }
 
-.hero-grid {
-  display: grid;
-  gap: 22px;
-}
+        .hero-grid {
+          display: grid;
+          gap: 22px;
+        }
 
-.hero-grid-frame {
-  grid-template-columns: minmax(0, 1fr) minmax(520px, 0.92fr);
-  align-items: start;
-  position: relative;
-  z-index: 2;
-}
+        .hero-grid-frame {
+          grid-template-columns: minmax(0, 1fr) minmax(520px, 0.92fr);
+          align-items: start;
+          position: relative;
+          z-index: 2;
+        }
 
-.hero-left {
-  display: flex;
-  flex-direction: column;
-  min-height: 100%;
-  padding: 4px 6px 8px;
-}
+        .hero-left {
+          display: flex;
+          flex-direction: column;
+          min-height: 100%;
+          padding: 4px 6px 8px;
+        }
 
-.hero-main-title {
-  margin: 0;
-  font-size: clamp(62px, 6.4vw, 110px);
-  line-height: 0.9;
-  letter-spacing: -0.07em;
-  font-weight: 700;
-  color: #ffffff;
-  max-width: 860px;
-}
+        .hero-main-title {
+          margin: 0;
+          font-size: clamp(62px, 6.4vw, 110px);
+          line-height: 0.9;
+          letter-spacing: -0.07em;
+          font-weight: 700;
+          color: #ffffff;
+          max-width: 860px;
+        }
 
-.hero-main-subtitle {
-  margin-top: 18px;
-  font-size: clamp(32px, 3vw, 56px);
-  line-height: 1.04;
-  letter-spacing: -0.04em;
-  font-weight: 700;
-  color: #ffffff;
-  max-width: 900px;
-}
+        .hero-main-subtitle {
+          margin-top: 18px;
+          font-size: clamp(32px, 3vw, 56px);
+          line-height: 1.04;
+          letter-spacing: -0.04em;
+          font-weight: 700;
+          color: #ffffff;
+          max-width: 900px;
+        }
 
-.hero-main-copy {
-  margin-top: 30px;
-  max-width: 760px;
-  font-size: 22px;
-  line-height: 1.7;
-  color: rgba(255, 255, 255, 0.76);
-}
+        .hero-main-copy {
+          margin-top: 30px;
+          max-width: 760px;
+          font-size: 22px;
+          line-height: 1.7;
+          color: rgba(255, 255, 255, 0.76);
+        }
 
-.hero-highlights-row {
-  margin-top: 34px;
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  border-radius: 22px;
-  overflow: hidden;
-  position: relative;
-  max-width: 760px;
-}
+        .hero-highlights-row {
+          margin-top: 34px;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 0;
+          border-radius: 22px;
+          overflow: hidden;
+          position: relative;
+          max-width: 760px;
+        }
 
-.hero-highlights-row-unified {
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0.08),
-    rgba(123, 132, 255, 0.08),
-    rgba(255, 255, 255, 0.08)
-  );
-  backdrop-filter: blur(14px);
-}
+        .hero-highlights-row-unified {
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(123, 132, 255, 0.08),
+            rgba(255, 255, 255, 0.08)
+          );
+          backdrop-filter: blur(14px);
+        }
 
-.hero-highlight-chip {
-  padding: 20px 18px;
-  color: white;
-  font-size: 22px;
-  font-weight: 700;
-  text-align: center;
-  white-space: nowrap;
-  line-height: 1.2;
-  position: relative;
-  background: transparent;
-}
+        .hero-highlight-chip {
+          padding: 20px 18px;
+          color: white;
+          font-size: 22px;
+          font-weight: 700;
+          text-align: center;
+          white-space: nowrap;
+          line-height: 1.2;
+          position: relative;
+          background: transparent;
+        }
 
-.hero-highlight-chip:not(:last-child)::after {
-  content: "";
-  position: absolute;
-  top: 14px;
-  right: 0;
-  width: 1px;
-  height: calc(100% - 28px);
-  background: rgba(255, 255, 255, 0.09);
-}
+        .hero-highlight-chip:not(:last-child)::after {
+          content: "";
+          position: absolute;
+          top: 14px;
+          right: 0;
+          width: 1px;
+          height: calc(100% - 28px);
+          background: rgba(255, 255, 255, 0.09);
+        }
 
-.hero-actions {
-  margin-top: auto;
-  padding-top: 34px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 14px;
-  align-items: center;
-}
+        .hero-actions {
+          margin-top: auto;
+          padding-top: 34px;
+          display: flex;
+          flex-wrap: wrap;
+          gap: 14px;
+          align-items: center;
+        }
 
-.hero-visual-shell {
-  position: relative;
-  min-height: 100%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-}
+        .hero-visual-shell {
+          position: relative;
+          min-height: 100%;
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
 
-.hero-chart-float {
-  position: relative;
-  width: min(760px, 100%);
-  margin-left: auto;
-  padding-top: 8px;
-}
+        .hero-chart-float {
+          position: relative;
+          width: min(760px, 100%);
+          margin-left: auto;
+          padding-top: 8px;
+        }
 
-.hero-chart-float-title {
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 14px;
-  text-align: right;
-  padding-right: 8px;
-}
+        .hero-chart-float-title {
+          font-size: 32px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 14px;
+          text-align: right;
+          padding-right: 8px;
+        }
 
         .hero-levers-inline {
           display: flex;
           flex-wrap: nowrap;
           gap: 10px;
           overflow-x: auto;
+          overflow-y: hidden;
           scrollbar-width: none;
+          padding-bottom: 4px;
         }
 
         .hero-levers-inline::-webkit-scrollbar {
@@ -1637,6 +1616,8 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
+          flex: 0 0 auto;
+          min-width: max-content;
           padding: 12px 18px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.08);
@@ -2198,10 +2179,6 @@ export default function Home() {
           min-height: 116px;
         }
 
-        .metric-card-main {
-          position: relative;
-        }
-
         .metric-head,
         .model-head {
           display: flex;
@@ -2362,15 +2339,18 @@ export default function Home() {
           margin-top: 24px;
         }
 
-        .result-doc-card {
-          perspective: 1200px;
-          min-height: 320px;
+        .tilt-card {
+          perspective: 1400px;
         }
 
-        .result-doc-card-grid {
-          position: relative;
-          border-radius: 30px;
+        .tilt-inner {
           transform-style: preserve-3d;
+          transition: transform 0.18s ease-out;
+          will-change: transform;
+        }
+
+        .result-doc-card {
+          min-height: 320px;
         }
 
         .result-doc-card-inner {
@@ -2388,36 +2368,41 @@ export default function Home() {
           box-shadow:
             0 20px 44px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          transition:
-            transform 0.35s ease,
-            box-shadow 0.35s ease,
-            border-color 0.35s ease;
         }
 
-        .result-doc-card-inner::after {
-          content: "";
-          position: absolute;
-          width: 180px;
-          height: 180px;
-          left: -20px;
-          top: 24px;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.2),
-            transparent 70%
+        .result-doc-top {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+
+        .result-doc-cta {
+          display: flex;
+          align-items: center;
+        }
+
+        .result-doc-start-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 110px;
+          padding: 11px 16px;
+          border-radius: 999px;
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #7c84ff 55%,
+            #c25cf3 100%
           );
-          filter: blur(18px);
-          opacity: 0.85;
-          pointer-events: none;
-        }
-
-        .result-doc-card:hover .result-doc-card-inner {
-          transform: rotateX(5deg) rotateY(-6deg) translateY(-8px);
+          color: #fff;
+          font-weight: 700;
+          font-size: 14px;
           box-shadow:
-            0 30px 70px rgba(0, 0, 0, 0.24),
-            0 0 0 1px rgba(247, 210, 55, 0.07),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          border-color: rgba(247, 210, 55, 0.16);
+            0 10px 24px rgba(85, 104, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
 
         .result-doc-tab {
@@ -2690,6 +2675,14 @@ export default function Home() {
           min-height: 520px;
         }
 
+        .analysis-left-title {
+          font-size: 22px;
+          line-height: 1.25;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+        }
+
         .snapshot-builder-copy {
           margin-top: 12px;
           max-width: 860px;
@@ -2765,12 +2758,6 @@ export default function Home() {
           font-size: 28px;
         }
 
-        .builder-block-6 {
-          grid-column: 1 / 2;
-          grid-row: 4 / 5;
-          display: none;
-        }
-
         .analysis-right-card {
           min-height: 520px;
         }
@@ -2794,107 +2781,82 @@ export default function Home() {
         .start-cards-row {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 16px;
+          gap: 18px;
           margin-top: 24px;
         }
 
         .start-card {
+          display: block;
+        }
+
+        .start-card-inner {
           position: relative;
-          overflow: hidden;
-          min-height: 178px;
+          min-height: 220px;
           border-radius: 28px;
-          padding: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.12),
-            rgba(255, 255, 255, 0.04)
-          );
+          overflow: hidden;
+          box-shadow:
+            0 20px 48px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
+
+        .start-card-frame {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .start-card-overlay {
+          position: relative;
+          z-index: 2;
+          min-height: 220px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          box-shadow:
-            0 18px 40px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-          transform-style: preserve-3d;
-          transition:
-            transform 0.35s ease,
-            box-shadow 0.35s ease,
-            border-color 0.35s ease;
+          background: linear-gradient(
+            90deg,
+            rgba(5, 15, 40, 0.26),
+            rgba(5, 15, 40, 0.08)
+          );
         }
 
-        .start-card:hover {
-          transform: rotateX(4deg) rotateY(-6deg) translateY(-6px);
-          box-shadow:
-            0 28px 60px rgba(0, 0, 0, 0.22),
-            0 0 0 1px rgba(247, 210, 55, 0.06);
-          border-color: rgba(247, 210, 55, 0.15);
-        }
-
-        .start-card-bg {
-          position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(
-              circle at 18% 20%,
-              rgba(247, 210, 55, 0.14),
-              transparent 28%
-            ),
-            radial-gradient(
-              circle at 82% 74%,
-              rgba(124, 132, 255, 0.18),
-              transparent 34%
-            );
-          pointer-events: none;
-        }
-
-        .start-card-top,
-        .start-card-bottom {
-          position: relative;
-          z-index: 2;
+        .start-card-overlay-top,
+        .start-card-overlay-bottom {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 18px;
-        }
-
-        .start-card-icon {
-          width: 58px;
-          height: 58px;
-          object-fit: contain;
-          flex-shrink: 0;
-        }
-
-        .start-card-meta {
-          flex: 1;
+          gap: 16px;
         }
 
         .start-card-title {
-          font-size: 28px;
+          font-size: 30px;
           line-height: 1;
           font-weight: 700;
           color: #ffffff;
         }
 
         .start-card-subtitle {
-          margin-top: 10px;
-          font-size: 14px;
+          margin-top: 8px;
+          font-size: 15px;
           line-height: 1.65;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(255, 255, 255, 0.78);
         }
 
         .start-card-price {
-          font-size: 34px;
+          font-size: 40px;
           line-height: 1;
           font-weight: 700;
           color: #f7d237;
+          text-shadow: 0 0 18px rgba(247, 210, 55, 0.12);
         }
 
         .start-card-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-width: 124px;
+          min-width: 132px;
           padding: 14px 18px;
           border-radius: 999px;
           background: linear-gradient(
@@ -2931,18 +2893,19 @@ export default function Home() {
           position: absolute;
           inset: 0;
           background-image: linear-gradient(
-            rgba(255, 255, 255, 0.06) 1px,
+            rgba(255, 255, 255, 0.045) 1px,
             transparent 1px
           );
           background-size: 100% 76px;
-          opacity: 0.28;
+          opacity: 0.2;
           pointer-events: none;
         }
 
         .aurora {
           position: absolute;
-          filter: blur(110px);
-          opacity: 0.42;
+          border-radius: 9999px;
+          filter: blur(120px);
+          opacity: 0.55;
           animation-timing-function: ease-in-out;
           animation-iteration-count: infinite;
           animation-direction: alternate;
@@ -2950,63 +2913,67 @@ export default function Home() {
         }
 
         .aurora-1 {
-          width: 42vw;
-          height: 42vw;
-          min-width: 420px;
-          min-height: 420px;
-          left: -8vw;
-          top: -12vh;
+          width: 34vw;
+          height: 34vw;
+          min-width: 320px;
+          min-height: 320px;
+          left: -6vw;
+          top: -8vh;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.16),
-            transparent 68%
+            rgba(106, 160, 255, 0.2),
+            rgba(106, 160, 255, 0.08) 42%,
+            transparent 72%
           );
           animation: driftOne 16s infinite alternate ease-in-out;
         }
 
         .aurora-2 {
-          width: 46vw;
-          height: 46vw;
-          min-width: 460px;
-          min-height: 460px;
-          right: -10vw;
-          top: 4vh;
-          background: radial-gradient(
-            circle,
-            rgba(95, 179, 179, 0.12),
-            transparent 68%
-          );
-          animation: driftTwo 14s infinite alternate ease-in-out;
-        }
-
-        .aurora-3 {
-          width: 54vw;
-          height: 34vw;
-          min-width: 520px;
-          min-height: 300px;
-          left: 10vw;
-          bottom: -10vh;
-          background: radial-gradient(
-            circle,
-            rgba(120, 120, 255, 0.12),
-            transparent 70%
-          );
-          animation: driftThree 18s infinite alternate ease-in-out;
-        }
-
-        .aurora-4 {
           width: 30vw;
           height: 30vw;
           min-width: 280px;
           min-height: 280px;
-          left: 42%;
-          top: 12%;
+          right: 4vw;
+          top: 6vh;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.08),
-            transparent 66%
+            rgba(247, 210, 55, 0.16),
+            rgba(247, 210, 55, 0.05) 42%,
+            transparent 72%
           );
-          animation: driftFour 20s infinite alternate ease-in-out;
+          animation: driftTwo 18s infinite alternate ease-in-out;
+        }
+
+        .aurora-3 {
+          width: 38vw;
+          height: 38vw;
+          min-width: 360px;
+          min-height: 360px;
+          left: 18vw;
+          bottom: -10vh;
+          background: radial-gradient(
+            circle,
+            rgba(124, 132, 255, 0.16),
+            rgba(124, 132, 255, 0.05) 44%,
+            transparent 74%
+          );
+          animation: driftThree 20s infinite alternate ease-in-out;
+        }
+
+        .aurora-4 {
+          width: 24vw;
+          height: 24vw;
+          min-width: 220px;
+          min-height: 220px;
+          right: 18vw;
+          bottom: 12vh;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.03) 38%,
+            transparent 72%
+          );
+          animation: driftFour 15s infinite alternate ease-in-out;
         }
 
         .vignette {
@@ -3252,7 +3219,8 @@ export default function Home() {
 
           .hero-chart-metrics-row,
           .input-grid,
-          .dashboard-grid {
+          .dashboard-grid,
+          .results-grid-2x2 {
             grid-template-columns: 1fr;
           }
 
@@ -3344,8 +3312,9 @@ export default function Home() {
             font-size: 20px;
           }
 
-          .start-card {
-            min-height: 164px;
+          .start-card-inner,
+          .start-card-overlay {
+            min-height: 190px;
           }
 
           .start-card-title {
@@ -3353,7 +3322,13 @@ export default function Home() {
           }
 
           .start-card-price {
-            font-size: 28px;
+            font-size: 30px;
+          }
+
+          .result-doc-start-btn {
+            min-width: 92px;
+            padding: 10px 14px;
+            font-size: 13px;
           }
         }
       `}</style>
