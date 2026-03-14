@@ -1609,7 +1609,7 @@ export default function Home() {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(34, 47, 74, 0.82);
   color: rgba(255, 255, 255, 0.68);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   text-align: center;
   white-space: nowrap;
