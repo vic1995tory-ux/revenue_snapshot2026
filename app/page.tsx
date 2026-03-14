@@ -1582,8 +1582,8 @@ export default function Home() {
 }
 
 .hero-levers-inline {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: nowrap;
   gap: 8px;
   padding-bottom: 4px;
 }
