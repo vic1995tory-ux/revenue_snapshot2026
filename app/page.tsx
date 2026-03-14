@@ -101,18 +101,18 @@ function TopMetricCard({
 }) {
   return (
     <div className="glass-card soft-glow metric-card metric-card-main">
-   <div className="metric-head">
-  <div className="metric-title-wrap">
-    <div className="metric-label">{title}</div>
-    <div className={`metric-flag ${flagTone(type, delta)}`}>
-      {getMetricFlag(type, delta)}
-    </div>
-  </div>
+      <div className="metric-head">
+        <div className="metric-title-wrap">
+          <div className="metric-label">{title}</div>
+          <div className={`metric-flag ${flagTone(type, delta)}`}>
+            {getMetricFlag(type, delta)}
+          </div>
+        </div>
 
-  <div className={`metric-delta-top ${color(delta, invert)}`}>
-    {pct(delta)}
-  </div>
-</div>
+        <div className={`metric-delta-top ${color(delta, invert)}`}>
+          {pct(delta)}
+        </div>
+      </div>
 
       <div className="metric-main-value">{value}</div>
     </div>
@@ -382,9 +382,7 @@ function HeroEconomyChart() {
                   <div key={bar.name} className="bar-chart-row">
                     <div className="bar-chart-row-top">
                       <div className="bar-chart-label">{bar.name}</div>
-                      <div className="bar-chart-value">
-                        {fmtMoney(bar.value)}
-                      </div>
+                      <div className="bar-chart-value">{fmtMoney(bar.value)}</div>
                     </div>
 
                     <div className="bar-chart-bar-shell bar-chart-bar-shell-horizontal">
@@ -558,6 +556,200 @@ function StartCard({
     </div>
   );
 }
+
+function StageCarousel() {
+  const items = [
+    {
+      stage: "Seed",
+      icon: "/seed.svg",
+      request: "Проверка идеи продукта",
+      goal: "Найти первую рабочую экономику",
+      path: "Как выйти на первые продажи",
+      result: "Понимание MVP-модели",
+      industries: ["industry-saas", "industry-healthtech"],
+    },
+    {
+      stage: "Startup",
+      icon: "/startup.svg",
+      request: "Рост первых продаж",
+      goal: "Увеличить поток клиентов",
+      path: "Как масштабировать спрос",
+      result: "Определение ключевых рычагов",
+      industries: ["industry-fintech", "industry-ecom"],
+    },
+    {
+      stage: "Growth",
+      icon: "/growth.svg",
+      request: "Ускорение роста",
+      goal: "Повысить доходность бизнеса",
+      path: "Оптимизация unit-экономики",
+      result: "Сильная экономическая модель",
+      industries: [
+        "industry-saas",
+        "industry-ecom",
+        "industry-fintech",
+        "industry-edtech",
+        "industry-healthtech",
+        "industry-b2b",
+      ],
+    },
+    {
+      stage: "Expansion",
+      icon: "/expansion.svg",
+      request: "Выход на новые рынки",
+      goal: "Найти новый уровень роста",
+      path: "Стратегия масштабирования",
+      result: "Новая стратегия роста",
+      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
+    },
+  ];
+
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const getOffset = (index: number) => {
+    const total = items.length;
+    let diff = index - activeIndex;
+
+    if (diff > total / 2) diff -= total;
+    if (diff < -total / 2) diff += total;
+
+    return diff;
+  };
+
+  const next = () =>
+    setActiveIndex((prev) => Math.min(prev + 1, items.length - 1));
+  const prev = () => setActiveIndex((prev) => Math.max(prev - 1, 0));
+
+  const activeIndustries = new Set(items[activeIndex].industries);
+
+  return (
+    <div className="stage-carousel-wrap">
+      <div className="industries-pills industries-pills-carousel">
+        <span
+          className={`industry-pill industry-saas ${
+            activeIndustries.has("industry-saas")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          SaaS
+        </span>
+        <span
+          className={`industry-pill industry-ecom ${
+            activeIndustries.has("industry-ecom")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          E-com
+        </span>
+        <span
+          className={`industry-pill industry-fintech ${
+            activeIndustries.has("industry-fintech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          FinTech
+        </span>
+        <span
+          className={`industry-pill industry-edtech ${
+            activeIndustries.has("industry-edtech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          EdTech
+        </span>
+        <span
+          className={`industry-pill industry-healthtech ${
+            activeIndustries.has("industry-healthtech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          HealthTech
+        </span>
+        <span
+          className={`industry-pill industry-b2b ${
+            activeIndustries.has("industry-b2b")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          B2B
+        </span>
+      </div>
+
+      <div className="stage-carousel-scene">
+        <button
+          type="button"
+          className="stage-carousel-nav stage-carousel-nav-left"
+          onClick={prev}
+          disabled={activeIndex === 0}
+          aria-label="Предыдущая карточка"
+        >
+          ‹
+        </button>
+
+        <div className="stage-carousel-track">
+          {items.map((item, index) => {
+            const offset = getOffset(index);
+
+            let positionClass = "stage-card-hidden";
+            if (offset === 0) positionClass = "stage-card-center";
+            else if (offset === -1) positionClass = "stage-card-left";
+            else if (offset === 1) positionClass = "stage-card-right";
+            else if (offset === 2 || offset === -2)
+              positionClass = "stage-card-back";
+
+            return (
+              <div
+                key={item.stage}
+                className={`stage-carousel-item ${positionClass}`}
+                onClick={() => setActiveIndex(index)}
+              >
+                <StageCard
+                  stage={item.stage}
+                  icon={item.icon}
+                  request={item.request}
+                  goal={item.goal}
+                  path={item.path}
+                  result={item.result}
+                />
+              </div>
+            );
+          })}
+        </div>
+
+        <button
+          type="button"
+          className="stage-carousel-nav stage-carousel-nav-right"
+          onClick={next}
+          disabled={activeIndex === items.length - 1}
+          aria-label="Следующая карточка"
+        >
+          ›
+        </button>
+      </div>
+
+      <div className="stage-carousel-dots">
+        {items.map((_, index) => (
+          <button
+            key={index}
+            type="button"
+            className={`stage-carousel-dot ${
+              index === activeIndex ? "stage-carousel-dot-active" : ""
+            }`}
+            onClick={() => setActiveIndex(index)}
+            aria-label={`Слайд ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
@@ -1199,68 +1391,12 @@ export default function Home() {
         <section className="mb-16 stage-hover-map">
           <div className="section-head">
             <div className="section-kicker">Для кого этот инструмент</div>
-
             <h2 className="section-title">
               Где Revenue Snapshot показал результат
             </h2>
-
-            <div className="industries-pills">
-              <span className="industry-pill industry-saas">SaaS</span>
-              <span className="industry-pill industry-ecom">E-com</span>
-              <span className="industry-pill industry-fintech">FinTech</span>
-              <span className="industry-pill industry-edtech">EdTech</span>
-              <span className="industry-pill industry-healthtech">
-                HealthTech
-              </span>
-              <span className="industry-pill industry-b2b">B2B</span>
-            </div>
           </div>
 
-          <div className="stage-grid stage-grid-detailed">
-            <div className="stage-delay-1 stage-linked-card stage-seed">
-              <StageCard
-                stage="Seed"
-                icon="/seed.svg"
-                request="Проверка идеи продукта"
-                goal="Найти первую рабочую экономику"
-                path="Как выйти на первые продажи"
-                result="Понимание MVP-модели"
-              />
-            </div>
-
-            <div className="stage-delay-2 stage-linked-card stage-startup">
-              <StageCard
-                stage="Startup"
-                icon="/startup.svg"
-                request="Рост первых продаж"
-                goal="Увеличить поток клиентов"
-                path="Как масштабировать спрос"
-                result="Определение ключевых рычагов"
-              />
-            </div>
-
-            <div className="stage-delay-3 stage-linked-card stage-growth">
-              <StageCard
-                stage="Growth"
-                icon="/growth.svg"
-                request="Ускорение роста"
-                goal="Повысить доходность бизнеса"
-                path="Оптимизация unit-экономики"
-                result="Сильная экономическая модель"
-              />
-            </div>
-
-            <div className="stage-delay-4 stage-linked-card stage-expansion">
-              <StageCard
-                stage="Expansion"
-                icon="/expansion.svg"
-                request="Выход на новые рынки"
-                goal="Найти новый уровень роста"
-                path="Стратегия масштабирования"
-                result="Новая стратегия роста"
-              />
-            </div>
-          </div>
+          <StageCarousel />
         </section>
 
         <section className="mb-16">
@@ -1280,22 +1416,22 @@ export default function Home() {
             <SnapshotStructure />
 
             <div className="analysis-right-card analysis-right-card-plain">
-  <div className="start-cards-row">
-    <StartCard
-      title="Страт сессия"
-      icon="/stratsession.svg"
-      price="$770"
-      href={tgContactUrl}
-    />
+              <div className="start-cards-row">
+                <StartCard
+                  title="Страт сессия"
+                  icon="/stratsession.svg"
+                  price="$770"
+                  href={tgContactUrl}
+                />
 
-    <StartCard
-      title="Snapshot"
-      icon="/snapshot.svg"
-      price="$114"
-      href={payUrl}
-    />
-  </div>
-</div>
+                <StartCard
+                  title="Snapshot"
+                  icon="/snapshot.svg"
+                  price="$114"
+                  href={payUrl}
+                />
+              </div>
+            </div>
           </div>
         </section>
 
@@ -1554,348 +1690,345 @@ export default function Home() {
           align-items: center;
         }
 
-.hero-visual-shell {
-  position: relative;
-  min-height: 100%;
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-}
+        .hero-visual-shell {
+          position: relative;
+          min-height: 100%;
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
 
-.hero-chart-float {
-  position: relative;
-  width: min(760px, 100%);
-  margin-left: auto;
-  padding-top: 8px;
-}
+        .hero-chart-float {
+          position: relative;
+          width: min(760px, 100%);
+          margin-left: auto;
+          padding-top: 8px;
+        }
 
-.hero-chart-float-title {
-  font-size: 32px;
-  line-height: 1;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 14px;
-  text-align: right;
-  padding-right: 8px;
-}
+        .hero-chart-float-title {
+          font-size: 32px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 14px;
+          text-align: right;
+          padding-right: 8px;
+        }
 
-.hero-levers-inline {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  padding-bottom: 4px;
-}
+        .hero-levers-inline {
+          display: flex;
+          flex-wrap: nowrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          width: 100%;
+          padding-bottom: 4px;
+        }
 
-.hero-levers-inline::-webkit-scrollbar {
-  display: none;
-}
+        .hero-levers-inline::-webkit-scrollbar {
+          display: none;
+        }
 
-.hero-levers-inline-float {
-  margin-bottom: 12px;
-}
+        .hero-levers-inline-float {
+          margin-bottom: 12px;
+        }
 
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: 1 1 0;
+          min-width: 0;
+          min-height: 48px;
+          padding: 10px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(34, 47, 74, 0.82);
+          color: rgba(255, 255, 255, 0.68);
+          font-size: 12px;
+          font-weight: 700;
+          line-height: 1;
+          text-align: center;
+          white-space: nowrap;
+          transition: 0.25s ease;
+        }
 
-  min-height: 48px;
-  padding: 10px 18px;
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: #f7d237;
+          border-color: rgba(247, 210, 55, 0.55);
+        }
 
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+        .hero-chart-box {
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(36, 49, 76, 0.88);
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          box-shadow:
+            0 22px 60px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
 
-  background: rgba(34, 47, 74, 0.82);
-  color: rgba(255, 255, 255, 0.68);
+        .hero-chart-metrics-row {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 8px;
+          margin-bottom: 12px;
+        }
 
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  white-space: nowrap;
+        .hero-metric-square {
+          min-height: 86px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+        }
 
-  transition: 0.25s ease;
-}
+        .hero-metric-square span {
+          display: block;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.52);
+        }
 
-.hero-tag-active {
-  color: #0b1d3a;
-  background: #f7d237;
-  border-color: rgba(247, 210, 55, 0.55);
-}
+        .hero-metric-square strong {
+          display: block;
+          margin-top: 10px;
+          font-size: 22px;
+          line-height: 1.1;
+          font-weight: 700;
+          color: white;
+          white-space: nowrap;
+        }
 
-.hero-chart-box {
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(36, 49, 76, 0.88);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  box-shadow:
-    0 22px 60px rgba(0, 0, 0, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
+        .bar-chart-wrap {
+          position: relative;
+          margin-top: 4px;
+          border-radius: 24px;
+          padding: 52px 18px 18px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.035),
+            rgba(255, 255, 255, 0.015)
+          );
+          overflow: hidden;
+        }
 
-.hero-chart-metrics-row {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  margin-bottom: 12px;
-}
+        .bar-chart-scale {
+          position: absolute;
+          top: 16px;
+          left: 18px;
+          right: 18px;
+          z-index: 3;
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          pointer-events: none;
+        }
 
-.hero-metric-square {
-  min-height: 86px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
+        .bar-chart-scale span {
+          font-size: 11px;
+          line-height: 1;
+          color: rgba(255, 255, 255, 0.42);
+        }
 
-.hero-metric-square span {
-  display: block;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.52);
-}
+        .bar-chart-scale span:first-child {
+          text-align: left;
+        }
 
-.hero-metric-square strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 22px;
-  line-height: 1.1;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-}
+        .bar-chart-scale span:not(:first-child):not(:last-child) {
+          text-align: center;
+        }
 
-.bar-chart-wrap {
-  position: relative;
-  margin-top: 4px;
-  border-radius: 24px;
-  padding: 52px 18px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.035),
-    rgba(255, 255, 255, 0.015)
-  );
-  overflow: hidden;
-}
+        .bar-chart-scale span:last-child {
+          text-align: right;
+        }
 
-.bar-chart-scale {
-  position: absolute;
-  top: 16px;
-  left: 18px;
-  right: 18px;
-  z-index: 3;
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  pointer-events: none;
-}
+        .bar-chart-grid {
+          position: absolute;
+          inset: 0;
+          background-image: linear-gradient(
+            to right,
+            rgba(255, 255, 255, 0.06) 1px,
+            transparent 1px
+          );
+          background-size: 25% 100%;
+          background-position: left top;
+          pointer-events: none;
+          opacity: 0.65;
+        }
 
-.bar-chart-scale span {
-  font-size: 11px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.42);
-}
+        .bar-chart-columns {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
 
-.bar-chart-scale span:first-child {
-  text-align: left;
-}
+        .bar-chart-columns-horizontal {
+          width: 100%;
+        }
 
-.bar-chart-scale span:not(:first-child):not(:last-child) {
-  text-align: center;
-}
+        .bar-chart-row {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
 
-.bar-chart-scale span:last-child {
-  text-align: right;
-}
+        .bar-chart-row-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
 
-.bar-chart-grid {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(
-    to right,
-    rgba(255, 255, 255, 0.06) 1px,
-    transparent 1px
-  );
-  background-size: 25% 100%;
-  background-position: left top;
-  pointer-events: none;
-  opacity: 0.65;
-}
+        .bar-chart-label {
+          font-size: 14px;
+          font-weight: 700;
+          color: rgba(255, 255, 255, 0.78);
+          text-align: left;
+          line-height: 1.35;
+        }
 
-.bar-chart-columns {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
+        .bar-chart-value {
+          font-size: 14px;
+          line-height: 1.3;
+          color: rgba(255, 255, 255, 0.72);
+          text-align: right;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
 
-.bar-chart-columns-horizontal {
-  width: 100%;
-}
+        .bar-chart-bar-shell {
+          width: 100%;
+        }
 
-.bar-chart-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
+        .bar-chart-bar-shell-horizontal {
+          width: 100%;
+          height: 30px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          display: flex;
+          align-items: center;
+          overflow: hidden;
+        }
 
-.bar-chart-row-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
+        .bar-chart-bar {
+          display: block;
+          height: 100%;
+          min-width: 8px;
+          box-shadow:
+            0 10px 24px rgba(0, 0, 0, 0.14),
+            0 0 18px rgba(255, 255, 255, 0.04);
+        }
 
-.bar-chart-label {
-  font-size: 14px;
-  font-weight: 700;
-  color: rgba(255, 255, 255, 0.78);
-  text-align: left;
-  line-height: 1.35;
-}
+        .bar-chart-bar-horizontal {
+          height: 100%;
+          border-radius: 999px;
+          transition: width 0.8s ease, transform 0.8s ease;
+        }
 
-.bar-chart-value {
-  font-size: 14px;
-  line-height: 1.3;
-  color: rgba(255, 255, 255, 0.72);
-  text-align: right;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
+        .bar-revenue {
+          transform: scaleY(1.04);
+          transform-origin: left center;
+        }
 
-.bar-chart-bar-shell {
-  width: 100%;
-}
+        .bar-good {
+          background: linear-gradient(
+            90deg,
+            rgba(176, 140, 255, 0.95) 0%,
+            rgba(244, 221, 114, 1) 48%,
+            rgba(247, 210, 55, 1) 100%
+          );
+        }
 
-.bar-chart-bar-shell-horizontal {
-  width: 100%;
-  height: 30px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-}
+        .bar-bad {
+          background: linear-gradient(
+            90deg,
+            rgba(124, 132, 255, 0.9) 0%,
+            rgba(93, 167, 255, 0.95) 55%,
+            rgba(95, 179, 179, 0.95) 100%
+          );
+        }
 
-.bar-chart-bar {
-  display: block;
-  height: 100%;
-  min-width: 8px;
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.14),
-    0 0 18px rgba(255, 255, 255, 0.04);
-}
+        .hero-chart-bottom {
+          margin-top: 14px;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 10px;
+        }
 
-.bar-chart-bar-horizontal {
-  height: 100%;
-  border-radius: 999px;
-  transition: width 0.8s ease, transform 0.8s ease;
-}
+        .hero-money-card {
+          border-radius: 18px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(255, 255, 255, 0.03);
+          padding: 12px;
+        }
 
-.bar-revenue {
-  transform: scaleY(1.04);
-  transform-origin: left center;
-}
+        .hero-money-card-clean {
+          border: 0;
+          background: transparent;
+          padding: 0;
+        }
 
-.bar-good {
-  background: linear-gradient(
-    90deg,
-    rgba(176, 140, 255, 0.95) 0%,
-    rgba(244, 221, 114, 1) 48%,
-    rgba(247, 210, 55, 1) 100%
-  );
-}
+        .hero-money-card span {
+          display: block;
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(255, 255, 255, 0.5);
+        }
 
-.bar-bad {
-  background: linear-gradient(
-    90deg,
-    rgba(124, 132, 255, 0.9) 0%,
-    rgba(93, 167, 255, 0.95) 55%,
-    rgba(95, 179, 179, 0.95) 100%
-  );
-}
+        .hero-money-card strong {
+          display: block;
+          margin-top: 8px;
+          font-size: 22px;
+          font-weight: 700;
+          color: white;
+          white-space: nowrap;
+        }
 
-.hero-chart-bottom {
-  margin-top: 14px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
+        .hero-money-card small {
+          display: block;
+          margin-top: 5px;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.58);
+        }
 
-.hero-money-card {
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
-  padding: 12px;
-}
+        .hero-active-note {
+          margin-top: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border: 1px solid rgba(247, 210, 55, 0.18);
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 999px;
+          padding: 10px 14px;
+          color: rgba(255, 255, 255, 0.72);
+          font-size: 14px;
+          line-height: 1.45;
+        }
 
-.hero-money-card-clean {
-  border: 0;
-  background: transparent;
-  padding: 0;
-}
+        .hero-active-note b {
+          color: #f7d237;
+        }
 
-.hero-money-card span {
-  display: block;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.5);
-}
+        .hero-active-note-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
+          animation: pulseTinyYellow 1.8s ease-in-out infinite;
+          flex-shrink: 0;
+        }
 
-.hero-money-card strong {
-  display: block;
-  margin-top: 8px;
-  font-size: 22px;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-}
-
-.hero-money-card small {
-  display: block;
-  margin-top: 5px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.58);
-}
-
-.hero-active-note {
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border: 1px solid rgba(247, 210, 55, 0.18);
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 999px;
-  padding: 10px 14px;
-  color: rgba(255, 255, 255, 0.72);
-  font-size: 14px;
-  line-height: 1.45;
-}
-
-.hero-active-note b {
-  color: #f7d237;
-}
-
-.hero-active-note-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #f7d237;
-  box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
-  animation: pulseTinyYellow 1.8s ease-in-out infinite;
-  flex-shrink: 0;
-}
         .section-head {
           max-width: 1080px;
           margin-bottom: 18px;
@@ -2228,44 +2361,52 @@ export default function Home() {
           min-height: 116px;
         }
 
-      .metric-head,
-.model-head {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
-}
+        .metric-head,
+        .model-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 10px;
+        }
 
-.metric-title-wrap {
-  min-width: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
+        .metric-title-wrap {
+          min-width: 0;
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
 
-.metric-flag {
-  margin-top: 8px;
-  flex-shrink: 0;
-  border-radius: 9999px;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  border: 1px solid transparent;
-  line-height: 1;
-  max-width: 100%;
-}
+        .metric-label,
+        .model-label {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.58);
+          line-height: 1.2;
+          padding-top: 2px;
+        }
 
-.metric-delta-top,
-.model-delta-top {
-  font-size: 18px;
-  font-weight: 700;
-  line-height: 1;
-  white-space: nowrap;
-  padding-top: 2px;
-  flex-shrink: 0;
-}
+        .metric-flag {
+          margin-top: 8px;
+          flex-shrink: 0;
+          border-radius: 9999px;
+          padding: 6px 10px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          border: 1px solid transparent;
+          line-height: 1;
+          max-width: 100%;
+        }
+
+        .metric-delta-top,
+        .model-delta-top {
+          font-size: 18px;
+          font-weight: 700;
+          line-height: 1;
+          white-space: nowrap;
+          padding-top: 2px;
+          flex-shrink: 0;
+        }
 
         .metric-main-value {
           margin-top: 20px;
@@ -2525,20 +2666,22 @@ export default function Home() {
             box-shadow 0.28s ease;
         }
 
-        .stage-hover-map:hover .industry-pill {
-          opacity: 0.24;
-          filter: saturate(0.8);
+        .stage-carousel-wrap {
+          margin-top: 24px;
+        }
+
+        .industries-pills-carousel {
+          justify-content: center;
+          margin-bottom: 22px;
+        }
+
+        .industry-pill-dim {
+          opacity: 0.22;
+          filter: saturate(0.7);
           transform: scale(0.985);
         }
 
-        .stage-hover-map:has(.stage-seed:hover) .industry-saas,
-        .stage-hover-map:has(.stage-seed:hover) .industry-healthtech,
-        .stage-hover-map:has(.stage-startup:hover) .industry-fintech,
-        .stage-hover-map:has(.stage-startup:hover) .industry-ecom,
-        .stage-hover-map:has(.stage-expansion:hover) .industry-b2b,
-        .stage-hover-map:has(.stage-expansion:hover) .industry-edtech,
-        .stage-hover-map:has(.stage-expansion:hover) .industry-ecom,
-        .stage-hover-map:has(.stage-growth:hover) .industry-pill {
+        .industry-pill-active {
           opacity: 1;
           filter: saturate(1);
           transform: scale(1);
@@ -2548,39 +2691,134 @@ export default function Home() {
             0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-        .stage-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 22px;
+        .stage-carousel-scene {
+          position: relative;
+          perspective: 1800px;
+          min-height: 520px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
 
-        .stage-grid-detailed {
-          margin-top: 30px;
+        .stage-carousel-track {
+          position: relative;
+          width: 100%;
+          height: 520px;
+          transform-style: preserve-3d;
         }
 
-        .stage-delay-1,
-        .stage-delay-2,
-        .stage-delay-3,
-        .stage-delay-4 {
+        .stage-carousel-item {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          width: min(760px, 72vw);
+          transform-style: preserve-3d;
+          transition:
+            transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.45s ease,
+            filter 0.45s ease;
+          cursor: pointer;
+        }
+
+        .stage-carousel-item .stage-card-figure {
+          min-height: 500px;
+        }
+
+        .stage-card-center {
+          transform: translateX(-50%) translateZ(0) scale(1);
+          opacity: 1;
+          z-index: 5;
+          filter: blur(0);
+        }
+
+        .stage-card-left {
+          transform: translateX(calc(-50% - 340px)) translateZ(-220px)
+            rotateY(24deg) scale(0.88);
+          opacity: 0.58;
+          z-index: 3;
+          filter: blur(0.3px);
+        }
+
+        .stage-card-right {
+          transform: translateX(calc(-50% + 340px)) translateZ(-220px)
+            rotateY(-24deg) scale(0.88);
+          opacity: 0.58;
+          z-index: 3;
+          filter: blur(0.3px);
+        }
+
+        .stage-card-back {
+          transform: translateX(-50%) translateZ(-420px) scale(0.74);
+          opacity: 0.18;
+          z-index: 1;
+          filter: blur(1.2px);
+          pointer-events: none;
+        }
+
+        .stage-card-hidden {
+          transform: translateX(-50%) translateZ(-520px) scale(0.68);
           opacity: 0;
-          transform: translateY(24px) scale(0.985);
-          animation: stageReveal 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+          z-index: 0;
+          pointer-events: none;
         }
 
-        .stage-delay-1 {
-          animation-delay: 0.05s;
+        .stage-carousel-nav {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          z-index: 8;
+          width: 48px;
+          height: 48px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: rgba(255, 255, 255, 0.06);
+          color: #ffffff;
+          font-size: 28px;
+          line-height: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          backdrop-filter: blur(10px);
+          transition: 0.2s ease;
         }
 
-        .stage-delay-2 {
-          animation-delay: 0.16s;
+        .stage-carousel-nav:hover:not(:disabled) {
+          background: rgba(255, 255, 255, 0.1);
+          transform: translateY(-50%) scale(1.04);
         }
 
-        .stage-delay-3 {
-          animation-delay: 0.28s;
+        .stage-carousel-nav:disabled {
+          opacity: 0.28;
+          cursor: not-allowed;
         }
 
-        .stage-delay-4 {
-          animation-delay: 0.4s;
+        .stage-carousel-nav-left {
+          left: -8px;
+        }
+
+        .stage-carousel-nav-right {
+          right: -8px;
+        }
+
+        .stage-carousel-dots {
+          margin-top: 18px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+        }
+
+        .stage-carousel-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.18);
+          transition: 0.2s ease;
+        }
+
+        .stage-carousel-dot-active {
+          background: #f7d237;
+          box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
         }
 
         .stage-card-figure {
@@ -2798,156 +3036,157 @@ export default function Home() {
           font-size: 28px;
         }
 
-  .analysis-right-card {
-  min-height: auto;
-}
+        .analysis-right-card {
+          min-height: auto;
+        }
 
-.analysis-right-card-plain {
-  background: transparent;
-  backdrop-filter: none;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-}
+        .analysis-right-card-plain {
+          background: transparent;
+          backdrop-filter: none;
+          border: 0;
+          box-shadow: none;
+          padding: 0;
+        }
 
-.analysis-right-title {
-  display: none;
-}
+        .analysis-right-title {
+          display: none;
+        }
 
-.start-cards-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  margin-top: 0;
-}
+        .start-cards-row {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+          margin-top: 0;
+        }
 
-.start-card {
-  display: block;
-}
+        .start-card {
+          display: block;
+        }
 
-.start-card-inner {
-  position: relative;
-  border-radius: 0;
-  overflow: visible;
-  box-shadow: none;
-  background: transparent;
-  min-height: auto;
-}
+        .start-card-inner {
+          position: relative;
+          border-radius: 0;
+          overflow: visible;
+          box-shadow: none;
+          background: transparent;
+          min-height: auto;
+        }
 
-.start-card-inner-plain {
-  border-radius: 0;
-  background: transparent;
-  box-shadow: none;
-}
+        .start-card-inner-plain {
+          border-radius: 0;
+          background: transparent;
+          box-shadow: none;
+        }
 
-.start-card-frame {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  height: auto;
-  display: block;
-  object-fit: contain;
-  object-position: center;
-}
+        .start-card-frame {
+          position: relative;
+          inset: auto;
+          width: 100%;
+          height: auto;
+          display: block;
+          object-fit: contain;
+          object-position: center;
+        }
 
-.start-card-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-}
+        .start-card-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 2;
+          pointer-events: none;
+        }
 
-.start-card-overlay-plain {
-  background: none;
-}
+        .start-card-overlay-plain {
+          background: none;
+        }
 
-.start-card-price-float {
-  position: absolute;
-  top: 18.33%;
-  right: 6.02%;
-  font-size: 42px;
-  line-height: 1;
-  font-weight: 700;
-  color: #ffffff;
-  text-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
-  white-space: nowrap;
-}
+        .start-card-price-float {
+          position: absolute;
+          top: 18.33%;
+          right: 6.02%;
+          font-size: 42px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+          text-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
+          white-space: nowrap;
+        }
 
-.start-card-btn-row {
-  position: absolute;
-  left: 4.54%;
-  bottom: 23.06%;
-}
+        .start-card-btn-row {
+          position: absolute;
+          left: 4.54%;
+          bottom: 23.06%;
+        }
 
-.start-card-btn {
-  position: relative;
-  overflow: hidden;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: #fff;
-  font-weight: 700;
-  text-decoration: none;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  background: linear-gradient(
-    90deg,
-    #47b6f6 0%,
-    #5da7ff 22%,
-    #7c84ff 48%,
-    #9c6dff 72%,
-    #c25cf3 100%
-  );
-  background-size: 220% 220%;
-  box-shadow:
-    0 10px 30px rgba(71, 96, 255, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  animation: tgGradientFlow 6s ease-in-out infinite;
-  transition: transform 0.2s ease, filter 0.2s ease;
-  pointer-events: auto;
-}
+        .start-card-btn {
+          position: relative;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          color: #fff;
+          font-weight: 700;
+          text-decoration: none;
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #5da7ff 22%,
+            #7c84ff 48%,
+            #9c6dff 72%,
+            #c25cf3 100%
+          );
+          background-size: 220% 220%;
+          box-shadow:
+            0 10px 30px rgba(71, 96, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+          transition: transform 0.2s ease, filter 0.2s ease;
+          pointer-events: auto;
+        }
 
-.start-card-btn::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    120deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.22) 25%,
-    transparent 50%
-  );
-  transform: translateX(-130%);
-  animation: tgShine 3.8s ease-in-out infinite;
-}
+        .start-card-btn::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.22) 25%,
+            transparent 50%
+          );
+          transform: translateX(-130%);
+          animation: tgShine 3.8s ease-in-out infinite;
+        }
 
-.start-card-btn > * {
-  position: relative;
-  z-index: 1;
-}
+        .start-card-btn > * {
+          position: relative;
+          z-index: 1;
+        }
 
-.start-card-btn:hover {
-  transform: translateY(-1px);
-  filter: brightness(1.03);
-}
+        .start-card-btn:hover {
+          transform: translateY(-1px);
+          filter: brightness(1.03);
+        }
 
-.start-card-btn-floating {
-  min-width: 0;
-  padding: 12px 20px;
-  font-size: 14px;
-  line-height: 1;
-}
+        .start-card-btn-floating {
+          min-width: 0;
+          padding: 12px 20px;
+          font-size: 14px;
+          line-height: 1;
+        }
 
-.start-card-title,
-.start-card-subtitle,
-.start-card-price,
-.start-card-btn-compact,
-.start-card-overlay-top,
-.start-card-overlay-bottom,
-.start-card-overlay-top-right,
-.start-card-overlay-bottom-left {
-  display: none;
-}
+        .start-card-title,
+        .start-card-subtitle,
+        .start-card-price,
+        .start-card-btn-compact,
+        .start-card-overlay-top,
+        .start-card-overlay-bottom,
+        .start-card-overlay-top-right,
+        .start-card-overlay-bottom-left {
+          display: none;
+        }
+
         .cta-card {
           display: grid;
           grid-template-columns: 1fr auto;
@@ -3076,17 +3315,6 @@ export default function Home() {
           }
         }
 
-        @keyframes stageReveal {
-          0% {
-            opacity: 0;
-            transform: translateY(24px) scale(0.985);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
         @keyframes tgGradientFlow {
           0% {
             background-position: 0% 50%;
@@ -3172,8 +3400,7 @@ export default function Home() {
           }
 
           .analysis-grid,
-          .results-grid-2x2,
-          .stage-grid {
+          .results-grid-2x2 {
             grid-template-columns: 1fr;
           }
         }
@@ -3226,6 +3453,36 @@ export default function Home() {
 
           .start-cards-row {
             grid-template-columns: 1fr;
+          }
+
+          .stage-carousel-scene {
+            min-height: 440px;
+          }
+
+          .stage-carousel-track {
+            height: 440px;
+          }
+
+          .stage-carousel-item {
+            width: min(92vw, 680px);
+          }
+
+          .stage-carousel-item .stage-card-figure {
+            min-height: 420px;
+          }
+
+          .stage-card-left {
+            transform: translateX(calc(-50% - 120px)) translateZ(-180px)
+              rotateY(18deg) scale(0.84);
+          }
+
+          .stage-card-right {
+            transform: translateX(calc(-50% + 120px)) translateZ(-180px)
+              rotateY(-18deg) scale(0.84);
+          }
+
+          .stage-card-back {
+            transform: translateX(-50%) translateZ(-320px) scale(0.7);
           }
         }
 
@@ -3300,7 +3557,13 @@ export default function Home() {
           }
 
           .hero-levers-inline {
-            grid-template-columns: 1fr 1fr;
+            flex-wrap: wrap;
+          }
+
+          .hero-tag {
+            flex: 1 1 calc(50% - 4px);
+            font-size: 11px;
+            min-height: 44px;
           }
 
           .bar-chart-columns {
@@ -3340,6 +3603,41 @@ export default function Home() {
             min-height: 48px;
             padding: 0 16px;
             font-size: 15px;
+          }
+
+          .stage-carousel-scene {
+            min-height: 360px;
+          }
+
+          .stage-carousel-track {
+            height: 360px;
+          }
+
+          .stage-carousel-item {
+            width: 92vw;
+          }
+
+          .stage-carousel-item .stage-card-figure {
+            min-height: 340px;
+          }
+
+          .stage-card-left,
+          .stage-card-right,
+          .stage-card-back {
+            display: none;
+          }
+
+          .stage-card-center {
+            transform: translateX(-50%) translateZ(0) scale(1);
+            opacity: 1;
+          }
+
+          .stage-carousel-nav-left {
+            left: 4px;
+          }
+
+          .stage-carousel-nav-right {
+            right: 4px;
           }
 
           .stage-top-strip {
@@ -3391,7 +3689,7 @@ export default function Home() {
             min-height: 190px;
           }
 
-          .start-card-price {
+          .start-card-price-float {
             font-size: 30px;
           }
 
