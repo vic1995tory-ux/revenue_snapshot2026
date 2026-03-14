@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Script from "next/script";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
@@ -14,21 +14,32 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://revenue-snapshot2026.vercel.app"),
   title: "Revenue Snapshot",
   description: "Интерактивная карта экономики бизнеса",
+  icons: {
+    icon: "/fav.ico",
+    shortcut: "/fav.ico",
+    apple: "/fav.ico",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#050f28",
 };
 
 export default function RootLayout({
   children,
-}: {
+}: Readonly<{
   children: React.ReactNode;
-}) {
+}>) {
   return (
     <html lang="ru">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
         {children}
 
-        {/* META PIXEL */}
         <Script id="meta-pixel" strategy="afterInteractive">
           {`
             !function(f,b,e,v,n,t,s)
