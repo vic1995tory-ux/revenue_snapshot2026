@@ -2930,8 +2930,8 @@ export default function Home() {
 }
 
 .start-card-btn-floating {
-  min-width: 174px;
-  padding: 12px 18px;
+  min-width: 0;
+  padding: 12px 20px;
   font-size: 14px;
   line-height: 1;
 }
