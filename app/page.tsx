@@ -547,7 +547,58 @@ function StartCard({
   );
 }
 
+export default function Home() {"use client";
+
+import { useEffect } from "react";
+
 export default function Home() {
+
+  useEffect(() => {
+
+    const cards = document.querySelectorAll(".tilt-card");
+
+    cards.forEach(card => {
+
+      card.addEventListener("mousemove", (e) => {
+
+        const rect = card.getBoundingClientRect();
+
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = (y - centerY) / 14;
+        const rotateY = (centerX - x) / 14;
+
+        const inner = card.querySelector(".tilt-inner");
+
+        inner.style.transform =
+          `rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+
+      });
+
+      card.addEventListener("mouseleave", () => {
+
+        const inner = card.querySelector(".tilt-inner");
+
+        inner.style.transform =
+          `rotateX(0deg) rotateY(0deg) scale(1)`;
+
+      });
+
+    });
+
+  }, []);
+
+
+  return (
+    <>
+      {https://revenue-snapshot2026.vercel.app/}
+    </>
+  );
+}
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
 
