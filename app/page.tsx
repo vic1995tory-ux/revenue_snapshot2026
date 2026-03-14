@@ -1103,29 +1103,66 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="results-grid-2x2">
-            <ResultDocCard
-              tab="Economic Rate"
-              title="Executive Summary"
-              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
-            />
-            <ResultDocCard
-              tab="Growth Limit"
-              title="Key Conclusions"
-              text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
-            />
-            <ResultDocCard
-              tab="Solution"
-              title="Strategy&Practice"
-              text="Проведенный анализ данных определяет первичную задачу: целью всегда является повышение дохода, но так как доход строится на множестве факторов, то первостепенные действия направлены на закрытие текущих зон риска. Предлагается продуктовый MVP."
-            />
-            <ResultDocCard
-              tab="JTBD"
-              title="RoadMap"
-              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP. Определение KPI для каждого из этапов в соответствии поставленным задачам и целям."
-            />
-          </div>
+          <div className="snapshot-grid">
 
+  <div className="snapshot-card tilt-card">
+    <div className="tilt-inner">
+      <div className="card-badge">ECONOMIC RATE</div>
+
+      <h3>Executive Summary</h3>
+
+      <p>
+        Данные о вашем продукте, его маржинальности и спросе выявляют
+        сильные и слабые стороны бизнеса и определяется главный фокус
+        на данный момент.
+      </p>
+    </div>
+  </div>
+
+
+  <div className="snapshot-card tilt-card">
+    <div className="tilt-inner">
+      <div className="card-badge">GROWTH LIMIT</div>
+
+      <h3>Key Conclusions</h3>
+
+      <p>
+        Ключевые выводы из фактов о компании определяют, как достичь
+        текущей цели бизнеса. Формируется управленческий вывод об
+        экономической модели.
+      </p>
+    </div>
+  </div>
+
+
+  <div className="snapshot-card tilt-card">
+    <div className="tilt-inner">
+      <div className="card-badge">SOLUTION</div>
+
+      <h3>Strategy&Practice</h3>
+
+      <p>
+        Проведённый анализ данных определяет первичную задачу: целью
+        всегда является повышение дохода.
+      </p>
+    </div>
+  </div>
+
+
+  <div className="snapshot-card tilt-card">
+    <div className="tilt-inner">
+      <div className="card-badge">JTBD</div>
+
+      <h3>RoadMap</h3>
+
+      <p>
+        Тезисный план действий на следующие 6 месяцев по запуску
+        конкретного MVP.
+      </p>
+    </div>
+  </div>
+
+</div>
           <div className="results-roadmap-note">
             После получения и изучения результатов у Вас есть возможность
             назначить <span>30-минутную встречу</span> с нашими C-level
