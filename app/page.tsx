@@ -542,16 +542,12 @@ function StartCard({
         <img src={icon} alt={title} className="start-card-frame" />
 
         <div className="start-card-overlay">
-          <div className="start-card-overlay-top">
-            <div>
-              <div className="start-card-title">{title}</div>
-              <div className="start-card-subtitle">{subtitle}</div>
-            </div>
+          <div className="start-card-overlay-top start-card-overlay-top-right">
+            <span className="start-card-btn start-card-btn-compact">Начать</span>
           </div>
 
-          <div className="start-card-overlay-bottom">
+          <div className="start-card-overlay-bottom start-card-overlay-bottom-left">
             <div className="start-card-price">{price}</div>
-            <span className="start-card-btn">Начать</span>
           </div>
         </div>
       </div>
@@ -1277,16 +1273,12 @@ export default function Home() {
           <div className="analysis-grid">
             <SnapshotStructure />
 
-            <div className="glass-card analysis-right-card">
-              <h3 className="analysis-right-title">
-                Выберите удобный формат для старта
-              </h3>
+           <div className="analysis-right-card analysis-right-card-plain">
+  <h3 className="analysis-right-title">
+    Выберите удобный формат для старта
+  </h3>
 
-              <p className="analysis-right-copy">
-                Вы можете начать либо со стратегической сессии, либо сразу со
-                Snapshot. Оба формата встроены в один процесс и дают понятную
-                точку входа.
-              </p>
+  <div className="start-cards-row">
 
               <div className="start-cards-row">
                 <StartCard
@@ -2752,45 +2744,125 @@ export default function Home() {
         }
 
         .analysis-right-card {
-          min-height: 520px;
-        }
+  min-height: auto;
+}
 
-        .analysis-right-title {
-          font-size: 22px;
-          line-height: 1.25;
-          font-weight: 700;
-          color: #ffffff;
-          margin: 0;
-        }
+.analysis-right-card-plain {
+  background: transparent;
+  backdrop-filter: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+}
 
-        .analysis-right-copy {
-          margin-top: 16px;
-          font-size: 16px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.7);
-          max-width: 680px;
-        }
+.analysis-right-title {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
 
-        .start-cards-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 18px;
-          margin-top: 24px;
-        }
+.start-cards-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
 
-        .start-card {
-          display: block;
-        }
+.start-card {
+  display: block;
+}
 
-        .start-card-inner {
-          position: relative;
-          min-height: 220px;
-          border-radius: 28px;
-          overflow: hidden;
-          box-shadow:
-            0 20px 48px rgba(0, 0, 0, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
+.start-card-inner {
+  position: relative;
+  min-height: 220px;
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 48px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: #08142f;
+}
+
+.start-card-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+}
+
+.start-card-overlay {
+  position: relative;
+  z-index: 2;
+  min-height: 220px;
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: none;
+}
+
+.start-card-overlay-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.start-card-overlay-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.start-card-overlay-top-right {
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.start-card-overlay-bottom-left {
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.start-card-title,
+.start-card-subtitle {
+  display: none;
+}
+
+.start-card-price {
+  font-size: 40px;
+  line-height: 1;
+  font-weight: 700;
+  color: #f7d237;
+  text-shadow: 0 0 18px rgba(247, 210, 55, 0.12);
+}
+
+.start-card-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #47b6f6 0%,
+    #7c84ff 55%,
+    #c25cf3 100%
+  );
+  color: #fff;
+  font-weight: 700;
+  box-shadow:
+    0 10px 24px rgba(85, 104, 255, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.start-card-btn-compact {
+  min-width: 104px;
+  padding: 10px 14px;
+  font-size: 14px;
+}
 
         .start-card-frame {
           position: absolute;
