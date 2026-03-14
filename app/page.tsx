@@ -216,7 +216,7 @@ function HeroEconomyChart() {
   const base = {
     leads: 10,
     deals: 2,
-    avgCheck: 3200,
+    aov: 3200,
     margin: 30,
     revenue: 13000,
     opex: 3500,
@@ -283,7 +283,7 @@ function HeroEconomyChart() {
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(2);
+  const [activeIndex, setActiveIndex] = useState(3);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -323,8 +323,6 @@ function HeroEconomyChart() {
 
   return (
     <div className="hero-visual-shell">
-      <div className="hero-visual-image" />
-
       <div className="hero-chart-float">
         <div className="hero-chart-float-title">MVP-Drivers</div>
 
@@ -782,46 +780,35 @@ export default function Home() {
         <section className="hero-section mb-16">
           <div className="hero-grid hero-grid-frame">
             <div className="hero-left">
-              <h1 className="hero-main-title">
-                Revenue Snapshot
-                <br />
-                стратегическая
-                <br />
-                диагностика
-                <br />
-                экономики вашего
-                <br />
-                бизнеса
-              </h1>
+  <h1 className="hero-main-title">Revenue Snapshot</h1>
 
-              <p className="hero-main-copy">
-                Узнайте, какое изменение в модели способно дать наиболее сильный
-                эффект на выручку, и где сейчас скрываются главные точки потери
-                денег.
-              </p>
+  <div className="hero-main-subtitle">
+    стратегическая диагностика
+    <br />
+    экономики вашего бизнеса
+  </div>
 
-              <div className="hero-highlights-row hero-highlights-row-unified">
-                <div className="hero-highlight-chip hero-chip-unified">MVP</div>
-                <div className="hero-highlight-chip hero-chip-unified">
-                  CashCow
-                </div>
-                <div className="hero-highlight-chip hero-chip-unified">
-                  Scaling
-                </div>
-              </div>
+  <p className="hero-main-copy">
+    Узнайте, какое изменение в модели способно дать наиболее сильный
+    эффект на выручку, и где сейчас скрываются главные точки потери
+    денег.
+  </p>
 
-              <div className="hero-actions">
-                <a href="#try" className="tg-gradient-btn inline-flex">
-                  Попробовать Snapshot
-                </a>
-                <a
-                  href="#preview"
-                  className="ghost-link ghost-link-large inline-flex"
-                >
-                  Посмотреть превью
-                </a>
-              </div>
-            </div>
+  <div className="hero-highlights-row hero-highlights-row-unified">
+    <div className="hero-highlight-chip hero-chip-unified">MVP</div>
+    <div className="hero-highlight-chip hero-chip-unified">CashCow</div>
+    <div className="hero-highlight-chip hero-chip-unified">Scaling</div>
+  </div>
+
+  <div className="hero-actions">
+    <a href="#try" className="tg-gradient-btn inline-flex">
+      Попробовать Snapshot
+    </a>
+    <a href="#preview" className="ghost-link ghost-link-large inline-flex">
+      Посмотреть превью
+    </a>
+  </div>
+</div>
 
             <HeroEconomyChart />
           </div>
@@ -1383,148 +1370,164 @@ export default function Home() {
         }
 
         .hero-section {
-          position: relative;
-          border-radius: 34px;
-          overflow: hidden;
-          background:
-            linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
-            url("/hero.svg");
-          background-size: cover;
-          background-position: center bottom;
-          background-repeat: no-repeat;
-          padding: 34px 24px 28px;
-          min-height: 760px;
-        }
+  position: relative;
+  border-radius: 36px;
+  overflow: hidden;
+  padding: 34px 28px 30px;
+  min-height: 860px;
+}
 
-        .hero-grid {
-          display: grid;
-          gap: 22px;
-        }
+.hero-section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: url("/hero.svg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 1;
+  z-index: 0;
+}
 
-        .hero-grid-frame {
-          grid-template-columns: 1fr 0.96fr;
-          align-items: stretch;
-        }
+.hero-section::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(4, 8, 19, 0.28) 0%,
+      rgba(4, 8, 19, 0.12) 38%,
+      rgba(4, 8, 19, 0.04) 62%,
+      rgba(4, 8, 19, 0.08) 100%
+    );
+  z-index: 1;
+}
 
-        .hero-left {
-          display: flex;
-          flex-direction: column;
-          min-height: 100%;
-          padding: 12px 10px 8px;
-          position: relative;
-          z-index: 2;
-        }
+.hero-grid {
+  display: grid;
+  gap: 22px;
+}
 
-        .hero-main-title {
-          font-size: clamp(54px, 6vw, 92px);
-          line-height: 0.93;
-          letter-spacing: -0.06em;
-          font-weight: 700;
-          color: #fff;
-          margin: 0;
-          max-width: 880px;
-        }
+.hero-grid-frame {
+  grid-template-columns: minmax(0, 1fr) minmax(520px, 0.92fr);
+  align-items: start;
+  position: relative;
+  z-index: 2;
+}
 
-        .hero-main-copy {
-          margin-top: 28px;
-          max-width: 760px;
-          font-size: 22px;
-          line-height: 1.65;
-          color: rgba(255, 255, 255, 0.72);
-        }
+.hero-left {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  padding: 4px 6px 8px;
+}
 
-        .hero-highlights-row {
-          margin-top: 34px;
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0;
-          border-radius: 22px;
-          overflow: hidden;
-          position: relative;
-          max-width: 760px;
-        }
+.hero-main-title {
+  margin: 0;
+  font-size: clamp(62px, 6.4vw, 110px);
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+  font-weight: 700;
+  color: #ffffff;
+  max-width: 860px;
+}
 
-        .hero-highlights-row-unified {
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(123, 132, 255, 0.08),
-            rgba(255, 255, 255, 0.08)
-          );
-        }
+.hero-main-subtitle {
+  margin-top: 18px;
+  font-size: clamp(32px, 3vw, 56px);
+  line-height: 1.04;
+  letter-spacing: -0.04em;
+  font-weight: 700;
+  color: #ffffff;
+  max-width: 900px;
+}
 
-        .hero-highlight-chip {
-          padding: 20px 18px;
-          color: white;
-          font-size: 22px;
-          font-weight: 700;
-          text-align: center;
-          white-space: nowrap;
-          line-height: 1.2;
-          position: relative;
-          background: transparent;
-        }
+.hero-main-copy {
+  margin-top: 30px;
+  max-width: 760px;
+  font-size: 22px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.76);
+}
 
-        .hero-highlight-chip:not(:last-child)::after {
-          content: "";
-          position: absolute;
-          top: 14px;
-          right: 0;
-          width: 1px;
-          height: calc(100% - 28px);
-          background: rgba(255, 255, 255, 0.09);
-        }
+.hero-highlights-row {
+  margin-top: 34px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-radius: 22px;
+  overflow: hidden;
+  position: relative;
+  max-width: 760px;
+}
 
-        .hero-chip-unified {
-          backdrop-filter: blur(2px);
-        }
+.hero-highlights-row-unified {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.08),
+    rgba(123, 132, 255, 0.08),
+    rgba(255, 255, 255, 0.08)
+  );
+  backdrop-filter: blur(14px);
+}
 
-        .hero-actions {
-          margin-top: auto;
-          padding-top: 34px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          align-items: center;
-        }
+.hero-highlight-chip {
+  padding: 20px 18px;
+  color: white;
+  font-size: 22px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  line-height: 1.2;
+  position: relative;
+  background: transparent;
+}
 
-        .hero-visual-shell {
-          position: relative;
-          min-height: 100%;
-          display: flex;
-          align-items: flex-start;
-          justify-content: flex-end;
-          z-index: 2;
-        }
+.hero-highlight-chip:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  top: 14px;
+  right: 0;
+  width: 1px;
+  height: calc(100% - 28px);
+  background: rgba(255, 255, 255, 0.09);
+}
 
-        .hero-visual-image {
-          position: absolute;
-          inset: 0;
-          border-radius: 28px;
-          background-image: url("/hero.svg");
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          opacity: 1;
-        }
+.hero-actions {
+  margin-top: auto;
+  padding-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+}
 
-        .hero-chart-float {
-          position: relative;
-          margin-top: 16px;
-          width: min(760px, 100%);
-          margin-left: auto;
-        }
+.hero-visual-shell {
+  position: relative;
+  min-height: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
 
-        .hero-chart-float-title {
-          font-size: 32px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 14px;
-          text-align: right;
-          padding-right: 8px;
-        }
+.hero-chart-float {
+  position: relative;
+  width: min(760px, 100%);
+  margin-left: auto;
+  padding-top: 8px;
+}
+
+.hero-chart-float-title {
+  font-size: 32px;
+  line-height: 1;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 14px;
+  text-align: right;
+  padding-right: 8px;
+}
 
         .hero-levers-inline {
           display: flex;
