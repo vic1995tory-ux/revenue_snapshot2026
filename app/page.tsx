@@ -556,7 +556,7 @@ function StartCard({
   href: string;
 }) {
   return (
-    <a href={href} className="start-card tilt-card">
+    <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner">
         <img src={icon} alt={title} className="start-card-frame" />
 
@@ -564,16 +564,15 @@ function StartCard({
           <div className="start-card-price-float">{price}</div>
 
           <div className="start-card-btn-row">
-            <span className="start-card-btn start-card-btn-floating">
+            <a href={href} className="start-card-btn start-card-btn-floating">
               Попробовать Snapshot
-            </span>
+            </a>
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 }
-
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
