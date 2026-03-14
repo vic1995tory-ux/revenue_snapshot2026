@@ -2910,21 +2910,55 @@ export default function Home() {
 }
 
 .start-card-btn {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: 999px;
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
   background: linear-gradient(
     90deg,
     #47b6f6 0%,
-    #7c84ff 55%,
+    #5da7ff 22%,
+    #7c84ff 48%,
+    #9c6dff 72%,
     #c25cf3 100%
   );
-  color: #fff;
-  font-weight: 700;
+  background-size: 220% 220%;
   box-shadow:
-    0 10px 24px rgba(85, 104, 255, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 10px 30px rgba(71, 96, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  animation: tgGradientFlow 6s ease-in-out infinite;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  pointer-events: auto;
+}
+
+.start-card-btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.22) 25%,
+    transparent 50%
+  );
+  transform: translateX(-130%);
+  animation: tgShine 3.8s ease-in-out infinite;
+}
+
+.start-card-btn > * {
+  position: relative;
+  z-index: 1;
+}
+
+.start-card-btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.03);
 }
 
 .start-card-btn-floating {
