@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+  type CSSProperties,
+} from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -284,7 +291,7 @@ function HeroEconomyChart() {
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(3);
+  const [activeIndex, setActiveIndex] = useState(0);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -317,7 +324,6 @@ function HeroEconomyChart() {
       good: true,
       isPercent: false,
     },
-    { name: "Margin", value: active.margin, good: true, isPercent: true },
   ];
 
   const maxBar = Math.max(...bars.map((b) => b.value));
@@ -356,21 +362,32 @@ function HeroEconomyChart() {
               <span>AOV</span>
               <strong>{fmtMoney(active.aov)}</strong>
             </div>
-            <div className="hero-metric-square">
-              <span>Маржа</span>
-              <strong>{active.margin}%</strong>
-            </div>
-          </div>
+          <div className="hero-metric-square hero-metric-square-ring">
+  <span>Маржа</span>
+
+  <div
+    className="hero-margin-ring"
+   style={
+  {
+    "--p": active.margin,
+  } as CSSProperties
+}
+  >
+    <div className="hero-margin-ring-inner">
+      <strong>{active.margin}%</strong>
+    </div>
+  </div>
+</div>
 
           <div className="bar-chart-wrap">
             <div className="bar-chart-grid" />
 
             <div className="bar-chart-columns">
               {bars.map((bar) => {
-               const baseHeight = (bar.value / maxBar) * 130;
+          const baseHeight = (bar.value / maxBar) * 138;
 const height = Math.max(
-  16,
-  bar.name === "Revenue" ? baseHeight * 1.12 : baseHeight
+  18,
+  bar.name === "Revenue" ? baseHeight * 1.16 : baseHeight
 );
 
                 return (
@@ -379,13 +396,12 @@ const height = Math.max(
                       {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
                     </div>
 
-                    <div className="bar-chart-bar-shell">
-                      <div
-                        className={`bar-chart-bar ${
-                          bar.good ? "bar-good" : "bar-bad"
-                        }`}
-                        style={{ height: `${height}px` }}
-                      />
+                   <div
+  className={`bar-chart-bar ${
+    bar.good ? "bar-good" : "bar-bad"
+  } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+  style={{ height: `${height}px` }}
+/>
                     </div>
 
                     <div className="bar-chart-label">{bar.name}</div>
@@ -530,7 +546,6 @@ function StartCard({
   href,
 }: {
   title: string;
-  subtitle: string;
   icon: string;
   price: string;
   href: string;
@@ -1277,27 +1292,27 @@ export default function Home() {
     Выберите удобный формат для старта
   </h3>
 
+<div className="analysis-right-card analysis-right-card-plain">
+  <h3 className="analysis-right-title">
+    Выберите удобный формат для старта
+  </h3>
+
   <div className="start-cards-row">
+    <StartCard
+      title="Страт сессия"
+      icon="/stratsession.svg"
+      price="$770"
+      href={tgContactUrl}
+    />
 
-              <div className="start-cards-row">
-                <StartCard
-                  title="Страт сессия"
-                  subtitle="быстрый вход через созвон"
-                  icon="/stratsession.svg"
-                  price="$770"
-                  href={tgContactUrl}
-                />
-
-                <StartCard
-                  title="Snapshot"
-                  subtitle="сразу через инструмент"
-                  icon="/snapshot.svg"
-                  price="$114"
-                  href={payUrl}
-                />
-              </div>
-            </div>
-          </div>
+    <StartCard
+      title="Snapshot"
+      icon="/snapshot.svg"
+      price="$114"
+      href={payUrl}
+    />
+  </div>
+</div>
         </section>
 
         <section id="try" className="pb-8">
@@ -1580,44 +1595,45 @@ export default function Home() {
           padding-right: 8px;
         }
 
-        .hero-levers-inline {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  overflow: hidden;
+    .hero-levers-inline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
   padding-bottom: 4px;
 }
 
-        .hero-levers-inline::-webkit-scrollbar {
-          display: none;
-        }
+.hero-levers-inline::-webkit-scrollbar {
+  display: none;
+}
 
-        .hero-levers-inline-float {
-          margin-bottom: 12px;
-        }
+.hero-levers-inline-float {
+  margin-bottom: 12px;
+}
 
-        .hero-tag {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex: 0 0 auto;
-          min-width: max-content;
-          padding: 12px 18px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(34, 47, 74, 0.82);
-          color: rgba(255, 255, 255, 0.68);
-          font-size: 14px;
-          font-weight: 700;
-          white-space: nowrap;
-          transition: 0.25s ease;
-        }
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 54px;
+  padding: 12px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(34, 47, 74, 0.82);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  transition: 0.25s ease;
+}
 
-        .hero-tag-active {
-          color: #0b1d3a;
-          background: #f7d237;
-          border-color: rgba(247, 210, 55, 0.55);
-        }
+.hero-tag-active {
+  color: #0b1d3a;
+  background: #f7d237;
+  border-color: rgba(247, 210, 55, 0.55);
+}
 
         .hero-chart-box {
           border-radius: 28px;
@@ -1638,29 +1654,95 @@ export default function Home() {
           margin-bottom: 12px;
         }
 
-        .hero-metric-square {
-          min-height: 86px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 12px;
-        }
+   .hero-metric-square {
+  min-height: 86px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
 
-        .hero-metric-square span {
-          display: block;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.52);
-        }
+.hero-metric-square span {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.52);
+}
 
-        .hero-metric-square strong {
-          display: block;
-          margin-top: 10px;
-          font-size: 22px;
-          line-height: 1.1;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
+.hero-metric-square strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 22px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: white;
+  white-space: nowrap;
+}
+
+.hero-metric-square-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.hero-margin-ring {
+  --size: 82px;
+  --thickness: 10px;
+  --p: 42;
+  position: relative;
+  width: var(--size);
+  height: var(--size);
+  margin-top: 10px;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      farthest-side,
+      rgba(36, 49, 76, 0.98) calc(100% - var(--thickness)),
+      transparent calc(100% - var(--thickness) + 1px)
+    ),
+    conic-gradient(
+      from -90deg,
+      rgba(247, 210, 55, 1) 0deg,
+      rgba(244, 221, 114, 1) 120deg,
+      rgba(176, 140, 255, 0.95) calc(var(--p) * 3.6deg),
+      rgba(255, 255, 255, 0.08) 0deg
+    );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 20px rgba(247, 210, 55, 0.08);
+  transition: background 0.8s ease, transform 0.3s ease;
+}
+
+.hero-margin-ring::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  background: rgba(36, 49, 76, 0.96);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.hero-margin-ring-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-margin-ring-inner strong {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+}
 
         .bar-chart-wrap {
           position: relative;
@@ -1730,8 +1812,12 @@ export default function Home() {
           box-shadow:
             0 10px 24px rgba(0, 0, 0, 0.14),
             0 0 18px rgba(255, 255, 255, 0.04);
+            
         }
-
+.bar-revenue {
+  transform: scaleY(1.03);
+  transform-origin: bottom;
+}
         .bar-good {
           background: linear-gradient(
             180deg,
@@ -2742,7 +2828,7 @@ export default function Home() {
           font-size: 28px;
         }
 
-        .analysis-right-card {
+      .analysis-right-card {
   min-height: auto;
 }
 
@@ -2862,80 +2948,6 @@ export default function Home() {
   padding: 10px 14px;
   font-size: 14px;
 }
-
-        .start-card-frame {
-          position: absolute;
-          inset: 0;
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-
-        .start-card-overlay {
-          position: relative;
-          z-index: 2;
-          min-height: 220px;
-          padding: 24px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          background: linear-gradient(
-            90deg,
-            rgba(5, 15, 40, 0.26),
-            rgba(5, 15, 40, 0.08)
-          );
-        }
-
-        .start-card-overlay-top,
-        .start-card-overlay-bottom {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-        }
-
-        .start-card-title {
-          font-size: 30px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-        }
-
-        .start-card-subtitle {
-          margin-top: 8px;
-          font-size: 15px;
-          line-height: 1.65;
-          color: rgba(255, 255, 255, 0.78);
-        }
-
-        .start-card-price {
-          font-size: 40px;
-          line-height: 1;
-          font-weight: 700;
-          color: #f7d237;
-          text-shadow: 0 0 18px rgba(247, 210, 55, 0.12);
-        }
-
-        .start-card-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 132px;
-          padding: 14px 18px;
-          border-radius: 999px;
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #7c84ff 55%,
-            #c25cf3 100%
-          );
-          color: #fff;
-          font-weight: 700;
-          font-size: 16px;
-          box-shadow:
-            0 10px 24px rgba(85, 104, 255, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-        }
 
         .cta-card {
           display: grid;
