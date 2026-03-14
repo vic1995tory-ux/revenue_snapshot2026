@@ -370,10 +370,18 @@ function HeroEconomyChart() {
             </div>
           </div>
 
-          <div className="bar-chart-wrap">
-            <div className="bar-chart-grid" />
+      <div className="bar-chart-wrap">
+  <div className="bar-chart-scale">
+    <span>0</span>
+    <span>5 000</span>
+    <span>10 000</span>
+    <span>15 000</span>
+    <span>20 000</span>
+  </div>
 
-            <div className="bar-chart-columns bar-chart-columns-horizontal">
+  <div className="bar-chart-grid" />
+
+  <div className="bar-chart-columns bar-chart-columns-horizontal">
               {bars.map((bar) => {
                 const baseWidth = (bar.value / maxBar) * 100;
                 const width =
@@ -1582,40 +1590,34 @@ export default function Home() {
           padding-right: 8px;
         }
 
-        .hero-levers-inline {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-          padding-bottom: 4px;
-        }
+.hero-levers-inline {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  padding-bottom: 4px;
+}
 
-        .hero-levers-inline::-webkit-scrollbar {
-          display: none;
-        }
-
-        .hero-levers-inline-float {
-          margin-bottom: 12px;
-        }
-
-        .hero-tag {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 100%;
-          min-width: 0;
-          min-height: 54px;
-          padding: 12px 14px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(34, 47, 74, 0.82);
-          color: rgba(255, 255, 255, 0.68);
-          font-size: 14px;
-          font-weight: 700;
-          text-align: center;
-          white-space: nowrap;
-          transition: 0.25s ease;
-        }
-
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(34, 47, 74, 0.82);
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  transition: 0.25s ease;
+}
+.hero-tag:last-child {
+  letter-spacing: -0.01em;
+}
         .hero-tag-active {
           color: #0b1d3a;
           background: #f7d237;
@@ -1668,42 +1670,72 @@ export default function Home() {
           white-space: nowrap;
         }
 
-        .bar-chart-wrap {
-          position: relative;
-          margin-top: 4px;
-          border-radius: 24px;
-          padding: 18px 14px 14px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.035),
-            rgba(255, 255, 255, 0.015)
-          );
-          overflow: hidden;
+      .bar-chart-wrap {
+  position: relative;
+  margin-top: 4px;
+  border-radius: 24px;
+  padding: 46px 14px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.035),
+    rgba(255, 255, 255, 0.015)
+  );
+  overflow: hidden;
+}
+
+.bar-chart-scale {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  right: 14px;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: center;
+  pointer-events: none;
+}
+
+.bar-chart-scale span {
+  font-size: 11px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.42);
+}
+
+.bar-chart-scale span:nth-child(1) {
+  text-align: left;
+}
+
+.bar-chart-scale span:not(:first-child):not(:last-child) {
+  text-align: center;
+}
+
+.bar-chart-scale span:last-child {
+  text-align: right;
+}
+       .bar-chart-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.06) 1px,
+      transparent 1px
+    );
+  background-size: 25% 100%;
+  background-position: left top;
+  pointer-events: none;
+  opacity: 0.65;
+}
         }
 
-        .bar-chart-grid {
-          position: absolute;
-          inset: 0;
-          background-image: linear-gradient(
-            rgba(255, 255, 255, 0.06) 1px,
-            transparent 1px
-          );
-          background-size: 100% 44px;
-          pointer-events: none;
-        }
-
-     .bar-chart-columns {
+.bar-chart-columns {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 14px;
   min-height: auto;
-}
-
-.bar-chart-columns-horizontal {
-  width: 100%;
 }
 
 .bar-chart-row {
