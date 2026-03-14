@@ -233,20 +233,20 @@ function HeroEconomyChart() {
   };
 
   const drivers = [
-   {
-  key: "marketing",
-  label: "#Маркетинг",
-  full: "Маркетинг",
-  deltaLabel: "+30% лидов и рост спроса",
-  leads: 13,
-  deals: 2.4,
-  aov: 3200,
-  margin: 42,
-  revenue: 14800,
-  opex: 3200,
-  cogs: 3600,
-  grossProfit: 6200,
-},
+    {
+      key: "marketing",
+      label: "#Маркетинг",
+      full: "Маркетинг",
+      deltaLabel: "+30% лидов и рост спроса",
+      leads: 13,
+      deals: 2.4,
+      aov: 3200,
+      margin: 42,
+      revenue: 14800,
+      opex: 3200,
+      cogs: 3600,
+      grossProfit: 6200,
+    },
     {
       key: "aov",
       label: "#AOV",
@@ -354,41 +354,45 @@ function HeroEconomyChart() {
               <span>Лидов / мес</span>
               <strong>{active.leads}</strong>
             </div>
+
             <div className="hero-metric-square">
               <span>Сделок / мес</span>
               <strong>{active.deals.toFixed(1)}</strong>
             </div>
+
             <div className="hero-metric-square">
               <span>AOV</span>
               <strong>{fmtMoney(active.aov)}</strong>
             </div>
-          <div className="hero-metric-square hero-metric-square-ring">
-  <span>Маржа</span>
 
-  <div
-    className="hero-margin-ring"
-   style={
-  {
-    "--p": active.margin,
-  } as CSSProperties
-}
-  >
-    <div className="hero-margin-ring-inner">
-      <strong>{active.margin}%</strong>
-    </div>
-  </div>
-</div>
+            <div className="hero-metric-square hero-metric-square-ring">
+              <span>Маржа</span>
+
+              <div
+                className="hero-margin-ring"
+                style={
+                  {
+                    "--p": active.margin,
+                  } as CSSProperties
+                }
+              >
+                <div className="hero-margin-ring-inner">
+                  <strong>{active.margin}%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
 
           <div className="bar-chart-wrap">
             <div className="bar-chart-grid" />
 
             <div className="bar-chart-columns">
               {bars.map((bar) => {
-          const baseHeight = (bar.value / maxBar) * 138;
-const height = Math.max(
-  18,
-  bar.name === "Revenue" ? baseHeight * 1.16 : baseHeight
-);
+                const baseHeight = (bar.value / maxBar) * 138;
+                const height = Math.max(
+                  18,
+                  bar.name === "Revenue" ? baseHeight * 1.16 : baseHeight
+                );
 
                 return (
                   <div key={bar.name} className="bar-chart-col">
@@ -396,12 +400,13 @@ const height = Math.max(
                       {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
                     </div>
 
-                   <div
-  className={`bar-chart-bar ${
-    bar.good ? "bar-good" : "bar-bad"
-  } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
-  style={{ height: `${height}px` }}
-/>
+                    <div className="bar-chart-bar-shell">
+                      <div
+                        className={`bar-chart-bar ${
+                          bar.good ? "bar-good" : "bar-bad"
+                        } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+                        style={{ height: `${height}px` }}
+                      />
                     </div>
 
                     <div className="bar-chart-label">{bar.name}</div>
@@ -557,7 +562,9 @@ function StartCard({
 
         <div className="start-card-overlay">
           <div className="start-card-overlay-top start-card-overlay-top-right">
-            <span className="start-card-btn start-card-btn-compact">Начать</span>
+            <span className="start-card-btn start-card-btn-compact">
+              Начать
+            </span>
           </div>
 
           <div className="start-card-overlay-bottom start-card-overlay-bottom-left">
@@ -830,7 +837,10 @@ export default function Home() {
                 WA
               </a>
 
-              <a href="#how-it-works" className="ghost-link hidden md:inline-flex">
+              <a
+                href="#how-it-works"
+                className="ghost-link hidden md:inline-flex"
+              >
                 Как это работает
               </a>
 
@@ -1287,32 +1297,28 @@ export default function Home() {
           <div className="analysis-grid">
             <SnapshotStructure />
 
-           <div className="analysis-right-card analysis-right-card-plain">
-  <h3 className="analysis-right-title">
-    Выберите удобный формат для старта
-  </h3>
+            <div className="analysis-right-card analysis-right-card-plain">
+              <h3 className="analysis-right-title">
+                Выберите удобный формат для старта
+              </h3>
 
-<div className="analysis-right-card analysis-right-card-plain">
-  <h3 className="analysis-right-title">
-    Выберите удобный формат для старта
-  </h3>
+              <div className="start-cards-row">
+                <StartCard
+                  title="Страт сессия"
+                  icon="/stratsession.svg"
+                  price="$770"
+                  href={tgContactUrl}
+                />
 
-  <div className="start-cards-row">
-    <StartCard
-      title="Страт сессия"
-      icon="/stratsession.svg"
-      price="$770"
-      href={tgContactUrl}
-    />
-
-    <StartCard
-      title="Snapshot"
-      icon="/snapshot.svg"
-      price="$114"
-      href={payUrl}
-    />
-  </div>
-</div>
+                <StartCard
+                  title="Snapshot"
+                  icon="/snapshot.svg"
+                  price="$114"
+                  href={payUrl}
+                />
+              </div>
+            </div>
+          </div>
         </section>
 
         <section id="try" className="pb-8">
@@ -1595,45 +1601,45 @@ export default function Home() {
           padding-right: 8px;
         }
 
-    .hero-levers-inline {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-  padding-bottom: 4px;
-}
+        .hero-levers-inline {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 8px;
+          padding-bottom: 4px;
+        }
 
-.hero-levers-inline::-webkit-scrollbar {
-  display: none;
-}
+        .hero-levers-inline::-webkit-scrollbar {
+          display: none;
+        }
 
-.hero-levers-inline-float {
-  margin-bottom: 12px;
-}
+        .hero-levers-inline-float {
+          margin-bottom: 12px;
+        }
 
-.hero-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  min-width: 0;
-  min-height: 54px;
-  padding: 12px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(34, 47, 74, 0.82);
-  color: rgba(255, 255, 255, 0.68);
-  font-size: 14px;
-  font-weight: 700;
-  text-align: center;
-  white-space: nowrap;
-  transition: 0.25s ease;
-}
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          min-width: 0;
+          min-height: 54px;
+          padding: 12px 14px;
+          border-radius: 999px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(34, 47, 74, 0.82);
+          color: rgba(255, 255, 255, 0.68);
+          font-size: 14px;
+          font-weight: 700;
+          text-align: center;
+          white-space: nowrap;
+          transition: 0.25s ease;
+        }
 
-.hero-tag-active {
-  color: #0b1d3a;
-  background: #f7d237;
-  border-color: rgba(247, 210, 55, 0.55);
-}
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: #f7d237;
+          border-color: rgba(247, 210, 55, 0.55);
+        }
 
         .hero-chart-box {
           border-radius: 28px;
@@ -1654,95 +1660,95 @@ export default function Home() {
           margin-bottom: 12px;
         }
 
-   .hero-metric-square {
-  min-height: 86px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-}
+        .hero-metric-square {
+          min-height: 86px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+        }
 
-.hero-metric-square span {
-  display: block;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.52);
-}
+        .hero-metric-square span {
+          display: block;
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.52);
+        }
 
-.hero-metric-square strong {
-  display: block;
-  margin-top: 10px;
-  font-size: 22px;
-  line-height: 1.1;
-  font-weight: 700;
-  color: white;
-  white-space: nowrap;
-}
+        .hero-metric-square strong {
+          display: block;
+          margin-top: 10px;
+          font-size: 22px;
+          line-height: 1.1;
+          font-weight: 700;
+          color: white;
+          white-space: nowrap;
+        }
 
-.hero-metric-square-ring {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
+        .hero-metric-square-ring {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+        }
 
-.hero-margin-ring {
-  --size: 82px;
-  --thickness: 10px;
-  --p: 42;
-  position: relative;
-  width: var(--size);
-  height: var(--size);
-  margin-top: 10px;
-  border-radius: 50%;
-  background:
-    radial-gradient(
-      farthest-side,
-      rgba(36, 49, 76, 0.98) calc(100% - var(--thickness)),
-      transparent calc(100% - var(--thickness) + 1px)
-    ),
-    conic-gradient(
-      from -90deg,
-      rgba(247, 210, 55, 1) 0deg,
-      rgba(244, 221, 114, 1) 120deg,
-      rgba(176, 140, 255, 0.95) calc(var(--p) * 3.6deg),
-      rgba(255, 255, 255, 0.08) 0deg
-    );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.04),
-    0 0 20px rgba(247, 210, 55, 0.08);
-  transition: background 0.8s ease, transform 0.3s ease;
-}
+        .hero-margin-ring {
+          --size: 82px;
+          --thickness: 10px;
+          --p: 42;
+          position: relative;
+          width: var(--size);
+          height: var(--size);
+          margin-top: 10px;
+          border-radius: 50%;
+          background:
+            radial-gradient(
+              farthest-side,
+              rgba(36, 49, 76, 0.98) calc(100% - var(--thickness)),
+              transparent calc(100% - var(--thickness) + 1px)
+            ),
+            conic-gradient(
+              from -90deg,
+              rgba(247, 210, 55, 1) 0deg,
+              rgba(244, 221, 114, 1) 120deg,
+              rgba(176, 140, 255, 0.95) calc(var(--p) * 3.6deg),
+              rgba(255, 255, 255, 0.08) 0deg
+            );
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 0 20px rgba(247, 210, 55, 0.08);
+          transition: background 0.8s ease, transform 0.3s ease;
+        }
 
-.hero-margin-ring::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border-radius: 50%;
-  background: rgba(36, 49, 76, 0.96);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-}
+        .hero-margin-ring::before {
+          content: "";
+          position: absolute;
+          inset: 8px;
+          border-radius: 50%;
+          background: rgba(36, 49, 76, 0.96);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        }
 
-.hero-margin-ring-inner {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+        .hero-margin-ring-inner {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-.hero-margin-ring-inner strong {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1;
-  font-weight: 700;
-  color: #ffffff;
-  white-space: nowrap;
-}
+        .hero-margin-ring-inner strong {
+          margin: 0;
+          font-size: 20px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+          white-space: nowrap;
+        }
 
         .bar-chart-wrap {
           position: relative;
@@ -1773,8 +1779,8 @@ export default function Home() {
           position: relative;
           z-index: 2;
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
-          gap: 10px;
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 14px;
           align-items: end;
           min-height: 250px;
         }
@@ -1812,12 +1818,13 @@ export default function Home() {
           box-shadow:
             0 10px 24px rgba(0, 0, 0, 0.14),
             0 0 18px rgba(255, 255, 255, 0.04);
-            
         }
-.bar-revenue {
-  transform: scaleY(1.03);
-  transform-origin: bottom;
-}
+
+        .bar-revenue {
+          transform: scaleY(1.03);
+          transform-origin: bottom;
+        }
+
         .bar-good {
           background: linear-gradient(
             180deg,
@@ -2828,126 +2835,126 @@ export default function Home() {
           font-size: 28px;
         }
 
-      .analysis-right-card {
-  min-height: auto;
-}
+        .analysis-right-card {
+          min-height: auto;
+        }
 
-.analysis-right-card-plain {
-  background: transparent;
-  backdrop-filter: none;
-  border: 0;
-  box-shadow: none;
-  padding: 0;
-}
+        .analysis-right-card-plain {
+          background: transparent;
+          backdrop-filter: none;
+          border: 0;
+          box-shadow: none;
+          padding: 0;
+        }
 
-.analysis-right-title {
-  font-size: 22px;
-  line-height: 1.25;
-  font-weight: 700;
-  color: #ffffff;
-  margin: 0;
-}
+        .analysis-right-title {
+          font-size: 22px;
+          line-height: 1.25;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+        }
 
-.start-cards-row {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
-  margin-top: 20px;
-}
+        .start-cards-row {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 18px;
+          margin-top: 20px;
+        }
 
-.start-card {
-  display: block;
-}
+        .start-card {
+          display: block;
+        }
 
-.start-card-inner {
-  position: relative;
-  min-height: 220px;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow:
-    0 20px 48px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04);
-  background: #08142f;
-}
+        .start-card-inner {
+          position: relative;
+          min-height: 220px;
+          border-radius: 28px;
+          overflow: hidden;
+          box-shadow:
+            0 20px 48px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
+          background: #08142f;
+        }
 
-.start-card-frame {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  object-position: center;
-}
+        .start-card-frame {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          object-position: center;
+        }
 
-.start-card-overlay {
-  position: relative;
-  z-index: 2;
-  min-height: 220px;
-  padding: 18px 18px 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background: none;
-}
+        .start-card-overlay {
+          position: relative;
+          z-index: 2;
+          min-height: 220px;
+          padding: 18px 18px 20px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          background: none;
+        }
 
-.start-card-overlay-top {
-  display: flex;
-  align-items: flex-start;
-  justify-content: flex-end;
-}
+        .start-card-overlay-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
 
-.start-card-overlay-bottom {
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-start;
-}
+        .start-card-overlay-bottom {
+          display: flex;
+          align-items: flex-end;
+          justify-content: flex-start;
+        }
 
-.start-card-overlay-top-right {
-  align-items: flex-start;
-  justify-content: flex-end;
-}
+        .start-card-overlay-top-right {
+          align-items: flex-start;
+          justify-content: flex-end;
+        }
 
-.start-card-overlay-bottom-left {
-  align-items: flex-end;
-  justify-content: flex-start;
-}
+        .start-card-overlay-bottom-left {
+          align-items: flex-end;
+          justify-content: flex-start;
+        }
 
-.start-card-title,
-.start-card-subtitle {
-  display: none;
-}
+        .start-card-title,
+        .start-card-subtitle {
+          display: none;
+        }
 
-.start-card-price {
-  font-size: 40px;
-  line-height: 1;
-  font-weight: 700;
-  color: #f7d237;
-  text-shadow: 0 0 18px rgba(247, 210, 55, 0.12);
-}
+        .start-card-price {
+          font-size: 40px;
+          line-height: 1;
+          font-weight: 700;
+          color: #f7d237;
+          text-shadow: 0 0 18px rgba(247, 210, 55, 0.12);
+        }
 
-.start-card-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    #47b6f6 0%,
-    #7c84ff 55%,
-    #c25cf3 100%
-  );
-  color: #fff;
-  font-weight: 700;
-  box-shadow:
-    0 10px 24px rgba(85, 104, 255, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
+        .start-card-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #7c84ff 55%,
+            #c25cf3 100%
+          );
+          color: #fff;
+          font-weight: 700;
+          box-shadow:
+            0 10px 24px rgba(85, 104, 255, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
+        }
 
-.start-card-btn-compact {
-  min-width: 104px;
-  padding: 10px 14px;
-  font-size: 14px;
-}
+        .start-card-btn-compact {
+          min-width: 104px;
+          padding: 10px 14px;
+          font-size: 14px;
+        }
 
         .cta-card {
           display: grid;
@@ -3300,6 +3307,10 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
+          .hero-levers-inline {
+            grid-template-columns: 1fr 1fr;
+          }
+
           .bar-chart-columns {
             gap: 6px;
           }
@@ -3391,10 +3402,6 @@ export default function Home() {
           .start-card-inner,
           .start-card-overlay {
             min-height: 190px;
-          }
-
-          .start-card-title {
-            font-size: 24px;
           }
 
           .start-card-price {
