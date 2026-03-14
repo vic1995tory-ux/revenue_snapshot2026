@@ -525,7 +525,6 @@ function StageCard({
 
 function StartCard({
   title,
-  subtitle,
   icon,
   price,
   href,
