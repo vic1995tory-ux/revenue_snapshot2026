@@ -479,6 +479,7 @@ function StageCard({
   goal,
   path,
   result,
+  metrics,
 }: {
   stage: string;
   icon: string;
@@ -486,70 +487,65 @@ function StageCard({
   goal: string;
   path: string;
   result: string;
+  metrics: Array<{
+    label: string;
+    plan: string;
+    fact: string;
+  }>;
 }) {
   return (
-    <div className="stage-card stage-card-figure">
-      <div className="stage-top-strip">
-        <div className="stage-top-strip-icon">
+    <div className="stage-card stage-card-figure stage-card-split">
+      <div className="stage-card-top-glass">
+        <div className="stage-card-top-icon">
           <img src={icon} alt={stage} className="stage-strip-icon" />
         </div>
 
-        <div className="stage-top-strip-label">
-          <span>stage</span>
+        <div className="stage-card-top-title">
+          <span>Stage</span>
           <strong>{stage}</strong>
         </div>
       </div>
 
-      <div className="stage-card-content stage-card-content-full">
-        <div className="stage-line-block">
-          <div className="stage-line-title">Запрос</div>
-          <div className="stage-line-text">{request}</div>
-        </div>
-
-        <div className="stage-line-block">
-          <div className="stage-line-title">Выявленная цель</div>
-          <div className="stage-line-text">{goal}</div>
-        </div>
-
-        <div className="stage-line-block">
-          <div className="stage-line-title">
-            Как достичь цели в рамках текущих ресурсов
+      <div className="stage-card-bottom-solid">
+        <div className="stage-summary-list">
+          <div className="stage-summary-item">
+            <div className="stage-summary-label">Growth Context</div>
+            <div className="stage-summary-text">{request}</div>
           </div>
-          <div className="stage-line-text">{path}</div>
+
+          <div className="stage-summary-item">
+            <div className="stage-summary-label">Strategic Limitation</div>
+            <div className="stage-summary-text">{goal}</div>
+          </div>
+
+          <div className="stage-summary-item">
+            <div className="stage-summary-label">Economic Objective</div>
+            <div className="stage-summary-text">{path}</div>
+          </div>
+
+          <div className="stage-summary-item">
+            <div className="stage-summary-label">Key Intervention</div>
+            <div className="stage-summary-text">{result}</div>
+          </div>
         </div>
 
-        <div className="stage-line-block">
-          <div className="stage-line-title">Решение</div>
-          <div className="stage-line-text">{result}</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+        <div className="stage-metrics-box">
+          <div className="stage-metrics-title">План / факт</div>
 
-function StartCard({
-  title,
-  icon,
-  price,
-  href,
-}: {
-  title: string;
-  icon: string;
-  price: string;
-  href: string;
-}) {
-  return (
-    <div className="start-card tilt-card">
-      <div className="start-card-inner start-card-inner-plain tilt-inner">
-        <img src={icon} alt={title} className="start-card-frame" />
+          <div className="stage-metrics-table">
+            <div className="stage-metrics-head">Показатель</div>
+            <div className="stage-metrics-head">План</div>
+            <div className="stage-metrics-head">Факт</div>
 
-        <div className="start-card-overlay start-card-overlay-plain">
-          <div className="start-card-price-float">{price}</div>
-
-          <div className="start-card-btn-row">
-            <a href={href} className="start-card-btn start-card-btn-floating">
-              Оплатить
-            </a>
+            {metrics.map((item) => (
+              <React.Fragment key={item.label}>
+                <div className="stage-metrics-cell stage-metrics-label">
+                  {item.label}
+                </div>
+                <div className="stage-metrics-cell">{item.plan}</div>
+                <div className="stage-metrics-cell">{item.fact}</div>
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
@@ -713,14 +709,15 @@ function StageCarousel() {
                 className={`stage-carousel-item ${positionClass}`}
                 onClick={() => setActiveIndex(index)}
               >
-                <StageCard
-                  stage={item.stage}
-                  icon={item.icon}
-                  request={item.request}
-                  goal={item.goal}
-                  path={item.path}
-                  result={item.result}
-                />
+               <StageCard
+  stage={item.stage}
+  icon={item.icon}
+  request={item.request}
+  goal={item.goal}
+  path={item.path}
+  result={item.result}
+  metrics={item.metrics}
+/>
               </div>
             );
           })}
@@ -2822,30 +2819,157 @@ export default function Home() {
           background: #f7d237;
           box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
         }
+.stage-card-split {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  min-height: 500px;
+  border-radius: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
 
-        .stage-card-figure {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-          border-radius: 30px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.045)
-          );
-          padding: 28px;
-          box-shadow:
-            0 18px 44px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
-          min-height: 390px;
-          position: relative;
-          overflow: hidden;
-          transition:
-            transform 0.35s ease,
-            border-color 0.35s ease,
-            box-shadow 0.35s ease;
-        }
+.stage-card-top-glass {
+  min-height: 122px;
+  border-radius: 28px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.08)
+  );
+  backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stage-card-top-icon {
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stage-card-top-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.stage-card-top-title span {
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.stage-card-top-title strong {
+  margin-top: 8px;
+  font-size: clamp(44px, 5vw, 78px);
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+}
+
+.stage-card-bottom-solid {
+  margin-top: 16px;
+  flex: 1;
+  border-radius: 28px;
+  padding: 26px 28px 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 16, 43, 0.98) 0%,
+    rgba(10, 24, 61, 0.98) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.stage-summary-list {
+  display: grid;
+  gap: 18px;
+}
+
+.stage-summary-item {
+  display: grid;
+  gap: 6px;
+}
+
+.stage-summary-label {
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.stage-summary-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.stage-metrics-box {
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(250, 219, 245, 0.92) 0%,
+    rgba(206, 180, 245, 0.9) 46%,
+    rgba(126, 111, 216, 0.92) 76%,
+    rgba(106, 198, 255, 0.92) 100%
+  );
+  color: #07102b;
+}
+
+.stage-metrics-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.stage-metrics-table {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(70px, 0.65fr) minmax(70px, 0.65fr);
+  column-gap: 14px;
+  row-gap: 10px;
+  align-items: start;
+}
+
+.stage-metrics-head {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stage-metrics-cell {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.stage-metrics-label {
+  font-weight: 500;
+}
 
         .stage-card-figure:hover {
           transform: translateY(-4px);
@@ -2856,23 +2980,7 @@ export default function Home() {
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
-        .stage-top-strip {
-          position: relative;
-          z-index: 2;
-          min-height: 112px;
-          border-radius: 32px;
-          padding: 20px 26px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 20px;
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.12),
-            rgba(255, 255, 255, 0.07)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.12);
-        }
+      
 
         .stage-top-strip-icon {
           width: 72px;
@@ -2912,25 +3020,12 @@ export default function Home() {
           letter-spacing: -0.04em;
         }
 
-        .stage-card-content {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          gap: 24px;
-        }
-
+      
         .stage-card-content-full {
           padding-right: 8px;
         }
 
-        .stage-line-block {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
+      
         .stage-line-title {
           font-size: 18px;
           line-height: 1.35;
@@ -3465,10 +3560,15 @@ export default function Home() {
             height: 440px;
           }
 
-          .stage-carousel-item {
-            width: min(92vw, 680px);
-          }
-
+.stage-carousel-item .stage-card-split {
+  min-height: 540px;
+}
+.stage-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  transform-style: preserve-3d;
+}
           .stage-carousel-item .stage-card-figure {
             min-height: 420px;
           }
