@@ -226,20 +226,20 @@ function HeroEconomyChart() {
   };
 
   const drivers = [
-    {
-      key: "positioning",
-      label: "#Маркетинг",
-      full: "Маркетинг",
-      deltaLabel: "+рост спроса и конверсии",
-      leads: 10,
-      deals: 2.4,
-      aov: 3200,
-      margin: 42,
-      revenue: 14800,
-      opex: 3200,
-      cogs: 3600,
-      grossProfit: 6200,
-    },
+   {
+  key: "marketing",
+  label: "#Маркетинг",
+  full: "Маркетинг",
+  deltaLabel: "+30% лидов и рост спроса",
+  leads: 13,
+  deals: 2.4,
+  aov: 3200,
+  margin: 42,
+  revenue: 14800,
+  opex: 3200,
+  cogs: 3600,
+  grossProfit: 6200,
+},
     {
       key: "aov",
       label: "#AOV",
@@ -367,7 +367,11 @@ function HeroEconomyChart() {
 
             <div className="bar-chart-columns">
               {bars.map((bar) => {
-                const height = Math.max(16, (bar.value / maxBar) * 130);
+               const baseHeight = (bar.value / maxBar) * 130;
+const height = Math.max(
+  16,
+  bar.name === "Revenue" ? baseHeight * 1.12 : baseHeight
+);
 
                 return (
                   <div key={bar.name} className="bar-chart-col">
