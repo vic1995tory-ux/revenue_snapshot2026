@@ -2895,8 +2895,8 @@ export default function Home() {
 
 .start-card-price-float {
   position: absolute;
-  top: 34px;
-  right: 42px;
+  top: 18.33%;
+  right: 6.02%;
   font-size: 42px;
   line-height: 1;
   font-weight: 700;
@@ -2907,8 +2907,8 @@ export default function Home() {
 
 .start-card-btn-row {
   position: absolute;
-  left: 34px;
-  bottom: 94px;
+  left: 4.54%;
+  bottom: 23.06%;
 }
 
 .start-card-btn {
