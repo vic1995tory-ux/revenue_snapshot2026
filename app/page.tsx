@@ -6,6 +6,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type CSSProperties,
 } from "react";
 
 function fmtMoney(n: number) {
