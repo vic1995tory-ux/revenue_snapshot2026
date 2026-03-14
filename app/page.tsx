@@ -228,8 +228,8 @@ function HeroEconomyChart() {
   const drivers = [
     {
       key: "positioning",
-      label: "#Позиционирование",
-      full: "Позиционирование",
+      label: "#Маркетинг",
+      full: "Маркетинг",
       deltaLabel: "+рост спроса и конверсии",
       leads: 10,
       deals: 2.4,
