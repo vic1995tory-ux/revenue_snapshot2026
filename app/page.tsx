@@ -1586,14 +1586,12 @@ export default function Home() {
         }
 
         .hero-levers-inline {
-          display: flex;
-          flex-wrap: nowrap;
-          gap: 10px;
-          overflow-x: auto;
-          overflow-y: hidden;
-          scrollbar-width: none;
-          padding-bottom: 4px;
-        }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  overflow: hidden;
+  padding-bottom: 4px;
+}
 
         .hero-levers-inline::-webkit-scrollbar {
           display: none;
