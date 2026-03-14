@@ -6,7 +6,6 @@ import {
   useRef,
   useState,
   type ReactNode,
-  type CSSProperties,
 } from "react";
 
 function fmtMoney(n: number) {
@@ -326,7 +325,7 @@ function HeroEconomyChart() {
     },
   ];
 
- const maxBar = 20000;
+  const maxBar = 20000;
 
   return (
     <div className="hero-visual-shell">
@@ -365,43 +364,44 @@ function HeroEconomyChart() {
               <strong>{fmtMoney(active.aov)}</strong>
             </div>
 
-           <div className="hero-metric-square">
-  <span>Маржа</span>
-  <strong>{active.margin}%</strong>
-</div>
+            <div className="hero-metric-square">
+              <span>Маржа</span>
+              <strong>{active.margin}%</strong>
+            </div>
+          </div>
 
           <div className="bar-chart-wrap">
             <div className="bar-chart-grid" />
 
-          <div className="bar-chart-columns bar-chart-columns-horizontal">
-  {bars.map((bar) => {
-    const baseWidth = (bar.value / maxBar) * 100;
-    const width =
-      bar.name === "Revenue"
-        ? Math.min(100, Math.max(8, baseWidth * 1.04))
-        : Math.max(8, baseWidth);
+            <div className="bar-chart-columns bar-chart-columns-horizontal">
+              {bars.map((bar) => {
+                const baseWidth = (bar.value / maxBar) * 100;
+                const width =
+                  bar.name === "Revenue"
+                    ? Math.min(100, Math.max(8, baseWidth * 1.04))
+                    : Math.max(8, baseWidth);
 
-    return (
-      <div key={bar.name} className="bar-chart-row">
-        <div className="bar-chart-row-top">
-          <div className="bar-chart-label">{bar.name}</div>
-          <div className="bar-chart-value">
-            {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
-          </div>
-        </div>
+                return (
+                  <div key={bar.name} className="bar-chart-row">
+                    <div className="bar-chart-row-top">
+                      <div className="bar-chart-label">{bar.name}</div>
+                      <div className="bar-chart-value">
+                        {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+                      </div>
+                    </div>
 
-        <div className="bar-chart-bar-shell bar-chart-bar-shell-horizontal">
-          <div
-            className={`bar-chart-bar bar-chart-bar-horizontal ${
-              bar.good ? "bar-good" : "bar-bad"
-            } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
-            style={{ width: `${width}%` }}
-          />
-        </div>
-      </div>
-    );
-  })}
-</div>
+                    <div className="bar-chart-bar-shell bar-chart-bar-shell-horizontal">
+                      <div
+                        className={`bar-chart-bar bar-chart-bar-horizontal ${
+                          bar.good ? "bar-good" : "bar-bad"
+                        } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+                        style={{ width: `${width}%` }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
           <div className="hero-chart-bottom">
