@@ -97,7 +97,7 @@ function TopMetricCard({
     <div className="glass-card soft-glow metric-card metric-card-main">
       <div className="metric-head">
         <div className="metric-title-wrap">
-          <div className="metric-title">{title}</div>
+          <div className="metric-label">{title}</div>
         </div>
 
         <div className="metric-right-meta">
@@ -129,7 +129,7 @@ function ModelCard({
   return (
     <div className="glass-card soft-glow model-card">
       <div className="model-head">
-        <div className="text-xs text-white/55">{title}</div>
+        <div className="model-label">{title}</div>
         <div className={`model-delta-top ${color(delta, invert)}`}>
           {pct(delta)}
         </div>
@@ -215,13 +215,13 @@ function Slider({
 function HeroEconomyChart() {
   const base = {
     leads: 10,
-    deals: 2.0,
-    aov: 3200,
-    margin: 31,
-    revenue: 6400,
-    opex: 2100,
-    cogs: 1800,
-    grossProfit: 2500,
+    deals: 2,
+    avgCheck: 3200,
+    margin: 30,
+    revenue: 13000,
+    opex: 3500,
+    cogs: 3900,
+    grossProfit: 5600,
   };
 
   const drivers = [
@@ -231,27 +231,27 @@ function HeroEconomyChart() {
       full: "Позиционирование",
       deltaLabel: "+рост спроса и конверсии",
       leads: 10,
-      deals: 2.3,
+      deals: 2.4,
       aov: 3200,
-      margin: 39,
-      revenue: 7360,
-      opex: 2300,
-      cogs: 1950,
-      grossProfit: 3110,
+      margin: 42,
+      revenue: 14800,
+      opex: 3200,
+      cogs: 3600,
+      grossProfit: 6200,
     },
     {
       key: "aov",
       label: "#AOV",
       full: "AOV",
-      deltaLabel: "+$800 к среднему чеку",
+      deltaLabel: "+рост среднего заказа",
       leads: 10,
       deals: 2.0,
-      aov: 4000,
-      margin: 42,
-      revenue: 8000,
-      opex: 2300,
-      cogs: 2100,
-      grossProfit: 3600,
+      aov: 4100,
+      margin: 44,
+      revenue: 15200,
+      opex: 3300,
+      cogs: 3900,
+      grossProfit: 6700,
     },
     {
       key: "sales",
@@ -261,29 +261,29 @@ function HeroEconomyChart() {
       leads: 10,
       deals: 2.8,
       aov: 3200,
-      margin: 41,
-      revenue: 8960,
-      opex: 2550,
-      cogs: 2280,
-      grossProfit: 4130,
+      margin: 45,
+      revenue: 18200,
+      opex: 4600,
+      cogs: 5100,
+      grossProfit: 8500,
     },
     {
       key: "costs",
       label: "#УправлениеРасходами",
       full: "Управление расходами",
-      deltaLabel: "ниже нагрузка на OPEX",
+      deltaLabel: "−давление на OPEX и Margin",
       leads: 10,
       deals: 2.0,
       aov: 3200,
-      margin: 45,
-      revenue: 6400,
-      opex: 1500,
-      cogs: 1700,
-      grossProfit: 3200,
+      margin: 51,
+      revenue: 13000,
+      opex: 2500,
+      cogs: 3900,
+      grossProfit: 6600,
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(2);
   const timerRef = useRef<number | null>(null);
 
   useEffect(() => {
@@ -310,129 +310,133 @@ function HeroEconomyChart() {
     { name: "Revenue", value: active.revenue, good: true, isPercent: false },
     { name: "OPEX", value: active.opex, good: false, isPercent: false },
     { name: "COGS", value: active.cogs, good: false, isPercent: false },
-    { name: "Gross Profit", value: active.grossProfit, good: true, isPercent: false },
+    {
+      name: "Gross Profit",
+      value: active.grossProfit,
+      good: true,
+      isPercent: false,
+    },
     { name: "Margin", value: active.margin, good: true, isPercent: true },
   ];
 
   const maxBar = Math.max(...bars.map((b) => b.value));
 
   return (
-    <aside className="hero-visual-shell">
-      <img src="/hero.svg" alt="" className="hero-visual-bg" />
+    <div className="hero-visual-shell">
+      <div className="hero-visual-image" />
 
-      <div className="hero-visual-content">
-        <div className="hero-visual-topline">MVP-Drivers</div>
+      <div className="hero-chart-float">
+        <div className="hero-chart-float-title">MVP-Drivers</div>
 
-        <div className="hero-levers-inline hero-levers-inline-clean">
+        <div className="hero-levers-inline hero-levers-inline-float">
           {drivers.map((item, index) => (
             <button
               key={item.key}
               type="button"
               onClick={() => setDriver(index)}
-              className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
+              className={`hero-tag ${
+                index === activeIndex ? "hero-tag-active" : ""
+              }`}
             >
               {item.label}
             </button>
           ))}
         </div>
 
-        <div className="hero-chart-metrics-row hero-chart-metrics-row-clean">
-          <div className="hero-metric-square">
-            <span>Лидов / мес</span>
-            <strong>{active.leads}</strong>
+        <div className="hero-chart-box">
+          <div className="hero-chart-metrics-row">
+            <div className="hero-metric-square">
+              <span>Лидов / мес</span>
+              <strong>{active.leads}</strong>
+            </div>
+            <div className="hero-metric-square">
+              <span>Сделок / мес</span>
+              <strong>{active.deals.toFixed(1)}</strong>
+            </div>
+            <div className="hero-metric-square">
+              <span>AOV</span>
+              <strong>{fmtMoney(active.aov)}</strong>
+            </div>
+            <div className="hero-metric-square">
+              <span>Маржа</span>
+              <strong>{active.margin}%</strong>
+            </div>
           </div>
-          <div className="hero-metric-square">
-            <span>Сделок / мес</span>
-            <strong>{active.deals.toFixed(1)}</strong>
-          </div>
-          <div className="hero-metric-square">
-            <span>AOV</span>
-            <strong>{fmtMoney(active.aov)}</strong>
-          </div>
-          <div className="hero-metric-square">
-            <span>Маржа</span>
-            <strong>{active.margin}%</strong>
-          </div>
-        </div>
 
-        <div className="hero-bars-standalone">
-          <div className="bar-chart-grid" />
-          <div className="bar-chart-columns">
-            {bars.map((bar) => {
-              const height = Math.max(14, (bar.value / maxBar) * 138);
+          <div className="bar-chart-wrap">
+            <div className="bar-chart-grid" />
 
-              return (
-                <div key={bar.name} className="bar-chart-col">
-                  <div className="bar-chart-value">
-                    {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+            <div className="bar-chart-columns">
+              {bars.map((bar) => {
+                const height = Math.max(16, (bar.value / maxBar) * 130);
+
+                return (
+                  <div key={bar.name} className="bar-chart-col">
+                    <div className="bar-chart-value">
+                      {bar.isPercent ? `${bar.value}%` : fmtMoney(bar.value)}
+                    </div>
+
+                    <div className="bar-chart-bar-shell">
+                      <div
+                        className={`bar-chart-bar ${
+                          bar.good ? "bar-good" : "bar-bad"
+                        }`}
+                        style={{ height: `${height}px` }}
+                      />
+                    </div>
+
+                    <div className="bar-chart-label">{bar.name}</div>
                   </div>
-
-                  <div className="bar-chart-bar-shell">
-                    <div
-                      className={`bar-chart-bar ${bar.good ? "bar-good" : "bar-bad"}`}
-                      style={{ height: `${height}px` }}
-                    />
-                  </div>
-
-                  <div className="bar-chart-label">{bar.name}</div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="hero-chart-bottom hero-chart-bottom-clean">
-          <div className="hero-money-card hero-money-card-clean">
-            <span>База</span>
-            <strong>{fmtMoney(base.revenue)}</strong>
-            <small>{fmtMoney(base.grossProfit)} gross profit / мес</small>
+                );
+              })}
+            </div>
           </div>
 
-          <div className="hero-money-card hero-money-card-clean">
-            <span>Активный драйвер</span>
-            <strong>{fmtMoney(active.revenue)}</strong>
-            <small>{fmtMoney(active.grossProfit)} gross profit / мес</small>
-          </div>
-        </div>
+          <div className="hero-chart-bottom">
+            <div className="hero-money-card hero-money-card-clean">
+              <span>База</span>
+              <strong>{fmtMoney(base.revenue)}</strong>
+              <small>{fmtMoney(base.grossProfit)} gross profit / мес</small>
+            </div>
 
-        <div className="hero-active-note">
-          <span className="hero-active-note-dot" />
-          <span>
-            Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
-          </span>
+            <div className="hero-money-card hero-money-card-clean">
+              <span>Активный драйвер</span>
+              <strong>{fmtMoney(active.revenue)}</strong>
+              <small>{fmtMoney(active.grossProfit)} gross profit / мес</small>
+            </div>
+          </div>
+
+          <div className="hero-active-note">
+            <span className="hero-active-note-dot" />
+            <span>
+              Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
+            </span>
+          </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 }
 
 function SnapshotStructure() {
   return (
-    <div className="snapshot-structure-plain">
-      <h3 className="snapshot-structure-title">Структура Revenue Snapshot</h3>
+    <div className="glass-card snapshot-structure-card">
+      <h3 className="text-lg font-semibold text-white">
+        Из чего состоит Revenue Snapshot
+      </h3>
+
+      <p className="snapshot-builder-copy">
+        ваши данные под защищенными протоколами обрабатываются инструментом для
+        формирования стратегических решений вашего бизнеса
+      </p>
 
       <div className="snapshot-builder">
-        <div className="builder-left">
-          <div className="builder-row builder-row-top">
-            <div className="builder-block builder-block-product">Продукт</div>
-            <div className="builder-block builder-block-clients">Клиенты</div>
-          </div>
-
-          <div className="builder-block builder-block-economics">Экономика</div>
-
-          <div className="builder-block builder-block-positioning">
-            Позиционирование
-          </div>
-
-          <div className="builder-block builder-block-marketing">Маркетинг</div>
-        </div>
-
-        <div className="builder-right">
-          <div className="builder-block builder-block-structure">
-            <span>Структура</span>
-            <span>компании</span>
-          </div>
-        </div>
+        <div className="builder-block builder-block-1">Продукт</div>
+        <div className="builder-block builder-block-2">Клиенты</div>
+        <div className="builder-block builder-block-3">Экономика</div>
+        <div className="builder-block builder-block-4">Структура компании</div>
+        <div className="builder-block builder-block-5">Позиционирование</div>
+        <div className="builder-block builder-block-6">Маркетинг</div>
       </div>
     </div>
   );
@@ -442,23 +446,18 @@ function ResultDocCard({
   tab,
   title,
   text,
-  footer,
 }: {
   tab: string;
   title: string;
   text: string;
-  footer?: ReactNode;
 }) {
   return (
-    <div
-      className={`result-doc-card result-doc-card-grid ${
-        footer ? "has-footer" : ""
-      }`}
-    >
-      <div className="result-doc-tab">{tab}</div>
-      <div className="result-doc-title">{title}</div>
-      <div className="result-doc-text">{text}</div>
-      {footer ? <div className="result-doc-footer-panel">{footer}</div> : null}
+    <div className="result-doc-card result-doc-card-grid">
+      <div className="result-doc-card-inner">
+        <div className="result-doc-tab">{tab}</div>
+        <div className="result-doc-title">{title}</div>
+        <div className="result-doc-text">{text}</div>
+      </div>
     </div>
   );
 }
@@ -479,7 +478,7 @@ function StageCard({
   result: string;
 }) {
   return (
-    <div className="stage-card-clean">
+    <div className="stage-card stage-card-figure">
       <div className="stage-top-strip">
         <div className="stage-top-strip-icon">
           <img src={icon} alt={stage} className="stage-strip-icon" />
@@ -515,6 +514,38 @@ function StageCard({
         </div>
       </div>
     </div>
+  );
+}
+
+function StartCard({
+  title,
+  subtitle,
+  icon,
+  price,
+  href,
+}: {
+  title: string;
+  subtitle: string;
+  icon: string;
+  price: string;
+  href: string;
+}) {
+  return (
+    <a href={href} className="start-card">
+      <div className="start-card-bg" />
+      <div className="start-card-top">
+        <img src={icon} alt="" className="start-card-icon" />
+        <div className="start-card-meta">
+          <div className="start-card-title">{title}</div>
+          <div className="start-card-subtitle">{subtitle}</div>
+        </div>
+      </div>
+
+      <div className="start-card-bottom">
+        <div className="start-card-price">{price}</div>
+        <span className="start-card-btn">Начать</span>
+      </div>
+    </a>
   );
 }
 
@@ -659,7 +690,10 @@ export default function Home() {
 
   const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
   const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
+  const salesCostDelta = safeDiv(
+    data.salesCost - base.salesCost,
+    base.salesCost
+  );
   const opexSupportDelta = safeDiv(
     data.opex + data.support - (base.opex + base.support),
     base.opex + base.support
@@ -690,29 +724,24 @@ export default function Home() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[linear-gradient(135deg,#0b1d3a_0%,#0e2141_100%)] text-white">
+    <main className="relative min-h-screen overflow-hidden bg-[#040813] text-white">
       <div
         className="cursor-glow"
         style={{
-          transform: `translate(${cursor.x - 100}px, ${cursor.y - 100}px)`,
+          transform: `translate(${cursor.x - 90}px, ${cursor.y - 90}px)`,
         }}
-      >
-        <div className="cursor-glow-noise" />
-      </div>
+      />
 
       <div className="pointer-events-none absolute inset-0">
-        <div className="grid-overlay" />
-        <div className="noise-overlay-random" />
-        <div className="noise-overlay-random noise-overlay-random-2" />
         <div className="aurora aurora-1" />
         <div className="aurora aurora-2" />
         <div className="aurora aurora-3" />
-        <div className="beam beam-1" />
-        <div className="beam beam-2" />
+        <div className="aurora aurora-4" />
+        <div className="line-grid" />
         <div className="vignette" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-4 py-5 md:px-8 md:py-10">
+      <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-10">
         <header className="sticky-header mb-7 md:mb-10">
           <div className="header-row">
             <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
@@ -750,49 +779,52 @@ export default function Home() {
           </div>
         </header>
 
-        <section className="hero-grid mb-10 md:mb-14">
-          <div className="hero-left">
-            <h1 className="mt-2 text-3xl font-semibold leading-[1.02] tracking-tight md:text-6xl">
-              Revenue Snapshot
-              <br />
-              стратегическая
-              <br />
-              диагностика
-              <br />
-              экономики вашего
-              <br />
-              бизнеса
-            </h1>
+        <section className="hero-section mb-16">
+          <div className="hero-grid hero-grid-frame">
+            <div className="hero-left">
+              <h1 className="hero-main-title">
+                Revenue Snapshot
+                <br />
+                стратегическая
+                <br />
+                диагностика
+                <br />
+                экономики вашего
+                <br />
+                бизнеса
+              </h1>
 
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-white/68 md:text-lg">
-              Узнайте, какое изменение в модели способно дать наиболее сильный
-              эффект на выручку, и где сейчас скрываются главные точки потери
-              денег.
-            </p>
+              <p className="hero-main-copy">
+                Узнайте, какое изменение в модели способно дать наиболее сильный
+                эффект на выручку, и где сейчас скрываются главные точки потери
+                денег.
+              </p>
 
-            <div className="hero-highlights-row hero-highlights-row-unified">
-              <div className="hero-highlight-chip hero-chip-unified">
-                MVP
+              <div className="hero-highlights-row hero-highlights-row-unified">
+                <div className="hero-highlight-chip hero-chip-unified">MVP</div>
+                <div className="hero-highlight-chip hero-chip-unified">
+                  CashCow
+                </div>
+                <div className="hero-highlight-chip hero-chip-unified">
+                  Scaling
+                </div>
               </div>
-              <div className="hero-highlight-chip hero-chip-unified">
-                CashCow
-              </div>
-              <div className="hero-highlight-chip hero-chip-unified">
-                Scaling
+
+              <div className="hero-actions">
+                <a href="#try" className="tg-gradient-btn inline-flex">
+                  Попробовать Snapshot
+                </a>
+                <a
+                  href="#preview"
+                  className="ghost-link ghost-link-large inline-flex"
+                >
+                  Посмотреть превью
+                </a>
               </div>
             </div>
 
-            <div className="hero-actions">
-              <a href="#try" className="tg-gradient-btn inline-flex">
-                Попробовать Snapshot
-              </a>
-              <a href="#preview" className="ghost-link ghost-link-large inline-flex">
-                Посмотреть превью
-              </a>
-            </div>
+            <HeroEconomyChart />
           </div>
-
-          <HeroEconomyChart />
         </section>
 
         <section id="how-it-works" className="mb-16">
@@ -846,8 +878,7 @@ export default function Home() {
               <div className="journey-compact-text">
                 Вы получаете аналитический срез бизнеса с ключевыми выводами:
                 приоритетной точкой роста, оценкой экономического эффекта
-                изменений и пониманием устойчивости текущей модели, следующий шаг
-                для реализации.
+                изменений и пониманием устойчивости текущей модели.
               </div>
             </div>
           </div>
@@ -1034,7 +1065,7 @@ export default function Home() {
                   ≈ {fmtMoney(estimatedGap)} / мес
                 </div>
                 <p className="mt-4 text-sm leading-7 text-white/65">
-                  Это только лишь механика, полный разбор раскрывает ваши реальные
+                  Это только механика. Полный разбор раскрывает реальные
                   возможности при текущей ситуации вашего бизнеса.
                 </p>
               </div>
@@ -1099,12 +1130,12 @@ export default function Home() {
             <ResultDocCard
               tab="Solution"
               title="Strategy&Practice"
-              text="Проведенный анализ данных определяет первичную задачу: целью всегда является повышение дохода, но так как доход строится на множестве факторов, то и первостепенные действия направлены на закрытие текущих зон риска. Предлагается продуктовый MVP."
+              text="Проведенный анализ данных определяет первичную задачу: целью всегда является повышение дохода, но так как доход строится на множестве факторов, то первостепенные действия направлены на закрытие текущих зон риска. Предлагается продуктовый MVP."
             />
             <ResultDocCard
               tab="JTBD"
               title="RoadMap"
-              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP. Определение KPI для каждого из этапов в соответствие поставленным задачам и целям."
+              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP. Определение KPI для каждого из этапов в соответствии поставленным задачам и целям."
             />
           </div>
 
@@ -1129,7 +1160,9 @@ export default function Home() {
               <span className="industry-pill industry-ecom">E-com</span>
               <span className="industry-pill industry-fintech">FinTech</span>
               <span className="industry-pill industry-edtech">EdTech</span>
-              <span className="industry-pill industry-healthtech">HealthTech</span>
+              <span className="industry-pill industry-healthtech">
+                HealthTech
+              </span>
               <span className="industry-pill industry-b2b">B2B</span>
             </div>
           </div>
@@ -1182,46 +1215,47 @@ export default function Home() {
         </section>
 
         <section className="mb-16">
-          <div className="section-head section-head-analysis">
+          <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title">Из чего состоит Revenue Snapshot</h2>
+            <h2 className="section-title">
+              После оплаты пользователь переходит в Telegram
+            </h2>
             <p className="section-copy">
-              ваши данные под защищенными протоколами обрабатываются инструментом
-              для формирования стратегический решений вашего бизнеса
+              Telegram используется как удобный интерфейс сбора данных. Ответы
+              анализируются автоматически и превращаются в структурированный
+              результат.
             </p>
           </div>
 
           <div className="analysis-grid">
             <SnapshotStructure />
 
-            <div className="glass-card">
-              <h3 className="text-lg font-semibold text-white">
-                Что происходит дальше
+            <div className="glass-card analysis-right-card">
+              <h3 className="analysis-right-title">
+                Выберите удобный формат для старта
               </h3>
-              <p className="mt-4 text-sm leading-8 text-white/68">
-                Ответы анализируются автоматически, после чего данные собираются в
-                итоговый Revenue Snapshot с выводами, ключевыми точками потери
-                выручки и приоритетом следующих шагов.
+
+              <p className="analysis-right-copy">
+                Вы можете начать либо со стратегической сессии, либо сразу со
+                Snapshot. Оба формата встроены в один процесс и дают понятную
+                точку входа.
               </p>
 
-              <div className="mt-5 flex flex-wrap gap-3">
-                <a
+              <div className="start-cards-row">
+                <StartCard
+                  title="Страт сессия"
+                  subtitle="быстрый вход через созвон"
+                  icon="/stratsession.svg"
+                  price="$49"
                   href={tgContactUrl}
-                  className="contact-btn contact-btn-invert"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Написать в TG
-                </a>
-
-                <a
-                  href={waContactUrl}
-                  className="ghost-link ghost-link-large"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Связаться в WhatsApp
-                </a>
+                />
+                <StartCard
+                  title="Snapshot"
+                  subtitle="сразу через инструмент"
+                  icon="/snapshot.svg"
+                  price="$99"
+                  href={payUrl}
+                />
               </div>
             </div>
           </div>
@@ -1250,7 +1284,7 @@ export default function Home() {
                 Получить Revenue Snapshot
               </a>
               <div className="mt-3 text-xs text-white/45">
-                Здесь можно поставить ссылку на оплату PayPal
+                Здесь можно поставить ссылку на оплату
               </div>
             </div>
           </div>
@@ -1263,47 +1297,29 @@ export default function Home() {
         }
 
         body {
-          background: linear-gradient(135deg, #0b1d3a 0%, #0e2141 100%);
+          background: #040813;
         }
 
         .cursor-glow {
           position: fixed;
           left: 0;
           top: 0;
-          width: 200px;
-          height: 200px;
+          width: 180px;
+          height: 180px;
           border-radius: 9999px;
           pointer-events: none;
           z-index: 1;
-          background:
-            radial-gradient(
-              circle,
-              rgba(247, 210, 55, 0.1) 0%,
-              rgba(247, 210, 55, 0.06) 24%,
-              rgba(247, 210, 55, 0.025) 48%,
-              rgba(247, 210, 55, 0.01) 68%,
-              transparent 82%
-            );
-          filter: blur(26px);
-          opacity: 0.55;
+          background: radial-gradient(
+            circle,
+            rgba(247, 210, 55, 0.12) 0%,
+            rgba(247, 210, 55, 0.07) 32%,
+            rgba(247, 210, 55, 0.02) 58%,
+            transparent 78%
+          );
+          filter: blur(24px);
+          opacity: 0.45;
           mix-blend-mode: screen;
-          transition:
-            transform 0.08s linear,
-            opacity 0.2s ease;
-        }
-
-        .cursor-glow-noise {
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background-image:
-            radial-gradient(rgba(38, 54, 81, 0.22) 0.45px, transparent 0.85px),
-            radial-gradient(rgba(38, 54, 81, 0.16) 0.7px, transparent 1px),
-            radial-gradient(rgba(38, 54, 81, 0.12) 0.35px, transparent 0.7px);
-          background-size: 11px 11px, 17px 17px, 9px 9px;
-          background-position: 0 0, 5px 7px, 3px 2px;
-          opacity: 0.28;
-          mix-blend-mode: multiply;
+          transition: transform 0.08s linear;
         }
 
         .glass-card {
@@ -1313,17 +1329,17 @@ export default function Home() {
             rgba(255, 255, 255, 0.045)
           );
           backdrop-filter: blur(18px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid rgba(255, 255, 255, 0.08);
           border-radius: 28px;
           padding: 22px;
           box-shadow:
-            0 10px 40px rgba(0, 0, 0, 0.14),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            0 10px 40px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
         .soft-glow {
           box-shadow:
-            0 10px 40px rgba(0, 0, 0, 0.14),
+            0 10px 40px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.05),
             0 0 0 1px rgba(255, 255, 255, 0.02);
         }
@@ -1337,8 +1353,8 @@ export default function Home() {
           backdrop-filter: blur(18px);
           background: linear-gradient(
             180deg,
-            rgba(11, 29, 58, 0.86),
-            rgba(14, 33, 65, 0.54)
+            rgba(4, 8, 19, 0.92),
+            rgba(4, 8, 19, 0.62)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -1357,10 +1373,36 @@ export default function Home() {
           flex-shrink: 0;
         }
 
+        .logo-main {
+          width: 216px;
+          height: 54px;
+          object-fit: contain;
+          object-position: left center;
+          display: block;
+          flex-shrink: 0;
+        }
+
+        .hero-section {
+          position: relative;
+          border-radius: 34px;
+          overflow: hidden;
+          background:
+            linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent),
+            url("/hero.svg");
+          background-size: cover;
+          background-position: center bottom;
+          background-repeat: no-repeat;
+          padding: 34px 24px 28px;
+          min-height: 760px;
+        }
+
         .hero-grid {
           display: grid;
-          grid-template-columns: 1fr 0.98fr;
-          gap: 20px;
+          gap: 22px;
+        }
+
+        .hero-grid-frame {
+          grid-template-columns: 1fr 0.96fr;
           align-items: stretch;
         }
 
@@ -1368,46 +1410,54 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           min-height: 100%;
-          padding-top: 12px;
+          padding: 12px 10px 8px;
+          position: relative;
+          z-index: 2;
         }
 
-        .hero-chart-card {
-          display: flex;
-          flex-direction: column;
-          min-height: 100%;
-          padding-bottom: 18px;
+        .hero-main-title {
+          font-size: clamp(54px, 6vw, 92px);
+          line-height: 0.93;
+          letter-spacing: -0.06em;
+          font-weight: 700;
+          color: #fff;
+          margin: 0;
+          max-width: 880px;
+        }
+
+        .hero-main-copy {
+          margin-top: 28px;
+          max-width: 760px;
+          font-size: 22px;
+          line-height: 1.65;
+          color: rgba(255, 255, 255, 0.72);
         }
 
         .hero-highlights-row {
-          margin-top: 28px;
+          margin-top: 34px;
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0;
-          border-radius: 20px;
+          border-radius: 22px;
           overflow: hidden;
           position: relative;
+          max-width: 760px;
         }
 
         .hero-highlights-row-unified {
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background:
-            linear-gradient(
-              115deg,
-              rgba(255, 255, 255, 0.04) 0%,
-              rgba(255, 255, 255, 0.06) 20%,
-              rgba(247, 210, 55, 0.1) 40%,
-              rgba(123, 132, 255, 0.12) 62%,
-              rgba(194, 92, 243, 0.12) 84%,
-              rgba(255, 255, 255, 0.05) 100%
-            );
-          background-size: 220% 220%;
-          animation: unifiedGradientFlow 10s ease-in-out infinite;
+          border: 1px solid rgba(255, 255, 255, 0.12);
+          background: linear-gradient(
+            90deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(123, 132, 255, 0.08),
+            rgba(255, 255, 255, 0.08)
+          );
         }
 
         .hero-highlight-chip {
-          padding: 16px 18px;
+          padding: 20px 18px;
           color: white;
-          font-size: 15px;
+          font-size: 22px;
           font-weight: 700;
           text-align: center;
           white-space: nowrap;
@@ -1419,10 +1469,10 @@ export default function Home() {
         .hero-highlight-chip:not(:last-child)::after {
           content: "";
           position: absolute;
-          top: 12px;
+          top: 14px;
           right: 0;
           width: 1px;
-          height: calc(100% - 24px);
+          height: calc(100% - 28px);
           background: rgba(255, 255, 255, 0.09);
         }
 
@@ -1430,31 +1480,56 @@ export default function Home() {
           backdrop-filter: blur(2px);
         }
 
-        .hero-stage-mini {
-          margin-top: 14px;
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-          color: rgba(255, 255, 255, 0.64);
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: 0.03em;
-        }
-
         .hero-actions {
           margin-top: auto;
           padding-top: 34px;
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
+          gap: 14px;
           align-items: center;
+        }
+
+        .hero-visual-shell {
+          position: relative;
+          min-height: 100%;
+          display: flex;
+          align-items: flex-start;
+          justify-content: flex-end;
+          z-index: 2;
+        }
+
+        .hero-visual-image {
+          position: absolute;
+          inset: 0;
+          border-radius: 28px;
+          background-image: url("/hero.svg");
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          opacity: 1;
+        }
+
+        .hero-chart-float {
+          position: relative;
+          margin-top: 16px;
+          width: min(760px, 100%);
+          margin-left: auto;
+        }
+
+        .hero-chart-float-title {
+          font-size: 32px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+          margin-bottom: 14px;
+          text-align: right;
+          padding-right: 8px;
         }
 
         .hero-levers-inline {
           display: flex;
           flex-wrap: nowrap;
           gap: 10px;
-          margin-top: 18px;
           overflow-x: auto;
           scrollbar-width: none;
         }
@@ -1463,16 +1538,20 @@ export default function Home() {
           display: none;
         }
 
+        .hero-levers-inline-float {
+          margin-bottom: 12px;
+        }
+
         .hero-tag {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          padding: 10px 14px;
+          padding: 12px 18px;
           border-radius: 999px;
           border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(255, 255, 255, 0.04);
+          background: rgba(34, 47, 74, 0.82);
           color: rgba(255, 255, 255, 0.68);
-          font-size: 13px;
+          font-size: 14px;
           font-weight: 700;
           white-space: nowrap;
           transition: 0.25s ease;
@@ -1485,14 +1564,15 @@ export default function Home() {
         }
 
         .hero-chart-box {
-          margin-top: 16px;
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
-          padding: 12px;
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          background: rgba(36, 49, 76, 0.88);
+          padding: 14px;
           display: flex;
           flex-direction: column;
-          flex: 1;
+          box-shadow:
+            0 22px 60px rgba(0, 0, 0, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
         .hero-chart-metrics-row {
@@ -1503,24 +1583,24 @@ export default function Home() {
         }
 
         .hero-metric-square {
-          min-height: 68px;
+          min-height: 86px;
           border-radius: 18px;
           background: rgba(255, 255, 255, 0.04);
           border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 10px 12px;
+          padding: 12px;
         }
 
         .hero-metric-square span {
           display: block;
-          font-size: 11px;
+          font-size: 12px;
           color: rgba(255, 255, 255, 0.52);
         }
 
         .hero-metric-square strong {
           display: block;
-          margin-top: 8px;
-          font-size: 18px;
-          line-height: 1.2;
+          margin-top: 10px;
+          font-size: 22px;
+          line-height: 1.1;
           font-weight: 700;
           color: white;
           white-space: nowrap;
@@ -1529,13 +1609,13 @@ export default function Home() {
         .bar-chart-wrap {
           position: relative;
           margin-top: 4px;
-          border-radius: 22px;
-          padding: 14px 12px 12px;
+          border-radius: 24px;
+          padding: 18px 14px 14px;
           border: 1px solid rgba(255, 255, 255, 0.08);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.045),
-            rgba(255, 255, 255, 0.02)
+            rgba(255, 255, 255, 0.035),
+            rgba(255, 255, 255, 0.015)
           );
           overflow: hidden;
         }
@@ -1543,14 +1623,11 @@ export default function Home() {
         .bar-chart-grid {
           position: absolute;
           inset: 0;
-          background-image:
-            linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px);
-          background-size: 100% 34px;
-          mask-image: linear-gradient(
-            180deg,
-            rgba(0, 0, 0, 0.95),
-            rgba(0, 0, 0, 0.82)
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.06) 1px,
+            transparent 1px
           );
+          background-size: 100% 44px;
           pointer-events: none;
         }
 
@@ -1561,7 +1638,7 @@ export default function Home() {
           grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 10px;
           align-items: end;
-          min-height: 188px;
+          min-height: 250px;
         }
 
         .bar-chart-col {
@@ -1570,11 +1647,11 @@ export default function Home() {
           align-items: center;
           justify-content: flex-end;
           gap: 8px;
-          min-height: 188px;
+          min-height: 250px;
         }
 
         .bar-chart-value {
-          font-size: 11px;
+          font-size: 12px;
           line-height: 1.3;
           color: rgba(255, 255, 255, 0.7);
           text-align: center;
@@ -1583,8 +1660,8 @@ export default function Home() {
 
         .bar-chart-bar-shell {
           width: 100%;
-          max-width: 54px;
-          height: 116px;
+          max-width: 74px;
+          height: 140px;
           display: flex;
           align-items: flex-end;
           justify-content: center;
@@ -1592,7 +1669,7 @@ export default function Home() {
 
         .bar-chart-bar {
           width: 100%;
-          border-radius: 14px 14px 6px 6px;
+          border-radius: 16px 16px 8px 8px;
           transition: height 0.8s ease, transform 0.8s ease;
           box-shadow:
             0 10px 24px rgba(0, 0, 0, 0.14),
@@ -1618,16 +1695,16 @@ export default function Home() {
         }
 
         .bar-chart-label {
-          font-size: 11px;
+          font-size: 12px;
           font-weight: 700;
-          color: rgba(255, 255, 255, 0.62);
+          color: rgba(255, 255, 255, 0.68);
           text-align: center;
           line-height: 1.35;
           min-height: 32px;
         }
 
         .hero-chart-bottom {
-          margin-top: 12px;
+          margin-top: 14px;
           display: grid;
           grid-template-columns: 1fr 1fr;
           gap: 10px;
@@ -1671,16 +1748,16 @@ export default function Home() {
         }
 
         .hero-active-note {
-          margin-top: 10px;
+          margin-top: 12px;
           display: inline-flex;
           align-items: center;
           gap: 10px;
           border: 1px solid rgba(247, 210, 55, 0.18);
           background: rgba(255, 255, 255, 0.03);
           border-radius: 999px;
-          padding: 8px 12px;
+          padding: 10px 14px;
           color: rgba(255, 255, 255, 0.72);
-          font-size: 13px;
+          font-size: 14px;
           line-height: 1.45;
         }
 
@@ -1689,8 +1766,8 @@ export default function Home() {
         }
 
         .hero-active-note-dot {
-          width: 7px;
-          height: 7px;
+          width: 8px;
+          height: 8px;
           border-radius: 999px;
           background: #f7d237;
           box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
@@ -1699,16 +1776,12 @@ export default function Home() {
         }
 
         .section-head {
-          max-width: 920px;
+          max-width: 1080px;
           margin-bottom: 18px;
         }
 
-        .section-head-analysis {
-          max-width: 1080px;
-        }
-
         .section-kicker {
-          font-size: 12px;
+          font-size: 14px;
           font-weight: 700;
           letter-spacing: 0.18em;
           text-transform: uppercase;
@@ -1717,17 +1790,18 @@ export default function Home() {
 
         .section-title {
           margin-top: 12px;
-          font-size: 34px;
-          line-height: 1.08;
-          font-weight: 600;
+          font-size: clamp(36px, 4vw, 62px);
+          line-height: 1.04;
+          font-weight: 700;
           color: white;
         }
 
         .section-copy {
           margin-top: 14px;
-          font-size: 16px;
-          line-height: 1.8;
+          font-size: 22px;
+          line-height: 1.7;
           color: rgba(255, 255, 255, 0.68);
+          max-width: 1160px;
         }
 
         .contact-btn {
@@ -1783,7 +1857,7 @@ export default function Home() {
           position: relative;
           overflow: hidden;
           border-radius: 9999px;
-          padding: 14px 20px;
+          padding: 16px 22px;
           color: white;
           font-size: 16px;
           font-weight: 600;
@@ -1834,31 +1908,22 @@ export default function Home() {
           white-space: nowrap;
         }
 
-        .logo-main {
-          width: 216px;
-          height: 54px;
-          object-fit: contain;
-          object-position: left center;
-          display: block;
-          flex-shrink: 0;
-        }
-
         .journey-compact {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
+          gap: 16px;
         }
 
         .journey-compact-card {
-          border-radius: 22px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border-radius: 26px;
+          border: 1px solid rgba(255, 255, 255, 0.08);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.045)
+            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.03)
           );
-          padding: 16px;
-          min-height: 190px;
+          padding: 20px;
+          min-height: 230px;
         }
 
         .journey-compact-top {
@@ -1872,17 +1937,17 @@ export default function Home() {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 36px;
-          height: 36px;
-          border-radius: 12px;
+          width: 40px;
+          height: 40px;
+          border-radius: 14px;
           background: #f7d237;
           color: #0b1d3a;
-          font-size: 16px;
+          font-size: 18px;
           font-weight: 700;
         }
 
         .journey-compact-arrow {
-          width: 48px;
+          width: 52px;
           height: 2px;
           border-radius: 999px;
           background: linear-gradient(
@@ -1906,17 +1971,17 @@ export default function Home() {
         }
 
         .journey-compact-title {
-          margin-top: 14px;
-          font-size: 20px;
-          line-height: 1.2;
+          margin-top: 16px;
+          font-size: 24px;
+          line-height: 1.15;
           font-weight: 600;
           color: white;
         }
 
         .journey-compact-text {
-          margin-top: 10px;
-          font-size: 14px;
-          line-height: 1.7;
+          margin-top: 12px;
+          font-size: 16px;
+          line-height: 1.75;
           color: rgba(255, 255, 255, 0.66);
         }
 
@@ -2034,21 +2099,16 @@ export default function Home() {
 
         .dashboard-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr 1fr;
-          gap: 10px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
         }
 
         .metric-card {
-          min-height: 124px;
+          min-height: 116px;
         }
 
         .metric-card-main {
           position: relative;
-          border-color: rgba(255, 255, 255, 0.14);
-          box-shadow:
-            0 14px 48px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 0 0 1px rgba(255, 255, 255, 0.02);
         }
 
         .metric-head,
@@ -2056,73 +2116,61 @@ export default function Home() {
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 12px;
+          gap: 10px;
         }
 
         .metric-title-wrap {
           min-width: 0;
           flex: 1;
-          padding-top: 2px;
         }
 
-        .metric-title {
-          font-size: 18px;
-          line-height: 1;
-          color: rgba(255, 255, 255, 0.62);
-          white-space: nowrap;
+        .metric-label,
+        .model-label {
+          font-size: 16px;
+          color: rgba(255, 255, 255, 0.58);
+          line-height: 1.2;
+          padding-top: 2px;
         }
 
         .metric-right-meta {
           display: flex;
           align-items: center;
-          justify-content: flex-end;
           gap: 12px;
           flex-shrink: 0;
-          min-width: 0;
         }
 
         .metric-flag {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 56px;
-          padding: 0 22px;
+          flex-shrink: 0;
           border-radius: 9999px;
-          font-size: 13px;
+          padding: 8px 12px;
+          font-size: 12px;
           font-weight: 700;
           letter-spacing: 0.01em;
           border: 1px solid transparent;
-          white-space: nowrap;
           line-height: 1;
         }
 
         .metric-delta-top,
         .model-delta-top {
-          font-size: 15px;
+          font-size: 18px;
           font-weight: 700;
           line-height: 1;
           white-space: nowrap;
-        }
-
-        .metric-delta-top {
-          min-width: 72px;
-          text-align: right;
-          font-size: 18px;
-          font-weight: 800;
+          padding-top: 2px;
         }
 
         .metric-main-value {
-          margin-top: 22px;
-          font-size: clamp(2.2rem, 3vw, 4.15rem);
-          line-height: 0.95;
+          margin-top: 20px;
+          font-size: clamp(2rem, 2.8vw, 3.2rem);
+          line-height: 1.02;
           font-weight: 700;
           white-space: nowrap;
-          letter-spacing: -0.04em;
+          letter-spacing: -0.03em;
         }
 
         .model-main-value {
           margin-top: 14px;
-          font-size: clamp(1.2rem, 1.55vw, 1.65rem);
+          font-size: clamp(1.2rem, 1.6vw, 1.8rem);
           line-height: 1.05;
           font-weight: 600;
           white-space: nowrap;
@@ -2148,12 +2196,12 @@ export default function Home() {
         }
 
         .model-card {
-          min-height: 92px;
+          min-height: 96px;
           padding: 14px;
         }
 
         .slider-card {
-          min-height: 136px;
+          min-height: 148px;
           display: flex;
           flex-direction: column;
           padding: 14px;
@@ -2219,29 +2267,43 @@ export default function Home() {
         .results-grid-2x2 {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 18px;
-          margin-top: 18px;
-          align-items: start;
+          gap: 22px;
+          margin-top: 24px;
+        }
+
+        .result-doc-card {
+          perspective: 1200px;
+          min-height: 320px;
         }
 
         .result-doc-card-grid {
+          position: relative;
+          border-radius: 30px;
+          transform-style: preserve-3d;
+        }
+
+        .result-doc-card-inner {
           min-height: 320px;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.11),
-            rgba(255, 255, 255, 0.05)
+            rgba(255, 255, 255, 0.1),
+            rgba(255, 255, 255, 0.045)
           );
-          padding: 24px;
+          padding: 26px;
           position: relative;
           overflow: hidden;
           box-shadow:
             0 20px 44px rgba(0, 0, 0, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          transition:
+            transform 0.35s ease,
+            box-shadow 0.35s ease,
+            border-color 0.35s ease;
         }
 
-        .result-doc-card-grid::after {
+        .result-doc-card-inner::after {
           content: "";
           position: absolute;
           width: 180px;
@@ -2250,12 +2312,21 @@ export default function Home() {
           top: 24px;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.24),
+            rgba(247, 210, 55, 0.2),
             transparent 70%
           );
           filter: blur(18px);
-          opacity: 0.9;
+          opacity: 0.85;
           pointer-events: none;
+        }
+
+        .result-doc-card:hover .result-doc-card-inner {
+          transform: rotateX(5deg) rotateY(-6deg) translateY(-8px);
+          box-shadow:
+            0 30px 70px rgba(0, 0, 0, 0.24),
+            0 0 0 1px rgba(247, 210, 55, 0.07),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+          border-color: rgba(247, 210, 55, 0.16);
         }
 
         .result-doc-tab {
@@ -2277,26 +2348,27 @@ export default function Home() {
         .result-doc-title {
           position: relative;
           z-index: 2;
-          margin-top: 22px;
-          font-size: 34px;
-          line-height: 1.08;
+          margin-top: 26px;
+          font-size: clamp(34px, 3vw, 56px);
+          line-height: 1.04;
           font-weight: 600;
           color: white;
+          letter-spacing: -0.04em;
         }
 
         .result-doc-text {
           position: relative;
           z-index: 2;
-          margin-top: 18px;
+          margin-top: 20px;
           font-size: 17px;
-          line-height: 1.8;
+          line-height: 1.9;
           color: rgba(255, 255, 255, 0.72);
         }
 
         .results-roadmap-note {
           margin-top: 18px;
-          font-size: 16px;
-          line-height: 1.85;
+          font-size: 18px;
+          line-height: 1.9;
           color: rgba(255, 255, 255, 0.72);
           max-width: 980px;
         }
@@ -2395,11 +2467,37 @@ export default function Home() {
           animation-delay: 0.4s;
         }
 
-        .stage-card-clean {
+        .stage-card-figure {
           display: flex;
           flex-direction: column;
-          gap: 22px;
+          gap: 24px;
+          border-radius: 30px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.08),
+            rgba(255, 255, 255, 0.045)
+          );
+          padding: 28px;
+          box-shadow:
+            0 18px 44px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
           min-height: 390px;
+          position: relative;
+          overflow: hidden;
+          transition:
+            transform 0.35s ease,
+            border-color 0.35s ease,
+            box-shadow 0.35s ease;
+        }
+
+        .stage-card-figure:hover {
+          transform: translateY(-4px);
+          border-color: rgba(247, 210, 55, 0.18);
+          box-shadow:
+            0 22px 50px rgba(0, 0, 0, 0.2),
+            0 0 0 1px rgba(247, 210, 55, 0.05),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
 
         .stage-top-strip {
@@ -2418,33 +2516,9 @@ export default function Home() {
             rgba(255, 255, 255, 0.07)
           );
           border: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.08),
-            0 18px 34px rgba(0, 0, 0, 0.12);
-        }
-
-        .stage-top-strip::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          border-radius: inherit;
-          background:
-            radial-gradient(
-              circle at 18% 50%,
-              rgba(247, 210, 55, 0.06),
-              transparent 24%
-            ),
-            radial-gradient(
-              circle at 82% 30%,
-              rgba(124, 132, 255, 0.1),
-              transparent 28%
-            );
-          pointer-events: none;
         }
 
         .stage-top-strip-icon {
-          position: relative;
-          z-index: 2;
           width: 72px;
           height: 72px;
           display: flex;
@@ -2457,13 +2531,9 @@ export default function Home() {
           width: 64px;
           height: 64px;
           object-fit: contain;
-          opacity: 0.96;
-          filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.14));
         }
 
         .stage-top-strip-label {
-          position: relative;
-          z-index: 2;
           display: flex;
           flex-direction: column;
           align-items: flex-end;
@@ -2521,47 +2591,29 @@ export default function Home() {
         .analysis-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
+          gap: 18px;
           align-items: start;
         }
 
-        .snapshot-structure-plain {
-          display: flex;
-          flex-direction: column;
-          min-height: 460px;
-          padding: 10px 4px 0 0;
+        .snapshot-structure-card {
+          min-height: 520px;
         }
 
-        .snapshot-structure-title {
-          margin: 0 0 22px;
-          font-size: 18px;
-          line-height: 1.2;
-          font-weight: 600;
-          color: white;
+        .snapshot-builder-copy {
+          margin-top: 12px;
+          max-width: 860px;
+          font-size: 16px;
+          line-height: 1.8;
+          color: rgba(255, 255, 255, 0.68);
         }
 
         .snapshot-builder {
+          margin-top: 26px;
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 220px;
-          gap: 18px;
-          min-height: 340px;
-          align-items: stretch;
-        }
-
-        .builder-left {
-          display: grid;
-          grid-template-rows: auto 1fr auto auto;
+          grid-template-columns: 1.12fr 0.88fr;
+          grid-template-rows: 120px 138px 120px;
           gap: 14px;
-          min-width: 0;
-        }
-
-        .builder-row {
-          display: grid;
-          gap: 14px;
-        }
-
-        .builder-row-top {
-          grid-template-columns: 1.1fr 0.9fr;
+          min-height: 392px;
         }
 
         .builder-block {
@@ -2575,57 +2627,197 @@ export default function Home() {
             rgba(255, 255, 255, 0.085),
             rgba(255, 255, 255, 0.045)
           );
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.04),
-            0 10px 26px rgba(0, 0, 0, 0.1);
           color: rgba(255, 255, 255, 0.92);
           text-align: center;
-          letter-spacing: -0.02em;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
-        .builder-block-product,
-        .builder-block-clients {
-          min-height: 78px;
-          font-size: 22px;
-          font-weight: 400;
+        .builder-block-1 {
+          grid-column: 1 / 2;
+          grid-row: 1 / 2;
+          font-size: 28px;
         }
 
-        .builder-block-economics {
-          min-height: 132px;
+        .builder-block-2 {
+          grid-column: 2 / 3;
+          grid-row: 1 / 2;
+          font-size: 28px;
+        }
+
+        .builder-block-3 {
+          grid-column: 1 / 2;
+          grid-row: 2 / 3;
           justify-content: flex-start;
-          padding-left: 36px;
-          font-size: clamp(48px, 5.2vw, 78px);
-          line-height: 0.95;
-          font-weight: 300;
+          padding-left: 34px;
+          font-size: clamp(54px, 5vw, 82px);
           letter-spacing: -0.05em;
+          font-weight: 300;
         }
 
-        .builder-block-positioning,
-        .builder-block-marketing {
-          min-height: 76px;
-          justify-content: flex-start;
-          padding-left: 30px;
-          font-size: 26px;
-          line-height: 1;
-          font-weight: 350;
-        }
-
-        .builder-right {
-          min-width: 0;
-        }
-
-        .builder-block-structure {
-          height: 100%;
-          min-height: 100%;
-          padding: 18px 12px;
+        .builder-block-4 {
+          grid-column: 2 / 3;
+          grid-row: 2 / 4;
           writing-mode: vertical-rl;
           text-orientation: mixed;
           transform: rotate(180deg);
-          font-size: clamp(36px, 4.6vw, 70px);
-          line-height: 0.9;
-          font-weight: 300;
+          font-size: clamp(38px, 4.2vw, 70px);
           letter-spacing: -0.05em;
-          gap: 10px;
+          font-weight: 300;
+          gap: 8px;
+        }
+
+        .builder-block-5 {
+          grid-column: 1 / 2;
+          grid-row: 3 / 4;
+          justify-content: flex-start;
+          padding-left: 28px;
+          font-size: 28px;
+        }
+
+        .builder-block-6 {
+          grid-column: 1 / 2;
+          grid-row: 4 / 5;
+          display: none;
+        }
+
+        .analysis-right-card {
+          min-height: 520px;
+        }
+
+        .analysis-right-title {
+          font-size: 22px;
+          line-height: 1.25;
+          font-weight: 700;
+          color: #ffffff;
+          margin: 0;
+        }
+
+        .analysis-right-copy {
+          margin-top: 16px;
+          font-size: 16px;
+          line-height: 1.9;
+          color: rgba(255, 255, 255, 0.7);
+          max-width: 680px;
+        }
+
+        .start-cards-row {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 16px;
+          margin-top: 24px;
+        }
+
+        .start-card {
+          position: relative;
+          overflow: hidden;
+          min-height: 178px;
+          border-radius: 28px;
+          padding: 22px;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.12),
+            rgba(255, 255, 255, 0.04)
+          );
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          box-shadow:
+            0 18px 40px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
+          transform-style: preserve-3d;
+          transition:
+            transform 0.35s ease,
+            box-shadow 0.35s ease,
+            border-color 0.35s ease;
+        }
+
+        .start-card:hover {
+          transform: rotateX(4deg) rotateY(-6deg) translateY(-6px);
+          box-shadow:
+            0 28px 60px rgba(0, 0, 0, 0.22),
+            0 0 0 1px rgba(247, 210, 55, 0.06);
+          border-color: rgba(247, 210, 55, 0.15);
+        }
+
+        .start-card-bg {
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(
+              circle at 18% 20%,
+              rgba(247, 210, 55, 0.14),
+              transparent 28%
+            ),
+            radial-gradient(
+              circle at 82% 74%,
+              rgba(124, 132, 255, 0.18),
+              transparent 34%
+            );
+          pointer-events: none;
+        }
+
+        .start-card-top,
+        .start-card-bottom {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 18px;
+        }
+
+        .start-card-icon {
+          width: 58px;
+          height: 58px;
+          object-fit: contain;
+          flex-shrink: 0;
+        }
+
+        .start-card-meta {
+          flex: 1;
+        }
+
+        .start-card-title {
+          font-size: 28px;
+          line-height: 1;
+          font-weight: 700;
+          color: #ffffff;
+        }
+
+        .start-card-subtitle {
+          margin-top: 10px;
+          font-size: 14px;
+          line-height: 1.65;
+          color: rgba(255, 255, 255, 0.7);
+        }
+
+        .start-card-price {
+          font-size: 34px;
+          line-height: 1;
+          font-weight: 700;
+          color: #f7d237;
+        }
+
+        .start-card-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 124px;
+          padding: 14px 18px;
+          border-radius: 999px;
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #7c84ff 55%,
+            #c25cf3 100%
+          );
+          color: #fff;
+          font-weight: 700;
+          font-size: 16px;
+          box-shadow:
+            0 10px 24px rgba(85, 104, 255, 0.24),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
 
         .cta-card {
@@ -2644,44 +2836,21 @@ export default function Home() {
           padding: 22px;
         }
 
-        .grid-overlay {
+        .line-grid {
           position: absolute;
           inset: 0;
-          background-image:
-            linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-            linear-gradient(
-              90deg,
-              rgba(255, 255, 255, 0.02) 1px,
-              transparent 1px
-            );
-          background-size: 72px 72px;
-          opacity: 0.16;
-          mask-image: radial-gradient(circle at center, black 35%, transparent 95%);
-        }
-
-        .noise-overlay-random {
-          position: absolute;
-          inset: 0;
+          background-image: linear-gradient(
+            rgba(255, 255, 255, 0.06) 1px,
+            transparent 1px
+          );
+          background-size: 100% 76px;
+          opacity: 0.28;
           pointer-events: none;
-          opacity: 0.3;
-          background-image:
-            radial-gradient(rgba(38, 54, 81, 0.8) 0.6px, transparent 0.6px),
-            radial-gradient(rgba(38, 54, 81, 0.62) 0.9px, transparent 0.9px),
-            radial-gradient(rgba(38, 54, 81, 0.45) 0.45px, transparent 0.45px);
-          background-size: 4px 4px, 7px 7px, 10px 10px;
-          background-position: 0 0, 2px 1px, 1px 3px;
-          mix-blend-mode: normal;
-        }
-
-        .noise-overlay-random-2 {
-          opacity: 0.18;
-          background-size: 5px 5px, 9px 9px, 12px 12px;
-          background-position: 1px 2px, 0 0, 3px 1px;
         }
 
         .aurora {
           position: absolute;
-          filter: blur(100px);
+          filter: blur(110px);
           opacity: 0.42;
           animation-timing-function: ease-in-out;
           animation-iteration-count: infinite;
@@ -2698,7 +2867,7 @@ export default function Home() {
           top: -12vh;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.12),
+            rgba(247, 210, 55, 0.16),
             transparent 68%
           );
           animation: driftOne 16s infinite alternate ease-in-out;
@@ -2728,46 +2897,25 @@ export default function Home() {
           bottom: -10vh;
           background: radial-gradient(
             circle,
-            rgba(120, 120, 255, 0.1),
+            rgba(120, 120, 255, 0.12),
             transparent 70%
           );
           animation: driftThree 18s infinite alternate ease-in-out;
         }
 
-        .beam {
-          position: absolute;
-          border-radius: 9999px;
-          filter: blur(70px);
-          opacity: 0.1;
-          transform: rotate(-18deg);
-        }
-
-        .beam-1 {
-          width: 520px;
-          height: 120px;
-          right: -60px;
-          top: 22%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(247, 210, 55, 0.18),
-            transparent
+        .aurora-4 {
+          width: 30vw;
+          height: 30vw;
+          min-width: 280px;
+          min-height: 280px;
+          left: 42%;
+          top: 12%;
+          background: radial-gradient(
+            circle,
+            rgba(247, 210, 55, 0.08),
+            transparent 66%
           );
-          animation: beamMove 10s infinite ease-in-out;
-        }
-
-        .beam-2 {
-          width: 420px;
-          height: 110px;
-          left: -80px;
-          bottom: 18%;
-          background: linear-gradient(
-            90deg,
-            transparent,
-            rgba(95, 179, 179, 0.14),
-            transparent
-          );
-          animation: beamMoveTwo 12s infinite ease-in-out;
+          animation: driftFour 20s infinite alternate ease-in-out;
         }
 
         .vignette {
@@ -2775,21 +2923,9 @@ export default function Home() {
           inset: 0;
           background: radial-gradient(
             ellipse at center,
-            transparent 45%,
-            rgba(0, 0, 0, 0.16) 100%
+            transparent 48%,
+            rgba(0, 0, 0, 0.18) 100%
           );
-        }
-
-        @keyframes unifiedGradientFlow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
         }
 
         @keyframes pulseTinyYellow {
@@ -2869,33 +3005,27 @@ export default function Home() {
           }
         }
 
-        @keyframes beamMove {
+        @keyframes driftFour {
           0% {
-            transform: translateX(0) rotate(-18deg);
-            opacity: 0.06;
-          }
-          50% {
-            transform: translateX(-120px) rotate(-18deg);
-            opacity: 0.14;
+            transform: translate3d(0, 0, 0) scale(1);
           }
           100% {
-            transform: translateX(0) rotate(-18deg);
-            opacity: 0.06;
+            transform: translate3d(-50px, 42px, 0) scale(1.1);
           }
         }
 
-        @keyframes beamMoveTwo {
-          0% {
-            transform: translateX(0) rotate(-18deg);
-            opacity: 0.05;
+        @media (max-width: 1280px) {
+          .hero-section {
+            min-height: 680px;
           }
-          50% {
-            transform: translateX(130px) rotate(-18deg);
-            opacity: 0.12;
+
+          .hero-main-title {
+            font-size: clamp(48px, 5.5vw, 78px);
           }
-          100% {
-            transform: translateX(0) rotate(-18deg);
-            opacity: 0.05;
+
+          .hero-main-copy,
+          .section-copy {
+            font-size: 20px;
           }
         }
 
@@ -2908,10 +3038,7 @@ export default function Home() {
             display: none;
           }
 
-          .analysis-grid {
-            grid-template-columns: 1fr;
-          }
-
+          .analysis-grid,
           .results-grid-2x2,
           .stage-grid {
             grid-template-columns: 1fr;
@@ -2919,52 +3046,61 @@ export default function Home() {
         }
 
         @media (max-width: 1023px) {
-          .hero-grid,
+          .hero-section {
+            min-height: auto;
+            padding: 26px 18px 24px;
+          }
+
+          .hero-grid-frame,
           .cta-card {
             grid-template-columns: 1fr;
+          }
+
+          .hero-chart-float {
+            width: 100%;
           }
 
           .hero-actions {
             padding-top: 24px;
           }
 
-          .hero-chart-metrics-row {
-            grid-template-columns: 1fr 1fr;
-          }
-
+          .hero-chart-metrics-row,
           .dashboard-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .analysis-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr 1fr;
           }
 
           .snapshot-builder {
             grid-template-columns: 1fr;
+            grid-template-rows: auto;
           }
 
-          .builder-right {
-            min-height: 180px;
+          .builder-block-1,
+          .builder-block-2,
+          .builder-block-3,
+          .builder-block-4,
+          .builder-block-5 {
+            grid-column: auto;
+            grid-row: auto;
           }
 
-          .builder-block-structure {
+          .builder-block-4 {
             writing-mode: horizontal-tb;
             text-orientation: initial;
             transform: none;
-            min-height: 180px;
-            flex-direction: column;
-            font-size: clamp(34px, 7vw, 54px);
+            min-height: 120px;
+            font-size: 42px;
           }
-        }
 
-        @media (max-width: 900px) {
-          .stage-card-clean {
-            min-height: auto;
+          .start-cards-row {
+            grid-template-columns: 1fr;
           }
         }
 
         @media (max-width: 767px) {
+          .cursor-glow {
+            display: none;
+          }
+
           .sticky-header {
             top: 0;
             margin: 0 -16px 18px;
@@ -3001,8 +3137,17 @@ export default function Home() {
             font-size: 12px;
           }
 
+          .hero-main-title {
+            font-size: 52px;
+          }
+
+          .hero-main-copy,
+          .section-copy {
+            font-size: 17px;
+          }
+
           .section-title {
-            font-size: 28px;
+            font-size: 34px;
           }
 
           .hero-highlights-row {
@@ -3011,14 +3156,28 @@ export default function Home() {
 
           .hero-highlight-chip {
             white-space: normal;
+            font-size: 18px;
           }
 
-          .hero-chart-metrics-row {
-            grid-template-columns: 1fr 1fr;
+          .hero-chart-metrics-row,
+          .input-grid,
+          .dashboard-grid {
+            grid-template-columns: 1fr;
           }
 
           .bar-chart-columns {
             gap: 6px;
+          }
+
+          .metric-head {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+
+          .metric-right-meta {
+            width: 100%;
+            justify-content: space-between;
           }
 
           .glass-card {
@@ -3030,57 +3189,12 @@ export default function Home() {
             font-size: 2.4rem;
           }
 
-          .result-doc-card-grid {
-            min-height: auto;
-            padding: 20px;
-          }
-
-          .result-doc-title {
-            font-size: 28px;
-          }
-
-          .result-doc-text {
-            font-size: 15px;
-            line-height: 1.7;
-          }
-
-          .input-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .metric-head {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
-          }
-
-          .metric-title {
-            font-size: 16px;
-          }
-
-          .metric-right-meta {
-            justify-content: space-between;
-            width: 100%;
-            gap: 8px;
-          }
-
-          .metric-flag {
-            min-height: 46px;
-            padding: 0 16px;
-            font-size: 12px;
-          }
-
           .metric-main-value {
             font-size: 1.85rem;
           }
 
           .model-main-value {
             font-size: 1.2rem;
-          }
-
-          .metric-delta-top,
-          .model-delta-top {
-            font-size: 13px;
           }
 
           .preview-actions-inline {
@@ -3093,42 +3207,6 @@ export default function Home() {
             min-height: 48px;
             padding: 0 16px;
             font-size: 15px;
-          }
-
-          .cursor-glow {
-            display: none;
-          }
-
-          .builder-row-top {
-            grid-template-columns: 1fr 1fr;
-          }
-
-          .builder-block-product,
-          .builder-block-clients {
-            min-height: 66px;
-            font-size: 18px;
-          }
-
-          .builder-block-economics {
-            min-height: 108px;
-            padding-left: 20px;
-            font-size: 48px;
-          }
-
-          .builder-block-positioning,
-          .builder-block-marketing {
-            min-height: 64px;
-            padding-left: 20px;
-            font-size: 20px;
-          }
-
-          .builder-right {
-            min-height: 132px;
-          }
-
-          .builder-block-structure {
-            min-height: 132px;
-            font-size: 34px;
           }
 
           .stage-top-strip {
@@ -3160,6 +3238,31 @@ export default function Home() {
 
           .stage-line-text {
             font-size: 16px;
+          }
+
+          .builder-block-3 {
+            min-height: 110px;
+            padding-left: 20px;
+            font-size: 46px;
+          }
+
+          .builder-block-1,
+          .builder-block-2,
+          .builder-block-5 {
+            min-height: 66px;
+            font-size: 20px;
+          }
+
+          .start-card {
+            min-height: 164px;
+          }
+
+          .start-card-title {
+            font-size: 24px;
+          }
+
+          .start-card-price {
+            font-size: 28px;
           }
         }
       `}</style>
