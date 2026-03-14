@@ -2853,7 +2853,6 @@ export default function Home() {
 
 .start-card {
   display: block;
-  text-decoration: none;
 }
 
 .start-card-inner {
