@@ -558,11 +558,12 @@ function StageCarousel() {
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(0);
+ const [activeIndex, setActiveIndex] = useState(0);
+const [dragOffset, setDragOffset] = useState(0);
 
-  const dragStartX = useRef<number | null>(null);
-  const dragCurrentX = useRef<number | null>(null);
-  const isDragging = useRef(false);
+const dragStartX = useRef<number | null>(null);
+const dragCurrentX = useRef<number | null>(null);
+const isDragging = useRef(false);
 
   const getOffset = (index: number) => {
     const total = items.length;
@@ -580,24 +581,26 @@ function StageCarousel() {
     setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
-  const finishDrag = () => {
-    if (dragStartX.current === null || dragCurrentX.current === null) {
-      dragStartX.current = null;
-      dragCurrentX.current = null;
-      isDragging.current = false;
-      return;
-    }
-
-    const diff = dragStartX.current - dragCurrentX.current;
-    const threshold = 40;
-
-    if (diff > threshold) next();
-    if (diff < -threshold) prev();
-
+ const finishDrag = () => {
+  if (dragStartX.current === null || dragCurrentX.current === null) {
     dragStartX.current = null;
     dragCurrentX.current = null;
     isDragging.current = false;
-  };
+    setDragOffset(0);
+    return;
+  }
+
+  const diff = dragStartX.current - dragCurrentX.current;
+  const threshold = 70;
+
+  if (diff > threshold) next();
+  else if (diff < -threshold) prev();
+
+  dragStartX.current = null;
+  dragCurrentX.current = null;
+  isDragging.current = false;
+  setDragOffset(0);
+};
 
   const activeIndustries = new Set(items[activeIndex].industries);
 
@@ -667,10 +670,11 @@ function StageCarousel() {
           dragStartX.current = e.clientX;
           dragCurrentX.current = e.clientX;
         }}
-        onMouseMove={(e) => {
-          if (!isDragging.current) return;
-          dragCurrentX.current = e.clientX;
-        }}
+      onMouseMove={(e) => {
+  if (!isDragging.current) return;
+  dragCurrentX.current = e.clientX;
+  setDragOffset(e.clientX - (dragStartX.current ?? e.clientX));
+}}
         onMouseUp={finishDrag}
         onMouseLeave={finishDrag}
         onTouchStart={(e) => {
@@ -678,9 +682,10 @@ function StageCarousel() {
           dragStartX.current = e.touches[0].clientX;
           dragCurrentX.current = e.touches[0].clientX;
         }}
-        onTouchMove={(e) => {
-          dragCurrentX.current = e.touches[0].clientX;
-        }}
+      onTouchMove={(e) => {
+  dragCurrentX.current = e.touches[0].clientX;
+  setDragOffset(e.touches[0].clientX - (dragStartX.current ?? e.touches[0].clientX));
+}}
         onTouchEnd={finishDrag}
       >
         <div className="stage-carousel-track">
@@ -692,17 +697,25 @@ function StageCarousel() {
             else if (offset === -1) positionClass = "stage-card-left";
             else if (offset === 1) positionClass = "stage-card-right";
             else if (offset === 2 || offset === -2) positionClass = "stage-card-back";
-
+let positionClass = "stage-card-hidden";
+        
             return (
-              <div
-                key={item.stage}
-                className={`stage-carousel-item ${positionClass}`}
-                onClick={() => {
-                  if (isDragging.current) return;
-                  if (offset === -1) prev();
-                  else if (offset === 1) next();
-                  else if (offset !== 0) setActiveIndex(index);
-                }}
+             <div
+  key={item.stage}
+  className={`stage-carousel-item ${positionClass}`}
+  style={{
+    transform:
+      positionClass === "stage-card-center"
+        ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
+        : positionClass === "stage-card-left"
+        ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
+        : positionClass === "stage-card-right"
+        ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
+        : positionClass === "stage-card-back"
+        ? `translateX(calc(-50% + ${dragShift * 0.6}px)) translateZ(-300px) scale(0.66)`
+        : `translateX(calc(-50% + ${dragShift * 0.4}px)) translateZ(-420px) scale(0.58)`,
+  }}
+  onClick={() => {
               >
                 <StageCard stage={item.stage} icon={item.icon} />
               </div>
@@ -711,6 +724,12 @@ function StageCarousel() {
         </div>
       </div>
 
+      <div className="stage-carousel-hint">
+  Потяните влево или вправо
+</div>
+      .stage-carousel-hint {
+  display: none;
+}
       <div className="stage-carousel-dots">
         {items.map((_, index) => (
           <button
@@ -1503,23 +1522,24 @@ export default function Home() {
             0 18px 50px rgba(0, 0, 0, 0.18);
         }
 
-        .glare-card::before,
-        .glare-card-lite::before {
-          content: "";
-          position: absolute;
-          width: 42%;
-          height: 42%;
-          border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.12) 0%,
-            rgba(255, 255, 255, 0.06) 32%,
-            transparent 74%
-          );
-          filter: blur(30px);
-          pointer-events: none;
-          z-index: 0;
-        }
+       .glare-card::before,
+.glare-card-lite::before {
+  content: "";
+  position: absolute;
+  width: 34%;
+  height: 34%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.11) 0%,
+    rgba(255, 255, 255, 0.05) 38%,
+    transparent 76%
+  );
+  filter: blur(34px);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+}
 
         .glare-card > *,
         .glare-card-lite > * {
@@ -1527,45 +1547,45 @@ export default function Home() {
           z-index: 1;
         }
 
-        .journey-compact-card:nth-child(1)::before,
-        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
-        .metric-card:nth-child(1)::before,
-        .model-card:nth-child(1)::before,
-        .slider-card:nth-child(1)::before,
-        .hero-chart-box::before,
-        .snapshot-structure-card::before,
-        .cta-card::before {
-          left: 6%;
-          top: 5%;
-        }
+       .journey-compact-card:nth-child(1)::before,
+.result-doc-card:nth-child(1) .result-doc-card-inner::before,
+.metric-card:nth-child(1)::before,
+.model-card:nth-child(1)::before,
+.slider-card:nth-child(1)::before,
+.hero-chart-box::before,
+.snapshot-structure-card::before,
+.cta-card::before {
+  left: 14%;
+  top: 10%;
+  
+}
 
-        .journey-compact-card:nth-child(2)::before,
-        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
-        .metric-card:nth-child(2)::before,
-        .model-card:nth-child(2)::before,
-        .slider-card:nth-child(2)::before {
-          right: 7%;
-          top: 12%;
-        }
+.journey-compact-card:nth-child(2)::before,
+.result-doc-card:nth-child(2) .result-doc-card-inner::before,
+.metric-card:nth-child(2)::before,
+.model-card:nth-child(2)::before,
+.slider-card:nth-child(2)::before {
+  left: 58%;
+  top: 16%;
+}
 
-        .journey-compact-card:nth-child(3)::before,
-        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
-        .metric-card:nth-child(3)::before,
-        .model-card:nth-child(3)::before,
-        .slider-card:nth-child(3)::before {
-          right: 10%;
-          bottom: 12%;
-        }
+.journey-compact-card:nth-child(3)::before,
+.result-doc-card:nth-child(3) .result-doc-card-inner::before,
+.metric-card:nth-child(3)::before,
+.model-card:nth-child(3)::before,
+.slider-card:nth-child(3)::before {
+  left: 66%;
+  top: 42%;
+}
 
-        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
-        .slider-card:nth-child(4)::before,
-        .hero-preview-box::before,
-        .side-note-card::before,
-        .cta-box::before {
-          left: 10%;
-          bottom: 10%;
-        }
-
+.result-doc-card:nth-child(4) .result-doc-card-inner::before,
+.slider-card:nth-child(4)::before,
+.hero-preview-box::before,
+.side-note-card::before,
+.cta-box::before {
+  left: 22%;
+  top: 52%;
+}
         .sticky-header {
           position: sticky;
           top: 0;
@@ -1779,37 +1799,89 @@ export default function Home() {
           margin-bottom: 12px;
         }
 
-        .hero-tag {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: auto;
-          min-width: fit-content;
-          min-height: 48px;
-          padding: 10px 20px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.09);
-          background: rgba(24, 35, 64, 0.92);
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 14px;
-          font-weight: 700;
-          line-height: 1;
-          text-align: center;
-          white-space: nowrap;
-          transition: 0.25s ease;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.1),
-            0 10px 24px rgba(0, 0, 0, 0.18);
-        }
+.hero-tag {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: fit-content;
+  min-height: 48px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
 
-        .hero-tag-active {
-          color: #0b1d3a;
-          background: #f7d237;
-          border-color: rgba(247, 210, 55, 0.55);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.18),
-            0 12px 28px rgba(247, 210, 55, 0.2);
-        }
+  background: linear-gradient(
+    135deg,
+    rgba(224, 225, 227, 0.1) 0%,
+    rgba(224, 225, 227, 0.065) 48%,
+    rgba(224, 225, 227, 0.05) 100%
+  );
+
+  backdrop-filter: blur(24px) saturate(145%);
+  -webkit-backdrop-filter: blur(24px) saturate(145%);
+
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.18);
+
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  transition: 0.25s ease;
+}
+.hero-tag::before {
+  content: "";
+  position: absolute;
+  width: 34%;
+  height: 60%;
+  left: 12%;
+  top: 10%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.04) 38%,
+    transparent 76%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+}
+.hero-tag-active {
+  color: #0b1d3a;
+  background: linear-gradient(
+    135deg,
+    rgba(247, 210, 55, 0.96) 0%,
+    rgba(247, 210, 55, 0.9) 100%
+  );
+  border-color: rgba(247, 210, 55, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(247, 210, 55, 0.18),
+    0 12px 28px rgba(247, 210, 55, 0.2);
+}
+.hero-tag-active::before {
+  content: "";
+  position: absolute;
+  width: 34%;
+  height: 60%;
+  left: 12%;
+  top: 10%;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.18) 0%,
+    rgba(255, 255, 255, 0.07) 38%,
+    transparent 76%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+}
 
         .hero-chart-box {
           position: relative;
@@ -2247,6 +2319,7 @@ export default function Home() {
         }
 
         .journey-compact-card {
+        isolation: isolate;
           position: relative;
           overflow: hidden;
           border-radius: 26px;
@@ -2622,6 +2695,7 @@ export default function Home() {
         }
 
         .result-doc-card-inner {
+        isolation: isolate;
           position: relative;
           min-height: 320px;
           border-radius: 30px;
@@ -2857,6 +2931,16 @@ export default function Home() {
           justify-content: center;
           gap: 10px;
         }
+
+.stage-carousel-hint {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+}
 
         .stage-carousel-dot {
           width: 10px;
@@ -3490,7 +3574,9 @@ export default function Home() {
           .cursor-glow {
             display: none;
           }
-
+ .stage-carousel-hint {
+  display: block;
+} 
           .sticky-header {
             top: 0;
             margin: 0 -16px 18px;
