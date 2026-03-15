@@ -654,6 +654,8 @@ function StageCarousel() {
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+  const touchCurrentX = useRef<number | null>(null);
 
   const getOffset = (index: number) => {
     const total = items.length;
@@ -671,6 +673,35 @@ function StageCarousel() {
 
   const prev = () => {
     setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchCurrentX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    touchCurrentX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStartX.current === null || touchCurrentX.current === null) {
+      touchStartX.current = null;
+      touchCurrentX.current = null;
+      return;
+    }
+
+    const diff = touchStartX.current - touchCurrentX.current;
+    const threshold = 50;
+
+    if (diff > threshold) {
+      next();
+    } else if (diff < -threshold) {
+      prev();
+    }
+
+    touchStartX.current = null;
+    touchCurrentX.current = null;
   };
 
   const activeIndustries = new Set(items[activeIndex].industries);
@@ -734,16 +765,12 @@ function StageCarousel() {
         </span>
       </div>
 
-      <div className="stage-carousel-scene">
-        <button
-          type="button"
-          className="stage-carousel-nav stage-carousel-nav-left"
-          onClick={prev}
-          aria-label="Предыдущая карточка"
-        >
-          ‹
-        </button>
-
+      <div
+        className="stage-carousel-scene"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
         <div className="stage-carousel-track">
           {items.map((item, index) => {
             const offset = getOffset(index);
@@ -760,7 +787,11 @@ function StageCarousel() {
               <div
                 key={item.stage}
                 className={`stage-carousel-item ${positionClass}`}
-                onClick={() => setActiveIndex(index)}
+                onClick={() => {
+                  if (offset === -1) prev();
+                  else if (offset === 1) next();
+                  else if (offset !== 0) setActiveIndex(index);
+                }}
               >
                 <StageCard
                   stage={item.stage}
@@ -775,15 +806,6 @@ function StageCarousel() {
             );
           })}
         </div>
-
-        <button
-          type="button"
-          className="stage-carousel-nav stage-carousel-nav-right"
-          onClick={next}
-          aria-label="Следующая карточка"
-        >
-          ›
-        </button>
       </div>
 
       <div className="stage-carousel-dots">
@@ -2728,34 +2750,9 @@ export default function Home() {
             0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-        .stage-carousel-scene {
-          position: relative;
-          perspective: 1800px;
-          min-height: 620px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
+   
 
-        .stage-carousel-track {
-          position: relative;
-          width: 100%;
-          height: 620px;
-          transform-style: preserve-3d;
-        }
 
-        .stage-carousel-item {
-          position: absolute;
-          top: 0;
-          left: 50%;
-          width: min(760px, 72vw);
-          transform-style: preserve-3d;
-          transition:
-            transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-            opacity 0.45s ease,
-            filter 0.45s ease;
-          cursor: pointer;
-        }
 
         .stage-card-center {
           transform: translateX(-50%) translateZ(0) scale(1);
@@ -2795,38 +2792,6 @@ export default function Home() {
           pointer-events: none;
         }
 
-        .stage-carousel-nav {
-          position: absolute;
-          top: 50%;
-          transform: translateY(-50%);
-          z-index: 8;
-          width: 48px;
-          height: 48px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.06);
-          color: #ffffff;
-          font-size: 28px;
-          line-height: 1;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          backdrop-filter: blur(10px);
-          transition: 0.2s ease;
-        }
-
-        .stage-carousel-nav:hover:not(:disabled) {
-          background: rgba(255, 255, 255, 0.1);
-          transform: translateY(-50%) scale(1.04);
-        }
-
-        .stage-carousel-nav-left {
-          left: -8px;
-        }
-
-        .stage-carousel-nav-right {
-          right: -8px;
-        }
 
         .stage-carousel-dots {
           margin-top: 18px;
@@ -3679,14 +3644,269 @@ export default function Home() {
             transform: translateX(-50%) translateZ(0) scale(1);
             opacity: 1;
           }
+.stage-carousel-wrap {
+  margin-top: 24px;
+}
 
-          .stage-carousel-nav-left {
-            left: 4px;
-          }
+.industries-pills-carousel {
+  justify-content: center;
+  margin-bottom: 22px;
+}
 
-          .stage-carousel-nav-right {
-            right: 4px;
-          }
+.stage-carousel-scene {
+  position: relative;
+  perspective: 1800px;
+  min-height: 620px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.stage-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 620px;
+  transform-style: preserve-3d;
+}
+
+.stage-carousel-item {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: min(760px, 72vw);
+  transform-style: preserve-3d;
+  transition:
+    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease,
+    filter 0.45s ease;
+  cursor: pointer;
+}
+
+.stage-card-center {
+  transform: translateX(-50%) translateZ(0) scale(1);
+  opacity: 1;
+  z-index: 5;
+  filter: blur(0);
+}
+
+.stage-card-left {
+  transform: translateX(calc(-50% - 340px)) translateZ(-220px)
+    rotateY(24deg) scale(0.88);
+  opacity: 0.58;
+  z-index: 3;
+  filter: blur(0.3px);
+}
+
+.stage-card-right {
+  transform: translateX(calc(-50% + 340px)) translateZ(-220px)
+    rotateY(-24deg) scale(0.88);
+  opacity: 0.58;
+  z-index: 3;
+  filter: blur(0.3px);
+}
+
+.stage-card-back {
+  transform: translateX(-50%) translateZ(-420px) scale(0.74);
+  opacity: 0.18;
+  z-index: 1;
+  filter: blur(1.2px);
+  pointer-events: none;
+}
+
+.stage-card-hidden {
+  transform: translateX(-50%) translateZ(-520px) scale(0.68);
+  opacity: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.stage-carousel-dots {
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.stage-carousel-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  transition: 0.2s ease;
+}
+
+.stage-carousel-dot-active {
+  background: #f7d237;
+  box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
+}
+
+.stage-card-split {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  min-height: 600px;
+  border-radius: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.07),
+    rgba(255, 255, 255, 0.03)
+  );
+  box-shadow:
+    0 20px 52px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.stage-card-top-glass {
+  min-height: 122px;
+  border-radius: 28px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.16),
+    rgba(255, 255, 255, 0.08)
+  );
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stage-card-top-icon {
+  width: 74px;
+  height: 74px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stage-strip-icon {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+}
+
+.stage-card-top-title {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.stage-card-top-title span {
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(255, 255, 255, 0.84);
+}
+
+.stage-card-top-title strong {
+  margin-top: 8px;
+  font-size: clamp(44px, 5vw, 78px);
+  line-height: 0.9;
+  font-weight: 600;
+  letter-spacing: -0.05em;
+  color: #ffffff;
+}
+
+.stage-card-bottom-solid {
+  margin-top: 16px;
+  flex: 1;
+  border-radius: 28px;
+  padding: 26px 28px 28px;
+  background: linear-gradient(
+    180deg,
+    rgba(7, 16, 43, 0.98) 0%,
+    rgba(10, 24, 61, 0.98) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.stage-summary-list {
+  display: grid;
+  gap: 18px;
+}
+
+.stage-summary-item {
+  display: grid;
+  gap: 6px;
+}
+
+.stage-summary-label {
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.stage-summary-text {
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.stage-metrics-box {
+  border-radius: 22px;
+  padding: 18px 18px 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(250, 219, 245, 0.92) 0%,
+    rgba(206, 180, 245, 0.9) 46%,
+    rgba(126, 111, 216, 0.92) 76%,
+    rgba(106, 198, 255, 0.92) 100%
+  );
+  color: #07102b;
+}
+
+.stage-metrics-title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 14px;
+}
+
+.stage-metrics-table {
+  display: grid;
+  gap: 10px;
+}
+
+.stage-metrics-head,
+.stage-metrics-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(70px, 0.65fr) minmax(70px, 0.65fr);
+  column-gap: 14px;
+  align-items: start;
+}
+
+.stage-metrics-head {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.stage-metrics-cell {
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.stage-metrics-label {
+  font-weight: 500;
+}
 
           .stage-card-top-glass {
             min-height: 92px;
