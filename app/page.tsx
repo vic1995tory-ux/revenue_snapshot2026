@@ -100,7 +100,7 @@ function TopMetricCard({
   invert?: boolean;
 }) {
   return (
-    <div className="glass-card soft-glow metric-card metric-card-main">
+    <div className="glass-card soft-glow glare-card metric-card metric-card-main">
       <div className="metric-head">
         <div className="metric-title-wrap">
           <div className="metric-label">{title}</div>
@@ -131,7 +131,7 @@ function ModelCard({
   invert?: boolean;
 }) {
   return (
-    <div className="glass-card soft-glow model-card">
+    <div className="glass-card soft-glow glare-card model-card">
       <div className="model-head">
         <div className="model-label">{title}</div>
         <div className={`model-delta-top ${color(delta, invert)}`}>
@@ -177,7 +177,7 @@ function Slider({
   const [started, setStarted] = useState(false);
 
   return (
-    <div className="glass-card soft-glow slider-card">
+    <div className="glass-card soft-glow glare-card slider-card">
       <div>
         <div className="text-sm font-medium leading-snug">{title}</div>
         <div className="mt-2 min-h-[36px] text-xs leading-snug text-white/42">
@@ -340,30 +340,30 @@ function HeroEconomyChart() {
           ))}
         </div>
 
-        <div className="hero-chart-box">
+        <div className="hero-chart-box glare-card">
           <div className="hero-chart-metrics-row">
-            <div className="hero-metric-square">
+            <div className="hero-metric-square glare-card-lite">
               <span>Лидов / мес</span>
               <strong>{active.leads}</strong>
             </div>
 
-            <div className="hero-metric-square">
+            <div className="hero-metric-square glare-card-lite">
               <span>Сделок / мес</span>
               <strong>{active.deals.toFixed(1)}</strong>
             </div>
 
-            <div className="hero-metric-square">
+            <div className="hero-metric-square glare-card-lite">
               <span>AOV</span>
               <strong>{fmtMoney(active.aov)}</strong>
             </div>
 
-            <div className="hero-metric-square">
+            <div className="hero-metric-square glare-card-lite">
               <span>Маржа</span>
               <strong>{active.margin}%</strong>
             </div>
           </div>
 
-          <div className="bar-chart-wrap">
+          <div className="bar-chart-wrap glare-card-lite">
             <div className="bar-chart-scale">
               <span>$0</span>
               <span>$5 000</span>
@@ -385,7 +385,7 @@ function HeroEconomyChart() {
                       <div className="bar-chart-value">{fmtMoney(bar.value)}</div>
                     </div>
 
-                    <div className="bar-chart-bar-shell bar-chart-bar-shell-horizontal">
+                    <div className="bar-chart-bar-shell-horizontal">
                       <div
                         className={`bar-chart-bar bar-chart-bar-horizontal ${
                           bar.good ? "bar-good" : "bar-bad"
@@ -413,7 +413,7 @@ function HeroEconomyChart() {
             </div>
           </div>
 
-          <div className="hero-active-note">
+          <div className="hero-active-note glare-card-lite">
             <span className="hero-active-note-dot" />
             <span>
               Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
@@ -427,7 +427,7 @@ function HeroEconomyChart() {
 
 function SnapshotStructure() {
   return (
-    <div className="glass-card snapshot-structure-card">
+    <div className="glass-card glare-card snapshot-structure-card">
       <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
 
       <p className="snapshot-builder-copy">
@@ -459,7 +459,7 @@ function ResultDocCard({
 }) {
   return (
     <div className="result-doc-card tilt-card">
-      <div className="result-doc-card-inner tilt-inner">
+      <div className="result-doc-card-inner tilt-inner glare-card">
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
           {cta ? <div className="result-doc-cta">{cta}</div> : null}
@@ -505,26 +505,12 @@ function StartCard({
 function StageCard({
   stage,
   icon,
-  request,
-  goal,
-  path,
-  result,
-  metrics,
 }: {
   stage: string;
   icon: string;
-  request: string;
-  goal: string;
-  path: string;
-  result: string;
-  metrics: Array<{
-    label: string;
-    plan: string;
-    fact: string;
-  }>;
 }) {
   return (
-    <div className="stage-card-split">
+    <div className="stage-card-split glare-card">
       <div className="stage-card-top-glass">
         <div className="stage-card-top-icon">
           <img src={icon} alt={stage} className="stage-strip-icon" />
@@ -536,100 +522,26 @@ function StageCard({
         </div>
       </div>
 
-      <div className="stage-card-bottom-solid">
-        <div className="stage-summary-list">
-          <div className="stage-summary-item">
-            <div className="stage-summary-label">Growth Context</div>
-            <div className="stage-summary-text">{request}</div>
-          </div>
-
-          <div className="stage-summary-item">
-            <div className="stage-summary-label">Strategic Limitation</div>
-            <div className="stage-summary-text">{goal}</div>
-          </div>
-
-          <div className="stage-summary-item">
-            <div className="stage-summary-label">Economic Objective</div>
-            <div className="stage-summary-text">{path}</div>
-          </div>
-
-          <div className="stage-summary-item">
-            <div className="stage-summary-label">Key Intervention</div>
-            <div className="stage-summary-text">{result}</div>
-          </div>
-
-          <div className="stage-summary-item">
-            <div className="stage-summary-label">Business Impact</div>
-            <div className="stage-summary-text">
-              Рост числа пилотов и формирование базы кейсов для масштабирования.
-            </div>
-          </div>
-        </div>
-
-        <div className="stage-metrics-box">
-          <div className="stage-metrics-title">План / факт (метрики)</div>
-
-          <div className="stage-metrics-table">
-            <div className="stage-metrics-head">Показатель</div>
-            <div className="stage-metrics-head">План</div>
-            <div className="stage-metrics-head">Факт</div>
-
-            {metrics.map((item) => (
-              <div key={`${stage}-${item.label}`} className="stage-metrics-row">
-                <div className="stage-metrics-cell stage-metrics-label">
-                  {item.label}
-                </div>
-                <div className="stage-metrics-cell">{item.plan}</div>
-                <div className="stage-metrics-cell">{item.fact}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <div className="stage-card-empty" />
     </div>
   );
 }
 
 function StageCarousel() {
-  const seedMetrics = [
-    { label: "Контакты клиник", plan: "40", fact: "25" },
-    { label: "Назначенные встречи", plan: "15", fact: "6" },
-    { label: "Запущенные пилоты", plan: "5", fact: "2" },
-    { label: "Переход пилот → контракт", plan: "40%", fact: "~30%" },
-    { label: "Средний цикл сделки", plan: "3 месяца", fact: "5–6 месяцев" },
-  ];
-
   const items = [
     {
       stage: "Seed",
       icon: "/seed.svg",
-      request: "Первые пилоты в клиниках подтверждают ценность продукта.",
-      goal: "Длинный цикл согласований и отсутствие системного канала продаж.",
-      path: "Подтвердить платёжеспособный спрос и сократить цикл сделки.",
-      result:
-        "Запуск стандартизированного пилотного предложения для одного сегмента клиник.",
       industries: ["industry-saas", "industry-healthtech"],
-      metrics: seedMetrics,
     },
     {
       stage: "Startup",
       icon: "/startup.svg",
-      request: "Первые пилоты в клиниках подтверждают ценность продукта.",
-      goal: "Длинный цикл согласований и отсутствие системного канала продаж.",
-      path: "Подтвердить платёжеспособный спрос и сократить цикл сделки.",
-      result:
-        "Запуск стандартизированного пилотного предложения для одного сегмента клиник.",
       industries: ["industry-fintech", "industry-ecom"],
-      metrics: seedMetrics,
     },
     {
       stage: "Growth",
       icon: "/growth.svg",
-      request: "Первые пилоты в клиниках подтверждают ценность продукта.",
-      goal: "Длинный цикл согласований и отсутствие системного канала продаж.",
-      path: "Подтвердить платёжеспособный спрос и сократить цикл сделки.",
-      result:
-        "Запуск стандартизированного пилотного предложения для одного сегмента клиник.",
       industries: [
         "industry-saas",
         "industry-ecom",
@@ -638,32 +550,25 @@ function StageCarousel() {
         "industry-healthtech",
         "industry-b2b",
       ],
-      metrics: seedMetrics,
     },
     {
       stage: "Expansion",
       icon: "/expansion.svg",
-      request: "Первые пилоты в клиниках подтверждают ценность продукта.",
-      goal: "Длинный цикл согласований и отсутствие системного канала продаж.",
-      path: "Подтвердить платёжеспособный спрос и сократить цикл сделки.",
-      result:
-        "Запуск стандартизированного пилотного предложения для одного сегмента клиник.",
       industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
-      metrics: seedMetrics,
     },
   ];
 
   const [activeIndex, setActiveIndex] = useState(0);
-  const touchStartX = useRef<number | null>(null);
-  const touchCurrentX = useRef<number | null>(null);
+
+  const dragStartX = useRef<number | null>(null);
+  const dragCurrentX = useRef<number | null>(null);
+  const isDragging = useRef(false);
 
   const getOffset = (index: number) => {
     const total = items.length;
     let diff = index - activeIndex;
-
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
-
     return diff;
   };
 
@@ -675,33 +580,23 @@ function StageCarousel() {
     setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
-  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchCurrentX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
-    touchCurrentX.current = e.touches[0].clientX;
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStartX.current === null || touchCurrentX.current === null) {
-      touchStartX.current = null;
-      touchCurrentX.current = null;
+  const finishDrag = () => {
+    if (dragStartX.current === null || dragCurrentX.current === null) {
+      dragStartX.current = null;
+      dragCurrentX.current = null;
+      isDragging.current = false;
       return;
     }
 
-    const diff = touchStartX.current - touchCurrentX.current;
-    const threshold = 50;
+    const diff = dragStartX.current - dragCurrentX.current;
+    const threshold = 40;
 
-    if (diff > threshold) {
-      next();
-    } else if (diff < -threshold) {
-      prev();
-    }
+    if (diff > threshold) next();
+    if (diff < -threshold) prev();
 
-    touchStartX.current = null;
-    touchCurrentX.current = null;
+    dragStartX.current = null;
+    dragCurrentX.current = null;
+    isDragging.current = false;
   };
 
   const activeIndustries = new Set(items[activeIndex].industries);
@@ -710,7 +605,7 @@ function StageCarousel() {
     <div className="stage-carousel-wrap">
       <div className="industries-pills industries-pills-carousel">
         <span
-          className={`industry-pill industry-saas ${
+          className={`industry-pill ${
             activeIndustries.has("industry-saas")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -719,7 +614,7 @@ function StageCarousel() {
           SaaS
         </span>
         <span
-          className={`industry-pill industry-ecom ${
+          className={`industry-pill ${
             activeIndustries.has("industry-ecom")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -728,7 +623,7 @@ function StageCarousel() {
           E-com
         </span>
         <span
-          className={`industry-pill industry-fintech ${
+          className={`industry-pill ${
             activeIndustries.has("industry-fintech")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -737,7 +632,7 @@ function StageCarousel() {
           FinTech
         </span>
         <span
-          className={`industry-pill industry-edtech ${
+          className={`industry-pill ${
             activeIndustries.has("industry-edtech")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -746,7 +641,7 @@ function StageCarousel() {
           EdTech
         </span>
         <span
-          className={`industry-pill industry-healthtech ${
+          className={`industry-pill ${
             activeIndustries.has("industry-healthtech")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -755,7 +650,7 @@ function StageCarousel() {
           HealthTech
         </span>
         <span
-          className={`industry-pill industry-b2b ${
+          className={`industry-pill ${
             activeIndustries.has("industry-b2b")
               ? "industry-pill-active"
               : "industry-pill-dim"
@@ -767,9 +662,26 @@ function StageCarousel() {
 
       <div
         className="stage-carousel-scene"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+        onMouseDown={(e) => {
+          isDragging.current = true;
+          dragStartX.current = e.clientX;
+          dragCurrentX.current = e.clientX;
+        }}
+        onMouseMove={(e) => {
+          if (!isDragging.current) return;
+          dragCurrentX.current = e.clientX;
+        }}
+        onMouseUp={finishDrag}
+        onMouseLeave={finishDrag}
+        onTouchStart={(e) => {
+          isDragging.current = true;
+          dragStartX.current = e.touches[0].clientX;
+          dragCurrentX.current = e.touches[0].clientX;
+        }}
+        onTouchMove={(e) => {
+          dragCurrentX.current = e.touches[0].clientX;
+        }}
+        onTouchEnd={finishDrag}
       >
         <div className="stage-carousel-track">
           {items.map((item, index) => {
@@ -779,29 +691,20 @@ function StageCarousel() {
             if (offset === 0) positionClass = "stage-card-center";
             else if (offset === -1) positionClass = "stage-card-left";
             else if (offset === 1) positionClass = "stage-card-right";
-            else if (offset === 2 || offset === -2) {
-              positionClass = "stage-card-back";
-            }
+            else if (offset === 2 || offset === -2) positionClass = "stage-card-back";
 
             return (
               <div
                 key={item.stage}
                 className={`stage-carousel-item ${positionClass}`}
                 onClick={() => {
+                  if (isDragging.current) return;
                   if (offset === -1) prev();
                   else if (offset === 1) next();
                   else if (offset !== 0) setActiveIndex(index);
                 }}
               >
-                <StageCard
-                  stage={item.stage}
-                  icon={item.icon}
-                  request={item.request}
-                  goal={item.goal}
-                  path={item.path}
-                  result={item.result}
-                  metrics={item.metrics}
-                />
+                <StageCard stage={item.stage} icon={item.icon} />
               </div>
             );
           })}
@@ -890,10 +793,10 @@ export default function Home() {
         const px = x / rect.width;
         const py = y / rect.height;
 
-        const rotateY = (px - 0.5) * 12;
-        const rotateX = (0.5 - py) * 12;
+        const rotateY = (px - 0.5) * 9;
+        const rotateX = (0.5 - py) * 9;
 
-        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.01)`;
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
       };
 
       const handleLeave = () => {
@@ -1045,7 +948,7 @@ export default function Home() {
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#050f28] text-[#fefefe]">
+    <main className="relative min-h-screen overflow-hidden bg-[#041027] text-[#fefefe]">
       <div
         className="cursor-glow"
         style={{
@@ -1120,7 +1023,7 @@ export default function Home() {
                 денег.
               </p>
 
-              <div className="hero-highlights-row hero-highlights-row-unified">
+              <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
                 <div className="hero-highlight-chip">MVP</div>
                 <div className="hero-highlight-chip">CashCow</div>
                 <div className="hero-highlight-chip">Scaling</div>
@@ -1132,9 +1035,9 @@ export default function Home() {
                 </a>
                 <a
                   href="#preview"
-                  className="ghost-link ghost-link-large inline-flex"
+                  className="ghost-link ghost-link-large ghost-link-dark inline-flex"
                 >
-                  Посмотреть превью
+                  Побаловаться
                 </a>
               </div>
             </div>
@@ -1156,7 +1059,7 @@ export default function Home() {
           </div>
 
           <div className="journey-compact">
-            <div className="journey-compact-card">
+            <div className="journey-compact-card glare-card">
               <div className="journey-compact-top">
                 <div className="journey-compact-badge">1</div>
                 <div className="journey-compact-arrow" />
@@ -1171,7 +1074,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="journey-compact-card">
+            <div className="journey-compact-card glare-card">
               <div className="journey-compact-top">
                 <div className="journey-compact-badge">2</div>
                 <div className="journey-compact-arrow" />
@@ -1186,7 +1089,7 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="journey-compact-card">
+            <div className="journey-compact-card glare-card">
               <div className="journey-compact-top">
                 <div className="journey-compact-badge">3</div>
               </div>
@@ -1365,10 +1268,10 @@ export default function Home() {
               </div>
             </div>
 
-            <aside className="glass-card h-fit lg:sticky lg:top-24">
+            <aside className="glass-card glare-card h-fit lg:sticky lg:top-24">
               <div className="reserve-kicker">Оценочный резерв</div>
 
-              <div className="hero-preview-box mt-4">
+              <div className="hero-preview-box mt-4 glare-card-lite">
                 <div className="reserve-amount">
                   ≈ {fmtMoney(estimatedGap)} / мес
                 </div>
@@ -1378,7 +1281,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="mt-4 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+              <div className="side-note-card mt-4 glare-card-lite">
                 {hasInteraction ? (
                   <>
                     <div className="text-xs uppercase tracking-[0.14em] text-white/42">
@@ -1511,7 +1414,7 @@ export default function Home() {
         </section>
 
         <section id="try" className="pb-8">
-          <div className="glass-card cta-card">
+          <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
               <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
@@ -1524,7 +1427,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="cta-box">
+            <div className="cta-box glare-card-lite">
               <div className="text-sm text-white/55">Следующий шаг</div>
               <div className="mt-2 text-2xl font-semibold text-white">
                 Попробовать Snapshot
@@ -1546,7 +1449,7 @@ export default function Home() {
         }
 
         body {
-          background: #050f28;
+          background: #041027;
         }
 
         .cursor-glow {
@@ -1560,51 +1463,108 @@ export default function Home() {
           z-index: 1;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.12) 0%,
-            rgba(247, 210, 55, 0.07) 32%,
-            rgba(247, 210, 55, 0.02) 58%,
+            rgba(247, 210, 55, 0.11) 0%,
+            rgba(247, 210, 55, 0.06) 34%,
+            rgba(247, 210, 55, 0.015) 60%,
             transparent 78%
           );
           filter: blur(24px);
-          opacity: 0.45;
+          opacity: 0.4;
           mix-blend-mode: screen;
           transition: transform 0.08s linear;
         }
 
-.glass-card {
-  position: relative;
-  border-radius: 28px;
-  padding: 22px;
-  overflow: hidden;
+        .glass-card {
+          position: relative;
+          border-radius: 28px;
+          padding: 22px;
+          overflow: hidden;
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.11) 0%,
+            rgba(224, 225, 227, 0.075) 48%,
+            rgba(224, 225, 227, 0.06) 100%
+          );
+          backdrop-filter: blur(26px) saturate(145%);
+          -webkit-backdrop-filter: blur(26px) saturate(145%);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.22),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+            inset 8px 8px 24px rgba(255, 255, 255, 0.018),
+            inset -10px -10px 30px rgba(0, 0, 0, 0.05),
+            0 18px 50px rgba(0, 0, 0, 0.24);
+        }
 
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.14), transparent 22%),
-    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.08), transparent 24%),
-    linear-gradient(
-      135deg,
-      rgba(224, 225, 227, 0.16) 0%,
-      rgba(224, 225, 227, 0.11) 45%,
-      rgba(224, 225, 227, 0.09) 100%
-    );
+        .soft-glow {
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+            0 18px 50px rgba(0, 0, 0, 0.18);
+        }
 
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
+        .glare-card::before,
+        .glare-card-lite::before {
+          content: "";
+          position: absolute;
+          width: 42%;
+          height: 42%;
+          border-radius: 999px;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.12) 0%,
+            rgba(255, 255, 255, 0.06) 32%,
+            transparent 74%
+          );
+          filter: blur(30px);
+          pointer-events: none;
+          z-index: 0;
+        }
 
-  border: 1px solid rgba(255, 255, 255, 0.16);
+        .glare-card > *,
+        .glare-card-lite > * {
+          position: relative;
+          z-index: 1;
+        }
 
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    inset 8px 8px 24px rgba(255, 255, 255, 0.025),
-    inset -10px -10px 30px rgba(0, 0, 0, 0.05),
-    0 18px 50px rgba(0, 0, 0, 0.22);
-}
-.soft-glow {
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.24),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-    0 18px 50px rgba(0, 0, 0, 0.18);
-}
+        .journey-compact-card:nth-child(1)::before,
+        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
+        .metric-card:nth-child(1)::before,
+        .model-card:nth-child(1)::before,
+        .slider-card:nth-child(1)::before,
+        .hero-chart-box::before,
+        .snapshot-structure-card::before,
+        .cta-card::before {
+          left: 6%;
+          top: 5%;
+        }
+
+        .journey-compact-card:nth-child(2)::before,
+        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
+        .metric-card:nth-child(2)::before,
+        .model-card:nth-child(2)::before,
+        .slider-card:nth-child(2)::before {
+          right: 7%;
+          top: 12%;
+        }
+
+        .journey-compact-card:nth-child(3)::before,
+        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
+        .metric-card:nth-child(3)::before,
+        .model-card:nth-child(3)::before,
+        .slider-card:nth-child(3)::before {
+          right: 10%;
+          bottom: 12%;
+        }
+
+        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
+        .slider-card:nth-child(4)::before,
+        .hero-preview-box::before,
+        .side-note-card::before,
+        .cta-box::before {
+          left: 10%;
+          bottom: 10%;
+        }
 
         .sticky-header {
           position: sticky;
@@ -1615,8 +1575,8 @@ export default function Home() {
           backdrop-filter: blur(18px);
           background: linear-gradient(
             180deg,
-            rgba(5, 15, 40, 0.92),
-            rgba(5, 15, 40, 0.62)
+            rgba(4, 16, 39, 0.94),
+            rgba(4, 16, 39, 0.7)
           );
           border-bottom: 1px solid rgba(255, 255, 255, 0.05);
         }
@@ -1670,10 +1630,10 @@ export default function Home() {
           inset: 0;
           background: linear-gradient(
             90deg,
-            rgba(5, 15, 40, 0.18) 0%,
-            rgba(5, 15, 40, 0.07) 38%,
-            rgba(5, 15, 40, 0.02) 62%,
-            rgba(5, 15, 40, 0.04) 100%
+            rgba(4, 16, 39, 0.24) 0%,
+            rgba(4, 16, 39, 0.1) 38%,
+            rgba(4, 16, 39, 0.04) 62%,
+            rgba(4, 16, 39, 0.08) 100%
           );
           z-index: 1;
         }
@@ -1736,7 +1696,20 @@ export default function Home() {
           max-width: 760px;
         }
 
-.hero-highlights-row-unified
+        .hero-highlights-row-unified {
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.1) 0%,
+            rgba(224, 225, 227, 0.07) 50%,
+            rgba(224, 225, 227, 0.05) 100%
+          );
+          backdrop-filter: blur(24px) saturate(135%);
+          -webkit-backdrop-filter: blur(24px) saturate(135%);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            0 18px 40px rgba(0, 0, 0, 0.18);
+        }
 
         .hero-highlight-chip {
           padding: 20px 18px;
@@ -1795,8 +1768,8 @@ export default function Home() {
         }
 
         .hero-levers-inline {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
+          display: flex;
+          flex-wrap: wrap;
           gap: 8px;
           width: 100%;
           padding-bottom: 4px;
@@ -1807,61 +1780,58 @@ export default function Home() {
         }
 
         .hero-tag {
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 100%;
-          min-width: 0;
+          width: auto;
+          min-width: fit-content;
           min-height: 48px;
-          padding: 10px 12px;
+          padding: 10px 20px;
           border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(34, 47, 74, 0.82);
-          color: rgba(255, 255, 255, 0.68);
-          font-size: 12px;
+          border: 1px solid rgba(255, 255, 255, 0.09);
+          background: rgba(24, 35, 64, 0.92);
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 14px;
           font-weight: 700;
           line-height: 1;
           text-align: center;
           white-space: nowrap;
-          overflow: hidden;
           transition: 0.25s ease;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.1),
+            0 10px 24px rgba(0, 0, 0, 0.18);
         }
 
         .hero-tag-active {
           color: #0b1d3a;
           background: #f7d237;
           border-color: rgba(247, 210, 55, 0.55);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.18),
+            0 12px 28px rgba(247, 210, 55, 0.2);
         }
 
-.hero-chart-box {
-  position: relative;
-  overflow: hidden;
-  border-radius: 28px;
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.14), transparent 22%),
-    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.08), transparent 24%),
-    linear-gradient(
-      135deg,
-      rgba(224, 225, 227, 0.16) 0%,
-      rgba(224, 225, 227, 0.11) 45%,
-      rgba(224, 225, 227, 0.09) 100%
-    );
-
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.28),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
-    inset 8px 8px 24px rgba(255, 255, 255, 0.025),
-    inset -10px -10px 30px rgba(0, 0, 0, 0.05),
-    0 18px 50px rgba(0, 0, 0, 0.22);
-}
+        .hero-chart-box {
+          position: relative;
+          overflow: hidden;
+          border-radius: 28px;
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.09) 0%,
+            rgba(224, 225, 227, 0.06) 45%,
+            rgba(224, 225, 227, 0.04) 100%
+          );
+          backdrop-filter: blur(26px) saturate(145%);
+          -webkit-backdrop-filter: blur(26px) saturate(145%);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+            0 18px 50px rgba(0, 0, 0, 0.24);
+        }
 
         .hero-chart-metrics-row {
           display: grid;
@@ -1870,12 +1840,29 @@ export default function Home() {
           margin-bottom: 12px;
         }
 
-hero-metric-square
+        .hero-metric-square {
+          position: relative;
+          min-height: 86px;
+          border-radius: 18px;
+          padding: 12px;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          overflow: hidden;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.07) 0%,
+            rgba(255, 255, 255, 0.045) 100%
+          );
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+        }
 
         .hero-metric-square span {
           display: block;
           font-size: 12px;
-          color: rgba(255, 255, 255, 0.52);
+          color: rgba(255, 255, 255, 0.58);
         }
 
         .hero-metric-square strong {
@@ -1888,32 +1875,24 @@ hero-metric-square
           white-space: nowrap;
         }
 
-.bar-chart-wrap {
-  position: relative;
-  margin-top: 4px;
-  border-radius: 24px;
-  padding: 52px 18px 18px;
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.1), transparent 22%),
-    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.05), transparent 24%),
-    linear-gradient(
-      135deg,
-      rgba(224, 225, 227, 0.12) 0%,
-      rgba(224, 225, 227, 0.08) 45%,
-      rgba(224, 225, 227, 0.06) 100%
-    );
-
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-    0 12px 30px rgba(0, 0, 0, 0.12);
-}
+        .bar-chart-wrap {
+          position: relative;
+          margin-top: 4px;
+          border-radius: 24px;
+          padding: 52px 18px 18px;
+          overflow: hidden;
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.03) 100%
+          );
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.14),
+            0 12px 30px rgba(0, 0, 0, 0.12);
+        }
 
         .bar-chart-scale {
           position: absolute;
@@ -1986,7 +1965,7 @@ hero-metric-square
         .bar-chart-label {
           font-size: 14px;
           font-weight: 700;
-          color: rgba(255, 255, 255, 0.78);
+          color: rgba(255, 255, 255, 0.82);
           text-align: left;
           line-height: 1.35;
         }
@@ -1994,7 +1973,7 @@ hero-metric-square
         .bar-chart-value {
           font-size: 14px;
           line-height: 1.3;
-          color: rgba(255, 255, 255, 0.72);
+          color: rgba(255, 255, 255, 0.76);
           text-align: right;
           white-space: nowrap;
           flex-shrink: 0;
@@ -2086,36 +2065,25 @@ hero-metric-square
           color: rgba(255, 255, 255, 0.58);
         }
 
-.hero-active-note {
-  margin-top: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border-radius: 999px;
-  padding: 10px 14px;
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 14px;
-  line-height: 1.45;
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.12), transparent 22%),
-    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.06), transparent 24%),
-    linear-gradient(
-      135deg,
-      rgba(224, 225, 227, 0.14) 0%,
-      rgba(224, 225, 227, 0.09) 45%,
-      rgba(224, 225, 227, 0.07) 100%
-    );
-
-  backdrop-filter: blur(20px) saturate(140%);
-  -webkit-backdrop-filter: blur(20px) saturate(140%);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 10px 24px rgba(0, 0, 0, 0.12);
-}
+        .hero-active-note {
+          margin-top: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          border-radius: 999px;
+          padding: 10px 14px;
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 14px;
+          line-height: 1.45;
+          overflow: hidden;
+          background: rgba(255, 255, 255, 0.055);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.14),
+            0 10px 24px rgba(0, 0, 0, 0.12);
+        }
 
         .hero-active-note b {
           color: #f7d237;
@@ -2193,14 +2161,22 @@ hero-metric-square
           padding: 11px 16px;
           font-size: 13px;
           font-weight: 600;
-          color: rgba(255, 255, 255, 0.82);
+          color: rgba(255, 255, 255, 0.9);
           border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.05);
           transition: 0.2s ease;
         }
 
+        .ghost-link-dark {
+          background: rgba(15, 24, 48, 0.78);
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            0 12px 24px rgba(0, 0, 0, 0.18);
+        }
+
         .ghost-link:hover {
-          background: rgba(255, 255, 255, 0.09);
+          background: rgba(22, 33, 60, 0.9);
           color: white;
         }
 
@@ -2271,15 +2247,22 @@ hero-metric-square
         }
 
         .journey-compact-card {
+          position: relative;
+          overflow: hidden;
           border-radius: 26px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.07),
-            rgba(255, 255, 255, 0.03)
+            135deg,
+            rgba(224, 225, 227, 0.08) 0%,
+            rgba(224, 225, 227, 0.055) 100%
           );
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
           padding: 20px;
           min-height: 230px;
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.16),
+            0 18px 32px rgba(0, 0, 0, 0.16);
         }
 
         .journey-compact-top {
@@ -2338,7 +2321,7 @@ hero-metric-square
           margin-top: 12px;
           font-size: 16px;
           line-height: 1.75;
-          color: rgba(255, 255, 255, 0.66);
+          color: rgba(255, 255, 255, 0.7);
         }
 
         .input-grid {
@@ -2381,8 +2364,8 @@ hero-metric-square
           border-radius: 20px;
           background: linear-gradient(
             135deg,
-            rgba(247, 210, 55, 0.52),
-            rgba(120, 132, 255, 0.16),
+            rgba(247, 210, 55, 0.42),
+            rgba(120, 132, 255, 0.14),
             rgba(255, 255, 255, 0.08)
           );
           opacity: 0.95;
@@ -2410,10 +2393,10 @@ hero-metric-square
         .glass-input {
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.1),
-            rgba(255, 255, 255, 0.055)
+            rgba(17, 29, 58, 0.9),
+            rgba(24, 39, 72, 0.78)
           );
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.16);
           padding: 14px 16px;
           border-radius: 18px;
           backdrop-filter: blur(18px);
@@ -2427,17 +2410,10 @@ hero-metric-square
         .glass-input-primary {
           position: relative;
           z-index: 1;
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.15),
-            rgba(255, 255, 255, 0.075)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.22);
           box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.2),
-            0 12px 34px rgba(0, 0, 0, 0.12),
-            0 0 28px rgba(247, 210, 55, 0.08),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            0 0 0 1px rgba(247, 210, 55, 0.18),
+            0 12px 34px rgba(0, 0, 0, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
         .glass-input::placeholder {
@@ -2450,7 +2426,7 @@ hero-metric-square
           box-shadow:
             0 0 0 1px rgba(247, 210, 55, 0.22),
             0 0 30px rgba(247, 210, 55, 0.12),
-            0 10px 30px rgba(0, 0, 0, 0.08);
+            0 10px 30px rgba(0, 0, 0, 0.12);
         }
 
         .dashboard-grid {
@@ -2482,7 +2458,7 @@ hero-metric-square
         .metric-label,
         .model-label {
           font-size: 16px;
-          color: rgba(255, 255, 255, 0.58);
+          color: rgba(255, 255, 255, 0.6);
           line-height: 1.2;
           padding-top: 2px;
         }
@@ -2595,11 +2571,20 @@ hero-metric-square
           color: #f7d237;
         }
 
-        .hero-preview-box {
+        .hero-preview-box,
+        .side-note-card {
+          position: relative;
+          overflow: hidden;
           border-radius: 24px;
           border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.065) 0%,
+            rgba(255, 255, 255, 0.035) 100%
+          );
           padding: 18px;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
         }
 
         .reserve-amount {
@@ -2637,20 +2622,22 @@ hero-metric-square
         }
 
         .result-doc-card-inner {
+          position: relative;
           min-height: 320px;
           border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.1),
-            rgba(255, 255, 255, 0.045)
+            135deg,
+            rgba(224, 225, 227, 0.09) 0%,
+            rgba(224, 225, 227, 0.06) 100%
           );
+          backdrop-filter: blur(22px);
+          -webkit-backdrop-filter: blur(22px);
           padding: 26px;
-          position: relative;
           overflow: hidden;
           box-shadow:
-            0 20px 44px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            inset 0 1px 0 rgba(255, 255, 255, 0.16),
+            0 20px 44px rgba(0, 0, 0, 0.16);
         }
 
         .result-doc-top {
@@ -2793,9 +2780,37 @@ hero-metric-square
             0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-   
+        .stage-carousel-scene {
+          position: relative;
+          perspective: 1800px;
+          min-height: 360px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          touch-action: pan-y;
+          user-select: none;
+          -webkit-user-select: none;
+        }
 
+        .stage-carousel-track {
+          position: relative;
+          width: 100%;
+          height: 360px;
+          transform-style: preserve-3d;
+        }
 
+        .stage-carousel-item {
+          position: absolute;
+          top: 0;
+          left: 50%;
+          width: min(360px, 34vw);
+          transform-style: preserve-3d;
+          transition:
+            transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+            opacity 0.45s ease,
+            filter 0.45s ease;
+          cursor: grab;
+        }
 
         .stage-card-center {
           transform: translateX(-50%) translateZ(0) scale(1);
@@ -2805,36 +2820,35 @@ hero-metric-square
         }
 
         .stage-card-left {
-          transform: translateX(calc(-50% - 340px)) translateZ(-220px)
-            rotateY(24deg) scale(0.88);
-          opacity: 0.58;
+          transform: translateX(calc(-50% - 220px)) translateZ(-160px)
+            rotateY(24deg) scale(0.82);
+          opacity: 0.52;
           z-index: 3;
-          filter: blur(0.3px);
+          filter: blur(0.4px);
         }
 
         .stage-card-right {
-          transform: translateX(calc(-50% + 340px)) translateZ(-220px)
-            rotateY(-24deg) scale(0.88);
-          opacity: 0.58;
+          transform: translateX(calc(-50% + 220px)) translateZ(-160px)
+            rotateY(-24deg) scale(0.82);
+          opacity: 0.52;
           z-index: 3;
-          filter: blur(0.3px);
+          filter: blur(0.4px);
         }
 
         .stage-card-back {
-          transform: translateX(-50%) translateZ(-420px) scale(0.74);
-          opacity: 0.18;
+          transform: translateX(-50%) translateZ(-300px) scale(0.66);
+          opacity: 0.12;
           z-index: 1;
           filter: blur(1.2px);
           pointer-events: none;
         }
 
         .stage-card-hidden {
-          transform: translateX(-50%) translateZ(-520px) scale(0.68);
+          transform: translateX(-50%) translateZ(-420px) scale(0.58);
           opacity: 0;
           z-index: 0;
           pointer-events: none;
         }
-
 
         .stage-carousel-dots {
           margin-top: 18px;
@@ -2860,14 +2874,14 @@ hero-metric-square
         .stage-card-split {
           display: flex;
           flex-direction: column;
-          padding: 16px;
-          min-height: 600px;
-          border-radius: 34px;
+          padding: 10px;
+          min-height: 240px;
+          border-radius: 26px;
           overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.12);
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.07),
+            rgba(255, 255, 255, 0.055),
             rgba(255, 255, 255, 0.03)
           );
           box-shadow:
@@ -2875,41 +2889,31 @@ hero-metric-square
             inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
-.stage-card-top-glass {
-  min-height: 122px;
-  border-radius: 28px;
-  padding: 22px 28px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  overflow: hidden;
-
-  background:
-    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.14), transparent 22%),
-    radial-gradient(circle at 70% 65%, rgba(255,255,255,0.08), transparent 24%),
-    linear-gradient(
-      135deg,
-      rgba(224,225,227,0.16) 0%,
-      rgba(224,225,227,0.11) 45%,
-      rgba(224,225,227,0.09) 100%
-    );
-
-  backdrop-filter: blur(26px) saturate(150%);
-  -webkit-backdrop-filter: blur(26px) saturate(150%);
-  border: 1px solid rgba(255,255,255,0.16);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.28),
-    inset 0 -1px 0 rgba(255,255,255,0.06),
-    inset 8px 8px 24px rgba(255,255,255,0.025),
-    inset -10px -10px 30px rgba(0,0,0,0.05),
-    0 18px 50px rgba(0,0,0,0.18);
-}
+        .stage-card-top-glass {
+          min-height: 76px;
+          border-radius: 18px;
+          padding: 14px 16px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 14px;
+          overflow: hidden;
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.14) 0%,
+            rgba(224, 225, 227, 0.09) 100%
+          );
+          backdrop-filter: blur(24px) saturate(145%);
+          -webkit-backdrop-filter: blur(24px) saturate(145%);
+          border: 1px solid rgba(255, 255, 255, 0.16);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.22),
+            0 18px 30px rgba(0, 0, 0, 0.12);
+        }
 
         .stage-card-top-icon {
-          width: 74px;
-          height: 74px;
+          width: 34px;
+          height: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -2917,8 +2921,8 @@ hero-metric-square
         }
 
         .stage-strip-icon {
-          width: 64px;
-          height: 64px;
+          width: 28px;
+          height: 28px;
           object-fit: contain;
         }
 
@@ -2931,108 +2935,33 @@ hero-metric-square
         }
 
         .stage-card-top-title span {
-          font-size: 18px;
+          font-size: 10px;
           line-height: 1;
           color: rgba(255, 255, 255, 0.84);
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
         }
 
         .stage-card-top-title strong {
-          margin-top: 8px;
-          font-size: clamp(44px, 5vw, 78px);
+          margin-top: 6px;
+          font-size: clamp(26px, 2.6vw, 44px);
           line-height: 0.9;
           font-weight: 600;
           letter-spacing: -0.05em;
           color: #ffffff;
         }
 
-        .stage-card-bottom-solid {
-          margin-top: 16px;
+        .stage-card-empty {
           flex: 1;
-          border-radius: 28px;
-          padding: 26px 28px 28px;
+          margin-top: 10px;
+          border-radius: 18px;
           background: linear-gradient(
             180deg,
-            rgba(7, 16, 43, 0.98) 0%,
-            rgba(10, 24, 61, 0.98) 100%
+            rgba(7, 16, 43, 0.72) 0%,
+            rgba(10, 24, 61, 0.82) 100%
           );
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 24px;
-        }
-
-        .stage-summary-list {
-          display: grid;
-          gap: 18px;
-        }
-
-        .stage-summary-item {
-          display: grid;
-          gap: 6px;
-        }
-
-        .stage-summary-label {
-          font-size: 15px;
-          line-height: 1.2;
-          font-weight: 600;
-          color: #ffffff;
-        }
-
-        .stage-summary-text {
-          font-size: 14px;
-          line-height: 1.55;
-          color: rgba(255, 255, 255, 0.76);
-        }
-
-        .stage-metrics-box {
-          border-radius: 22px;
-          padding: 18px 18px 16px;
-          background: linear-gradient(
-            135deg,
-            rgba(250, 219, 245, 0.92) 0%,
-            rgba(206, 180, 245, 0.9) 46%,
-            rgba(126, 111, 216, 0.92) 76%,
-            rgba(106, 198, 255, 0.92) 100%
-          );
-          color: #07102b;
-        }
-
-        .stage-metrics-title {
-          font-size: 14px;
-          font-weight: 700;
-          line-height: 1.2;
-          margin-bottom: 14px;
-        }
-
-        .stage-metrics-table {
-          display: grid;
-          gap: 10px;
-        }
-
-        .stage-metrics-head,
-        .stage-metrics-row {
-          display: grid;
-          grid-template-columns: minmax(0, 1.7fr) minmax(70px, 0.65fr) minmax(
-              70px,
-              0.65fr
-            );
-          column-gap: 14px;
-          align-items: start;
-        }
-
-        .stage-metrics-head {
-          font-size: 13px;
-          font-weight: 700;
-          line-height: 1.2;
-        }
-
-        .stage-metrics-cell {
-          font-size: 13px;
-          line-height: 1.35;
-        }
-
-        .stage-metrics-label {
-          font-weight: 500;
+          border: 1px solid rgba(255, 255, 255, 0.06);
+          min-height: 130px;
         }
 
         .analysis-grid {
@@ -3078,9 +3007,9 @@ hero-metric-square
           border-radius: 28px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.085),
-            rgba(255, 255, 255, 0.045)
+            135deg,
+            rgba(224, 225, 227, 0.08) 0%,
+            rgba(224, 225, 227, 0.05) 100%
           );
           color: rgba(255, 255, 255, 0.92);
           text-align: center;
@@ -3266,9 +3195,15 @@ hero-metric-square
         .cta-box {
           min-width: 280px;
           max-width: 320px;
+          position: relative;
+          overflow: hidden;
           border-radius: 24px;
           border: 1px solid rgba(255, 255, 255, 0.1);
-          background: rgba(255, 255, 255, 0.04);
+          background: linear-gradient(
+            135deg,
+            rgba(255, 255, 255, 0.06) 0%,
+            rgba(255, 255, 255, 0.035) 100%
+          );
           padding: 22px;
         }
 
@@ -3276,11 +3211,11 @@ hero-metric-square
           position: absolute;
           inset: 0;
           background-image: linear-gradient(
-            rgba(255, 255, 255, 0.045) 1px,
+            rgba(255, 255, 255, 0.04) 1px,
             transparent 1px
           );
           background-size: 100% 76px;
-          opacity: 0.2;
+          opacity: 0.16;
           pointer-events: none;
         }
 
@@ -3288,7 +3223,7 @@ hero-metric-square
           position: absolute;
           border-radius: 9999px;
           filter: blur(120px);
-          opacity: 0.55;
+          opacity: 0.44;
           animation-timing-function: ease-in-out;
           animation-iteration-count: infinite;
           animation-direction: alternate;
@@ -3304,8 +3239,8 @@ hero-metric-square
           top: -8vh;
           background: radial-gradient(
             circle,
-            rgba(106, 160, 255, 0.2),
-            rgba(106, 160, 255, 0.08) 42%,
+            rgba(106, 160, 255, 0.16),
+            rgba(106, 160, 255, 0.06) 42%,
             transparent 72%
           );
           animation: driftOne 16s infinite alternate ease-in-out;
@@ -3320,8 +3255,8 @@ hero-metric-square
           top: 6vh;
           background: radial-gradient(
             circle,
-            rgba(247, 210, 55, 0.16),
-            rgba(247, 210, 55, 0.05) 42%,
+            rgba(247, 210, 55, 0.11),
+            rgba(247, 210, 55, 0.035) 42%,
             transparent 72%
           );
           animation: driftTwo 18s infinite alternate ease-in-out;
@@ -3336,8 +3271,8 @@ hero-metric-square
           bottom: -10vh;
           background: radial-gradient(
             circle,
-            rgba(124, 132, 255, 0.16),
-            rgba(124, 132, 255, 0.05) 44%,
+            rgba(124, 132, 255, 0.12),
+            rgba(124, 132, 255, 0.04) 44%,
             transparent 74%
           );
           animation: driftThree 20s infinite alternate ease-in-out;
@@ -3352,8 +3287,8 @@ hero-metric-square
           bottom: 12vh;
           background: radial-gradient(
             circle,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.03) 38%,
+            rgba(255, 255, 255, 0.06),
+            rgba(255, 255, 255, 0.02) 38%,
             transparent 72%
           );
           animation: driftFour 15s infinite alternate ease-in-out;
@@ -3365,7 +3300,7 @@ hero-metric-square
           background: radial-gradient(
             ellipse at center,
             transparent 48%,
-            rgba(0, 0, 0, 0.18) 100%
+            rgba(0, 0, 0, 0.22) 100%
           );
         }
 
@@ -3525,33 +3460,29 @@ hero-metric-square
           }
 
           .stage-carousel-scene {
-            min-height: 560px;
+            min-height: 320px;
           }
 
           .stage-carousel-track {
-            height: 560px;
+            height: 320px;
           }
 
           .stage-carousel-item {
-            width: min(92vw, 680px);
-          }
-
-          .stage-card-split {
-            min-height: 540px;
+            width: min(320px, 50vw);
           }
 
           .stage-card-left {
-            transform: translateX(calc(-50% - 120px)) translateZ(-180px)
-              rotateY(18deg) scale(0.84);
+            transform: translateX(calc(-50% - 150px)) translateZ(-120px)
+              rotateY(20deg) scale(0.78);
           }
 
           .stage-card-right {
-            transform: translateX(calc(-50% + 120px)) translateZ(-180px)
-              rotateY(-18deg) scale(0.84);
+            transform: translateX(calc(-50% + 150px)) translateZ(-120px)
+              rotateY(-20deg) scale(0.78);
           }
 
           .stage-card-back {
-            transform: translateX(-50%) translateZ(-320px) scale(0.7);
+            transform: translateX(-50%) translateZ(-240px) scale(0.58);
           }
         }
 
@@ -3625,13 +3556,10 @@ hero-metric-square
             grid-template-columns: 1fr;
           }
 
-          .hero-levers-inline {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
           .hero-tag {
             font-size: 11px;
-            min-height: 44px;
+            min-height: 42px;
+            padding: 10px 16px;
           }
 
           .bar-chart-columns {
@@ -3668,25 +3596,26 @@ hero-metric-square
           }
 
           .industry-pill {
-            min-height: 48px;
-            padding: 0 16px;
-            font-size: 15px;
+            min-height: 44px;
+            padding: 0 14px;
+            font-size: 14px;
           }
 
           .stage-carousel-scene {
-            min-height: 780px;
+            min-height: 260px;
           }
 
           .stage-carousel-track {
-            height: 780px;
+            height: 260px;
           }
 
           .stage-carousel-item {
-            width: 92vw;
+            width: min(250px, 70vw);
           }
 
           .stage-card-split {
-            min-height: 760px;
+            min-height: 180px;
+            padding: 8px;
           }
 
           .stage-card-left,
@@ -3699,308 +3628,28 @@ hero-metric-square
             transform: translateX(-50%) translateZ(0) scale(1);
             opacity: 1;
           }
-.stage-carousel-wrap {
-  margin-top: 24px;
-}
-
-.industries-pills-carousel {
-  justify-content: center;
-  margin-bottom: 22px;
-}
-
-.stage-carousel-scene {
-  position: relative;
-  perspective: 1800px;
-  min-height: 620px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
-}
-
-.stage-carousel-track {
-  position: relative;
-  width: 100%;
-  height: 620px;
-  transform-style: preserve-3d;
-}
-
-.stage-carousel-item {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  width: min(760px, 72vw);
-  transform-style: preserve-3d;
-  transition:
-    transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.45s ease,
-    filter 0.45s ease;
-  cursor: pointer;
-}
-
-.stage-card-center {
-  transform: translateX(-50%) translateZ(0) scale(1);
-  opacity: 1;
-  z-index: 5;
-  filter: blur(0);
-}
-
-.stage-card-left {
-  transform: translateX(calc(-50% - 340px)) translateZ(-220px)
-    rotateY(24deg) scale(0.88);
-  opacity: 0.58;
-  z-index: 3;
-  filter: blur(0.3px);
-}
-
-.stage-card-right {
-  transform: translateX(calc(-50% + 340px)) translateZ(-220px)
-    rotateY(-24deg) scale(0.88);
-  opacity: 0.58;
-  z-index: 3;
-  filter: blur(0.3px);
-}
-
-.stage-card-back {
-  transform: translateX(-50%) translateZ(-420px) scale(0.74);
-  opacity: 0.18;
-  z-index: 1;
-  filter: blur(1.2px);
-  pointer-events: none;
-}
-
-.stage-card-hidden {
-  transform: translateX(-50%) translateZ(-520px) scale(0.68);
-  opacity: 0;
-  z-index: 0;
-  pointer-events: none;
-}
-
-.stage-carousel-dots {
-  margin-top: 18px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-}
-
-.stage-carousel-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  transition: 0.2s ease;
-}
-
-.stage-carousel-dot-active {
-  background: #f7d237;
-  box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
-}
-
-.stage-card-split {
-  display: flex;
-  flex-direction: column;
-  padding: 16px;
-  min-height: 600px;
-  border-radius: 34px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.07),
-    rgba(255, 255, 255, 0.03)
-  );
-  box-shadow:
-    0 20px 52px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.06);
-}
-
-.stage-card-top-glass {
-  min-height: 122px;
-  border-radius: 28px;
-  padding: 22px 28px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.16),
-    rgba(255, 255, 255, 0.08)
-  );
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    0 10px 30px rgba(0, 0, 0, 0.08);
-}
-
-.stage-card-top-icon {
-  width: 74px;
-  height: 74px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.stage-strip-icon {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-}
-
-.stage-card-top-title {
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  text-align: right;
-}
-
-.stage-card-top-title span {
-  font-size: 18px;
-  line-height: 1;
-  color: rgba(255, 255, 255, 0.84);
-}
-
-.stage-card-top-title strong {
-  margin-top: 8px;
-  font-size: clamp(44px, 5vw, 78px);
-  line-height: 0.9;
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  color: #ffffff;
-}
-
-.stage-card-bottom-solid {
-  margin-top: 16px;
-  flex: 1;
-  border-radius: 28px;
-  padding: 26px 28px 28px;
-  background: linear-gradient(
-    180deg,
-    rgba(7, 16, 43, 0.98) 0%,
-    rgba(10, 24, 61, 0.98) 100%
-  );
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-.stage-summary-list {
-  display: grid;
-  gap: 18px;
-}
-
-.stage-summary-item {
-  display: grid;
-  gap: 6px;
-}
-
-.stage-summary-label {
-  font-size: 15px;
-  line-height: 1.2;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.stage-summary-text {
-  font-size: 14px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.76);
-}
-
-.stage-metrics-box {
-  border-radius: 22px;
-  padding: 18px 18px 16px;
-  background: linear-gradient(
-    135deg,
-    rgba(250, 219, 245, 0.92) 0%,
-    rgba(206, 180, 245, 0.9) 46%,
-    rgba(126, 111, 216, 0.92) 76%,
-    rgba(106, 198, 255, 0.92) 100%
-  );
-  color: #07102b;
-}
-
-.stage-metrics-title {
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 14px;
-}
-
-.stage-metrics-table {
-  display: grid;
-  gap: 10px;
-}
-
-.stage-metrics-head,
-.stage-metrics-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(70px, 0.65fr) minmax(70px, 0.65fr);
-  column-gap: 14px;
-  align-items: start;
-}
-
-.stage-metrics-head {
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.stage-metrics-cell {
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.stage-metrics-label {
-  font-weight: 500;
-}
 
           .stage-card-top-glass {
-            min-height: 92px;
-            padding: 16px 18px;
+            min-height: 62px;
+            padding: 12px 14px;
           }
 
           .stage-card-top-icon {
-            width: 54px;
-            height: 54px;
+            width: 28px;
+            height: 28px;
           }
 
           .stage-strip-icon {
-            width: 46px;
-            height: 46px;
+            width: 22px;
+            height: 22px;
           }
 
           .stage-card-top-title span {
-            font-size: 14px;
+            font-size: 9px;
           }
 
           .stage-card-top-title strong {
-            font-size: 34px;
-          }
-
-          .stage-summary-label {
-            font-size: 14px;
-          }
-
-          .stage-summary-text {
-            font-size: 14px;
-          }
-
-          .stage-metrics-head,
-          .stage-metrics-row {
-            grid-template-columns: minmax(0, 1.4fr) minmax(60px, 0.7fr) minmax(
-                60px,
-                0.7fr
-              );
-            column-gap: 10px;
+            font-size: 24px;
           }
 
           .builder-block-3 {
