@@ -1571,27 +1571,40 @@ export default function Home() {
           transition: transform 0.08s linear;
         }
 
-        .glass-card {
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(255, 255, 255, 0.045)
-          );
-          backdrop-filter: blur(18px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          border-radius: 28px;
-          padding: 22px;
-          box-shadow:
-            0 10px 40px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
+.glass-card {
+  position: relative;
+  border-radius: 28px;
+  padding: 22px;
+  overflow: hidden;
 
-        .soft-glow {
-          box-shadow:
-            0 10px 40px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.05),
-            0 0 0 1px rgba(255, 255, 255, 0.02);
-        }
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.14), transparent 22%),
+    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.08), transparent 24%),
+    linear-gradient(
+      135deg,
+      rgba(224, 225, 227, 0.16) 0%,
+      rgba(224, 225, 227, 0.11) 45%,
+      rgba(224, 225, 227, 0.09) 100%
+    );
+
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 8px 8px 24px rgba(255, 255, 255, 0.025),
+    inset -10px -10px 30px rgba(0, 0, 0, 0.05),
+    0 18px 50px rgba(0, 0, 0, 0.22);
+}
+.soft-glow {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.24),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 50px rgba(0, 0, 0, 0.18);
+}
 
         .sticky-header {
           position: sticky;
@@ -1723,16 +1736,7 @@ export default function Home() {
           max-width: 760px;
         }
 
-        .hero-highlights-row-unified {
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.08),
-            rgba(123, 132, 255, 0.08),
-            rgba(255, 255, 255, 0.08)
-          );
-          backdrop-filter: blur(14px);
-        }
+.hero-highlights-row-unified
 
         .hero-highlight-chip {
           padding: 20px 18px;
@@ -1829,17 +1833,35 @@ export default function Home() {
           border-color: rgba(247, 210, 55, 0.55);
         }
 
-        .hero-chart-box {
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(36, 49, 76, 0.88);
-          padding: 14px;
-          display: flex;
-          flex-direction: column;
-          box-shadow:
-            0 22px 60px rgba(0, 0, 0, 0.28),
-            inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
+.hero-chart-box {
+  position: relative;
+  overflow: hidden;
+  border-radius: 28px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.14), transparent 22%),
+    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.08), transparent 24%),
+    linear-gradient(
+      135deg,
+      rgba(224, 225, 227, 0.16) 0%,
+      rgba(224, 225, 227, 0.11) 45%,
+      rgba(224, 225, 227, 0.09) 100%
+    );
+
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.06),
+    inset 8px 8px 24px rgba(255, 255, 255, 0.025),
+    inset -10px -10px 30px rgba(0, 0, 0, 0.05),
+    0 18px 50px rgba(0, 0, 0, 0.22);
+}
 
         .hero-chart-metrics-row {
           display: grid;
@@ -1848,16 +1870,7 @@ export default function Home() {
           margin-bottom: 12px;
         }
 
-        .hero-metric-square {
-          min-height: 86px;
-          border-radius: 18px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-        }
+hero-metric-square
 
         .hero-metric-square span {
           display: block;
@@ -1875,19 +1888,32 @@ export default function Home() {
           white-space: nowrap;
         }
 
-        .bar-chart-wrap {
-          position: relative;
-          margin-top: 4px;
-          border-radius: 24px;
-          padding: 52px 18px 18px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.035),
-            rgba(255, 255, 255, 0.015)
-          );
-          overflow: hidden;
-        }
+.bar-chart-wrap {
+  position: relative;
+  margin-top: 4px;
+  border-radius: 24px;
+  padding: 52px 18px 18px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.1), transparent 22%),
+    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.05), transparent 24%),
+    linear-gradient(
+      135deg,
+      rgba(224, 225, 227, 0.12) 0%,
+      rgba(224, 225, 227, 0.08) 45%,
+      rgba(224, 225, 227, 0.06) 100%
+    );
+
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05),
+    0 12px 30px rgba(0, 0, 0, 0.12);
+}
 
         .bar-chart-scale {
           position: absolute;
@@ -2060,19 +2086,36 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.58);
         }
 
-        .hero-active-note {
-          margin-top: 12px;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          border: 1px solid rgba(247, 210, 55, 0.18);
-          background: rgba(255, 255, 255, 0.03);
-          border-radius: 999px;
-          padding: 10px 14px;
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          line-height: 1.45;
-        }
+.hero-active-note {
+  margin-top: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 999px;
+  padding: 10px 14px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 14px;
+  line-height: 1.45;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255, 255, 255, 0.12), transparent 22%),
+    radial-gradient(circle at 70% 65%, rgba(255, 255, 255, 0.06), transparent 24%),
+    linear-gradient(
+      135deg,
+      rgba(224, 225, 227, 0.14) 0%,
+      rgba(224, 225, 227, 0.09) 45%,
+      rgba(224, 225, 227, 0.07) 100%
+    );
+
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 10px 24px rgba(0, 0, 0, 0.12);
+}
 
         .hero-active-note b {
           color: #f7d237;
@@ -2832,25 +2875,37 @@ export default function Home() {
             inset 0 1px 0 rgba(255, 255, 255, 0.06);
         }
 
-        .stage-card-top-glass {
-          min-height: 122px;
-          border-radius: 28px;
-          padding: 22px 28px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 20px;
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.16),
-            rgba(255, 255, 255, 0.08)
-          );
-          backdrop-filter: blur(18px);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 10px 30px rgba(0, 0, 0, 0.08);
-        }
+.stage-card-top-glass {
+  min-height: 122px;
+  border-radius: 28px;
+  padding: 22px 28px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  overflow: hidden;
+
+  background:
+    radial-gradient(circle at 22% 18%, rgba(255,255,255,0.14), transparent 22%),
+    radial-gradient(circle at 70% 65%, rgba(255,255,255,0.08), transparent 24%),
+    linear-gradient(
+      135deg,
+      rgba(224,225,227,0.16) 0%,
+      rgba(224,225,227,0.11) 45%,
+      rgba(224,225,227,0.09) 100%
+    );
+
+  backdrop-filter: blur(26px) saturate(150%);
+  -webkit-backdrop-filter: blur(26px) saturate(150%);
+  border: 1px solid rgba(255,255,255,0.16);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.28),
+    inset 0 -1px 0 rgba(255,255,255,0.06),
+    inset 8px 8px 24px rgba(255,255,255,0.025),
+    inset -10px -10px 30px rgba(0,0,0,0.05),
+    0 18px 50px rgba(0,0,0,0.18);
+}
 
         .stage-card-top-icon {
           width: 74px;
