@@ -488,8 +488,8 @@ function StartCard({
   href: string;
 }) {
   return (
-    <div className="start-card tilt-card">
-      <div className="start-card-inner start-card-inner-plain tilt-inner">
+<div className="start-card tilt-card">
+  <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <img src={icon} alt={title} className="start-card-frame" />
 
         <div className="start-card-overlay start-card-overlay-plain">
@@ -531,237 +531,431 @@ function StageCard({
   );
 }
 
-function StageCarousel() {
-  const items = [
-    {
-      stage: "Seed",
-      icon: "/seed.svg",
-      industries: ["industry-saas", "industry-healthtech"],
-    },
-    {
-      stage: "Startup",
-      icon: "/startup.svg",
-      industries: ["industry-fintech", "industry-ecom"],
-    },
-    {
-      stage: "Growth",
-      icon: "/growth.svg",
-      industries: [
-        "industry-saas",
-        "industry-ecom",
-        "industry-fintech",
-        "industry-edtech",
-        "industry-healthtech",
-        "industry-b2b",
-      ],
-    },
-    {
-      stage: "Expansion",
-      icon: "/expansion.svg",
-      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
-    },
-  ];
+.stage-card-analytics {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 460px;
+  border-radius: 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: linear-gradient(
+    180deg,
+    rgba(224, 225, 227, 0.11) 0%,
+    rgba(224, 225, 227, 0.07) 100%
+  );
+  box-shadow:
+    0 24px 54px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [dragOffset, setDragOffset] = useState(0);
-
-  const dragStartX = useRef<number | null>(null);
-  const dragCurrentX = useRef<number | null>(null);
-  const isDragging = useRef(false);
-
-  const getOffset = (index: number) => {
-    const total = items.length;
-    let diff = index - activeIndex;
-
-    if (diff > total / 2) diff -= total;
-    if (diff < -total / 2) diff += total;
-
-    return diff;
-  };
-
-  const next = () => {
-    setActiveIndex((prev) => (prev + 1) % items.length);
-  };
-
-  const prev = () => {
-    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
-  };
-
-  const finishDrag = () => {
-    if (dragStartX.current === null || dragCurrentX.current === null) {
-      dragStartX.current = null;
-      dragCurrentX.current = null;
-      isDragging.current = false;
-      setDragOffset(0);
-      return;
-    }
-
-    const diff = dragStartX.current - dragCurrentX.current;
-    const threshold = 70;
-
-    if (diff > threshold) next();
-    else if (diff < -threshold) prev();
-
-    dragStartX.current = null;
-    dragCurrentX.current = null;
-    isDragging.current = false;
-    setDragOffset(0);
-  };
-
-  const activeIndustries = new Set(items[activeIndex].industries);
-
-  return (
-    <div className="stage-carousel-wrap">
-      <div className="industries-pills industries-pills-carousel">
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-saas")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          SaaS
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-ecom")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          E-com
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-fintech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          FinTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-edtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          EdTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-healthtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          HealthTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-b2b")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          B2B
-        </span>
-      </div>
-
-      <div
-        className="stage-carousel-scene"
-        onMouseDown={(e) => {
-          isDragging.current = true;
-          dragStartX.current = e.clientX;
-          dragCurrentX.current = e.clientX;
-        }}
-        onMouseMove={(e) => {
-          if (!isDragging.current) return;
-          dragCurrentX.current = e.clientX;
-          setDragOffset(e.clientX - (dragStartX.current ?? e.clientX));
-        }}
-        onMouseUp={finishDrag}
-        onMouseLeave={finishDrag}
-        onTouchStart={(e) => {
-          isDragging.current = true;
-          dragStartX.current = e.touches[0].clientX;
-          dragCurrentX.current = e.touches[0].clientX;
-        }}
-        onTouchMove={(e) => {
-          if (!isDragging.current) return;
-          dragCurrentX.current = e.touches[0].clientX;
-          setDragOffset(
-            e.touches[0].clientX - (dragStartX.current ?? e.touches[0].clientX)
-          );
-        }}
-        onTouchEnd={finishDrag}
-      >
-        <div className="stage-carousel-track">
-          {items.map((item, index) => {
-            const offset = getOffset(index);
-
-            let positionClass = "stage-card-hidden";
-            if (offset === 0) positionClass = "stage-card-center";
-            else if (offset === -1) positionClass = "stage-card-left";
-            else if (offset === 1) positionClass = "stage-card-right";
-            else if (offset === 2 || offset === -2)
-              positionClass = "stage-card-back";
-
-            const dragShift = isDragging.current ? dragOffset * 0.35 : 0;
-
-            return (
-              <div
-                key={item.stage}
-                className={`stage-carousel-item ${positionClass}`}
-                style={{
-                  transform:
-                    positionClass === "stage-card-center"
-                      ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
-                      : positionClass === "stage-card-left"
-                      ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
-                      : positionClass === "stage-card-right"
-                      ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
-                      : positionClass === "stage-card-back"
-                      ? `translateX(calc(-50% + ${
-                          dragShift * 0.6
-                        }px)) translateZ(-300px) scale(0.66)`
-                      : `translateX(calc(-50% + ${
-                          dragShift * 0.4
-                        }px)) translateZ(-420px) scale(0.58)`,
-                }}
-                onClick={() => {
-                  if (offset === -1) prev();
-                  else if (offset === 1) next();
-                  else if (offset !== 0) setActiveIndex(index);
-                }}
-              >
-                <StageCard stage={item.stage} icon={item.icon} />
-              </div>
-            );
-          })}
-        </div>
-
-        <div className="stage-carousel-hint">Потяните влево или вправо</div>
-
-        <div className="stage-carousel-dots">
-          {items.map((_, index) => (
-            <button
-              key={index}
-              type="button"
-              className={`stage-carousel-dot ${
-                index === activeIndex ? "stage-carousel-dot-active" : ""
-              }`}
-              onClick={() => setActiveIndex(index)}
-              aria-label={`Слайд ${index + 1}`}
-            />
-          ))}
-        </div>
-      </div>
-    </div>
+.stage-card-top-panel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  padding: 28px 28px 24px;
+  min-height: 248px;
+  background: linear-gradient(
+    135deg,
+    rgba(224, 225, 227, 0.18) 0%,
+    rgba(224, 225, 227, 0.09) 100%
   );
 }
 
+.stage-card-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 22px;
+  min-width: 0;
+}
+
+.stage-copy-block h4 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.06;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.96);
+  letter-spacing: -0.03em;
+}
+
+.stage-copy-block p {
+  margin: 10px 0 0;
+  max-width: 560px;
+  font-size: 17px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.86);
+}
+
+.stage-card-heading {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  text-align: right;
+  min-width: 180px;
+}
+
+.stage-card-heading span {
+  font-size: 15px;
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.stage-card-heading strong {
+  margin-top: 8px;
+  font-size: clamp(54px, 6vw, 92px);
+  line-height: 0.9;
+  font-weight: 700;
+  letter-spacing: -0.07em;
+  color: #ffffff;
+}
+
+.stage-card-bottom-panel {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+  padding: 22px 26px 24px;
+  background:
+    radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
+    radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
+    radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
+    radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
+    linear-gradient(
+      135deg,
+      #081a63 0%,
+      #09185a 18%,
+      #151a74 34%,
+      #2a1584 52%,
+      #3a1c79 66%,
+      #4b1a74 82%,
+      #301346 100%
+    );
+}
+
+.stage-card-bottom-inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.05fr 1.25fr;
+  align-items: end;
+  gap: 28px;
+  min-height: 190px;
+}
+
+.stage-rings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 22px;
+  align-self: start;
+}
+
+.stage-ring-metric {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stage-ring-label {
+  font-size: 15px;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.stage-ring {
+  position: relative;
+  width: 74px;
+  height: 74px;
+}
+
+.stage-ring-outer,
+.stage-ring-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+}
+
+.stage-ring-outer {
+  border: 12px solid rgba(255, 178, 64, 0.88);
+  border-right-color: transparent;
+  transform: rotate(-12deg);
+}
+
+.stage-ring-inner {
+  inset: 14px;
+  border: 8px solid rgba(247, 210, 55, 0.98);
+  border-right-color: transparent;
+  transform: rotate(18deg);
+}
+
+.stage-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #ffffff;
+}
+
+.stage-bars-area {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 190px;
+}
+
+.stage-bars-title {
+  align-self: flex-end;
+  font-size: clamp(34px, 4vw, 56px);
+  line-height: 0.95;
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  color: rgba(255, 255, 255, 0.96);
+}
+
+.stage-bars-wrap {
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.stage-bar-group {
+  width: 100%;
+  max-width: 420px;
+}
+
+.stage-bar-label {
+  margin-bottom: 14px;
+  font-size: 15px;
+  line-height: 1.2;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.stage-bar-row {
+  display: flex;
+  align-items: center;
+}
+
+.stage-bar-row-top {
+  gap: 18px;
+}
+
+.stage-bar-row-bottom {
+  margin-top: 14px;
+}
+
+.stage-bar {
+  height: 30px;
+  background: linear-gradient(
+    90deg,
+    rgba(247, 210, 55, 0.95) 0%,
+    rgba(244, 221, 114, 0.98) 100%
+  );
+  box-shadow:
+    0 8px 18px rgba(247, 210, 55, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.stage-bar-short {
+  width: 168px;
+}
+
+.stage-bar-long {
+  width: 310px;
+}
+
+.stage-bar-marker {
+  width: 0;
+  height: 0;
+  border-left: 12px solid transparent;
+  border-right: 12px solid transparent;
+  border-bottom: 22px solid rgba(255, 255, 255, 0.94);
+  transform: rotate(0deg);
+}
+
+.stage-card-watermark-icon {
+  position: absolute;
+  left: 24px;
+  top: 22px;
+  width: 28px;
+  height: 28px;
+  opacity: 0.12;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+/* адаптив под карусель */
+
+@media (max-width: 1023px) {
+  .stage-card-analytics {
+    min-height: 400px;
+    border-radius: 28px;
+  }
+
+  .stage-card-top-panel {
+    padding: 22px 22px 18px;
+    min-height: 210px;
+    gap: 18px;
+  }
+
+  .stage-copy-block h4 {
+    font-size: 22px;
+  }
+
+  .stage-copy-block p {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .stage-card-heading strong {
+    font-size: 62px;
+  }
+
+  .stage-card-bottom-panel {
+    padding: 18px 20px 20px;
+  }
+
+  .stage-card-bottom-inner {
+    grid-template-columns: 1fr 1.1fr;
+    gap: 20px;
+  }
+
+  .stage-bars-title {
+    font-size: 42px;
+  }
+
+  .stage-bar-short {
+    width: 132px;
+  }
+
+  .stage-bar-long {
+    width: 240px;
+  }
+}
+
+@media (max-width: 767px) {
+  .stage-card-analytics {
+    min-height: 320px;
+    border-radius: 22px;
+  }
+
+  .stage-card-top-panel {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    padding: 16px 16px 14px;
+    min-height: auto;
+  }
+
+  .stage-card-copy {
+    gap: 14px;
+  }
+
+  .stage-copy-block h4 {
+    font-size: 16px;
+  }
+
+  .stage-copy-block p {
+    margin-top: 6px;
+    font-size: 12px;
+    line-height: 1.45;
+    max-width: none;
+  }
+
+  .stage-card-heading {
+    align-items: flex-start;
+    text-align: left;
+    min-width: 0;
+  }
+
+  .stage-card-heading span {
+    font-size: 10px;
+  }
+
+  .stage-card-heading strong {
+    margin-top: 4px;
+    font-size: 42px;
+  }
+
+  .stage-card-bottom-panel {
+    padding: 14px 14px 16px;
+  }
+
+  .stage-card-bottom-inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    min-height: auto;
+  }
+
+  .stage-rings-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 16px;
+  }
+
+  .stage-ring-label {
+    font-size: 11px;
+  }
+
+  .stage-ring {
+    width: 56px;
+    height: 56px;
+  }
+
+  .stage-ring-outer {
+    border-width: 9px;
+  }
+
+  .stage-ring-inner {
+    inset: 10px;
+    border-width: 6px;
+  }
+
+  .stage-ring-center {
+    font-size: 11px;
+  }
+
+  .stage-bars-title {
+    align-self: flex-start;
+    font-size: 28px;
+  }
+
+  .stage-bar-group {
+    max-width: none;
+  }
+
+  .stage-bar-label {
+    margin-bottom: 10px;
+    font-size: 11px;
+  }
+
+  .stage-bar {
+    height: 20px;
+  }
+
+  .stage-bar-short {
+    width: 96px;
+  }
+
+  .stage-bar-long {
+    width: 180px;
+  }
+
+  .stage-bar-marker {
+    border-left-width: 8px;
+    border-right-width: 8px;
+    border-bottom-width: 15px;
+  }
+
+  .stage-card-watermark-icon {
+    width: 20px;
+    height: 20px;
+    left: 14px;
+    top: 14px;
+  }
+}
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
@@ -1514,19 +1708,41 @@ export default function Home() {
           transition: transform 0.08s linear;
         }
 
-        .glass-card {
-          position: relative;
-          border-radius: 24px;
-          padding: 22px;
-          overflow: hidden;
-          background: rgba(224, 225, 227, 0.06);
-          border: 1.5px solid rgba(224, 225, 227, 0.35);
-          box-shadow:
-            0 6px 14px rgba(0, 0, 0, 0.18),
-            inset 0 0 0 1px rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
-        }
+.glass-card {
+  position: relative;
+  border-radius: 24px;
+  padding: 22px;
+  overflow: hidden;
+  isolation: isolate;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(224, 225, 227, 0.12) 0%,
+      rgba(224, 225, 227, 0.08) 100%
+    );
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 44px rgba(0, 0, 0, 0.16);
+
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 44px rgba(0, 0, 0, 0.16);
+
+  backdrop-filter: blur(18px) saturate(135%);
+  -webkit-backdrop-filter: blur(18px) saturate(135%);
+}
 
         .soft-glow {
           box-shadow:
@@ -1553,13 +1769,109 @@ export default function Home() {
           z-index: 0;
           opacity: 0.8;
         }
+.glass-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.75;
 
+  background:
+    linear-gradient(
+      115deg,
+      rgba(255,255,255,0.10) 0%,
+      rgba(255,255,255,0.025) 18%,
+      rgba(255,255,255,0.01) 34%,
+      rgba(255,255,255,0.05) 48%,
+      rgba(255,255,255,0.012) 64%,
+      rgba(255,255,255,0.06) 82%,
+      rgba(255,255,255,0.02) 100%
+    );
+}
+
+.glass-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.12;
+  mix-blend-mode: soft-light;
+
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.22) 0 0.8px, transparent 1px),
+    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.16) 0 0.8px, transparent 1px),
+    radial-gradient(circle at 35% 75%, rgba(255,255,255,0.18) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.12) 0 0.7px, transparent 0.9px);
+
+  background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
+}
+
+.glass-card > * {
+  position: relative;
+  z-index: 1;
+}
         .glare-card > *,
         .glare-card-lite > * {
           position: relative;
           z-index: 1;
         }
+.premium-glass {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
 
+.premium-glass::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.18;
+  filter: blur(18px);
+
+  background:
+    repeating-linear-gradient(
+      105deg,
+      rgba(255,255,255,0.05) 0px,
+      rgba(255,255,255,0.05) 2px,
+      transparent 12px,
+      transparent 42px
+    );
+
+  animation: premiumGlassShift 14s linear infinite;
+}
+
+.premium-glass::after {
+  content: "";
+  position: absolute;
+  inset: auto -10% -18% -10%;
+  height: 42%;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(42px);
+  opacity: 0.95;
+  mix-blend-mode: screen;
+
+  background:
+    radial-gradient(circle at 30% 40%, rgba(125,255,220,0.34) 0%, transparent 42%),
+    radial-gradient(circle at 68% 50%, rgba(130,120,255,0.32) 0%, transparent 44%),
+    radial-gradient(circle at 48% 44%, rgba(255,255,255,0.12) 0%, transparent 36%);
+}
+
+@keyframes premiumGlassShift {
+  0% {
+    transform: translate3d(-12px, 0, 0);
+  }
+  50% {
+    transform: translate3d(14px, -6px, 0);
+  }
+  100% {
+    transform: translate3d(-12px, 0, 0);
+  }
+}
         .journey-compact-card:nth-child(1)::before,
         .result-doc-card:nth-child(1) .result-doc-card-inner::before,
         .metric-card:nth-child(1)::before,
@@ -2984,68 +3296,6 @@ export default function Home() {
           box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
         }
 
-        .stage-card-split {
-          display: flex;
-          flex-direction: column;
-          padding: 10px;
-          min-height: 240px;
-          border-radius: 26px;
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: linear-gradient(
-            180deg,
-            rgba(255, 255, 255, 0.055),
-            rgba(255, 255, 255, 0.03)
-          );
-          box-shadow:
-            0 20px 52px rgba(0, 0, 0, 0.2),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .stage-card-top-glass {
-          min-height: 76px;
-          border-radius: 18px;
-          padding: 14px 16px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 14px;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.14) 0%,
-            rgba(224, 225, 227, 0.09) 100%
-          );
-          backdrop-filter: blur(24px) saturate(145%);
-          -webkit-backdrop-filter: blur(24px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.22),
-            0 18px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .stage-card-top-icon {
-          width: 34px;
-          height: 34px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-
-        .stage-strip-icon {
-          width: 28px;
-          height: 28px;
-          object-fit: contain;
-        }
-
-        .stage-card-top-title {
-          min-width: 0;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          text-align: right;
-        }
 
         .stage-card-top-title span {
           font-size: 10px;
