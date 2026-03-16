@@ -689,47 +689,46 @@ const isDragging = useRef(false);
         onTouchEnd={finishDrag}
       >
         <div className="stage-carousel-track">
-          {items.map((item, index) => {
-            const offset = getOffset(index);
+     {items.map((item, index) => {
+  const offset = getOffset(index);
 
-            let positionClass = "stage-card-hidden";
-            if (offset === 0) positionClass = "stage-card-center";
-            else if (offset === -1) positionClass = "stage-card-left";
-            else if (offset === 1) positionClass = "stage-card-right";
-            else if (offset === 2 || offset === -2) positionClass = "stage-card-back";
-let positionClass = "stage-card-hidden";
-        
-            return (
-             <div
-  key={item.stage}
-  className={`stage-carousel-item ${positionClass}`}
-  style={{
-    transform:
-      positionClass === "stage-card-center"
-        ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
-        : positionClass === "stage-card-left"
-        ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
-        : positionClass === "stage-card-right"
-        ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
-        : positionClass === "stage-card-back"
-        ? `translateX(calc(-50% + ${dragShift * 0.6}px)) translateZ(-300px) scale(0.66)`
-        : `translateX(calc(-50% + ${dragShift * 0.4}px)) translateZ(-420px) scale(0.58)`,
-  }}
-  onClick={() => {
-              >
-                <StageCard stage={item.stage} icon={item.icon} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
+  let positionClass = "stage-card-hidden";
+  if (offset === 0) positionClass = "stage-card-center";
+  else if (offset === -1) positionClass = "stage-card-left";
+  else if (offset === 1) positionClass = "stage-card-right";
+  else if (offset === 2 || offset === -2) positionClass = "stage-card-back";
 
+  const dragShift = isDragging.current ? dragOffset * 0.35 : 0;
+
+  return (
+    <div
+      key={item.stage}
+      className={`stage-carousel-item ${positionClass}`}
+      style={{
+        transform:
+          positionClass === "stage-card-center"
+            ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
+            : positionClass === "stage-card-left"
+            ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
+            : positionClass === "stage-card-right"
+            ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
+            : positionClass === "stage-card-back"
+            ? `translateX(calc(-50% + ${dragShift * 0.6}px)) translateZ(-300px) scale(0.66)`
+            : `translateX(calc(-50% + ${dragShift * 0.4}px)) translateZ(-420px) scale(0.58)`,
+      }}
+      onClick={() => {
+        if (offset === -1) prev();
+        else if (offset === 1) next();
+        else if (offset !== 0) setActiveIndex(index);
+      }}
+    >
+      <StageCard stage={item.stage} icon={item.icon} />
+    </div>
+  );
+})}
       <div className="stage-carousel-hint">
   Потяните влево или вправо
 </div>
-      .stage-carousel-hint {
-  display: none;
-}
       <div className="stage-carousel-dots">
         {items.map((_, index) => (
           <button
