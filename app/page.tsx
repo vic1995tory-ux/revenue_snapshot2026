@@ -303,7 +303,11 @@ function HeroEconomyChart() {
 
   const setDriver = (index: number) => {
     setActiveIndex(index);
-    if (timerRef.current) window.clearInterval(timerRef.current);
+
+    if (timerRef.current) {
+      window.clearInterval(timerRef.current);
+    }
+
     timerRef.current = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % drivers.length);
     }, 3400);
@@ -558,18 +562,20 @@ function StageCarousel() {
     },
   ];
 
- const [activeIndex, setActiveIndex] = useState(0);
-const [dragOffset, setDragOffset] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [dragOffset, setDragOffset] = useState(0);
 
-const dragStartX = useRef<number | null>(null);
-const dragCurrentX = useRef<number | null>(null);
-const isDragging = useRef(false);
+  const dragStartX = useRef<number | null>(null);
+  const dragCurrentX = useRef<number | null>(null);
+  const isDragging = useRef(false);
 
   const getOffset = (index: number) => {
     const total = items.length;
     let diff = index - activeIndex;
+
     if (diff > total / 2) diff -= total;
     if (diff < -total / 2) diff += total;
+
     return diff;
   };
 
@@ -581,26 +587,26 @@ const isDragging = useRef(false);
     setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
   };
 
- const finishDrag = () => {
-  if (dragStartX.current === null || dragCurrentX.current === null) {
+  const finishDrag = () => {
+    if (dragStartX.current === null || dragCurrentX.current === null) {
+      dragStartX.current = null;
+      dragCurrentX.current = null;
+      isDragging.current = false;
+      setDragOffset(0);
+      return;
+    }
+
+    const diff = dragStartX.current - dragCurrentX.current;
+    const threshold = 70;
+
+    if (diff > threshold) next();
+    else if (diff < -threshold) prev();
+
     dragStartX.current = null;
     dragCurrentX.current = null;
     isDragging.current = false;
     setDragOffset(0);
-    return;
-  }
-
-  const diff = dragStartX.current - dragCurrentX.current;
-  const threshold = 70;
-
-  if (diff > threshold) next();
-  else if (diff < -threshold) prev();
-
-  dragStartX.current = null;
-  dragCurrentX.current = null;
-  isDragging.current = false;
-  setDragOffset(0);
-};
+  };
 
   const activeIndustries = new Set(items[activeIndex].industries);
 
@@ -670,11 +676,11 @@ const isDragging = useRef(false);
           dragStartX.current = e.clientX;
           dragCurrentX.current = e.clientX;
         }}
-      onMouseMove={(e) => {
-  if (!isDragging.current) return;
-  dragCurrentX.current = e.clientX;
-  setDragOffset(e.clientX - (dragStartX.current ?? e.clientX));
-}}
+        onMouseMove={(e) => {
+          if (!isDragging.current) return;
+          dragCurrentX.current = e.clientX;
+          setDragOffset(e.clientX - (dragStartX.current ?? e.clientX));
+        }}
         onMouseUp={finishDrag}
         onMouseLeave={finishDrag}
         onTouchStart={(e) => {
@@ -682,65 +688,75 @@ const isDragging = useRef(false);
           dragStartX.current = e.touches[0].clientX;
           dragCurrentX.current = e.touches[0].clientX;
         }}
-      onTouchMove={(e) => {
-  dragCurrentX.current = e.touches[0].clientX;
-  setDragOffset(e.touches[0].clientX - (dragStartX.current ?? e.touches[0].clientX));
-}}
+        onTouchMove={(e) => {
+          if (!isDragging.current) return;
+          dragCurrentX.current = e.touches[0].clientX;
+          setDragOffset(
+            e.touches[0].clientX - (dragStartX.current ?? e.touches[0].clientX)
+          );
+        }}
         onTouchEnd={finishDrag}
       >
         <div className="stage-carousel-track">
-     {items.map((item, index) => {
-  const offset = getOffset(index);
+          {items.map((item, index) => {
+            const offset = getOffset(index);
 
-  let positionClass = "stage-card-hidden";
-  if (offset === 0) positionClass = "stage-card-center";
-  else if (offset === -1) positionClass = "stage-card-left";
-  else if (offset === 1) positionClass = "stage-card-right";
-  else if (offset === 2 || offset === -2) positionClass = "stage-card-back";
+            let positionClass = "stage-card-hidden";
+            if (offset === 0) positionClass = "stage-card-center";
+            else if (offset === -1) positionClass = "stage-card-left";
+            else if (offset === 1) positionClass = "stage-card-right";
+            else if (offset === 2 || offset === -2)
+              positionClass = "stage-card-back";
 
-  const dragShift = isDragging.current ? dragOffset * 0.35 : 0;
+            const dragShift = isDragging.current ? dragOffset * 0.35 : 0;
 
-  return (
-    <div
-      key={item.stage}
-      className={`stage-carousel-item ${positionClass}`}
-      style={{
-        transform:
-          positionClass === "stage-card-center"
-            ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
-            : positionClass === "stage-card-left"
-            ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
-            : positionClass === "stage-card-right"
-            ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
-            : positionClass === "stage-card-back"
-            ? `translateX(calc(-50% + ${dragShift * 0.6}px)) translateZ(-300px) scale(0.66)`
-            : `translateX(calc(-50% + ${dragShift * 0.4}px)) translateZ(-420px) scale(0.58)`,
-      }}
-      onClick={() => {
-        if (offset === -1) prev();
-        else if (offset === 1) next();
-        else if (offset !== 0) setActiveIndex(index);
-      }}
-    >
-      <StageCard stage={item.stage} icon={item.icon} />
-    </div>
-  );
-})}
-      <div className="stage-carousel-hint">
-  Потяните влево или вправо
-</div>
-      <div className="stage-carousel-dots">
-        {items.map((_, index) => (
-          <button
-            key={index}
-            type="button"
-            className={`stage-carousel-dot ${
-              index === activeIndex ? "stage-carousel-dot-active" : ""
-            }`}
-            onClick={() => setActiveIndex(index)}
-            aria-label={`Слайд ${index + 1}`}
-          />
-        ))}
+            return (
+              <div
+                key={item.stage}
+                className={`stage-carousel-item ${positionClass}`}
+                style={{
+                  transform:
+                    positionClass === "stage-card-center"
+                      ? `translateX(calc(-50% + ${dragShift}px)) translateZ(0) scale(1)`
+                      : positionClass === "stage-card-left"
+                      ? `translateX(calc(-50% - 220px + ${dragShift}px)) translateZ(-160px) rotateY(24deg) scale(0.82)`
+                      : positionClass === "stage-card-right"
+                      ? `translateX(calc(-50% + 220px + ${dragShift}px)) translateZ(-160px) rotateY(-24deg) scale(0.82)`
+                      : positionClass === "stage-card-back"
+                      ? `translateX(calc(-50% + ${
+                          dragShift * 0.6
+                        }px)) translateZ(-300px) scale(0.66)`
+                      : `translateX(calc(-50% + ${
+                          dragShift * 0.4
+                        }px)) translateZ(-420px) scale(0.58)`,
+                }}
+                onClick={() => {
+                  if (offset === -1) prev();
+                  else if (offset === 1) next();
+                  else if (offset !== 0) setActiveIndex(index);
+                }}
+              >
+                <StageCard stage={item.stage} icon={item.icon} />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="stage-carousel-hint">Потяните влево или вправо</div>
+
+        <div className="stage-carousel-dots">
+          {items.map((_, index) => (
+            <button
+              key={index}
+              type="button"
+              className={`stage-carousel-dot ${
+                index === activeIndex ? "stage-carousel-dot-active" : ""
+              }`}
+              onClick={() => setActiveIndex(index)}
+              aria-label={`Слайд ${index + 1}`}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -853,6 +869,7 @@ export default function Home() {
   const handleUndo = () => {
     setHistory((prev) => {
       if (!prev.length) return prev;
+
       const last = prev[prev.length - 1];
 
       setClientsInput(last.clientsInput);
@@ -948,6 +965,7 @@ export default function Home() {
       { name: "Средний чек", value: Math.abs(upsell * 0.7) },
       { name: "Загрузка команды", value: Math.abs(opexEff * 0.8) },
     ];
+
     levers.sort((a, b) => b.value - a.value);
     return levers[0];
   }, [sales, retention, upsell, opexEff]);
@@ -1133,7 +1151,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[1fr_320px]">
+          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
             <div>
               <div className="input-grid mb-6 gap-3">
                 <label className="input-shell input-shell-highlight">
@@ -1231,7 +1249,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-6 flex items-center justify-between">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="text-sm text-white/58">Рычаги управления</div>
 
                 <div className="preview-actions-inline">
@@ -1254,7 +1272,7 @@ export default function Home() {
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-3 xl:grid-cols-4">
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 <Slider
                   title="Эффективность продаж"
                   subtitle="Влияние на конверсию и поток клиентов."
@@ -1470,6 +1488,10 @@ export default function Home() {
           background: #041027;
         }
 
+        img {
+          max-width: 100%;
+        }
+
         .cursor-glow {
           position: fixed;
           left: 0;
@@ -1494,24 +1516,16 @@ export default function Home() {
 
         .glass-card {
           position: relative;
-          border-radius: 28px;
+          border-radius: 24px;
           padding: 22px;
           overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.11) 0%,
-            rgba(224, 225, 227, 0.075) 48%,
-            rgba(224, 225, 227, 0.06) 100%
-          );
-          backdrop-filter: blur(26px) saturate(145%);
-          -webkit-backdrop-filter: blur(26px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: rgba(224, 225, 227, 0.06);
+          border: 1.5px solid rgba(224, 225, 227, 0.35);
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.22),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-            inset 8px 8px 24px rgba(255, 255, 255, 0.018),
-            inset -10px -10px 30px rgba(0, 0, 0, 0.05),
-            0 18px 50px rgba(0, 0, 0, 0.24);
+            0 6px 14px rgba(0, 0, 0, 0.18),
+            inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
         }
 
         .soft-glow {
@@ -1521,24 +1535,24 @@ export default function Home() {
             0 18px 50px rgba(0, 0, 0, 0.18);
         }
 
-       .glare-card::before,
-.glare-card-lite::before {
-  content: "";
-  position: absolute;
-  width: 34%;
-  height: 34%;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.11) 0%,
-    rgba(255, 255, 255, 0.05) 38%,
-    transparent 76%
-  );
-  filter: blur(34px);
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.8;
-}
+        .glare-card::before,
+        .glare-card-lite::before {
+          content: "";
+          position: absolute;
+          width: 34%;
+          height: 34%;
+          border-radius: 999px;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.11) 0%,
+            rgba(255, 255, 255, 0.05) 38%,
+            transparent 76%
+          );
+          filter: blur(34px);
+          pointer-events: none;
+          z-index: 0;
+          opacity: 0.8;
+        }
 
         .glare-card > *,
         .glare-card-lite > * {
@@ -1546,45 +1560,45 @@ export default function Home() {
           z-index: 1;
         }
 
-       .journey-compact-card:nth-child(1)::before,
-.result-doc-card:nth-child(1) .result-doc-card-inner::before,
-.metric-card:nth-child(1)::before,
-.model-card:nth-child(1)::before,
-.slider-card:nth-child(1)::before,
-.hero-chart-box::before,
-.snapshot-structure-card::before,
-.cta-card::before {
-  left: 14%;
-  top: 10%;
-  
-}
+        .journey-compact-card:nth-child(1)::before,
+        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
+        .metric-card:nth-child(1)::before,
+        .model-card:nth-child(1)::before,
+        .slider-card:nth-child(1)::before,
+        .hero-chart-box::before,
+        .snapshot-structure-card::before,
+        .cta-card::before {
+          left: 14%;
+          top: 10%;
+        }
 
-.journey-compact-card:nth-child(2)::before,
-.result-doc-card:nth-child(2) .result-doc-card-inner::before,
-.metric-card:nth-child(2)::before,
-.model-card:nth-child(2)::before,
-.slider-card:nth-child(2)::before {
-  left: 58%;
-  top: 16%;
-}
+        .journey-compact-card:nth-child(2)::before,
+        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
+        .metric-card:nth-child(2)::before,
+        .model-card:nth-child(2)::before,
+        .slider-card:nth-child(2)::before {
+          left: 58%;
+          top: 16%;
+        }
 
-.journey-compact-card:nth-child(3)::before,
-.result-doc-card:nth-child(3) .result-doc-card-inner::before,
-.metric-card:nth-child(3)::before,
-.model-card:nth-child(3)::before,
-.slider-card:nth-child(3)::before {
-  left: 66%;
-  top: 42%;
-}
+        .journey-compact-card:nth-child(3)::before,
+        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
+        .metric-card:nth-child(3)::before,
+        .model-card:nth-child(3)::before,
+        .slider-card:nth-child(3)::before {
+          left: 66%;
+          top: 42%;
+        }
 
-.result-doc-card:nth-child(4) .result-doc-card-inner::before,
-.slider-card:nth-child(4)::before,
-.hero-preview-box::before,
-.side-note-card::before,
-.cta-box::before {
-  left: 22%;
-  top: 52%;
-}
+        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
+        .slider-card:nth-child(4)::before,
+        .hero-preview-box::before,
+        .side-note-card::before,
+        .cta-box::before {
+          left: 22%;
+          top: 52%;
+        }
+
         .sticky-header {
           position: sticky;
           top: 0;
@@ -1592,6 +1606,7 @@ export default function Home() {
           margin: 0 -16px 18px;
           padding: 12px 16px 10px;
           backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
           background: linear-gradient(
             180deg,
             rgba(4, 16, 39, 0.94),
@@ -1612,6 +1627,8 @@ export default function Home() {
           align-items: center;
           gap: 8px;
           flex-shrink: 0;
+          flex-wrap: wrap;
+          justify-content: flex-end;
         }
 
         .logo-main {
@@ -1767,6 +1784,7 @@ export default function Home() {
           display: flex;
           align-items: flex-start;
           justify-content: flex-end;
+          min-width: 0;
         }
 
         .hero-chart-float {
@@ -1774,6 +1792,7 @@ export default function Home() {
           width: min(760px, 100%);
           margin-left: auto;
           padding-top: 8px;
+          min-width: 0;
         }
 
         .hero-chart-float-title {
@@ -1796,91 +1815,90 @@ export default function Home() {
 
         .hero-levers-inline-float {
           margin-bottom: 12px;
+          justify-content: flex-end;
         }
 
-.hero-tag {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: auto;
-  min-width: fit-content;
-  min-height: 48px;
-  padding: 10px 22px;
-  border-radius: 999px;
-  white-space: nowrap;
-  overflow: hidden;
+        .hero-tag {
+          position: relative;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: auto;
+          min-width: fit-content;
+          min-height: 48px;
+          padding: 10px 22px;
+          border-radius: 999px;
+          white-space: nowrap;
+          overflow: hidden;
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.1) 0%,
+            rgba(224, 225, 227, 0.065) 48%,
+            rgba(224, 225, 227, 0.05) 100%
+          );
+          backdrop-filter: blur(24px) saturate(145%);
+          -webkit-backdrop-filter: blur(24px) saturate(145%);
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+            0 12px 24px rgba(0, 0, 0, 0.18);
+          color: rgba(255, 255, 255, 0.78);
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1;
+          text-align: center;
+          transition: 0.25s ease;
+        }
 
-  background: linear-gradient(
-    135deg,
-    rgba(224, 225, 227, 0.1) 0%,
-    rgba(224, 225, 227, 0.065) 48%,
-    rgba(224, 225, 227, 0.05) 100%
-  );
+        .hero-tag::before {
+          content: "";
+          position: absolute;
+          width: 34%;
+          height: 60%;
+          left: 12%;
+          top: 10%;
+          border-radius: 999px;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.04) 38%,
+            transparent 76%
+          );
+          filter: blur(18px);
+          pointer-events: none;
+        }
 
-  backdrop-filter: blur(24px) saturate(145%);
-  -webkit-backdrop-filter: blur(24px) saturate(145%);
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: linear-gradient(
+            135deg,
+            rgba(247, 210, 55, 0.96) 0%,
+            rgba(247, 210, 55, 0.9) 100%
+          );
+          border-color: rgba(247, 210, 55, 0.55);
+          box-shadow:
+            0 0 0 1px rgba(247, 210, 55, 0.18),
+            0 12px 28px rgba(247, 210, 55, 0.2);
+        }
 
-  border: 1px solid rgba(255, 255, 255, 0.14);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-    0 12px 24px rgba(0, 0, 0, 0.18);
-
-  color: rgba(255, 255, 255, 0.78);
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1;
-  text-align: center;
-  transition: 0.25s ease;
-}
-.hero-tag::before {
-  content: "";
-  position: absolute;
-  width: 34%;
-  height: 60%;
-  left: 12%;
-  top: 10%;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.1) 0%,
-    rgba(255, 255, 255, 0.04) 38%,
-    transparent 76%
-  );
-  filter: blur(18px);
-  pointer-events: none;
-}
-.hero-tag-active {
-  color: #0b1d3a;
-  background: linear-gradient(
-    135deg,
-    rgba(247, 210, 55, 0.96) 0%,
-    rgba(247, 210, 55, 0.9) 100%
-  );
-  border-color: rgba(247, 210, 55, 0.55);
-  box-shadow:
-    0 0 0 1px rgba(247, 210, 55, 0.18),
-    0 12px 28px rgba(247, 210, 55, 0.2);
-}
-.hero-tag-active::before {
-  content: "";
-  position: absolute;
-  width: 34%;
-  height: 60%;
-  left: 12%;
-  top: 10%;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle,
-    rgba(255, 255, 255, 0.18) 0%,
-    rgba(255, 255, 255, 0.07) 38%,
-    transparent 76%
-  );
-  filter: blur(18px);
-  pointer-events: none;
-}
+        .hero-tag-active::before {
+          content: "";
+          position: absolute;
+          width: 34%;
+          height: 60%;
+          left: 12%;
+          top: 10%;
+          border-radius: 999px;
+          background: radial-gradient(
+            circle,
+            rgba(255, 255, 255, 0.18) 0%,
+            rgba(255, 255, 255, 0.07) 38%,
+            transparent 76%
+          );
+          filter: blur(18px);
+          pointer-events: none;
+        }
 
         .hero-chart-box {
           position: relative;
@@ -1902,6 +1920,7 @@ export default function Home() {
             inset 0 1px 0 rgba(255, 255, 255, 0.18),
             inset 0 -1px 0 rgba(255, 255, 255, 0.05),
             0 18px 50px rgba(0, 0, 0, 0.24);
+          min-width: 0;
         }
 
         .hero-chart-metrics-row {
@@ -2024,6 +2043,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           gap: 8px;
+          min-width: 0;
         }
 
         .bar-chart-row-top {
@@ -2031,6 +2051,7 @@ export default function Home() {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
+          min-width: 0;
         }
 
         .bar-chart-label {
@@ -2039,6 +2060,7 @@ export default function Home() {
           color: rgba(255, 255, 255, 0.82);
           text-align: left;
           line-height: 1.35;
+          min-width: 0;
         }
 
         .bar-chart-value {
@@ -2318,7 +2340,7 @@ export default function Home() {
         }
 
         .journey-compact-card {
-        isolation: isolate;
+          isolation: isolate;
           position: relative;
           overflow: hidden;
           border-radius: 26px;
@@ -2405,6 +2427,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           gap: 8px;
+          min-width: 0;
         }
 
         .input-shell-highlight {
@@ -2472,6 +2495,7 @@ export default function Home() {
           padding: 14px 16px;
           border-radius: 18px;
           backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
           color: white;
           font-size: 20px;
           font-weight: 500;
@@ -2665,6 +2689,7 @@ export default function Home() {
           font-weight: 700;
           color: #f7d237;
           text-shadow: 0 0 24px rgba(247, 210, 55, 0.14);
+          overflow-wrap: anywhere;
         }
 
         .accent-word {
@@ -2694,7 +2719,7 @@ export default function Home() {
         }
 
         .result-doc-card-inner {
-        isolation: isolate;
+          isolation: isolate;
           position: relative;
           min-height: 320px;
           border-radius: 30px;
@@ -2856,8 +2881,9 @@ export default function Home() {
         .stage-carousel-scene {
           position: relative;
           perspective: 1800px;
-          min-height: 360px;
+          min-height: 420px;
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           touch-action: pan-y;
@@ -2929,17 +2955,21 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           gap: 10px;
+          position: relative;
+          z-index: 3;
         }
 
-.stage-carousel-hint {
-  margin-top: 14px;
-  text-align: center;
-  font-size: 12px;
-  line-height: 1.4;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.42);
-}
+        .stage-carousel-hint {
+          margin-top: 14px;
+          text-align: center;
+          font-size: 12px;
+          line-height: 1.4;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.42);
+          position: relative;
+          z-index: 3;
+        }
 
         .stage-carousel-dot {
           width: 10px;
@@ -3543,7 +3573,7 @@ export default function Home() {
           }
 
           .stage-carousel-scene {
-            min-height: 320px;
+            min-height: 360px;
           }
 
           .stage-carousel-track {
@@ -3573,22 +3603,30 @@ export default function Home() {
           .cursor-glow {
             display: none;
           }
- .stage-carousel-hint {
-  display: block;
-} 
+
+          .stage-carousel-hint {
+            display: block;
+          }
+
           .sticky-header {
             top: 0;
             margin: 0 -16px 18px;
             padding: 10px 16px 8px;
           }
 
-          .logo-main {
-            width: 150px;
-            height: 42px;
+          .header-row {
+            align-items: flex-start;
+            flex-direction: column;
           }
 
           .header-actions {
-            gap: 6px;
+            width: 100%;
+            justify-content: space-between;
+          }
+
+          .logo-main {
+            width: 150px;
+            height: 42px;
           }
 
           .contact-btn {
@@ -3608,17 +3646,23 @@ export default function Home() {
           }
 
           .tg-gradient-btn-header {
-            padding: 9px 12px;
+            padding: 10px 14px;
             font-size: 12px;
+            margin-left: auto;
           }
 
           .hero-main-title {
             font-size: 52px;
           }
 
+          .hero-main-subtitle {
+            font-size: 28px;
+          }
+
           .hero-main-copy,
           .section-copy {
             font-size: 17px;
+            line-height: 1.65;
           }
 
           .section-title {
@@ -3634,11 +3678,25 @@ export default function Home() {
             font-size: 18px;
           }
 
+          .hero-highlight-chip:not(:last-child)::after {
+            display: none;
+          }
+
           .hero-chart-metrics-row,
           .input-grid,
           .dashboard-grid,
           .results-grid-2x2 {
             grid-template-columns: 1fr;
+          }
+
+          .hero-levers-inline-float {
+            justify-content: flex-start;
+          }
+
+          .hero-chart-float-title {
+            text-align: left;
+            font-size: 24px;
+            padding-right: 0;
           }
 
           .hero-tag {
@@ -3647,8 +3705,18 @@ export default function Home() {
             padding: 10px 16px;
           }
 
+          .bar-chart-wrap {
+            padding: 48px 14px 14px;
+          }
+
           .bar-chart-columns {
-            gap: 6px;
+            gap: 10px;
+          }
+
+          .bar-chart-row-top {
+            gap: 8px;
+            align-items: flex-start;
+            flex-direction: column;
           }
 
           .metric-head {
@@ -3663,21 +3731,23 @@ export default function Home() {
           }
 
           .reserve-amount {
-            font-size: 2.4rem;
+            font-size: 2.2rem;
           }
 
           .metric-main-value {
             font-size: 1.85rem;
+            white-space: normal;
           }
 
           .model-main-value {
             font-size: 1.2rem;
+            white-space: normal;
           }
 
           .preview-actions-inline {
             gap: 10px;
             flex-wrap: wrap;
-            justify-content: flex-end;
+            justify-content: flex-start;
           }
 
           .industry-pill {
@@ -3686,16 +3756,20 @@ export default function Home() {
             font-size: 14px;
           }
 
+          .industries-pills-carousel {
+            justify-content: flex-start;
+          }
+
           .stage-carousel-scene {
-            min-height: 260px;
+            min-height: 300px;
           }
 
           .stage-carousel-track {
-            height: 260px;
+            height: 220px;
           }
 
           .stage-carousel-item {
-            width: min(250px, 70vw);
+            width: min(250px, 76vw);
           }
 
           .stage-card-split {
@@ -3741,6 +3815,8 @@ export default function Home() {
             min-height: 110px;
             padding-left: 20px;
             font-size: 46px;
+            justify-content: center;
+            padding-left: 0;
           }
 
           .builder-block-1,
@@ -3748,6 +3824,11 @@ export default function Home() {
           .builder-block-5 {
             min-height: 66px;
             font-size: 20px;
+          }
+
+          .builder-block-4 {
+            font-size: 28px;
+            min-height: 88px;
           }
 
           .start-card-inner,
@@ -3759,9 +3840,133 @@ export default function Home() {
             font-size: 30px;
           }
 
+          .result-doc-card,
+          .result-doc-card-inner {
+            min-height: auto;
+          }
+
+          .result-doc-title {
+            font-size: 32px;
+          }
+
+          .result-doc-text {
+            font-size: 16px;
+            line-height: 1.75;
+          }
+
           .result-doc-start-btn {
             min-width: 92px;
             padding: 10px 14px;
+            font-size: 13px;
+          }
+
+          .cta-box {
+            min-width: 0;
+            max-width: none;
+            width: 100%;
+          }
+
+          .hero-chart-bottom {
+            grid-template-columns: 1fr;
+          }
+
+          .hero-money-card strong {
+            white-space: normal;
+          }
+
+          .hero-active-note {
+            border-radius: 18px;
+            display: flex;
+            align-items: flex-start;
+          }
+        }
+
+        @media (max-width: 480px) {
+          .hero-section {
+            padding: 18px 14px 18px;
+            border-radius: 28px;
+          }
+
+          .hero-main-title {
+            font-size: 42px;
+            line-height: 0.92;
+          }
+
+          .hero-main-subtitle {
+            margin-top: 14px;
+            font-size: 22px;
+          }
+
+          .hero-main-copy {
+            margin-top: 18px;
+            font-size: 15px;
+          }
+
+          .hero-actions {
+            gap: 10px;
+          }
+
+          .section-title {
+            font-size: 28px;
+          }
+
+          .section-copy {
+            font-size: 15px;
+          }
+
+          .journey-compact-title {
+            font-size: 20px;
+          }
+
+          .journey-compact-text {
+            font-size: 14px;
+            line-height: 1.65;
+          }
+
+          .glass-input {
+            font-size: 18px;
+            padding: 13px 14px;
+          }
+
+          .metric-delta-top,
+          .model-delta-top {
+            font-size: 16px;
+          }
+
+          .metric-label,
+          .model-label {
+            font-size: 14px;
+          }
+
+          .metric-flag {
+            font-size: 10px;
+            padding: 5px 8px;
+          }
+
+          .reserve-amount {
+            font-size: 1.9rem;
+          }
+
+          .results-roadmap-note {
+            font-size: 15px;
+            line-height: 1.7;
+          }
+
+          .analysis-left-title {
+            font-size: 18px;
+          }
+
+          .snapshot-builder-copy {
+            font-size: 14px;
+            line-height: 1.6;
+          }
+
+          .start-card-price-float {
+            font-size: 24px;
+          }
+
+          .start-card-btn-floating {
+            padding: 10px 16px;
             font-size: 13px;
           }
         }
