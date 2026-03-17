@@ -3075,10 +3075,6 @@ export default function Home() {
           justify-content: center;
           z-index: 20;
           text-decoration: none;
-          background: #041027;
-          box-shadow:
-            0 0 0 12px #041027,
-            0 18px 36px rgba(0, 0, 0, 0.28);
         }
 
         .results-center-play-inner {
