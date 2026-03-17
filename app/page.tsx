@@ -464,8 +464,10 @@ function ResultDocCard({
   className?: string;
 }) {
   return (
-    <div className={`results-drum-card tilt-card ${className}`}>
-      <div className="results-drum-card-inner tilt-inner glare-card">
+    <div
+      className={`result-doc-card result-doc-card-shaped tilt-card ${className}`}
+    >
+      <div className="result-doc-card-inner tilt-inner glare-card">
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
         </div>
@@ -507,7 +509,7 @@ function StartCard({
   );
 }
 
-function PrettyRing({
+function RingMetric({
   label,
   fact,
   plan,
@@ -523,24 +525,23 @@ function PrettyRing({
   const angle = (percent / 100) * 360;
 
   return (
-    <div className="stage-kpi-ring-card pretty-ring-card">
-      <div className="stage-kpi-label pretty-ring-label">
+    <div className="stage-kpi-ring-card">
+      <div className="stage-kpi-label">
         {label} {fact}/{plan}
       </div>
 
       <div
-        className="stage-kpi-ring pretty-ring-shell"
+        className="stage-kpi-ring"
         style={{
           background: `conic-gradient(
             #f7d237 0deg,
-            #ffd85f ${Math.max(1, angle * 0.58)}deg,
-            #9b6cff ${angle}deg,
-            rgba(255,255,255,0.12) ${angle}deg,
-            rgba(255,255,255,0.12) 360deg
+            #f7d237 ${angle}deg,
+            rgba(255,255,255,0.14) ${angle}deg,
+            rgba(255,255,255,0.14) 360deg
           )`,
         }}
       >
-        <div className="stage-kpi-ring-inner pretty-ring-inner">
+        <div className="stage-kpi-ring-inner">
           <span>{Math.round(percent)}%</span>
         </div>
       </div>
@@ -548,43 +549,45 @@ function PrettyRing({
   );
 }
 
-function PrettyCompareBar({
+function FactPlanBar({
   label,
   fact,
   plan,
+  invert = false,
 }: {
   label: string;
   fact: number;
   plan: number;
+  invert?: boolean;
 }) {
   const max = Math.max(fact, plan, 1);
-  const factWidth = Math.max(8, (fact / max) * 100);
-  const planWidth = Math.max(8, (plan / max) * 100);
+  const factWidth = (fact / max) * 100;
+  const planWidth = (plan / max) * 100;
 
   return (
-    <div className="stage-compare-block">
-      <div className="stage-compare-title">
+    <div className="stage-factplan-block">
+      <div className="stage-factplan-label">
         {label} {fact}/{plan}
       </div>
 
-      <div className="stage-compare-row">
-        <div className="stage-compare-track">
+      <div className="stage-factplan-rows">
+        <div className="stage-factplan-row">
           <div
-            className="stage-compare-fill stage-compare-fill-fact"
+            className={`stage-factplan-bar ${
+              invert ? "stage-factplan-bar-invert" : ""
+            }`}
             style={{ width: `${factWidth}%` }}
           />
+          <div className="stage-factplan-caption">fact</div>
         </div>
-        <span className="stage-compare-caption">fact</span>
-      </div>
 
-      <div className="stage-compare-row">
-        <div className="stage-compare-track">
+        <div className="stage-factplan-row">
           <div
-            className="stage-compare-fill stage-compare-fill-plan"
+            className="stage-factplan-bar stage-factplan-bar-plan"
             style={{ width: `${planWidth}%` }}
           />
+          <div className="stage-factplan-caption">plan</div>
         </div>
-        <span className="stage-compare-caption">plan</span>
       </div>
     </div>
   );
@@ -640,7 +643,7 @@ function StageCard({
 
         <div className="stage-kpi-grid">
           {metrics.map((item) => (
-            <PrettyRing
+            <RingMetric
               key={item.label}
               label={item.label}
               fact={item.fact}
@@ -649,10 +652,11 @@ function StageCard({
           ))}
         </div>
 
-        <PrettyCompareBar
+        <FactPlanBar
           label="deal cycle"
           fact={cycle.fact}
           plan={cycle.plan}
+          invert
         />
       </div>
     </div>
@@ -825,112 +829,6 @@ function StageCarousel() {
           metrics={items[activeIndex].metrics}
           cycle={items[activeIndex].cycle}
         />
-      </div>
-    </div>
-  );
-}
-
-function GoalsDrumCarousel({
-  payUrl,
-}: {
-  payUrl: string;
-}) {
-  const items = [
-    {
-      tab: "ECONOMIC RATE",
-      title: "Executive Summary",
-      text: "Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяют главный фокус на данный момент.",
-    },
-    {
-      tab: "GROWTH LIMIT",
-      title: "Key Conclusions",
-      text: "Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели.",
-    },
-    {
-      tab: "SOLUTION",
-      title: "Strategy&Practice",
-      text: "Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода.",
-    },
-    {
-      tab: "JTBD",
-      title: "RoadMap",
-      text: "Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP.",
-    },
-  ];
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % items.length);
-    }, 3400);
-
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [items.length]);
-
-  const restart = (index: number) => {
-    setActiveIndex(index);
-    if (timerRef.current) window.clearInterval(timerRef.current);
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % items.length);
-    }, 3400);
-  };
-
-  return (
-    <div className="goals-drum-wrap">
-      <div className="goals-drum-tabs">
-        {items.map((item, index) => (
-          <button
-            key={item.title}
-            type="button"
-            className={`goals-drum-tab ${
-              index === activeIndex ? "goals-drum-tab-active" : ""
-            }`}
-            onClick={() => restart(index)}
-          >
-            {item.tab}
-          </button>
-        ))}
-      </div>
-
-      <div className="goals-drum-scene">
-        <div
-          className="goals-drum"
-          style={{
-            transform: `rotateY(${-activeIndex * 90}deg)`,
-          }}
-        >
-          {items.map((item, index) => (
-            <div
-              key={item.title}
-              className="goals-drum-face"
-              style={{
-                transform: `rotateY(${index * 90}deg) translateZ(300px)`,
-              }}
-            >
-              <ResultDocCard
-                tab={item.tab}
-                title={item.title}
-                text={item.text}
-              />
-            </div>
-          ))}
-        </div>
-
-        <a href={payUrl} className="results-center-play" aria-label="Начать">
-          <span className="results-center-play-inner">
-            <svg
-              viewBox="0 0 24 24"
-              className="results-center-play-icon"
-              aria-hidden="true"
-            >
-              <path d="M8 6.5v11l9-5.5-9-5.5Z" fill="currentColor" />
-            </svg>
-          </span>
-        </a>
       </div>
     </div>
   );
@@ -1540,7 +1438,49 @@ export default function Home() {
             </p>
           </div>
 
-          <GoalsDrumCarousel payUrl={payUrl} />
+          <div className="results-shaped-wrap">
+            <div className="results-shaped-grid">
+              <ResultDocCard
+                className="result-shaped result-shaped-top-left"
+                tab="ECONOMIC RATE"
+                title="Executive Summary"
+                text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
+              />
+
+              <ResultDocCard
+                className="result-shaped result-shaped-top-right"
+                tab="GROWTH LIMIT"
+                title="Key Conclusions"
+                text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
+              />
+
+              <ResultDocCard
+                className="result-shaped result-shaped-bottom-left"
+                tab="SOLUTION"
+                title="Strategy&Practice"
+                text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
+              />
+
+              <ResultDocCard
+                className="result-shaped result-shaped-bottom-right"
+                tab="JTBD"
+                title="RoadMap"
+                text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+              />
+            </div>
+
+            <a href={payUrl} className="results-center-play" aria-label="Начать">
+              <span className="results-center-play-inner">
+                <svg
+                  viewBox="0 0 24 24"
+                  className="results-center-play-icon"
+                  aria-hidden="true"
+                >
+                  <path d="M8 6.5v11l9-5.5-9-5.5Z" fill="currentColor" />
+                </svg>
+              </span>
+            </a>
+          </div>
 
           <div className="results-roadmap-note">
             После получения и изучения результатов у Вас есть возможность
@@ -1823,6 +1763,7 @@ export default function Home() {
         }
 
         .journey-compact-card:nth-child(1)::before,
+        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
         .metric-card:nth-child(1)::before,
         .model-card:nth-child(1)::before,
         .slider-card:nth-child(1)::before,
@@ -1834,6 +1775,7 @@ export default function Home() {
         }
 
         .journey-compact-card:nth-child(2)::before,
+        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
         .metric-card:nth-child(2)::before,
         .model-card:nth-child(2)::before,
         .slider-card:nth-child(2)::before {
@@ -1842,6 +1784,7 @@ export default function Home() {
         }
 
         .journey-compact-card:nth-child(3)::before,
+        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
         .metric-card:nth-child(3)::before,
         .model-card:nth-child(3)::before,
         .slider-card:nth-child(3)::before {
@@ -1849,6 +1792,8 @@ export default function Home() {
           top: 42%;
         }
 
+        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
+        .slider-card:nth-child(4)::before,
         .hero-preview-box::before,
         .side-note-card::before,
         .cta-box::before {
@@ -2964,95 +2909,15 @@ export default function Home() {
           will-change: transform;
         }
 
-        .results-roadmap-note {
-          margin-top: 18px;
-          font-size: 18px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.72);
-          max-width: 980px;
+        .result-doc-card {
+          min-height: 320px;
         }
 
-        .results-roadmap-note span {
-          color: #f7d237;
-          font-weight: 700;
-        }
-
-        .goals-drum-wrap {
-          margin-top: 26px;
-        }
-
-        .goals-drum-tabs {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          justify-content: center;
-          margin-bottom: 18px;
-        }
-
-        .goals-drum-tab {
-          min-height: 42px;
-          padding: 0 16px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: rgba(255, 255, 255, 0.06);
-          color: rgba(255, 255, 255, 0.74);
-          font-size: 12px;
-          font-weight: 800;
-          letter-spacing: 0.04em;
-          transition: 0.22s ease;
-        }
-
-        .goals-drum-tab-active {
-          background: #f7d237;
-          color: #0b1d3a;
-          border-color: rgba(247, 210, 55, 0.48);
-          box-shadow:
-            0 10px 24px rgba(247, 210, 55, 0.18),
-            0 0 22px rgba(247, 210, 55, 0.12);
-        }
-
-        .goals-drum-scene {
+        .result-doc-card-inner {
+          isolation: isolate;
           position: relative;
-          height: 560px;
-          perspective: 1800px;
-          perspective-origin: center center;
-          overflow: hidden;
-        }
-
-        .goals-drum {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 0;
-          height: 0;
-          transform-style: preserve-3d;
-          transform: translate(-50%, -50%);
-          transition: transform 0.95s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        .goals-drum-face {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 434px;
-          height: 224px;
-          margin-left: -217px;
-          margin-top: -112px;
-          transform-style: preserve-3d;
-        }
-
-        .results-drum-card {
-          width: 100%;
-          height: 100%;
-        }
-
-        .results-drum-card-inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 28px;
-          padding: 22px;
-          overflow: hidden;
+          min-height: 320px;
+          border-radius: 30px;
           border: 1px solid rgba(255, 255, 255, 0.1);
           background: linear-gradient(
             135deg,
@@ -3061,6 +2926,8 @@ export default function Home() {
           );
           backdrop-filter: blur(22px);
           -webkit-backdrop-filter: blur(22px);
+          padding: 26px;
+          overflow: hidden;
           box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.16),
             0 20px 44px rgba(0, 0, 0, 0.16);
@@ -3094,8 +2961,8 @@ export default function Home() {
         .result-doc-title {
           position: relative;
           z-index: 2;
-          margin-top: 20px;
-          font-size: clamp(26px, 2.2vw, 38px);
+          margin-top: 26px;
+          font-size: clamp(34px, 3vw, 56px);
           line-height: 1.04;
           font-weight: 600;
           color: white;
@@ -3105,58 +2972,174 @@ export default function Home() {
         .result-doc-text {
           position: relative;
           z-index: 2;
-          margin-top: 14px;
-          font-size: 14px;
-          line-height: 1.7;
+          margin-top: 20px;
+          font-size: 17px;
+          line-height: 1.9;
           color: rgba(255, 255, 255, 0.72);
+        }
+
+        .results-roadmap-note {
+          margin-top: 18px;
+          font-size: 18px;
+          line-height: 1.9;
+          color: rgba(255, 255, 255, 0.72);
+          max-width: 980px;
+        }
+
+        .results-roadmap-note span {
+          color: #f7d237;
+          font-weight: 700;
+        }
+
+        .results-shaped-wrap {
+          position: relative;
+          margin-top: 24px;
+        }
+
+        .results-shaped-grid {
+          position: relative;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 28px;
+        }
+
+        .result-doc-card-shaped {
+          position: relative;
+          min-height: 320px;
+        }
+
+        .result-doc-card-shaped .result-doc-card-inner {
+          min-height: 320px;
+        }
+
+        .result-shaped-top-left,
+        .result-shaped-top-right,
+        .result-shaped-bottom-left,
+        .result-shaped-bottom-right {
+          position: relative;
+        }
+
+        .result-shaped-top-left::after,
+        .result-shaped-top-right::after,
+        .result-shaped-bottom-left::after,
+        .result-shaped-bottom-right::after {
+          content: "";
+          position: absolute;
+          z-index: 5;
+          background: #041027;
+          pointer-events: none;
+        }
+
+        .result-shaped-top-left::after {
+          width: 150px;
+          height: 110px;
+          right: -14px;
+          bottom: -14px;
+          border-top-left-radius: 38px;
+        }
+
+        .result-shaped-top-right::after {
+          width: 150px;
+          height: 110px;
+          left: -14px;
+          bottom: -14px;
+          border-top-right-radius: 38px;
+        }
+
+        .result-shaped-bottom-left::after {
+          width: 150px;
+          height: 110px;
+          right: -14px;
+          top: -14px;
+          border-bottom-left-radius: 38px;
+        }
+
+        .result-shaped-bottom-right::after {
+          width: 150px;
+          height: 110px;
+          left: -14px;
+          top: -14px;
+          border-bottom-right-radius: 38px;
         }
 
         .results-center-play {
           position: absolute;
           left: 50%;
           top: 50%;
+          width: 164px;
+          height: 116px;
           transform: translate(-50%, -50%);
+          border-radius: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
+          z-index: 20;
           text-decoration: none;
-          background: transparent;
-          box-shadow: none;
-          padding: 0;
-          z-index: 40;
+          background: #041027;
+          box-shadow:
+            0 0 0 12px #041027,
+            0 18px 36px rgba(0, 0, 0, 0.28);
         }
 
         .results-center-play-inner {
-          width: 110px;
-          height: 110px;
-          border-radius: 26px;
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border-radius: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.16);
           background: linear-gradient(
-            135deg,
+            90deg,
             #47b6f6 0%,
-            #7c84ff 46%,
+            #5da7ff 22%,
+            #7c84ff 48%,
+            #9c6dff 72%,
             #c25cf3 100%
           );
+          background-size: 220% 220%;
           box-shadow:
-            0 18px 48px rgba(120, 100, 255, 0.35),
-            0 0 80px rgba(120, 100, 255, 0.25);
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          border: 1px solid rgba(255, 255, 255, 0.18);
+            0 10px 30px rgba(71, 96, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+          transition:
+            transform 0.22s ease,
+            filter 0.22s ease,
+            box-shadow 0.22s ease;
+        }
+
+        .results-center-play-inner::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.22) 25%,
+            transparent 50%
+          );
+          transform: translateX(-130%);
+          animation: tgShine 3.8s ease-in-out infinite;
         }
 
         .results-center-play:hover .results-center-play-inner {
-          transform: scale(1.08);
+          transform: translateY(-1px) scale(1.02);
+          filter: brightness(1.03);
           box-shadow:
-            0 24px 60px rgba(120, 100, 255, 0.45),
-            0 0 100px rgba(120, 100, 255, 0.35);
+            0 14px 34px rgba(71, 96, 255, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.22);
         }
 
         .results-center-play-icon {
-          width: 28px;
-          height: 28px;
-          color: white;
+          position: relative;
+          z-index: 1;
+          width: 34px;
+          height: 34px;
+          color: #ffffff;
+          display: block;
+          filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.16));
         }
 
         .industries-pills {
@@ -3255,7 +3238,7 @@ export default function Home() {
         }
 
         .stage-card-portrait {
-          width: min(504px, 100%);
+          width: min(720px, 100%);
           aspect-ratio: 4 / 5;
           border-radius: 34px;
           overflow: hidden;
@@ -3270,12 +3253,12 @@ export default function Home() {
 
         .stage-card-portrait-top {
           position: relative;
-          padding: 22px 20px 18px;
+          padding: 26px 24px 22px;
           background: linear-gradient(
             135deg,
             rgba(224, 225, 227, 0.7) 0%,
-            rgba(145, 154, 179, 0.7) 45%,
-            rgba(70, 86, 126, 0.7) 100%
+            rgba(145, 154, 179, 0.54) 45%,
+            rgba(70, 86, 126, 0.46) 100%
           );
           backdrop-filter: blur(18px) saturate(120%);
           -webkit-backdrop-filter: blur(18px) saturate(120%);
@@ -3304,14 +3287,14 @@ export default function Home() {
 
         .stage-card-portrait-stage {
           position: absolute;
-          top: 20px;
-          right: 20px;
+          top: 24px;
+          right: 24px;
           text-align: right;
         }
 
         .stage-card-portrait-stage span {
           display: block;
-          font-size: 12px;
+          font-size: 14px;
           line-height: 1;
           color: rgba(255, 255, 255, 0.88);
           text-transform: uppercase;
@@ -3321,7 +3304,7 @@ export default function Home() {
         .stage-card-portrait-stage strong {
           display: block;
           margin-top: 8px;
-          font-size: clamp(40px, 5vw, 66px);
+          font-size: clamp(56px, 7vw, 94px);
           line-height: 0.9;
           color: #ffffff;
           letter-spacing: -0.08em;
@@ -3332,14 +3315,14 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
-          gap: 18px;
-          padding-right: 144px;
-          padding-top: 84px;
+          gap: 24px;
+          padding-right: 210px;
+          padding-top: 110px;
         }
 
         .stage-copy-group h4 {
           margin: 0;
-          font-size: 20px;
+          font-size: 24px;
           line-height: 1.08;
           font-weight: 500;
           color: rgba(255, 255, 255, 0.98);
@@ -3347,46 +3330,47 @@ export default function Home() {
         }
 
         .stage-copy-group p {
-          margin: 8px 0 0;
-          font-size: 14px;
-          line-height: 1.58;
+          margin: 10px 0 0;
+          font-size: 16px;
+          line-height: 1.65;
           color: rgba(255, 255, 255, 0.92);
         }
 
         .stage-card-portrait-bottom {
           position: relative;
-          padding: 18px 18px 18px;
+          padding: 22px 20px 20px;
           background:
             radial-gradient(
-              circle at 18% 82%,
-              rgba(31, 94, 255, 0.38) 0%,
-              transparent 28%
-            ),
-            radial-gradient(
-              circle at 72% 32%,
-              rgba(255, 166, 120, 0.34) 0%,
+              circle at 20% 78%,
+              rgba(31, 94, 255, 0.42) 0%,
               transparent 30%
             ),
             radial-gradient(
-              circle at 82% 78%,
-              rgba(199, 78, 255, 0.28) 0%,
-              transparent 24%
+              circle at 72% 34%,
+              rgba(255, 156, 108, 0.54) 0%,
+              transparent 34%
+            ),
+            radial-gradient(
+              circle at 85% 75%,
+              rgba(199, 78, 255, 0.34) 0%,
+              transparent 28%
             ),
             linear-gradient(
               135deg,
-              #051884 0%,
-              #0a1763 22%,
-              #241385 52%,
-              #7139a2 100%
+              #061a8f 0%,
+              #0b1970 18%,
+              #1a1486 42%,
+              #40207b 68%,
+              #7a3f8f 100%
             );
           opacity: 1;
         }
 
         .stage-card-bottom-head {
           position: absolute;
-          top: 16px;
-          right: 18px;
-          font-size: clamp(22px, 3vw, 38px);
+          top: 18px;
+          right: 20px;
+          font-size: clamp(28px, 4vw, 48px);
           line-height: 0.95;
           font-weight: 700;
           color: rgba(255, 255, 255, 0.98);
@@ -3396,107 +3380,103 @@ export default function Home() {
         .stage-kpi-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px 16px;
+          gap: 18px 22px;
           width: 52%;
-          padding-top: 12px;
+          padding-top: 18px;
         }
 
         .stage-kpi-ring-card {
           display: flex;
           flex-direction: column;
-          gap: 8px;
+          gap: 10px;
         }
 
         .stage-kpi-label {
-          font-size: 12px;
+          font-size: 14px;
           line-height: 1.2;
           color: rgba(255, 255, 255, 0.96);
         }
 
-        .pretty-ring-shell {
-          width: 72px;
-          height: 72px;
+        .stage-kpi-ring {
+          width: 88px;
+          height: 88px;
+          border-radius: 999px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           box-shadow:
             0 10px 20px rgba(0, 0, 0, 0.18),
-            0 0 20px rgba(139, 92, 246, 0.12),
             inset 0 1px 0 rgba(255, 255, 255, 0.12);
         }
 
-        .pretty-ring-inner {
-          width: 48px;
-          height: 48px;
-          background: rgba(9, 22, 70, 0.84);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+        .stage-kpi-ring-inner {
+          width: 60px;
+          height: 60px;
+          border-radius: 999px;
+          background: rgba(9, 22, 70, 0.88);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
         }
 
         .stage-kpi-ring-inner span {
-          font-size: 13px;
+          font-size: 16px;
           font-weight: 700;
           color: #ffffff;
         }
 
-        .stage-compare-block {
+        .stage-factplan-block {
           position: absolute;
-          right: 18px;
-          bottom: 18px;
+          right: 20px;
+          bottom: 24px;
           width: 44%;
         }
 
-        .stage-compare-title {
-          margin-bottom: 10px;
-          font-size: 13px;
+        .stage-factplan-label {
+          margin-bottom: 12px;
+          font-size: 14px;
           line-height: 1.2;
           color: rgba(255, 255, 255, 0.96);
         }
 
-        .stage-compare-row {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
+        .stage-factplan-rows {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+
+        .stage-factplan-row {
+          display: flex;
           align-items: center;
           gap: 10px;
         }
 
-        .stage-compare-row + .stage-compare-row {
-          margin-top: 12px;
+        .stage-factplan-bar {
+          height: 24px;
+          min-width: 20px;
+          background: #f7d237;
+          box-shadow:
+            0 8px 18px rgba(247, 210, 55, 0.18),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
         }
 
-        .stage-compare-track {
-          height: 18px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.08);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          overflow: hidden;
-          backdrop-filter: blur(8px);
+        .stage-factplan-bar-plan {
+          background: rgba(255, 255, 255, 0.88);
+          box-shadow:
+            0 8px 18px rgba(255, 255, 255, 0.12),
+            inset 0 1px 0 rgba(255, 255, 255, 0.14);
         }
 
-        .stage-compare-fill {
-          height: 100%;
-          border-radius: 999px;
+        .stage-factplan-bar-invert {
+          background: linear-gradient(90deg, #f7d237 0%, #ffd85f 100%);
         }
 
-        .stage-compare-fill-fact {
-          background: linear-gradient(
-            90deg,
-            #f7d237 0%,
-            #ffd85f 56%,
-            #ffb347 100%
-          );
-          box-shadow: 0 0 18px rgba(247, 210, 55, 0.18);
-        }
-
-        .stage-compare-fill-plan {
-          background: linear-gradient(
-            90deg,
-            rgba(255, 255, 255, 0.92) 0%,
-            rgba(220, 214, 235, 0.86) 100%
-          );
-        }
-
-        .stage-compare-caption {
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.72);
-          min-width: 28px;
+        .stage-factplan-caption {
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.76);
+          text-transform: lowercase;
+          min-width: 34px;
         }
 
         .analysis-grid {
@@ -3939,17 +3919,6 @@ export default function Home() {
           .section-copy {
             font-size: 20px;
           }
-
-          .goals-drum-face {
-            width: 404px;
-            height: 208px;
-            margin-left: -202px;
-            margin-top: -104px;
-          }
-
-          .goals-drum-face {
-            transform-style: preserve-3d;
-          }
         }
 
         @media (max-width: 1180px) {
@@ -4016,53 +3985,58 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .goals-drum-scene {
-            height: 500px;
+          .results-shaped-grid {
+            gap: 20px;
           }
 
-          .goals-drum-face {
-            width: 380px;
-            height: 194px;
-            margin-left: -190px;
-            margin-top: -97px;
+          .results-center-play {
+            width: 136px;
+            height: 96px;
+            border-radius: 28px;
           }
 
           .results-center-play-inner {
-            width: 96px;
-            height: 96px;
-            border-radius: 24px;
+            border-radius: 22px;
+          }
+
+          .result-shaped-top-left::after,
+          .result-shaped-top-right::after,
+          .result-shaped-bottom-left::after,
+          .result-shaped-bottom-right::after {
+            width: 124px;
+            height: 88px;
           }
 
           .stage-card-portrait {
-            width: min(430px, 100%);
+            width: min(620px, 100%);
             border-radius: 28px;
           }
 
           .stage-card-copy-stack {
-            padding-right: 124px;
-            padding-top: 72px;
+            padding-right: 170px;
+            padding-top: 92px;
           }
 
           .stage-card-portrait-stage strong {
-            font-size: 54px;
+            font-size: 72px;
           }
 
           .stage-copy-group h4 {
-            font-size: 18px;
+            font-size: 21px;
           }
 
           .stage-copy-group p {
-            font-size: 13px;
+            font-size: 15px;
           }
 
-          .pretty-ring-shell {
-            width: 64px;
-            height: 64px;
+          .stage-kpi-ring {
+            width: 78px;
+            height: 78px;
           }
 
-          .pretty-ring-inner {
-            width: 42px;
-            height: 42px;
+          .stage-kpi-ring-inner {
+            width: 54px;
+            height: 54px;
           }
         }
 
@@ -4222,34 +4196,15 @@ export default function Home() {
             justify-content: flex-start;
           }
 
-          .goals-drum-tabs {
-            justify-content: flex-start;
+          .results-shaped-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
           }
 
-          .goals-drum-scene {
-            height: 380px;
-            overflow: visible;
-          }
-
-          .goals-drum {
-            transform: none !important;
-            position: static;
-            width: 100%;
-            height: auto;
-          }
-
-          .goals-drum-face {
-            position: relative;
-            left: auto;
-            top: auto;
-            margin: 0 auto;
-            width: 100%;
-            max-width: 305px;
-            height: 172px;
-            transform: none !important;
-          }
-
-          .goals-drum-face:not(:first-child) {
+          .result-shaped-top-left::after,
+          .result-shaped-top-right::after,
+          .result-shaped-bottom-left::after,
+          .result-shaped-bottom-right::after {
             display: none;
           }
 
@@ -4259,26 +4214,34 @@ export default function Home() {
             top: auto;
             transform: none;
             margin: 18px auto 0;
+            width: 120px;
+            height: 84px;
+            box-shadow:
+              0 0 0 8px #041027,
+              0 16px 32px rgba(0, 0, 0, 0.26);
           }
 
           .results-center-play-inner {
-            width: 82px;
-            height: 82px;
-            border-radius: 20px;
+            border-radius: 22px;
           }
 
           .results-center-play-icon {
-            width: 22px;
-            height: 22px;
+            width: 28px;
+            height: 28px;
+          }
+
+          .result-doc-card,
+          .result-doc-card-inner {
+            min-height: auto;
           }
 
           .result-doc-title {
-            font-size: 24px;
+            font-size: 32px;
           }
 
           .result-doc-text {
-            font-size: 13px;
-            line-height: 1.55;
+            font-size: 16px;
+            line-height: 1.75;
           }
 
           .stage-tabs-row {
@@ -4286,73 +4249,73 @@ export default function Home() {
           }
 
           .stage-card-portrait {
-            width: min(352px, 100%);
+            width: 100%;
             aspect-ratio: auto;
-            min-height: 448px;
+            min-height: 640px;
             grid-template-rows: auto auto;
             border-radius: 24px;
           }
 
           .stage-card-portrait-top {
-            padding: 16px 14px 16px;
+            padding: 18px 16px 18px;
           }
 
           .stage-card-portrait-stage {
             position: static;
             text-align: left;
-            margin-bottom: 14px;
+            margin-bottom: 16px;
           }
 
           .stage-card-portrait-stage strong {
-            font-size: 38px;
+            font-size: 54px;
           }
 
           .stage-card-copy-stack {
             padding-right: 0;
             padding-top: 0;
-            gap: 14px;
+            gap: 18px;
           }
 
           .stage-copy-group h4 {
-            font-size: 16px;
+            font-size: 18px;
           }
 
           .stage-copy-group p {
-            font-size: 12px;
-            line-height: 1.52;
+            font-size: 14px;
+            line-height: 1.6;
           }
 
           .stage-card-portrait-bottom {
-            padding: 16px 14px 16px;
+            padding: 18px 16px 18px;
           }
 
           .stage-card-bottom-head {
             position: static;
-            margin-bottom: 14px;
-            font-size: 28px;
+            margin-bottom: 16px;
+            font-size: 34px;
           }
 
           .stage-kpi-grid {
             width: 100%;
-            gap: 12px 12px;
+            gap: 14px 16px;
             padding-top: 0;
           }
 
-          .pretty-ring-shell {
-            width: 58px;
-            height: 58px;
+          .stage-kpi-ring {
+            width: 72px;
+            height: 72px;
           }
 
-          .pretty-ring-inner {
-            width: 38px;
-            height: 38px;
+          .stage-kpi-ring-inner {
+            width: 50px;
+            height: 50px;
           }
 
           .stage-kpi-ring-inner span {
-            font-size: 11px;
+            font-size: 14px;
           }
 
-          .stage-compare-block {
+          .stage-factplan-block {
             position: static;
             width: 100%;
             margin-top: 18px;
