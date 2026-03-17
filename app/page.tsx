@@ -1558,8 +1558,8 @@ export default function Home() {
             rgba(224, 225, 227, 0.12) 0%,
             rgba(224, 225, 227, 0.08) 100%
           );
-          border: 1px solid rgba(255, 255, 255, 0.18);
-          box-shadow:
+border: 1px solid rgba(255, 255, 255, 0.08);
+box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.18),
             inset 0 -1px 0 rgba(255, 255, 255, 0.04),
             0 18px 44px rgba(0, 0, 0, 0.16);
