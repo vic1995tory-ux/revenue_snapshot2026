@@ -4212,9 +4212,7 @@ export default function Home() {
             margin: 18px auto 0;
             width: 120px;
             height: 84px;
-            box-shadow:
-              0 0 0 8px #041027,
-              0 16px 32px rgba(0, 0, 0, 0.26);
+            box-shadow: none;
           }
 
           .results-center-play-inner {
@@ -4454,6 +4452,82 @@ export default function Home() {
             padding: 10px 16px;
             font-size: 13px;
           }
+          /* ===== PLAY BUTTON CLEAN VERSION ===== */
+
+.results-center-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-decoration: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+  z-index: 20;
+}
+
+.results-center-play-inner {
+  width: 110px;
+  height: 110px;
+  border-radius: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(
+    135deg,
+    #7a6cff 0%,
+    #d96cff 100%
+  );
+
+  box-shadow:
+    0 18px 48px rgba(120, 100, 255, 0.35),
+    0 0 80px rgba(120, 100, 255, 0.25);
+
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* hover эффект */
+.results-center-play:hover .results-center-play-inner {
+  transform: scale(1.08);
+  box-shadow:
+    0 24px 60px rgba(120, 100, 255, 0.45),
+    0 0 100px rgba(120, 100, 255, 0.35);
+}
+
+/* иконка */
+.results-center-play-icon {
+  width: 28px;
+  height: 28px;
+  color: white;
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 767px) {
+  .results-center-play {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    margin: 20px auto 0;
+  }
+
+  .results-center-play-inner {
+    width: 88px;
+    height: 88px;
+  }
+
+  .results-center-play-icon {
+    width: 22px;
+    height: 22px;
+  }
+}
         }
       `}</style>
     </main>
