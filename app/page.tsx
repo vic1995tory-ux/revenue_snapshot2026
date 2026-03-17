@@ -386,9 +386,7 @@ function HeroEconomyChart() {
                   <div key={bar.name} className="bar-chart-row">
                     <div className="bar-chart-row-top">
                       <div className="bar-chart-label">{bar.name}</div>
-                      <div className="bar-chart-value">
-                        {fmtMoney(bar.value)}
-                      </div>
+                      <div className="bar-chart-value">{fmtMoney(bar.value)}</div>
                     </div>
 
                     <div className="bar-chart-bar-shell-horizontal">
@@ -456,20 +454,19 @@ function ResultDocCard({
   tab,
   title,
   text,
-  className = "",
+  cta,
 }: {
   tab: string;
   title: string;
   text: string;
-  className?: string;
+  cta?: ReactNode;
 }) {
   return (
-    <div
-      className={`result-doc-card result-doc-card-shaped tilt-card ${className}`}
-    >
+    <div className="result-doc-card tilt-card">
       <div className="result-doc-card-inner tilt-inner glare-card">
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
+          {cta ? <div className="result-doc-cta">{cta}</div> : null}
         </div>
 
         <div className="result-doc-title">{title}</div>
@@ -509,155 +506,101 @@ function StartCard({
   );
 }
 
-function RingMetric({
-  label,
-  fact,
-  plan,
-}: {
-  label: string;
-  fact: number;
-  plan: number;
-}) {
-  const percent = Math.max(
-    0,
-    Math.min(100, plan > 0 ? (fact / plan) * 100 : 0)
-  );
-  const angle = (percent / 100) * 360;
-
-  return (
-    <div className="stage-kpi-ring-card">
-      <div className="stage-kpi-label">
-        {label} {fact}/{plan}
-      </div>
-
-      <div
-        className="stage-kpi-ring"
-        style={{
-          background: `conic-gradient(
-            #f7d237 0deg,
-            #f7d237 ${angle}deg,
-            rgba(255,255,255,0.14) ${angle}deg,
-            rgba(255,255,255,0.14) 360deg
-          )`,
-        }}
-      >
-        <div className="stage-kpi-ring-inner">
-          <span>{Math.round(percent)}%</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function FactPlanBar({
-  label,
-  fact,
-  plan,
-  invert = false,
-}: {
-  label: string;
-  fact: number;
-  plan: number;
-  invert?: boolean;
-}) {
-  const max = Math.max(fact, plan, 1);
-  const factWidth = (fact / max) * 100;
-  const planWidth = (plan / max) * 100;
-
-  return (
-    <div className="stage-factplan-block">
-      <div className="stage-factplan-label">
-        {label} {fact}/{plan}
-      </div>
-
-      <div className="stage-factplan-rows">
-        <div className="stage-factplan-row">
-          <div
-            className={`stage-factplan-bar ${
-              invert ? "stage-factplan-bar-invert" : ""
-            }`}
-            style={{ width: `${factWidth}%` }}
-          />
-          <div className="stage-factplan-caption">fact</div>
-        </div>
-
-        <div className="stage-factplan-row">
-          <div
-            className="stage-factplan-bar stage-factplan-bar-plan"
-            style={{ width: `${planWidth}%` }}
-          />
-          <div className="stage-factplan-caption">plan</div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function StageCard({
   stage,
-  topTitle,
-  topText,
-  directionTitle,
-  directionText,
-  metrics,
-  cycle,
+  icon,
 }: {
   stage: string;
-  topTitle: string;
-  topText: string;
-  directionTitle: string;
-  directionText: string;
-  metrics: Array<{
-    label: string;
-    fact: number;
-    plan: number;
-  }>;
-  cycle: {
-    fact: number;
-    plan: number;
-  };
+  icon: string;
 }) {
   return (
-    <div className="stage-card-portrait glare-card">
-      <div className="stage-card-portrait-top">
-        <div className="stage-card-portrait-stage">
+    <div className="stage-card-analytics glare-card">
+      <div className="stage-card-top-panel">
+        <div className="stage-card-copy">
+          <div className="stage-copy-block">
+            <h4>Starting Position</h4>
+            <p>
+              Клиники готовы тестировать продукт, что подтверждает рыночную
+              потребность, однако цикл сделки остаётся длинным.
+            </p>
+          </div>
+
+          <div className="stage-copy-block">
+            <h4>Strategic Direction</h4>
+            <p>
+              Разработана гипотеза по внедрению структурированного пилотного
+              формата как основного входного продукта для ускорения продаж.
+            </p>
+          </div>
+        </div>
+
+        <div className="stage-card-heading">
           <span>Stage</span>
           <strong>{stage}</strong>
         </div>
-
-        <div className="stage-card-copy-stack">
-          <div className="stage-copy-group">
-            <h4>{topTitle}</h4>
-            <p>{topText}</p>
-          </div>
-
-          <div className="stage-copy-group">
-            <h4>{directionTitle}</h4>
-            <p>{directionText}</p>
-          </div>
-        </div>
       </div>
 
-      <div className="stage-card-portrait-bottom">
-        <div className="stage-card-bottom-head">fact/plan</div>
+      <div className="stage-card-bottom-panel">
+        <div className="stage-card-bottom-inner">
+          <div className="stage-rings-grid">
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">leads 25/40</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
 
-        <div className="stage-kpi-grid">
-          {metrics.map((item) => (
-            <RingMetric
-              key={item.label}
-              label={item.label}
-              fact={item.fact}
-              plan={item.plan}
-            />
-          ))}
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">qual leads 6/15</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">demo 2/5</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">deals 1/2</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="stage-bars-area">
+            <div className="stage-bars-title">fact/plan</div>
+
+            <div className="stage-bars-wrap">
+              <div className="stage-bar-group">
+                <div className="stage-bar-label">deal cycle 5/3</div>
+
+                <div className="stage-bar-row stage-bar-row-top">
+                  <div className="stage-bar stage-bar-short" />
+                  <div className="stage-bar-marker" />
+                </div>
+
+                <div className="stage-bar-row stage-bar-row-bottom">
+                  <div className="stage-bar stage-bar-long" />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <FactPlanBar
-          label="deal cycle"
-          fact={cycle.fact}
-          plan={cycle.plan}
-          invert
-        />
+        <img src={icon} alt={stage} className="stage-card-watermark-icon" />
       </div>
     </div>
   );
@@ -667,40 +610,17 @@ function StageCarousel() {
   const items = [
     {
       stage: "Seed",
+      icon: "/seed.svg",
       industries: ["industry-saas", "industry-healthtech"],
-      topTitle: "Starting Position",
-      topText:
-        "Клиники готовы тестировать продукт, что подтверждает рыночную потребность, однако цикл сделки остаётся длинным.",
-      directionTitle: "Strategic Direction",
-      directionText:
-        "Разработана гипотеза по внедрению структурированного пилотного формата как основного входного продукта для ускорения продаж.",
-      metrics: [
-        { label: "leads", fact: 25, plan: 40 },
-        { label: "qual leads", fact: 6, plan: 15 },
-        { label: "demo", fact: 2, plan: 5 },
-        { label: "deals", fact: 1, plan: 2 },
-      ],
-      cycle: { fact: 5, plan: 3 },
     },
     {
       stage: "Startup",
+      icon: "/startup.svg",
       industries: ["industry-fintech", "industry-ecom"],
-      topTitle: "Starting Position",
-      topText:
-        "Первые тестовые продажи подтверждают интерес рынка, но система лидогенерации ещё нестабильна и прогнозируемость выручки ограничена.",
-      directionTitle: "Strategic Direction",
-      directionText:
-        "Фокус смещён на формирование повторяемой модели привлечения и укрепление воронки до уровня управляемого спроса.",
-      metrics: [
-        { label: "leads", fact: 42, plan: 60 },
-        { label: "qual leads", fact: 11, plan: 20 },
-        { label: "demo", fact: 5, plan: 8 },
-        { label: "deals", fact: 2, plan: 4 },
-      ],
-      cycle: { fact: 4, plan: 3 },
     },
     {
       stage: "Growth",
+      icon: "/growth.svg",
       industries: [
         "industry-saas",
         "industry-ecom",
@@ -709,44 +629,66 @@ function StageCarousel() {
         "industry-healthtech",
         "industry-b2b",
       ],
-      topTitle: "Starting Position",
-      topText:
-        "Спрос уже подтверждён, но дальнейший рост упирается в структуру продаж, скорость команды и приоритизацию точек масштабирования.",
-      directionTitle: "Strategic Direction",
-      directionText:
-        "Приоритетом становится декомпозиция ограничений в revenue-модели и выбор одного драйвера, способного дать измеримый экономический эффект.",
-      metrics: [
-        { label: "leads", fact: 68, plan: 90 },
-        { label: "qual leads", fact: 21, plan: 30 },
-        { label: "demo", fact: 10, plan: 14 },
-        { label: "deals", fact: 6, plan: 8 },
-      ],
-      cycle: { fact: 3, plan: 2 },
     },
     {
       stage: "Expansion",
+      icon: "/expansion.svg",
       industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
-      topTitle: "Starting Position",
-      topText:
-        "Бизнес вышел на устойчивую базу и масштабирование требует уже не отдельных гипотез, а согласованной архитектуры каналов и unit-экономики.",
-      directionTitle: "Strategic Direction",
-      directionText:
-        "Ключевая задача — укрепить управляемость масштабирования, сократить потери на переходе между стадиями воронки и повысить эффективность расширения.",
-      metrics: [
-        { label: "leads", fact: 120, plan: 150 },
-        { label: "qual leads", fact: 36, plan: 50 },
-        { label: "demo", fact: 16, plan: 22 },
-        { label: "deals", fact: 9, plan: 12 },
-      ],
-      cycle: { fact: 3, plan: 2 },
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [isDraggingState, setIsDraggingState] = useState(false);
+
+  const dragStartX = useRef<number | null>(null);
+  const dragStartRotation = useRef(0);
+  const isDragging = useRef(false);
+
+  const itemAngle = 360 / items.length;
+  const radius = 280;
+
+  const activeIndex = useMemo(() => {
+    let frontIndex = 0;
+    let maxZ = -Infinity;
+
+    items.forEach((_, index) => {
+      const angle = rotation + index * itemAngle;
+      const radians = (angle * Math.PI) / 180;
+      const z = Math.cos(radians) * radius;
+
+      if (z > maxZ) {
+        maxZ = z;
+        frontIndex = index;
+      }
+    });
+
+    return frontIndex;
+  }, [rotation, itemAngle, radius]);
+
   const activeIndustries = new Set(items[activeIndex].industries);
 
+  const startDrag = (clientX: number) => {
+    isDragging.current = true;
+    setIsDraggingState(true);
+    dragStartX.current = clientX;
+    dragStartRotation.current = rotation;
+  };
+
+  const moveDrag = (clientX: number) => {
+    if (!isDragging.current || dragStartX.current === null) return;
+    const deltaX = clientX - dragStartX.current;
+    const sensitivity = 0.22;
+    setRotation(dragStartRotation.current + deltaX * sensitivity);
+  };
+
+  const endDrag = () => {
+    isDragging.current = false;
+    setIsDraggingState(false);
+    dragStartX.current = null;
+  };
+
   return (
-    <div className="stage-carousel-flat-wrap">
+    <div className="stage-carousel-wrap">
       <div className="industries-pills industries-pills-carousel">
         <span
           className={`industry-pill ${
@@ -804,31 +746,50 @@ function StageCarousel() {
         </span>
       </div>
 
-      <div className="stage-tabs-row">
-        {items.map((item, index) => (
-          <button
-            key={item.stage}
-            type="button"
-            className={`stage-tab-btn ${
-              index === activeIndex ? "stage-tab-btn-active" : ""
-            }`}
-            onClick={() => setActiveIndex(index)}
-          >
-            {item.stage}
-          </button>
-        ))}
-      </div>
+      <div
+        className={`stage-carousel-scene ${
+          isDraggingState ? "is-dragging" : ""
+        }`}
+        onMouseDown={(e) => startDrag(e.clientX)}
+        onMouseMove={(e) => moveDrag(e.clientX)}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+        onTouchEnd={endDrag}
+      >
+        <div className="stage-carousel-drum">
+          {items.map((item, index) => {
+            const angle = rotation + index * itemAngle;
+            const radians = (angle * Math.PI) / 180;
 
-      <div className="stage-card-center">
-        <StageCard
-          stage={items[activeIndex].stage}
-          topTitle={items[activeIndex].topTitle}
-          topText={items[activeIndex].topText}
-          directionTitle={items[activeIndex].directionTitle}
-          directionText={items[activeIndex].directionText}
-          metrics={items[activeIndex].metrics}
-          cycle={items[activeIndex].cycle}
-        />
+            const x = Math.sin(radians) * radius;
+            const z = Math.cos(radians) * radius;
+
+            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
+            const opacity = 0.28 + ((z + radius) / (radius * 2)) * 0.72;
+            const blur = Math.max(0, (1 - scale) * 2.2);
+
+            return (
+              <div
+                key={item.stage}
+                className="stage-carousel-item stage-carousel-item-free"
+                style={{
+                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) scale(${scale})`,
+                  opacity,
+                  filter: `blur(${blur}px)`,
+                  zIndex: Math.round(z + radius),
+                }}
+              >
+                <StageCard stage={item.stage} icon={item.icon} />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="stage-carousel-hint">
+          Потяните барабан влево или вправо
+        </div>
       </div>
     </div>
   );
@@ -1177,8 +1138,8 @@ export default function Home() {
               </div>
               <div className="journey-compact-text">
                 Определяются ключевые показатели текущей модели: экономика,
-                структура продаж, ресурсы и ограничения. Это формирует основу
-                для дальнейшего анализа.
+                структура продаж, ресурсы и ограничения. Это формирует основу для
+                дальнейшего анализа.
               </div>
             </div>
 
@@ -1417,10 +1378,7 @@ export default function Home() {
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a
-                href={payUrl}
-                className="tg-gradient-btn mt-5 block text-center"
-              >
+              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">
                 Попробовать Snapshot
               </a>
             </aside>
@@ -1438,48 +1396,35 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="results-shaped-wrap">
-            <div className="results-shaped-grid">
-              <ResultDocCard
-                className="result-shaped result-shaped-top-left"
-                tab="ECONOMIC RATE"
-                title="Executive Summary"
-                text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
-              />
+          <div className="results-grid-2x2">
+            <ResultDocCard
+              tab="ECONOMIC RATE"
+              title="Executive Summary"
+              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
+            />
 
-              <ResultDocCard
-                className="result-shaped result-shaped-top-right"
-                tab="GROWTH LIMIT"
-                title="Key Conclusions"
-                text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
-              />
+            <ResultDocCard
+              tab="GROWTH LIMIT"
+              title="Key Conclusions"
+              text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
+            />
 
-              <ResultDocCard
-                className="result-shaped result-shaped-bottom-left"
-                tab="SOLUTION"
-                title="Strategy&Practice"
-                text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
-              />
+            <ResultDocCard
+              tab="SOLUTION"
+              title="Strategy&Practice"
+              text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
+            />
 
-              <ResultDocCard
-                className="result-shaped result-shaped-bottom-right"
-                tab="JTBD"
-                title="RoadMap"
-                text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
-              />
-            </div>
-
-            <a href={payUrl} className="results-center-play" aria-label="Начать">
-              <span className="results-center-play-inner">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="results-center-play-icon"
-                  aria-hidden="true"
-                >
-                  <path d="M8 6.5v11l9-5.5-9-5.5Z" fill="currentColor" />
-                </svg>
-              </span>
-            </a>
+            <ResultDocCard
+              tab="JTBD"
+              title="RoadMap"
+              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+              cta={
+                <a href={payUrl} className="result-doc-start-btn">
+                  Начать
+                </a>
+              }
+            />
           </div>
 
           <div className="results-roadmap-note">
@@ -1613,8 +1558,8 @@ export default function Home() {
             rgba(224, 225, 227, 0.12) 0%,
             rgba(224, 225, 227, 0.08) 100%
           );
-          border: 1px solid rgba(200, 200, 200, 0.15);
-          box-shadow:
+border: 1px solid rgba(200, 200, 200, 0.15);
+box-shadow:
             inset 0 1px 0 rgba(255, 255, 255, 0.18),
             inset 0 -1px 0 rgba(255, 255, 255, 0.04),
             0 18px 44px rgba(0, 0, 0, 0.16);
@@ -1650,26 +1595,10 @@ export default function Home() {
           opacity: 0.12;
           mix-blend-mode: soft-light;
           background-image:
-            radial-gradient(
-              circle at 20% 20%,
-              rgba(255, 255, 255, 0.22) 0 0.8px,
-              transparent 1px
-            ),
-            radial-gradient(
-              circle at 70% 30%,
-              rgba(255, 255, 255, 0.16) 0 0.8px,
-              transparent 1px
-            ),
-            radial-gradient(
-              circle at 35% 75%,
-              rgba(255, 255, 255, 0.18) 0 0.7px,
-              transparent 0.9px
-            ),
-            radial-gradient(
-              circle at 80% 80%,
-              rgba(255, 255, 255, 0.12) 0 0.7px,
-              transparent 0.9px
-            );
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.16) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.18) 0 0.7px, transparent 0.9px),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.12) 0 0.7px, transparent 0.9px);
           background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
         }
 
@@ -1745,21 +1674,9 @@ export default function Home() {
           opacity: 0.95;
           mix-blend-mode: screen;
           background:
-            radial-gradient(
-              circle at 30% 40%,
-              rgba(125, 255, 220, 0.34) 0%,
-              transparent 42%
-            ),
-            radial-gradient(
-              circle at 68% 50%,
-              rgba(130, 120, 255, 0.32) 0%,
-              transparent 44%
-            ),
-            radial-gradient(
-              circle at 48% 44%,
-              rgba(255, 255, 255, 0.12) 0%,
-              transparent 36%
-            );
+            radial-gradient(circle at 30% 40%, rgba(125, 255, 220, 0.34) 0%, transparent 42%),
+            radial-gradient(circle at 68% 50%, rgba(130, 120, 255, 0.32) 0%, transparent 44%),
+            radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0%, transparent 36%);
         }
 
         .journey-compact-card:nth-child(1)::before,
@@ -2305,15 +2222,14 @@ export default function Home() {
           transform-origin: left center;
         }
 
-        .bar-good {
-          background: linear-gradient(
-            90deg,
-            #c4a8ff 0%,
-            #8b5cf6 50%,
-            #4c1d95 100%
-          );
-        }
-
+.bar-good {
+  background: linear-gradient(
+    90deg,
+    #c4a8ff 0%,
+    #8b5cf6 50%,
+    #4c1d95 100%
+  );
+}
         .bar-bad {
           background: linear-gradient(
             90deg,
@@ -2899,6 +2815,13 @@ export default function Home() {
           font-weight: 700;
         }
 
+        .results-grid-2x2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 22px;
+          margin-top: 24px;
+        }
+
         .tilt-card {
           perspective: 1400px;
         }
@@ -2940,6 +2863,32 @@ export default function Home() {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
+        }
+
+        .result-doc-cta {
+          display: flex;
+          align-items: center;
+        }
+
+        .result-doc-start-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 110px;
+          padding: 11px 16px;
+          border-radius: 999px;
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #7c84ff 55%,
+            #c25cf3 100%
+          );
+          color: #fff;
+          font-weight: 700;
+          font-size: 14px;
+          box-shadow:
+            0 10px 24px rgba(85, 104, 255, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.16);
         }
 
         .result-doc-tab {
@@ -2991,157 +2940,6 @@ export default function Home() {
           font-weight: 700;
         }
 
-        .results-shaped-wrap {
-          position: relative;
-          margin-top: 24px;
-        }
-
-        .results-shaped-grid {
-          position: relative;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 28px;
-        }
-
-        .result-doc-card-shaped {
-          position: relative;
-          min-height: 320px;
-        }
-
-        .result-doc-card-shaped .result-doc-card-inner {
-          min-height: 320px;
-        }
-
-        .result-shaped-top-left,
-        .result-shaped-top-right,
-        .result-shaped-bottom-left,
-        .result-shaped-bottom-right {
-          position: relative;
-        }
-
-        .result-shaped-top-left::after,
-        .result-shaped-top-right::after,
-        .result-shaped-bottom-left::after,
-        .result-shaped-bottom-right::after {
-          content: "";
-          position: absolute;
-          z-index: 5;
-          background: #041027;
-          pointer-events: none;
-        }
-
-        .result-shaped-top-left::after {
-          width: 150px;
-          height: 110px;
-          right: -14px;
-          bottom: -14px;
-          border-top-left-radius: 38px;
-        }
-
-        .result-shaped-top-right::after {
-          width: 150px;
-          height: 110px;
-          left: -14px;
-          bottom: -14px;
-          border-top-right-radius: 38px;
-        }
-
-        .result-shaped-bottom-left::after {
-          width: 150px;
-          height: 110px;
-          right: -14px;
-          top: -14px;
-          border-bottom-left-radius: 38px;
-        }
-
-        .result-shaped-bottom-right::after {
-          width: 150px;
-          height: 110px;
-          left: -14px;
-          top: -14px;
-          border-bottom-right-radius: 38px;
-        }
-
-        .results-center-play {
-          position: absolute;
-          left: 50%;
-          top: 50%;
-          width: 164px;
-          height: 116px;
-          transform: translate(-50%, -50%);
-          border-radius: 34px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 20;
-          text-decoration: none;
-          background: #041027;
-          box-shadow:
-            0 0 0 12px #041027,
-            0 18px 36px rgba(0, 0, 0, 0.28);
-        }
-
-        .results-center-play-inner {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          border-radius: 28px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          transition:
-            transform 0.22s ease,
-            filter 0.22s ease,
-            box-shadow 0.22s ease;
-        }
-
-        .results-center-play-inner::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.22) 25%,
-            transparent 50%
-          );
-          transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
-        }
-
-        .results-center-play:hover .results-center-play-inner {
-          transform: translateY(-1px) scale(1.02);
-          filter: brightness(1.03);
-          box-shadow:
-            0 14px 34px rgba(71, 96, 255, 0.28),
-            inset 0 1px 0 rgba(255, 255, 255, 0.22);
-        }
-
-        .results-center-play-icon {
-          position: relative;
-          z-index: 1;
-          width: 34px;
-          height: 34px;
-          color: #ffffff;
-          display: block;
-          filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.16));
-        }
-
         .industries-pills {
           display: flex;
           flex-wrap: wrap;
@@ -3173,6 +2971,15 @@ export default function Home() {
             box-shadow 0.28s ease;
         }
 
+        .stage-carousel-wrap {
+          margin-top: 24px;
+        }
+
+        .industries-pills-carousel {
+          justify-content: center;
+          margin-bottom: 22px;
+        }
+
         .industry-pill-dim {
           opacity: 0.22;
           filter: saturate(0.7);
@@ -3189,294 +2996,309 @@ export default function Home() {
             0 0 24px rgba(247, 210, 55, 0.14);
         }
 
-        .industries-pills-carousel {
-          justify-content: center;
-          margin-bottom: 22px;
-        }
-
-        .stage-carousel-flat-wrap {
-          margin-top: 24px;
-        }
-
-        .stage-tabs-row {
+        .stage-carousel-scene {
+          position: relative;
+          perspective: 2200px;
+          min-height: 560px;
           display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
+          flex-direction: column;
+          align-items: center;
           justify-content: center;
-          margin-bottom: 22px;
+          touch-action: pan-y;
+          user-select: none;
+          -webkit-user-select: none;
+          cursor: grab;
+          overflow: hidden;
         }
 
-        .stage-tab-btn {
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.06);
-          color: rgba(255, 255, 255, 0.72);
-          min-height: 44px;
-          padding: 0 18px;
-          border-radius: 999px;
-          font-size: 14px;
-          font-weight: 700;
-          transition: 0.22s ease;
+        .stage-carousel-scene.is-dragging {
+          cursor: grabbing;
         }
 
-        .stage-tab-btn:hover {
-          color: #fff;
-          background: rgba(255, 255, 255, 0.1);
+        .stage-carousel-drum {
+          position: relative;
+          width: 100%;
+          height: 460px;
+          transform-style: preserve-3d;
         }
 
-        .stage-tab-btn-active {
-          background: #f7d237;
-          color: #0b1d3a;
-          border-color: rgba(247, 210, 55, 0.46);
-          box-shadow:
-            0 10px 24px rgba(247, 210, 55, 0.16),
-            0 0 18px rgba(247, 210, 55, 0.12);
+        .stage-carousel-item-free {
+          position: absolute;
+          top: 18px;
+          left: 50%;
+          width: min(760px, 62vw);
+          transform-style: preserve-3d;
+          transition:
+            transform 0.04s linear,
+            opacity 0.04s linear,
+            filter 0.04s linear;
+          will-change: transform, opacity, filter;
         }
 
-        .stage-card-center {
+        .stage-carousel-hint {
+          margin-top: 18px;
+          text-align: center;
+          font-size: 12px;
+          line-height: 1.4;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+          color: rgba(255, 255, 255, 0.42);
+        }
+
+        .stage-card-analytics {
+          position: relative;
           display: flex;
-          justify-content: center;
-        }
-
-        .stage-card-portrait {
-          width: min(720px, 100%);
-          aspect-ratio: 4 / 5;
+          flex-direction: column;
+          min-height: 460px;
           border-radius: 34px;
           overflow: hidden;
           border: 1px solid rgba(255, 255, 255, 0.14);
+          background: linear-gradient(
+            180deg,
+            rgba(224, 225, 227, 0.11) 0%,
+            rgba(224, 225, 227, 0.07) 100%
+          );
           box-shadow:
             0 24px 54px rgba(0, 0, 0, 0.22),
             inset 0 1px 0 rgba(255, 255, 255, 0.1);
-          background: #081536;
-          display: grid;
-          grid-template-rows: 58% 42%;
         }
 
-        .stage-card-portrait-top {
-          position: relative;
-          padding: 26px 24px 22px;
+        .stage-card-top-panel {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 24px;
+          padding: 28px 28px 24px;
+          min-height: 248px;
           background: linear-gradient(
             135deg,
-            rgba(224, 225, 227, 0.7) 0%,
-            rgba(145, 154, 179, 0.54) 45%,
-            rgba(70, 86, 126, 0.46) 100%
+            rgba(224, 225, 227, 0.18) 0%,
+            rgba(224, 225, 227, 0.09) 100%
           );
-          backdrop-filter: blur(18px) saturate(120%);
-          -webkit-backdrop-filter: blur(18px) saturate(120%);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-          overflow: hidden;
         }
 
-        .stage-card-portrait-top::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            115deg,
-            rgba(255, 255, 255, 0.12) 0%,
-            rgba(255, 255, 255, 0.03) 22%,
-            rgba(255, 255, 255, 0.01) 52%,
-            rgba(255, 255, 255, 0.08) 100%
-          );
-          pointer-events: none;
-        }
-
-        .stage-card-portrait-top > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .stage-card-portrait-stage {
-          position: absolute;
-          top: 24px;
-          right: 24px;
-          text-align: right;
-        }
-
-        .stage-card-portrait-stage span {
-          display: block;
-          font-size: 14px;
-          line-height: 1;
-          color: rgba(255, 255, 255, 0.88);
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-        }
-
-        .stage-card-portrait-stage strong {
-          display: block;
-          margin-top: 8px;
-          font-size: clamp(56px, 7vw, 94px);
-          line-height: 0.9;
-          color: #ffffff;
-          letter-spacing: -0.08em;
-          font-weight: 700;
-        }
-
-        .stage-card-copy-stack {
+        .stage-card-copy {
           display: flex;
           flex-direction: column;
           justify-content: flex-start;
-          gap: 24px;
-          padding-right: 210px;
-          padding-top: 110px;
+          gap: 22px;
+          min-width: 0;
         }
 
-        .stage-copy-group h4 {
+        .stage-copy-block h4 {
           margin: 0;
-          font-size: 24px;
-          line-height: 1.08;
+          font-size: 26px;
+          line-height: 1.06;
           font-weight: 500;
-          color: rgba(255, 255, 255, 0.98);
+          color: rgba(255, 255, 255, 0.96);
           letter-spacing: -0.03em;
         }
 
-        .stage-copy-group p {
+        .stage-copy-block p {
           margin: 10px 0 0;
-          font-size: 16px;
-          line-height: 1.65;
-          color: rgba(255, 255, 255, 0.92);
+          max-width: 560px;
+          font-size: 17px;
+          line-height: 1.55;
+          color: rgba(255, 255, 255, 0.86);
         }
 
-        .stage-card-portrait-bottom {
-          position: relative;
-          padding: 22px 20px 20px;
-          background:
-            radial-gradient(
-              circle at 20% 78%,
-              rgba(31, 94, 255, 0.42) 0%,
-              transparent 30%
-            ),
-            radial-gradient(
-              circle at 72% 34%,
-              rgba(255, 156, 108, 0.54) 0%,
-              transparent 34%
-            ),
-            radial-gradient(
-              circle at 85% 75%,
-              rgba(199, 78, 255, 0.34) 0%,
-              transparent 28%
-            ),
-            linear-gradient(
-              135deg,
-              #061a8f 0%,
-              #0b1970 18%,
-              #1a1486 42%,
-              #40207b 68%,
-              #7a3f8f 100%
-            );
-          opacity: 1;
-        }
-
-        .stage-card-bottom-head {
-          position: absolute;
-          top: 18px;
-          right: 20px;
-          font-size: clamp(28px, 4vw, 48px);
-          line-height: 0.95;
-          font-weight: 700;
-          color: rgba(255, 255, 255, 0.98);
-          letter-spacing: -0.06em;
-        }
-
-        .stage-kpi-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px 22px;
-          width: 52%;
-          padding-top: 18px;
-        }
-
-        .stage-kpi-ring-card {
+        .stage-card-heading {
           display: flex;
           flex-direction: column;
-          gap: 10px;
+          align-items: flex-end;
+          justify-content: flex-start;
+          text-align: right;
+          min-width: 180px;
         }
 
-        .stage-kpi-label {
-          font-size: 14px;
-          line-height: 1.2;
-          color: rgba(255, 255, 255, 0.96);
+        .stage-card-heading span {
+          font-size: 15px;
+          line-height: 1;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: rgba(255, 255, 255, 0.88);
         }
 
-        .stage-kpi-ring {
-          width: 88px;
-          height: 88px;
-          border-radius: 999px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow:
-            0 10px 20px rgba(0, 0, 0, 0.18),
-            inset 0 1px 0 rgba(255, 255, 255, 0.12);
-        }
-
-        .stage-kpi-ring-inner {
-          width: 60px;
-          height: 60px;
-          border-radius: 999px;
-          background: rgba(9, 22, 70, 0.88);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
-        }
-
-        .stage-kpi-ring-inner span {
-          font-size: 16px;
+        .stage-card-heading strong {
+          margin-top: 8px;
+          font-size: clamp(54px, 6vw, 92px);
+          line-height: 0.9;
           font-weight: 700;
+          letter-spacing: -0.07em;
           color: #ffffff;
         }
 
-        .stage-factplan-block {
-          position: absolute;
-          right: 20px;
-          bottom: 24px;
-          width: 44%;
+        .stage-card-bottom-panel {
+          position: relative;
+          flex: 1;
+          overflow: hidden;
+          padding: 22px 26px 24px;
+          background:
+            radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
+            radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
+            radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
+            radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
+            linear-gradient(
+              135deg,
+              #081a63 0%,
+              #09185a 18%,
+              #151a74 34%,
+              #2a1584 52%,
+              #3a1c79 66%,
+              #4b1a74 82%,
+              #301346 100%
+            );
         }
 
-        .stage-factplan-label {
-          margin-bottom: 12px;
-          font-size: 14px;
+        .stage-card-bottom-inner {
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: 1.05fr 1.25fr;
+          align-items: end;
+          gap: 28px;
+          min-height: 190px;
+        }
+
+        .stage-rings-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px 22px;
+          align-self: start;
+        }
+
+        .stage-ring-metric {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .stage-ring-label {
+          font-size: 15px;
           line-height: 1.2;
           color: rgba(255, 255, 255, 0.96);
         }
 
-        .stage-factplan-rows {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
+        .stage-ring {
+          position: relative;
+          width: 74px;
+          height: 74px;
         }
 
-        .stage-factplan-row {
+        .stage-ring-outer,
+        .stage-ring-inner {
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+        }
+
+        .stage-ring-outer {
+          border: 12px solid rgba(255, 178, 64, 0.88);
+          border-right-color: transparent;
+          transform: rotate(-12deg);
+        }
+
+        .stage-ring-inner {
+          inset: 14px;
+          border: 8px solid rgba(247, 210, 55, 0.98);
+          border-right-color: transparent;
+          transform: rotate(18deg);
+        }
+
+        .stage-ring-center {
+          position: absolute;
+          inset: 0;
           display: flex;
           align-items: center;
-          gap: 10px;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 500;
+          color: #ffffff;
         }
 
-        .stage-factplan-bar {
-          height: 24px;
-          min-width: 20px;
-          background: #f7d237;
+        .stage-bars-area {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          min-height: 190px;
+        }
+
+        .stage-bars-title {
+          align-self: flex-end;
+          font-size: clamp(34px, 4vw, 56px);
+          line-height: 0.95;
+          font-weight: 700;
+          letter-spacing: -0.06em;
+          color: rgba(255, 255, 255, 0.96);
+        }
+
+        .stage-bars-wrap {
+          margin-top: auto;
+          padding-top: 10px;
+        }
+
+        .stage-bar-group {
+          width: 100%;
+          max-width: 420px;
+        }
+
+        .stage-bar-label {
+          margin-bottom: 14px;
+          font-size: 15px;
+          line-height: 1.2;
+          color: rgba(255, 255, 255, 0.95);
+        }
+
+        .stage-bar-row {
+          display: flex;
+          align-items: center;
+        }
+
+        .stage-bar-row-top {
+          gap: 18px;
+        }
+
+        .stage-bar-row-bottom {
+          margin-top: 14px;
+        }
+
+        .stage-bar {
+          height: 30px;
+          background: linear-gradient(
+            90deg,
+            rgba(247, 210, 55, 0.95) 0%,
+            rgba(244, 221, 114, 0.98) 100%
+          );
           box-shadow:
-            0 8px 18px rgba(247, 210, 55, 0.18),
+            0 8px 18px rgba(247, 210, 55, 0.16),
             inset 0 1px 0 rgba(255, 255, 255, 0.18);
         }
 
-        .stage-factplan-bar-plan {
-          background: rgba(255, 255, 255, 0.88);
-          box-shadow:
-            0 8px 18px rgba(255, 255, 255, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.14);
+        .stage-bar-short {
+          width: 168px;
         }
 
-        .stage-factplan-bar-invert {
-          background: linear-gradient(90deg, #f7d237 0%, #ffd85f 100%);
+        .stage-bar-long {
+          width: 310px;
         }
 
-        .stage-factplan-caption {
-          font-size: 13px;
-          color: rgba(255, 255, 255, 0.76);
-          text-transform: lowercase;
-          min-width: 34px;
+        .stage-bar-marker {
+          width: 0;
+          height: 0;
+          border-left: 12px solid transparent;
+          border-right: 12px solid transparent;
+          border-bottom: 22px solid rgba(255, 255, 255, 0.94);
+        }
+
+        .stage-card-watermark-icon {
+          position: absolute;
+          left: 24px;
+          top: 22px;
+          width: 28px;
+          height: 28px;
+          opacity: 0.12;
+          object-fit: contain;
+          pointer-events: none;
         }
 
         .analysis-grid {
@@ -3930,7 +3752,8 @@ export default function Home() {
             display: none;
           }
 
-          .analysis-grid {
+          .analysis-grid,
+          .results-grid-2x2 {
             grid-template-columns: 1fr;
           }
         }
@@ -3985,58 +3808,62 @@ export default function Home() {
             grid-template-columns: 1fr;
           }
 
-          .results-shaped-grid {
+          .stage-carousel-scene {
+            min-height: 500px;
+            perspective: 1800px;
+          }
+
+          .stage-carousel-drum {
+            height: 420px;
+          }
+
+          .stage-carousel-item-free {
+            width: min(700px, 78vw);
+          }
+
+          .stage-card-analytics {
+            min-height: 400px;
+            border-radius: 28px;
+          }
+
+          .stage-card-top-panel {
+            padding: 22px 22px 18px;
+            min-height: 210px;
+            gap: 18px;
+          }
+
+          .stage-copy-block h4 {
+            font-size: 22px;
+          }
+
+          .stage-copy-block p {
+            font-size: 15px;
+            line-height: 1.5;
+          }
+
+          .stage-card-heading strong {
+            font-size: 62px;
+          }
+
+          .stage-card-bottom-panel {
+            padding: 18px 20px 20px;
+          }
+
+          .stage-card-bottom-inner {
+            grid-template-columns: 1fr 1.1fr;
             gap: 20px;
           }
 
-          .results-center-play {
-            width: 136px;
-            height: 96px;
-            border-radius: 28px;
+          .stage-bars-title {
+            font-size: 42px;
           }
 
-          .results-center-play-inner {
-            border-radius: 22px;
+          .stage-bar-short {
+            width: 132px;
           }
 
-          .result-shaped-top-left::after,
-          .result-shaped-top-right::after,
-          .result-shaped-bottom-left::after,
-          .result-shaped-bottom-right::after {
-            width: 124px;
-            height: 88px;
-          }
-
-          .stage-card-portrait {
-            width: min(620px, 100%);
-            border-radius: 28px;
-          }
-
-          .stage-card-copy-stack {
-            padding-right: 170px;
-            padding-top: 92px;
-          }
-
-          .stage-card-portrait-stage strong {
-            font-size: 72px;
-          }
-
-          .stage-copy-group h4 {
-            font-size: 21px;
-          }
-
-          .stage-copy-group p {
-            font-size: 15px;
-          }
-
-          .stage-kpi-ring {
-            width: 78px;
-            height: 78px;
-          }
-
-          .stage-kpi-ring-inner {
-            width: 54px;
-            height: 54px;
+          .stage-bar-long {
+            width: 240px;
           }
         }
 
@@ -4121,7 +3948,8 @@ export default function Home() {
 
           .hero-chart-metrics-row,
           .input-grid,
-          .dashboard-grid {
+          .dashboard-grid,
+          .results-grid-2x2 {
             grid-template-columns: 1fr;
           }
 
@@ -4196,129 +4024,136 @@ export default function Home() {
             justify-content: flex-start;
           }
 
-          .results-shaped-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
+          .stage-carousel-scene {
+            min-height: 420px;
+            perspective: 1600px;
           }
 
-          .result-shaped-top-left::after,
-          .result-shaped-top-right::after,
-          .result-shaped-bottom-left::after,
-          .result-shaped-bottom-right::after {
-            display: none;
+          .stage-carousel-drum {
+            height: 320px;
           }
 
-          .results-center-play {
-            position: relative;
-            left: auto;
-            top: auto;
-            transform: none;
-            margin: 18px auto 0;
-            width: 120px;
-            height: 84px;
-            box-shadow:
-              0 0 0 8px #041027,
-              0 16px 32px rgba(0, 0, 0, 0.26);
+          .stage-carousel-item-free {
+            width: min(420px, 88vw);
+            top: 8px;
           }
 
-          .results-center-play-inner {
+          .stage-card-analytics {
+            min-height: 320px;
             border-radius: 22px;
           }
 
-          .results-center-play-icon {
-            width: 28px;
-            height: 28px;
-          }
-
-          .result-doc-card,
-          .result-doc-card-inner {
+          .stage-card-top-panel {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding: 16px 16px 14px;
             min-height: auto;
           }
 
-          .result-doc-title {
-            font-size: 32px;
+          .stage-card-copy {
+            gap: 14px;
           }
 
-          .result-doc-text {
+          .stage-copy-block h4 {
             font-size: 16px;
-            line-height: 1.75;
           }
 
-          .stage-tabs-row {
-            justify-content: flex-start;
+          .stage-copy-block p {
+            margin-top: 6px;
+            font-size: 12px;
+            line-height: 1.45;
+            max-width: none;
           }
 
-          .stage-card-portrait {
-            width: 100%;
-            aspect-ratio: auto;
-            min-height: 640px;
-            grid-template-rows: auto auto;
-            border-radius: 24px;
-          }
-
-          .stage-card-portrait-top {
-            padding: 18px 16px 18px;
-          }
-
-          .stage-card-portrait-stage {
-            position: static;
+          .stage-card-heading {
+            align-items: flex-start;
             text-align: left;
-            margin-bottom: 16px;
+            min-width: 0;
           }
 
-          .stage-card-portrait-stage strong {
-            font-size: 54px;
+          .stage-card-heading span {
+            font-size: 10px;
           }
 
-          .stage-card-copy-stack {
-            padding-right: 0;
-            padding-top: 0;
-            gap: 18px;
+          .stage-card-heading strong {
+            margin-top: 4px;
+            font-size: 42px;
           }
 
-          .stage-copy-group h4 {
-            font-size: 18px;
+          .stage-card-bottom-panel {
+            padding: 14px 14px 16px;
           }
 
-          .stage-copy-group p {
-            font-size: 14px;
-            line-height: 1.6;
+          .stage-card-bottom-inner {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            min-height: auto;
           }
 
-          .stage-card-portrait-bottom {
-            padding: 18px 16px 18px;
+          .stage-rings-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 16px;
           }
 
-          .stage-card-bottom-head {
-            position: static;
-            margin-bottom: 16px;
-            font-size: 34px;
+          .stage-ring-label {
+            font-size: 11px;
           }
 
-          .stage-kpi-grid {
-            width: 100%;
-            gap: 14px 16px;
-            padding-top: 0;
+          .stage-ring {
+            width: 56px;
+            height: 56px;
           }
 
-          .stage-kpi-ring {
-            width: 72px;
-            height: 72px;
+          .stage-ring-outer {
+            border-width: 9px;
           }
 
-          .stage-kpi-ring-inner {
-            width: 50px;
-            height: 50px;
+          .stage-ring-inner {
+            inset: 10px;
+            border-width: 6px;
           }
 
-          .stage-kpi-ring-inner span {
-            font-size: 14px;
+          .stage-ring-center {
+            font-size: 11px;
           }
 
-          .stage-factplan-block {
-            position: static;
-            width: 100%;
-            margin-top: 18px;
+          .stage-bars-title {
+            align-self: flex-start;
+            font-size: 28px;
+          }
+
+          .stage-bar-group {
+            max-width: none;
+          }
+
+          .stage-bar-label {
+            margin-bottom: 10px;
+            font-size: 11px;
+          }
+
+          .stage-bar {
+            height: 20px;
+          }
+
+          .stage-bar-short {
+            width: 96px;
+          }
+
+          .stage-bar-long {
+            width: 180px;
+          }
+
+          .stage-bar-marker {
+            border-left-width: 8px;
+            border-right-width: 8px;
+            border-bottom-width: 15px;
+          }
+
+          .stage-card-watermark-icon {
+            width: 20px;
+            height: 20px;
+            left: 14px;
+            top: 14px;
           }
 
           .builder-block-3 {
@@ -4347,6 +4182,26 @@ export default function Home() {
 
           .start-card-price-float {
             font-size: 30px;
+          }
+
+          .result-doc-card,
+          .result-doc-card-inner {
+            min-height: auto;
+          }
+
+          .result-doc-title {
+            font-size: 32px;
+          }
+
+          .result-doc-text {
+            font-size: 16px;
+            line-height: 1.75;
+          }
+
+          .result-doc-start-btn {
+            min-width: 92px;
+            padding: 10px 14px;
+            font-size: 13px;
           }
 
           .cta-box {
