@@ -2225,9 +2225,9 @@ box-shadow:
         .bar-good {
           background: linear-gradient(
             90deg,
-            rgba(176, 140, 255, 0.95) 0%,
-            rgba(244, 221, 114, 1) 48%,
-            rgba(247, 117, 63, 1) 100%
+            rgba(190, 140, 255, 0.95) 0%,
+            rgba(299, 281, 114, 1) 48%,
+            rgba(201, 91, 63, 1) 100%
           );
         }
 
