@@ -454,23 +454,33 @@ function ResultDocCard({
   tab,
   title,
   text,
-  cta,
+  bottomGlow = false,
 }: {
   tab: string;
   title: string;
   text: string;
-  cta?: ReactNode;
+  bottomGlow?: boolean;
 }) {
   return (
     <div className="result-doc-card tilt-card">
-      <div className="result-doc-card-inner tilt-inner glare-card">
+      <div
+        className={`result-doc-card-inner tilt-inner glare-card ${
+          bottomGlow ? "result-doc-card-inner-roadmap" : ""
+        }`}
+      >
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
-          {cta ? <div className="result-doc-cta">{cta}</div> : null}
         </div>
 
         <div className="result-doc-title">{title}</div>
         <div className="result-doc-text">{text}</div>
+
+        {bottomGlow ? (
+          <div className="result-doc-bottom-glow" aria-hidden="true">
+            <div className="result-doc-bottom-glow-core" />
+            <div className="result-doc-bottom-glow-shine" />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -1415,24 +1425,26 @@ export default function Home() {
               text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
             />
 
-            <ResultDocCard
-              tab="JTBD"
-              title="RoadMap"
-              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
-              cta={
-                <a href={payUrl} className="result-doc-start-btn">
-                  Начать
-                </a>
-              }
-            />
+<ResultDocCard
+  tab="JTBD"
+  title="RoadMap"
+  text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+  bottomGlow
+/>
           </div>
 
-          <div className="results-roadmap-note">
-            После получения и изучения результатов у Вас есть возможность
-            назначить <span>30-минутную встречу</span> с нашими C-level
-            специалистами в сфере Маркетинга и Продаж{" "}
-            <span>для декомпозиции результатов</span>.
-          </div>
+<div className="results-bottom-row">
+  <div className="results-roadmap-note">
+    После получения и изучения результатов у Вас есть возможность
+    назначить <span>30-минутную встречу</span> с нашими C-level
+    специалистами в сфере Маркетинга и Продаж{" "}
+    <span>для декомпозиции результатов</span>.
+  </div>
+
+  <a href={payUrl} className="result-doc-start-btn results-start-btn">
+    Начать
+  </a>
+</div>
         </section>
 
         <section className="mb-16 stage-hover-map">
@@ -2836,40 +2848,129 @@ box-shadow:
           min-height: 320px;
         }
 
-        .result-doc-card-inner {
-          isolation: isolate;
-          position: relative;
-          min-height: 320px;
-          border-radius: 30px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.09) 0%,
-            rgba(224, 225, 227, 0.06) 100%
-          );
-          backdrop-filter: blur(22px);
-          -webkit-backdrop-filter: blur(22px);
-          padding: 26px;
-          overflow: hidden;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.16),
-            0 20px 44px rgba(0, 0, 0, 0.16);
-        }
+.result-doc-card-inner {
+  isolation: isolate;
+  position: relative;
+  min-height: 320px;
+  border-radius: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(
+    135deg,
+    rgba(224, 225, 227, 0.09) 0%,
+    rgba(224, 225, 227, 0.06) 100%
+  );
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+  padding: 26px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.16),
+    0 20px 44px rgba(0, 0, 0, 0.16);
+  display: flex;
+  flex-direction: column;
+}
 
-        .result-doc-top {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-        }
+.result-doc-top {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;
+}
+.result-doc-card-inner-roadmap {
+  padding-bottom: 42px;
+}
 
-        .result-doc-cta {
-          display: flex;
-          align-items: center;
-        }
+.result-doc-bottom-glow {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: 18px;
+  height: 96px;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
 
+.result-doc-bottom-glow-core {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 22px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 50%, rgba(255, 233, 120, 0.95) 0%, rgba(255, 233, 120, 0.52) 20%, rgba(255, 233, 120, 0) 48%),
+    radial-gradient(circle at 42% 50%, rgba(247, 210, 55, 0.9) 0%, rgba(247, 210, 55, 0.45) 18%, rgba(247, 210, 55, 0) 44%),
+    radial-gradient(circle at 68% 50%, rgba(255, 220, 98, 0.85) 0%, rgba(255, 220, 98, 0.4) 18%, rgba(255, 220, 98, 0) 44%),
+    linear-gradient(
+      90deg,
+      rgba(247, 210, 55, 0.2) 0%,
+      rgba(247, 210, 55, 0.95) 22%,
+      rgba(255, 235, 150, 1) 48%,
+      rgba(247, 210, 55, 0.92) 74%,
+      rgba(247, 210, 55, 0.18) 100%
+    );
+  filter: blur(10px);
+  opacity: 0.95;
+  transform: translateY(16px) skewX(-18deg);
+}
+
+.result-doc-bottom-glow-shine {
+  position: absolute;
+  top: 8px;
+  bottom: 0;
+  left: -34%;
+  width: 34%;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.08) 18%,
+    rgba(255, 255, 255, 0.78) 50%,
+    rgba(255, 255, 255, 0.08) 82%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  filter: blur(12px);
+  transform: skewX(-22deg);
+  animation: roadmapShine 3.2s ease-in-out infinite;
+}
+
+.results-bottom-row {
+  margin-top: 30px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 24px;
+}
+
+.results-start-btn {
+  min-width: 136px;
+  min-height: 54px;
+  padding: 0 26px;
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+@keyframes roadmapShine {
+  0% {
+    left: -38%;
+    opacity: 0;
+  }
+
+  12% {
+    opacity: 1;
+  }
+
+  55% {
+    left: 104%;
+    opacity: 0.95;
+  }
+
+  100% {
+    left: 104%;
+    opacity: 0;
+  }
+}
         .result-doc-start-btn {
           display: inline-flex;
           align-items: center;
@@ -3997,7 +4098,19 @@ box-shadow:
           .reserve-amount {
             font-size: 2.2rem;
           }
+.results-bottom-row {
+  grid-template-columns: 1fr;
+  align-items: stretch;
+}
 
+.results-start-btn {
+  width: fit-content;
+  margin-bottom: 0;
+}
+
+.result-doc-bottom-glow {
+  height: 74px;
+}
           .metric-main-value {
             font-size: 1.85rem;
             white-space: normal;
