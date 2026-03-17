@@ -488,8 +488,8 @@ function StartCard({
   href: string;
 }) {
   return (
-<div className="start-card tilt-card">
-  <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
+    <div className="start-card tilt-card">
+      <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <img src={icon} alt={title} className="start-card-frame" />
 
         <div className="start-card-overlay start-card-overlay-plain">
@@ -514,448 +514,287 @@ function StageCard({
   icon: string;
 }) {
   return (
-    <div className="stage-card-split glare-card">
-      <div className="stage-card-top-glass">
-        <div className="stage-card-top-icon">
-          <img src={icon} alt={stage} className="stage-strip-icon" />
+    <div className="stage-card-analytics glare-card">
+      <div className="stage-card-top-panel">
+        <div className="stage-card-copy">
+          <div className="stage-copy-block">
+            <h4>Starting Position</h4>
+            <p>
+              Клиники готовы тестировать продукт, что подтверждает рыночную
+              потребность, однако цикл сделки остаётся длинным.
+            </p>
+          </div>
+
+          <div className="stage-copy-block">
+            <h4>Strategic Direction</h4>
+            <p>
+              Разработана гипотеза по внедрению структурированного пилотного
+              формата как основного входного продукта для ускорения продаж.
+            </p>
+          </div>
         </div>
 
-        <div className="stage-card-top-title">
+        <div className="stage-card-heading">
           <span>Stage</span>
           <strong>{stage}</strong>
         </div>
       </div>
 
-      <div className="stage-card-empty" />
+      <div className="stage-card-bottom-panel">
+        <div className="stage-card-bottom-inner">
+          <div className="stage-rings-grid">
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">leads 25/40</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">qual leads 6/15</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">demo 2/5</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+
+            <div className="stage-ring-metric">
+              <div className="stage-ring-label">deals 1/2</div>
+              <div className="stage-ring">
+                <div className="stage-ring-outer" />
+                <div className="stage-ring-inner" />
+                <div className="stage-ring-center">62%</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="stage-bars-area">
+            <div className="stage-bars-title">fact/plan</div>
+
+            <div className="stage-bars-wrap">
+              <div className="stage-bar-group">
+                <div className="stage-bar-label">deal cycle 5/3</div>
+
+                <div className="stage-bar-row stage-bar-row-top">
+                  <div className="stage-bar stage-bar-short" />
+                  <div className="stage-bar-marker" />
+                </div>
+
+                <div className="stage-bar-row stage-bar-row-bottom">
+                  <div className="stage-bar stage-bar-long" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <img src={icon} alt={stage} className="stage-card-watermark-icon" />
+      </div>
     </div>
   );
 }
 
-.stage-card-analytics {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-height: 460px;
-  border-radius: 34px;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  background: linear-gradient(
-    180deg,
-    rgba(224, 225, 227, 0.11) 0%,
-    rgba(224, 225, 227, 0.07) 100%
+function StageCarousel() {
+  const items = [
+    {
+      stage: "Seed",
+      icon: "/seed.svg",
+      industries: ["industry-saas", "industry-healthtech"],
+    },
+    {
+      stage: "Startup",
+      icon: "/startup.svg",
+      industries: ["industry-fintech", "industry-ecom"],
+    },
+    {
+      stage: "Growth",
+      icon: "/growth.svg",
+      industries: [
+        "industry-saas",
+        "industry-ecom",
+        "industry-fintech",
+        "industry-edtech",
+        "industry-healthtech",
+        "industry-b2b",
+      ],
+    },
+    {
+      stage: "Expansion",
+      icon: "/expansion.svg",
+      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
+    },
+  ];
+
+  const [rotation, setRotation] = useState(0);
+  const [isDraggingState, setIsDraggingState] = useState(false);
+
+  const dragStartX = useRef<number | null>(null);
+  const dragStartRotation = useRef(0);
+  const isDragging = useRef(false);
+
+  const itemAngle = 360 / items.length;
+  const radius = 280;
+
+  const activeIndex = useMemo(() => {
+    let frontIndex = 0;
+    let maxZ = -Infinity;
+
+    items.forEach((_, index) => {
+      const angle = rotation + index * itemAngle;
+      const radians = (angle * Math.PI) / 180;
+      const z = Math.cos(radians) * radius;
+
+      if (z > maxZ) {
+        maxZ = z;
+        frontIndex = index;
+      }
+    });
+
+    return frontIndex;
+  }, [rotation, itemAngle, radius]);
+
+  const activeIndustries = new Set(items[activeIndex].industries);
+
+  const startDrag = (clientX: number) => {
+    isDragging.current = true;
+    setIsDraggingState(true);
+    dragStartX.current = clientX;
+    dragStartRotation.current = rotation;
+  };
+
+  const moveDrag = (clientX: number) => {
+    if (!isDragging.current || dragStartX.current === null) return;
+    const deltaX = clientX - dragStartX.current;
+    const sensitivity = 0.22;
+    setRotation(dragStartRotation.current + deltaX * sensitivity);
+  };
+
+  const endDrag = () => {
+    isDragging.current = false;
+    setIsDraggingState(false);
+    dragStartX.current = null;
+  };
+
+  return (
+    <div className="stage-carousel-wrap">
+      <div className="industries-pills industries-pills-carousel">
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-saas")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          SaaS
+        </span>
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-ecom")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          E-com
+        </span>
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-fintech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          FinTech
+        </span>
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-edtech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          EdTech
+        </span>
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-healthtech")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          HealthTech
+        </span>
+        <span
+          className={`industry-pill ${
+            activeIndustries.has("industry-b2b")
+              ? "industry-pill-active"
+              : "industry-pill-dim"
+          }`}
+        >
+          B2B
+        </span>
+      </div>
+
+      <div
+        className={`stage-carousel-scene ${
+          isDraggingState ? "is-dragging" : ""
+        }`}
+        onMouseDown={(e) => startDrag(e.clientX)}
+        onMouseMove={(e) => moveDrag(e.clientX)}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+        onTouchEnd={endDrag}
+      >
+        <div className="stage-carousel-drum">
+          {items.map((item, index) => {
+            const angle = rotation + index * itemAngle;
+            const radians = (angle * Math.PI) / 180;
+
+            const x = Math.sin(radians) * radius;
+            const z = Math.cos(radians) * radius;
+
+            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
+            const opacity = 0.28 + ((z + radius) / (radius * 2)) * 0.72;
+            const blur = Math.max(0, (1 - scale) * 2.2);
+
+            return (
+              <div
+                key={item.stage}
+                className="stage-carousel-item stage-carousel-item-free"
+                style={{
+                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) scale(${scale})`,
+                  opacity,
+                  filter: `blur(${blur}px)`,
+                  zIndex: Math.round(z + radius),
+                }}
+              >
+                <StageCard stage={item.stage} icon={item.icon} />
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="stage-carousel-hint">
+          Потяните барабан влево или вправо
+        </div>
+      </div>
+    </div>
   );
-  box-shadow:
-    0 24px 54px rgba(0, 0, 0, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-.stage-card-top-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 24px;
-  padding: 28px 28px 24px;
-  min-height: 248px;
-  background: linear-gradient(
-    135deg,
-    rgba(224, 225, 227, 0.18) 0%,
-    rgba(224, 225, 227, 0.09) 100%
-  );
-}
-
-.stage-card-copy {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  gap: 22px;
-  min-width: 0;
-}
-
-.stage-copy-block h4 {
-  margin: 0;
-  font-size: 26px;
-  line-height: 1.06;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.96);
-  letter-spacing: -0.03em;
-}
-
-.stage-copy-block p {
-  margin: 10px 0 0;
-  max-width: 560px;
-  font-size: 17px;
-  line-height: 1.55;
-  color: rgba(255, 255, 255, 0.86);
-}
-
-.stage-card-heading {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-start;
-  text-align: right;
-  min-width: 180px;
-}
-
-.stage-card-heading span {
-  font-size: 15px;
-  line-height: 1;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.88);
-}
-
-.stage-card-heading strong {
-  margin-top: 8px;
-  font-size: clamp(54px, 6vw, 92px);
-  line-height: 0.9;
-  font-weight: 700;
-  letter-spacing: -0.07em;
-  color: #ffffff;
-}
-
-.stage-card-bottom-panel {
-  position: relative;
-  flex: 1;
-  overflow: hidden;
-  padding: 22px 26px 24px;
-  background:
-    radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
-    radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
-    radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
-    radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
-    linear-gradient(
-      135deg,
-      #081a63 0%,
-      #09185a 18%,
-      #151a74 34%,
-      #2a1584 52%,
-      #3a1c79 66%,
-      #4b1a74 82%,
-      #301346 100%
-    );
-}
-
-.stage-card-bottom-inner {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: 1.05fr 1.25fr;
-  align-items: end;
-  gap: 28px;
-  min-height: 190px;
-}
-
-.stage-rings-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px 22px;
-  align-self: start;
-}
-
-.stage-ring-metric {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.stage-ring-label {
-  font-size: 15px;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 0.96);
-}
-
-.stage-ring {
-  position: relative;
-  width: 74px;
-  height: 74px;
-}
-
-.stage-ring-outer,
-.stage-ring-inner {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-}
-
-.stage-ring-outer {
-  border: 12px solid rgba(255, 178, 64, 0.88);
-  border-right-color: transparent;
-  transform: rotate(-12deg);
-}
-
-.stage-ring-inner {
-  inset: 14px;
-  border: 8px solid rgba(247, 210, 55, 0.98);
-  border-right-color: transparent;
-  transform: rotate(18deg);
-}
-
-.stage-ring-center {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  font-weight: 500;
-  color: #ffffff;
-}
-
-.stage-bars-area {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  min-height: 190px;
-}
-
-.stage-bars-title {
-  align-self: flex-end;
-  font-size: clamp(34px, 4vw, 56px);
-  line-height: 0.95;
-  font-weight: 700;
-  letter-spacing: -0.06em;
-  color: rgba(255, 255, 255, 0.96);
-}
-
-.stage-bars-wrap {
-  margin-top: auto;
-  padding-top: 10px;
-}
-
-.stage-bar-group {
-  width: 100%;
-  max-width: 420px;
-}
-
-.stage-bar-label {
-  margin-bottom: 14px;
-  font-size: 15px;
-  line-height: 1.2;
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.stage-bar-row {
-  display: flex;
-  align-items: center;
-}
-
-.stage-bar-row-top {
-  gap: 18px;
-}
-
-.stage-bar-row-bottom {
-  margin-top: 14px;
-}
-
-.stage-bar {
-  height: 30px;
-  background: linear-gradient(
-    90deg,
-    rgba(247, 210, 55, 0.95) 0%,
-    rgba(244, 221, 114, 0.98) 100%
-  );
-  box-shadow:
-    0 8px 18px rgba(247, 210, 55, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18);
-}
-
-.stage-bar-short {
-  width: 168px;
-}
-
-.stage-bar-long {
-  width: 310px;
-}
-
-.stage-bar-marker {
-  width: 0;
-  height: 0;
-  border-left: 12px solid transparent;
-  border-right: 12px solid transparent;
-  border-bottom: 22px solid rgba(255, 255, 255, 0.94);
-  transform: rotate(0deg);
-}
-
-.stage-card-watermark-icon {
-  position: absolute;
-  left: 24px;
-  top: 22px;
-  width: 28px;
-  height: 28px;
-  opacity: 0.12;
-  object-fit: contain;
-  pointer-events: none;
-}
-
-/* адаптив под карусель */
-
-@media (max-width: 1023px) {
-  .stage-card-analytics {
-    min-height: 400px;
-    border-radius: 28px;
-  }
-
-  .stage-card-top-panel {
-    padding: 22px 22px 18px;
-    min-height: 210px;
-    gap: 18px;
-  }
-
-  .stage-copy-block h4 {
-    font-size: 22px;
-  }
-
-  .stage-copy-block p {
-    font-size: 15px;
-    line-height: 1.5;
-  }
-
-  .stage-card-heading strong {
-    font-size: 62px;
-  }
-
-  .stage-card-bottom-panel {
-    padding: 18px 20px 20px;
-  }
-
-  .stage-card-bottom-inner {
-    grid-template-columns: 1fr 1.1fr;
-    gap: 20px;
-  }
-
-  .stage-bars-title {
-    font-size: 42px;
-  }
-
-  .stage-bar-short {
-    width: 132px;
-  }
-
-  .stage-bar-long {
-    width: 240px;
-  }
-}
-
-@media (max-width: 767px) {
-  .stage-card-analytics {
-    min-height: 320px;
-    border-radius: 22px;
-  }
-
-  .stage-card-top-panel {
-    grid-template-columns: 1fr;
-    gap: 14px;
-    padding: 16px 16px 14px;
-    min-height: auto;
-  }
-
-  .stage-card-copy {
-    gap: 14px;
-  }
-
-  .stage-copy-block h4 {
-    font-size: 16px;
-  }
-
-  .stage-copy-block p {
-    margin-top: 6px;
-    font-size: 12px;
-    line-height: 1.45;
-    max-width: none;
-  }
-
-  .stage-card-heading {
-    align-items: flex-start;
-    text-align: left;
-    min-width: 0;
-  }
-
-  .stage-card-heading span {
-    font-size: 10px;
-  }
-
-  .stage-card-heading strong {
-    margin-top: 4px;
-    font-size: 42px;
-  }
-
-  .stage-card-bottom-panel {
-    padding: 14px 14px 16px;
-  }
-
-  .stage-card-bottom-inner {
-    grid-template-columns: 1fr;
-    gap: 16px;
-    min-height: auto;
-  }
-
-  .stage-rings-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px 16px;
-  }
-
-  .stage-ring-label {
-    font-size: 11px;
-  }
-
-  .stage-ring {
-    width: 56px;
-    height: 56px;
-  }
-
-  .stage-ring-outer {
-    border-width: 9px;
-  }
-
-  .stage-ring-inner {
-    inset: 10px;
-    border-width: 6px;
-  }
-
-  .stage-ring-center {
-    font-size: 11px;
-  }
-
-  .stage-bars-title {
-    align-self: flex-start;
-    font-size: 28px;
-  }
-
-  .stage-bar-group {
-    max-width: none;
-  }
-
-  .stage-bar-label {
-    margin-bottom: 10px;
-    font-size: 11px;
-  }
-
-  .stage-bar {
-    height: 20px;
-  }
-
-  .stage-bar-short {
-    width: 96px;
-  }
-
-  .stage-bar-long {
-    width: 180px;
-  }
-
-  .stage-bar-marker {
-    border-left-width: 8px;
-    border-right-width: 8px;
-    border-bottom-width: 15px;
-  }
-
-  .stage-card-watermark-icon {
-    width: 20px;
-    height: 20px;
-    left: 14px;
-    top: 14px;
-  }
-}
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
@@ -1708,41 +1547,65 @@ export default function Home() {
           transition: transform 0.08s linear;
         }
 
-.glass-card {
-  position: relative;
-  border-radius: 24px;
-  padding: 22px;
-  overflow: hidden;
-  isolation: isolate;
+        .glass-card {
+          position: relative;
+          border-radius: 24px;
+          padding: 22px;
+          overflow: hidden;
+          isolation: isolate;
+          background: linear-gradient(
+            180deg,
+            rgba(224, 225, 227, 0.12) 0%,
+            rgba(224, 225, 227, 0.08) 100%
+          );
+          border: 1px solid rgba(255, 255, 255, 0.18);
+          box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.18),
+            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
+            0 18px 44px rgba(0, 0, 0, 0.16);
+          backdrop-filter: blur(18px) saturate(135%);
+          -webkit-backdrop-filter: blur(18px) saturate(135%);
+        }
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(224, 225, 227, 0.12) 0%,
-      rgba(224, 225, 227, 0.08) 100%
-    );
+        .glass-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          opacity: 0.75;
+          background: linear-gradient(
+            115deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.025) 18%,
+            rgba(255, 255, 255, 0.01) 34%,
+            rgba(255, 255, 255, 0.05) 48%,
+            rgba(255, 255, 255, 0.012) 64%,
+            rgba(255, 255, 255, 0.06) 82%,
+            rgba(255, 255, 255, 0.02) 100%
+          );
+        }
 
-  border: 1px solid rgba(255, 255, 255, 0.18);
+        .glass-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          opacity: 0.12;
+          mix-blend-mode: soft-light;
+          background-image:
+            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.16) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.18) 0 0.7px, transparent 0.9px),
+            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.12) 0 0.7px, transparent 0.9px);
+          background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
+        }
 
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-    0 18px 44px rgba(0, 0, 0, 0.16);
-
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-}
-
-  border: 1px solid rgba(255, 255, 255, 0.18);
-
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.18),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-    0 18px 44px rgba(0, 0, 0, 0.16);
-
-  backdrop-filter: blur(18px) saturate(135%);
-  -webkit-backdrop-filter: blur(18px) saturate(135%);
-}
+        .glass-card > * {
+          position: relative;
+          z-index: 1;
+        }
 
         .soft-glow {
           box-shadow:
@@ -1769,109 +1632,53 @@ export default function Home() {
           z-index: 0;
           opacity: 0.8;
         }
-.glass-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.75;
 
-  background:
-    linear-gradient(
-      115deg,
-      rgba(255,255,255,0.10) 0%,
-      rgba(255,255,255,0.025) 18%,
-      rgba(255,255,255,0.01) 34%,
-      rgba(255,255,255,0.05) 48%,
-      rgba(255,255,255,0.012) 64%,
-      rgba(255,255,255,0.06) 82%,
-      rgba(255,255,255,0.02) 100%
-    );
-}
-
-.glass-card::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  opacity: 0.12;
-  mix-blend-mode: soft-light;
-
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,0.22) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 70% 30%, rgba(255,255,255,0.16) 0 0.8px, transparent 1px),
-    radial-gradient(circle at 35% 75%, rgba(255,255,255,0.18) 0 0.7px, transparent 0.9px),
-    radial-gradient(circle at 80% 80%, rgba(255,255,255,0.12) 0 0.7px, transparent 0.9px);
-
-  background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
-}
-
-.glass-card > * {
-  position: relative;
-  z-index: 1;
-}
         .glare-card > *,
         .glare-card-lite > * {
           position: relative;
           z-index: 1;
         }
-.premium-glass {
-  position: relative;
-  overflow: hidden;
-  isolation: isolate;
-}
 
-.premium-glass::before {
-  content: "";
-  position: absolute;
-  inset: -20%;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.18;
-  filter: blur(18px);
+        .premium-glass {
+          position: relative;
+          overflow: hidden;
+          isolation: isolate;
+        }
 
-  background:
-    repeating-linear-gradient(
-      105deg,
-      rgba(255,255,255,0.05) 0px,
-      rgba(255,255,255,0.05) 2px,
-      transparent 12px,
-      transparent 42px
-    );
+        .premium-glass::before {
+          content: "";
+          position: absolute;
+          inset: -20%;
+          z-index: 0;
+          pointer-events: none;
+          opacity: 0.18;
+          filter: blur(18px);
+          background: repeating-linear-gradient(
+            105deg,
+            rgba(255, 255, 255, 0.05) 0px,
+            rgba(255, 255, 255, 0.05) 2px,
+            transparent 12px,
+            transparent 42px
+          );
+          animation: premiumGlassShift 14s linear infinite;
+        }
 
-  animation: premiumGlassShift 14s linear infinite;
-}
+        .premium-glass::after {
+          content: "";
+          position: absolute;
+          inset: auto -10% -18% -10%;
+          height: 42%;
+          z-index: 0;
+          pointer-events: none;
+          filter: blur(42px);
+          opacity: 0.95;
+          mix-blend-mode: screen;
+          background:
+            radial-gradient(circle at 30% 40%, rgba(125, 255, 220, 0.34) 0%, transparent 42%),
+            radial-gradient(circle at 68% 50%, rgba(130, 120, 255, 0.32) 0%, transparent 44%),
+            radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0%, transparent 36%);
+        }
 
-.premium-glass::after {
-  content: "";
-  position: absolute;
-  inset: auto -10% -18% -10%;
-  height: 42%;
-  z-index: 0;
-  pointer-events: none;
-  filter: blur(42px);
-  opacity: 0.95;
-  mix-blend-mode: screen;
-
-  background:
-    radial-gradient(circle at 30% 40%, rgba(125,255,220,0.34) 0%, transparent 42%),
-    radial-gradient(circle at 68% 50%, rgba(130,120,255,0.32) 0%, transparent 44%),
-    radial-gradient(circle at 48% 44%, rgba(255,255,255,0.12) 0%, transparent 36%);
-}
-
-@keyframes premiumGlassShift {
-  0% {
-    transform: translate3d(-12px, 0, 0);
-  }
-  50% {
-    transform: translate3d(14px, -6px, 0);
-  }
-  100% {
-    transform: translate3d(-12px, 0, 0);
-  }
-}
         .journey-compact-card:nth-child(1)::before,
         .result-doc-card:nth-child(1) .result-doc-card-inner::before,
         .metric-card:nth-child(1)::before,
@@ -3192,8 +2999,8 @@ export default function Home() {
 
         .stage-carousel-scene {
           position: relative;
-          perspective: 1800px;
-          min-height: 420px;
+          perspective: 2200px;
+          min-height: 560px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -3201,130 +3008,298 @@ export default function Home() {
           touch-action: pan-y;
           user-select: none;
           -webkit-user-select: none;
+          cursor: grab;
+          overflow: hidden;
         }
 
-        .stage-carousel-track {
+        .stage-carousel-scene.is-dragging {
+          cursor: grabbing;
+        }
+
+        .stage-carousel-drum {
           position: relative;
           width: 100%;
-          height: 360px;
+          height: 460px;
           transform-style: preserve-3d;
         }
 
-        .stage-carousel-item {
+        .stage-carousel-item-free {
           position: absolute;
-          top: 0;
+          top: 18px;
           left: 50%;
-          width: min(360px, 34vw);
+          width: min(760px, 62vw);
           transform-style: preserve-3d;
           transition:
-            transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
-            opacity 0.45s ease,
-            filter 0.45s ease;
-          cursor: grab;
-        }
-
-        .stage-card-center {
-          transform: translateX(-50%) translateZ(0) scale(1);
-          opacity: 1;
-          z-index: 5;
-          filter: blur(0);
-        }
-
-        .stage-card-left {
-          transform: translateX(calc(-50% - 220px)) translateZ(-160px)
-            rotateY(24deg) scale(0.82);
-          opacity: 0.52;
-          z-index: 3;
-          filter: blur(0.4px);
-        }
-
-        .stage-card-right {
-          transform: translateX(calc(-50% + 220px)) translateZ(-160px)
-            rotateY(-24deg) scale(0.82);
-          opacity: 0.52;
-          z-index: 3;
-          filter: blur(0.4px);
-        }
-
-        .stage-card-back {
-          transform: translateX(-50%) translateZ(-300px) scale(0.66);
-          opacity: 0.12;
-          z-index: 1;
-          filter: blur(1.2px);
-          pointer-events: none;
-        }
-
-        .stage-card-hidden {
-          transform: translateX(-50%) translateZ(-420px) scale(0.58);
-          opacity: 0;
-          z-index: 0;
-          pointer-events: none;
-        }
-
-        .stage-carousel-dots {
-          margin-top: 18px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 10px;
-          position: relative;
-          z-index: 3;
+            transform 0.04s linear,
+            opacity 0.04s linear,
+            filter 0.04s linear;
+          will-change: transform, opacity, filter;
         }
 
         .stage-carousel-hint {
-          margin-top: 14px;
+          margin-top: 18px;
           text-align: center;
           font-size: 12px;
           line-height: 1.4;
           letter-spacing: 0.08em;
           text-transform: uppercase;
           color: rgba(255, 255, 255, 0.42);
+        }
+
+        .stage-card-analytics {
           position: relative;
-          z-index: 3;
+          display: flex;
+          flex-direction: column;
+          min-height: 460px;
+          border-radius: 34px;
+          overflow: hidden;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          background: linear-gradient(
+            180deg,
+            rgba(224, 225, 227, 0.11) 0%,
+            rgba(224, 225, 227, 0.07) 100%
+          );
+          box-shadow:
+            0 24px 54px rgba(0, 0, 0, 0.22),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
         }
 
-        .stage-carousel-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.18);
-          transition: 0.2s ease;
+        .stage-card-top-panel {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) auto;
+          gap: 24px;
+          padding: 28px 28px 24px;
+          min-height: 248px;
+          background: linear-gradient(
+            135deg,
+            rgba(224, 225, 227, 0.18) 0%,
+            rgba(224, 225, 227, 0.09) 100%
+          );
         }
 
-        .stage-carousel-dot-active {
-          background: #f7d237;
-          box-shadow: 0 0 12px rgba(247, 210, 55, 0.35);
+        .stage-card-copy {
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          gap: 22px;
+          min-width: 0;
         }
 
+        .stage-copy-block h4 {
+          margin: 0;
+          font-size: 26px;
+          line-height: 1.06;
+          font-weight: 500;
+          color: rgba(255, 255, 255, 0.96);
+          letter-spacing: -0.03em;
+        }
 
-        .stage-card-top-title span {
-          font-size: 10px;
+        .stage-copy-block p {
+          margin: 10px 0 0;
+          max-width: 560px;
+          font-size: 17px;
+          line-height: 1.55;
+          color: rgba(255, 255, 255, 0.86);
+        }
+
+        .stage-card-heading {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          justify-content: flex-start;
+          text-align: right;
+          min-width: 180px;
+        }
+
+        .stage-card-heading span {
+          font-size: 15px;
           line-height: 1;
-          color: rgba(255, 255, 255, 0.84);
           text-transform: uppercase;
           letter-spacing: 0.08em;
+          color: rgba(255, 255, 255, 0.88);
         }
 
-        .stage-card-top-title strong {
-          margin-top: 6px;
-          font-size: clamp(26px, 2.6vw, 44px);
+        .stage-card-heading strong {
+          margin-top: 8px;
+          font-size: clamp(54px, 6vw, 92px);
           line-height: 0.9;
-          font-weight: 600;
-          letter-spacing: -0.05em;
+          font-weight: 700;
+          letter-spacing: -0.07em;
           color: #ffffff;
         }
 
-        .stage-card-empty {
+        .stage-card-bottom-panel {
+          position: relative;
           flex: 1;
-          margin-top: 10px;
-          border-radius: 18px;
+          overflow: hidden;
+          padding: 22px 26px 24px;
+          background:
+            radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
+            radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
+            radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
+            radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
+            linear-gradient(
+              135deg,
+              #081a63 0%,
+              #09185a 18%,
+              #151a74 34%,
+              #2a1584 52%,
+              #3a1c79 66%,
+              #4b1a74 82%,
+              #301346 100%
+            );
+        }
+
+        .stage-card-bottom-inner {
+          position: relative;
+          z-index: 2;
+          display: grid;
+          grid-template-columns: 1.05fr 1.25fr;
+          align-items: end;
+          gap: 28px;
+          min-height: 190px;
+        }
+
+        .stage-rings-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px 22px;
+          align-self: start;
+        }
+
+        .stage-ring-metric {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .stage-ring-label {
+          font-size: 15px;
+          line-height: 1.2;
+          color: rgba(255, 255, 255, 0.96);
+        }
+
+        .stage-ring {
+          position: relative;
+          width: 74px;
+          height: 74px;
+        }
+
+        .stage-ring-outer,
+        .stage-ring-inner {
+          position: absolute;
+          inset: 0;
+          border-radius: 999px;
+        }
+
+        .stage-ring-outer {
+          border: 12px solid rgba(255, 178, 64, 0.88);
+          border-right-color: transparent;
+          transform: rotate(-12deg);
+        }
+
+        .stage-ring-inner {
+          inset: 14px;
+          border: 8px solid rgba(247, 210, 55, 0.98);
+          border-right-color: transparent;
+          transform: rotate(18deg);
+        }
+
+        .stage-ring-center {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: 500;
+          color: #ffffff;
+        }
+
+        .stage-bars-area {
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          min-height: 190px;
+        }
+
+        .stage-bars-title {
+          align-self: flex-end;
+          font-size: clamp(34px, 4vw, 56px);
+          line-height: 0.95;
+          font-weight: 700;
+          letter-spacing: -0.06em;
+          color: rgba(255, 255, 255, 0.96);
+        }
+
+        .stage-bars-wrap {
+          margin-top: auto;
+          padding-top: 10px;
+        }
+
+        .stage-bar-group {
+          width: 100%;
+          max-width: 420px;
+        }
+
+        .stage-bar-label {
+          margin-bottom: 14px;
+          font-size: 15px;
+          line-height: 1.2;
+          color: rgba(255, 255, 255, 0.95);
+        }
+
+        .stage-bar-row {
+          display: flex;
+          align-items: center;
+        }
+
+        .stage-bar-row-top {
+          gap: 18px;
+        }
+
+        .stage-bar-row-bottom {
+          margin-top: 14px;
+        }
+
+        .stage-bar {
+          height: 30px;
           background: linear-gradient(
-            180deg,
-            rgba(7, 16, 43, 0.72) 0%,
-            rgba(10, 24, 61, 0.82) 100%
+            90deg,
+            rgba(247, 210, 55, 0.95) 0%,
+            rgba(244, 221, 114, 0.98) 100%
           );
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          min-height: 130px;
+          box-shadow:
+            0 8px 18px rgba(247, 210, 55, 0.16),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+        }
+
+        .stage-bar-short {
+          width: 168px;
+        }
+
+        .stage-bar-long {
+          width: 310px;
+        }
+
+        .stage-bar-marker {
+          width: 0;
+          height: 0;
+          border-left: 12px solid transparent;
+          border-right: 12px solid transparent;
+          border-bottom: 22px solid rgba(255, 255, 255, 0.94);
+        }
+
+        .stage-card-watermark-icon {
+          position: absolute;
+          left: 24px;
+          top: 22px;
+          width: 28px;
+          height: 28px;
+          opacity: 0.12;
+          object-fit: contain;
+          pointer-events: none;
         }
 
         .analysis-grid {
@@ -3667,6 +3642,18 @@ export default function Home() {
           );
         }
 
+        @keyframes premiumGlassShift {
+          0% {
+            transform: translate3d(-12px, 0, 0);
+          }
+          50% {
+            transform: translate3d(14px, -6px, 0);
+          }
+          100% {
+            transform: translate3d(-12px, 0, 0);
+          }
+        }
+
         @keyframes pulseTinyYellow {
           0% {
             transform: scale(1);
@@ -3823,39 +3810,67 @@ export default function Home() {
           }
 
           .stage-carousel-scene {
-            min-height: 360px;
+            min-height: 500px;
+            perspective: 1800px;
           }
 
-          .stage-carousel-track {
-            height: 320px;
+          .stage-carousel-drum {
+            height: 420px;
           }
 
-          .stage-carousel-item {
-            width: min(320px, 50vw);
+          .stage-carousel-item-free {
+            width: min(700px, 78vw);
           }
 
-          .stage-card-left {
-            transform: translateX(calc(-50% - 150px)) translateZ(-120px)
-              rotateY(20deg) scale(0.78);
+          .stage-card-analytics {
+            min-height: 400px;
+            border-radius: 28px;
           }
 
-          .stage-card-right {
-            transform: translateX(calc(-50% + 150px)) translateZ(-120px)
-              rotateY(-20deg) scale(0.78);
+          .stage-card-top-panel {
+            padding: 22px 22px 18px;
+            min-height: 210px;
+            gap: 18px;
           }
 
-          .stage-card-back {
-            transform: translateX(-50%) translateZ(-240px) scale(0.58);
+          .stage-copy-block h4 {
+            font-size: 22px;
+          }
+
+          .stage-copy-block p {
+            font-size: 15px;
+            line-height: 1.5;
+          }
+
+          .stage-card-heading strong {
+            font-size: 62px;
+          }
+
+          .stage-card-bottom-panel {
+            padding: 18px 20px 20px;
+          }
+
+          .stage-card-bottom-inner {
+            grid-template-columns: 1fr 1.1fr;
+            gap: 20px;
+          }
+
+          .stage-bars-title {
+            font-size: 42px;
+          }
+
+          .stage-bar-short {
+            width: 132px;
+          }
+
+          .stage-bar-long {
+            width: 240px;
           }
         }
 
         @media (max-width: 767px) {
           .cursor-glow {
             display: none;
-          }
-
-          .stage-carousel-hint {
-            display: block;
           }
 
           .sticky-header {
@@ -4011,62 +4026,142 @@ export default function Home() {
           }
 
           .stage-carousel-scene {
-            min-height: 300px;
+            min-height: 420px;
+            perspective: 1600px;
           }
 
-          .stage-carousel-track {
-            height: 220px;
+          .stage-carousel-drum {
+            height: 320px;
           }
 
-          .stage-carousel-item {
-            width: min(250px, 76vw);
+          .stage-carousel-item-free {
+            width: min(420px, 88vw);
+            top: 8px;
           }
 
-          .stage-card-split {
-            min-height: 180px;
-            padding: 8px;
+          .stage-card-analytics {
+            min-height: 320px;
+            border-radius: 22px;
           }
 
-          .stage-card-left,
-          .stage-card-right,
-          .stage-card-back {
-            display: none;
+          .stage-card-top-panel {
+            grid-template-columns: 1fr;
+            gap: 14px;
+            padding: 16px 16px 14px;
+            min-height: auto;
           }
 
-          .stage-card-center {
-            transform: translateX(-50%) translateZ(0) scale(1);
-            opacity: 1;
+          .stage-card-copy {
+            gap: 14px;
           }
 
-          .stage-card-top-glass {
-            min-height: 62px;
-            padding: 12px 14px;
+          .stage-copy-block h4 {
+            font-size: 16px;
           }
 
-          .stage-card-top-icon {
-            width: 28px;
-            height: 28px;
+          .stage-copy-block p {
+            margin-top: 6px;
+            font-size: 12px;
+            line-height: 1.45;
+            max-width: none;
           }
 
-          .stage-strip-icon {
-            width: 22px;
-            height: 22px;
+          .stage-card-heading {
+            align-items: flex-start;
+            text-align: left;
+            min-width: 0;
           }
 
-          .stage-card-top-title span {
-            font-size: 9px;
+          .stage-card-heading span {
+            font-size: 10px;
           }
 
-          .stage-card-top-title strong {
-            font-size: 24px;
+          .stage-card-heading strong {
+            margin-top: 4px;
+            font-size: 42px;
+          }
+
+          .stage-card-bottom-panel {
+            padding: 14px 14px 16px;
+          }
+
+          .stage-card-bottom-inner {
+            grid-template-columns: 1fr;
+            gap: 16px;
+            min-height: auto;
+          }
+
+          .stage-rings-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px 16px;
+          }
+
+          .stage-ring-label {
+            font-size: 11px;
+          }
+
+          .stage-ring {
+            width: 56px;
+            height: 56px;
+          }
+
+          .stage-ring-outer {
+            border-width: 9px;
+          }
+
+          .stage-ring-inner {
+            inset: 10px;
+            border-width: 6px;
+          }
+
+          .stage-ring-center {
+            font-size: 11px;
+          }
+
+          .stage-bars-title {
+            align-self: flex-start;
+            font-size: 28px;
+          }
+
+          .stage-bar-group {
+            max-width: none;
+          }
+
+          .stage-bar-label {
+            margin-bottom: 10px;
+            font-size: 11px;
+          }
+
+          .stage-bar {
+            height: 20px;
+          }
+
+          .stage-bar-short {
+            width: 96px;
+          }
+
+          .stage-bar-long {
+            width: 180px;
+          }
+
+          .stage-bar-marker {
+            border-left-width: 8px;
+            border-right-width: 8px;
+            border-bottom-width: 15px;
+          }
+
+          .stage-card-watermark-icon {
+            width: 20px;
+            height: 20px;
+            left: 14px;
+            top: 14px;
           }
 
           .builder-block-3 {
             min-height: 110px;
-            padding-left: 20px;
+            padding-left: 0;
             font-size: 46px;
             justify-content: center;
-            padding-left: 0;
           }
 
           .builder-block-1,
