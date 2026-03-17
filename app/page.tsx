@@ -431,7 +431,7 @@ function HeroEconomyChart() {
 
 function SnapshotStructure() {
   return (
-    <div className="glass-card glare-card snapshot-structure-card">
+    <>
       <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
 
       <p className="snapshot-builder-copy">
@@ -439,17 +439,19 @@ function SnapshotStructure() {
         формирования стратегических решений вашего бизнеса
       </p>
 
-      <div className="snapshot-builder snapshot-builder-mosaic">
-        <div className="builder-block builder-block-company">
+      <div className="snapshot-builder snapshot-builder-editorial">
+        <div className="builder-block builder-block-structure">
           <span className="builder-label">Структура компании</span>
         </div>
 
-        <div className="builder-block builder-block-positioning">
-          <span className="builder-label">Позиционирование</span>
-        </div>
+        <div className="builder-middle-grid">
+          <div className="builder-block builder-block-positioning">
+            <span className="builder-label">Позиционирование</span>
+          </div>
 
-        <div className="builder-block builder-block-economics builder-block-accent">
-          <span className="builder-label">Экономика</span>
+          <div className="builder-block builder-block-economics">
+            <span className="builder-label">Экономика</span>
+          </div>
         </div>
 
         <div className="builder-block builder-block-clients">
@@ -460,7 +462,7 @@ function SnapshotStructure() {
           <span className="builder-label">Продукт</span>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -3423,52 +3425,46 @@ box-shadow:
           align-items: start;
         }
 
-        .snapshot-structure-card {
-          min-height: 520px;
-        }
-
-        .analysis-left-title {
-          font-size: 22px;
-          line-height: 1.25;
-          font-weight: 700;
-          color: #ffffff;
-          margin: 0;
-        }
-
-     .snapshot-structure-card {
-  min-height: 760px;
+.snapshot-structure-card {
+  min-height: auto;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .analysis-left-title {
+  margin: 0;
   font-size: 22px;
-  line-height: 1.25;
+  line-height: 1.2;
   font-weight: 700;
   color: #ffffff;
-  margin: 0;
 }
 
 .snapshot-builder-copy {
-  margin-top: 12px;
-  max-width: 860px;
+  margin-top: 14px;
+  max-width: 780px;
   font-size: 16px;
-  line-height: 1.8;
-  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.75;
+  color: rgba(255, 255, 255, 0.72);
 }
 
-.snapshot-builder.snapshot-builder-mosaic {
+.snapshot-builder.snapshot-builder-editorial {
   margin-top: 28px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 150px 260px 120px 120px;
-  grid-template-areas:
-    "company company"
-    "positioning economics"
-    "clients clients"
-    "product product";
+  display: flex;
+  flex-direction: column;
   gap: 18px;
-  min-height: 670px;
 }
 
+.builder-middle-grid {
+  display: grid;
+  grid-template-columns: 27fr 18fr;
+  gap: 18px;
+}
+
+/* База карточек */
 .builder-block {
   position: relative;
   overflow: hidden;
@@ -3477,38 +3473,35 @@ box-shadow:
   justify-content: center;
   text-align: center;
   padding: 24px 28px;
+  color: #f4f5f7;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background:
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 34%, rgba(255, 255, 255, 0) 60%),
-    linear-gradient(135deg, rgba(224, 225, 227, 0.09) 0%, rgba(224, 225, 227, 0.045) 100%);
+    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 28%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(18, 34, 74, 0.68) 0%, rgba(11, 29, 58, 0.88) 100%);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
-    0 16px 38px rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.16);
   transition:
     transform 0.35s ease,
-    border-color 0.35s ease,
     box-shadow 0.35s ease,
-    background 0.35s ease;
+    border-color 0.35s ease;
 }
 
 .builder-block::before {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    115deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.02) 24%,
-    rgba(255, 255, 255, 0.08) 50%,
-    rgba(255, 255, 255, 0.02) 76%,
-    rgba(255, 255, 255, 0) 100%
-  );
+  background:
+    linear-gradient(
+      115deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.015) 26%,
+      rgba(255, 255, 255, 0.08) 50%,
+      rgba(255, 255, 255, 0.02) 74%,
+      rgba(255, 255, 255, 0) 100%
+    );
   transform: translateX(-120%);
-  animation: builderGlassSweep 8s ease-in-out infinite;
+  animation: snapshotCardSweep 7.5s ease-in-out infinite;
   pointer-events: none;
 }
 
@@ -3517,117 +3510,129 @@ box-shadow:
   position: absolute;
   inset: 1px;
   border-radius: inherit;
-  background:
-    radial-gradient(circle at 80% 20%, rgba(71, 182, 246, 0.06) 0%, rgba(71, 182, 246, 0) 34%),
-    radial-gradient(circle at 20% 85%, rgba(247, 210, 55, 0.06) 0%, rgba(247, 210, 55, 0) 34%);
-  opacity: 0.9;
   pointer-events: none;
+  background:
+    radial-gradient(circle at 82% 18%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0) 32%),
+    radial-gradient(circle at 14% 85%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0) 36%);
+  opacity: 0.9;
 }
 
 .builder-block:hover {
-  transform: translateY(-4px);
+  transform: translateY(-3px);
   border-color: rgba(255, 255, 255, 0.16);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 22px 44px rgba(0, 0, 0, 0.24);
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 18px 42px rgba(0, 0, 0, 0.22);
 }
 
 .builder-label {
   position: relative;
   z-index: 2;
   display: block;
-  max-width: 90%;
-  color: rgba(255, 255, 255, 0.95);
-  text-wrap: balance;
+  width: 100%;
+  max-width: 100%;
   line-height: 1.05;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+  white-space: normal;
 }
 
-.builder-block-company {
-  grid-area: company;
-  border-radius: 34px 34px 54px 34px;
+/* Пропорции и формы */
+.builder-block-structure {
+  min-height: 154px;
+  border-radius: 34px 34px 56px 34px;
 }
 
-.builder-block-company .builder-label {
-  font-size: clamp(30px, 2.2vw, 42px);
+.builder-block-structure .builder-label {
+  font-size: clamp(28px, 2.4vw, 44px);
   font-weight: 500;
 }
 
 .builder-block-positioning {
-  grid-area: positioning;
-  min-height: 260px;
+  min-height: 258px;
   border-radius: 30px 44px 30px 52px;
 }
 
 .builder-block-positioning .builder-label {
-  font-size: clamp(34px, 2.6vw, 52px);
-  font-weight: 400;
-}
-
-.builder-block-economics {
-  grid-area: economics;
-  min-height: 260px;
-  border-radius: 34px 30px 46px 30px;
-  border-color: rgba(247, 210, 55, 0.18);
-  background:
-    radial-gradient(circle at 16% 16%, rgba(255, 245, 196, 0.12) 0%, rgba(255, 255, 255, 0.03) 28%, rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(224, 225, 227, 0.12) 0%, rgba(224, 225, 227, 0.055) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 18px 44px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(247, 210, 55, 0.04);
-}
-
-.builder-block-economics::after {
-  background:
-    radial-gradient(circle at 50% 50%, rgba(247, 210, 55, 0.12) 0%, rgba(247, 210, 55, 0.05) 28%, rgba(247, 210, 55, 0) 62%),
-    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 28%);
-}
-
-.builder-block-economics .builder-label {
-  font-size: clamp(38px, 3.2vw, 58px);
-  font-weight: 400;
-}
-
-.builder-block-clients {
-  grid-area: clients;
-  border-radius: 999px 34px 34px 999px;
-  justify-content: flex-start;
-  padding-left: 70px;
-}
-
-.builder-block-clients .builder-label {
-  font-size: clamp(30px, 2.2vw, 42px);
+  font-size: clamp(24px, 2vw, 36px);
   font-weight: 500;
 }
 
+.builder-block-economics {
+  min-height: 258px;
+  border-radius: 34px 30px 46px 30px;
+  border-color: rgba(247, 210, 55, 0.18);
+  background:
+    radial-gradient(circle at 20% 18%, rgba(255, 239, 168, 0.11) 0%, rgba(255, 255, 255, 0.025) 26%, rgba(255, 255, 255, 0) 54%),
+    linear-gradient(135deg, rgba(20, 35, 72, 0.72) 0%, rgba(12, 30, 61, 0.92) 100%);
+}
+
+.builder-block-economics .builder-label {
+  font-size: clamp(22px, 1.9vw, 34px);
+  font-weight: 500;
+}
+
+.builder-block-clients {
+  min-height: 104px;
+  justify-content: flex-start;
+  padding-left: 72px;
+  border-radius: 999px 34px 34px 999px;
+}
+
+.builder-block-clients .builder-label {
+  font-size: clamp(22px, 1.7vw, 30px);
+  font-weight: 500;
+  text-align: left;
+}
+
 .builder-block-product {
-  grid-area: product;
+  min-height: 108px;
   border-radius: 34px 999px 34px 34px;
 }
 
 .builder-block-product .builder-label {
-  font-size: clamp(32px, 2.3vw, 44px);
+  font-size: clamp(22px, 1.7vw, 30px);
   font-weight: 500;
 }
 
-.builder-block-accent {
-  animation: builderPulse 6s ease-in-out infinite;
+/* Лёгкий акцент в духе референса */
+.builder-block-structure {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 30%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(23, 43, 88, 0.74) 0%, rgba(12, 31, 63, 0.92) 100%);
 }
 
-@keyframes builderGlassSweep {
+.builder-block-positioning {
+  background:
+    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.022) 26%, rgba(255, 255, 255, 0) 56%),
+    linear-gradient(135deg, rgba(24, 43, 84, 0.72) 0%, rgba(13, 31, 59, 0.92) 100%);
+}
+
+.builder-block-clients {
+  background:
+    radial-gradient(circle at 18% 50%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0.02) 24%, rgba(247, 210, 55, 0) 48%),
+    linear-gradient(135deg, rgba(24, 42, 82, 0.72) 0%, rgba(12, 30, 59, 0.9) 100%);
+}
+
+.builder-block-product {
+  background:
+    radial-gradient(circle at 72% 24%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0.02) 28%, rgba(122, 132, 255, 0) 52%),
+    linear-gradient(135deg, rgba(23, 41, 80, 0.72) 0%, rgba(12, 30, 58, 0.9) 100%);
+}
+
+@keyframes snapshotCardSweep {
   0% {
     transform: translateX(-120%);
     opacity: 0;
   }
 
-  10% {
-    opacity: 0.5;
+  12% {
+    opacity: 0.45;
   }
 
-  45% {
+  46% {
     transform: translateX(120%);
-    opacity: 0.9;
+    opacity: 0.85;
   }
 
   100% {
@@ -3635,24 +3640,6 @@ box-shadow:
     opacity: 0;
   }
 }
-
-@keyframes builderPulse {
-  0%,
-  100% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.08),
-      0 18px 44px rgba(0, 0, 0, 0.2),
-      0 0 0 1px rgba(247, 210, 55, 0.04);
-  }
-
-  50% {
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.12),
-      0 18px 44px rgba(0, 0, 0, 0.24),
-      0 0 24px rgba(247, 210, 55, 0.08);
-  }
-}
-
         .analysis-right-card-plain {
           background: transparent;
           backdrop-filter: none;
