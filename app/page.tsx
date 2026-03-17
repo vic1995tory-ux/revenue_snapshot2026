@@ -439,12 +439,26 @@ function SnapshotStructure() {
         формирования стратегических решений вашего бизнеса
       </p>
 
-      <div className="snapshot-builder">
-        <div className="builder-block builder-block-1">Продукт</div>
-        <div className="builder-block builder-block-2">Клиенты</div>
-        <div className="builder-block builder-block-3">Экономика</div>
-        <div className="builder-block builder-block-4">Структура компании</div>
-        <div className="builder-block builder-block-5">Позиционирование</div>
+      <div className="snapshot-builder snapshot-builder-mosaic">
+        <div className="builder-block builder-block-company">
+          <span className="builder-label">Структура компании</span>
+        </div>
+
+        <div className="builder-block builder-block-positioning">
+          <span className="builder-label">Позиционирование</span>
+        </div>
+
+        <div className="builder-block builder-block-economics builder-block-accent">
+          <span className="builder-label">Экономика</span>
+        </div>
+
+        <div className="builder-block builder-block-clients">
+          <span className="builder-label">Клиенты</span>
+        </div>
+
+        <div className="builder-block builder-block-product">
+          <span className="builder-label">Продукт</span>
+        </div>
       </div>
     </div>
   );
@@ -3421,80 +3435,223 @@ box-shadow:
           margin: 0;
         }
 
-        .snapshot-builder-copy {
-          margin-top: 12px;
-          max-width: 860px;
-          font-size: 16px;
-          line-height: 1.8;
-          color: rgba(255, 255, 255, 0.68);
-        }
+     .snapshot-structure-card {
+  min-height: 760px;
+}
 
-        .snapshot-builder {
-          margin-top: 26px;
-          display: grid;
-          grid-template-columns: 1.12fr 0.88fr;
-          grid-template-rows: 120px 138px 120px;
-          gap: 14px;
-          min-height: 392px;
-        }
+.analysis-left-title {
+  font-size: 22px;
+  line-height: 1.25;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
 
-        .builder-block {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.08) 0%,
-            rgba(224, 225, 227, 0.05) 100%
-          );
-          color: rgba(255, 255, 255, 0.92);
-          text-align: center;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
+.snapshot-builder-copy {
+  margin-top: 12px;
+  max-width: 860px;
+  font-size: 16px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.68);
+}
 
-        .builder-block-1 {
-          grid-column: 1 / 2;
-          grid-row: 1 / 2;
-          font-size: 28px;
-        }
+.snapshot-builder.snapshot-builder-mosaic {
+  margin-top: 28px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 150px 260px 120px 120px;
+  grid-template-areas:
+    "company company"
+    "positioning economics"
+    "clients clients"
+    "product product";
+  gap: 18px;
+  min-height: 670px;
+}
 
-        .builder-block-2 {
-          grid-column: 2 / 3;
-          grid-row: 1 / 2;
-          font-size: 28px;
-        }
+.builder-block {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 34%, rgba(255, 255, 255, 0) 60%),
+    linear-gradient(135deg, rgba(224, 225, 227, 0.09) 0%, rgba(224, 225, 227, 0.045) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.03),
+    0 16px 38px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  transition:
+    transform 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease,
+    background 0.35s ease;
+}
 
-        .builder-block-3 {
-          grid-column: 1 / 2;
-          grid-row: 2 / 3;
-          justify-content: flex-start;
-          padding-left: 34px;
-          font-size: clamp(54px, 5vw, 82px);
-          letter-spacing: -0.05em;
-          font-weight: 300;
-        }
+.builder-block::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.02) 24%,
+    rgba(255, 255, 255, 0.08) 50%,
+    rgba(255, 255, 255, 0.02) 76%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-120%);
+  animation: builderGlassSweep 8s ease-in-out infinite;
+  pointer-events: none;
+}
 
-        .builder-block-4 {
-          grid-column: 2 / 3;
-          grid-row: 2 / 4;
-          writing-mode: vertical-rl;
-          text-orientation: mixed;
-          transform: rotate(180deg);
-          font-size: clamp(38px, 4.2vw, 70px);
-          letter-spacing: -0.05em;
-          font-weight: 300;
-          gap: 8px;
-        }
+.builder-block::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(71, 182, 246, 0.06) 0%, rgba(71, 182, 246, 0) 34%),
+    radial-gradient(circle at 20% 85%, rgba(247, 210, 55, 0.06) 0%, rgba(247, 210, 55, 0) 34%);
+  opacity: 0.9;
+  pointer-events: none;
+}
 
-        .builder-block-5 {
-          grid-column: 1 / 2;
-          grid-row: 3 / 4;
-          justify-content: flex-start;
-          padding-left: 28px;
-          font-size: 28px;
-        }
+.builder-block:hover {
+  transform: translateY(-4px);
+  border-color: rgba(255, 255, 255, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 22px 44px rgba(0, 0, 0, 0.24);
+}
+
+.builder-label {
+  position: relative;
+  z-index: 2;
+  display: block;
+  max-width: 90%;
+  color: rgba(255, 255, 255, 0.95);
+  text-wrap: balance;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.builder-block-company {
+  grid-area: company;
+  border-radius: 34px 34px 54px 34px;
+}
+
+.builder-block-company .builder-label {
+  font-size: clamp(30px, 2.2vw, 42px);
+  font-weight: 500;
+}
+
+.builder-block-positioning {
+  grid-area: positioning;
+  min-height: 260px;
+  border-radius: 30px 44px 30px 52px;
+}
+
+.builder-block-positioning .builder-label {
+  font-size: clamp(34px, 2.6vw, 52px);
+  font-weight: 400;
+}
+
+.builder-block-economics {
+  grid-area: economics;
+  min-height: 260px;
+  border-radius: 34px 30px 46px 30px;
+  border-color: rgba(247, 210, 55, 0.18);
+  background:
+    radial-gradient(circle at 16% 16%, rgba(255, 245, 196, 0.12) 0%, rgba(255, 255, 255, 0.03) 28%, rgba(255, 255, 255, 0) 58%),
+    linear-gradient(135deg, rgba(224, 225, 227, 0.12) 0%, rgba(224, 225, 227, 0.055) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 18px 44px rgba(0, 0, 0, 0.2),
+    0 0 0 1px rgba(247, 210, 55, 0.04);
+}
+
+.builder-block-economics::after {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(247, 210, 55, 0.12) 0%, rgba(247, 210, 55, 0.05) 28%, rgba(247, 210, 55, 0) 62%),
+    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 28%);
+}
+
+.builder-block-economics .builder-label {
+  font-size: clamp(38px, 3.2vw, 58px);
+  font-weight: 400;
+}
+
+.builder-block-clients {
+  grid-area: clients;
+  border-radius: 999px 34px 34px 999px;
+  justify-content: flex-start;
+  padding-left: 70px;
+}
+
+.builder-block-clients .builder-label {
+  font-size: clamp(30px, 2.2vw, 42px);
+  font-weight: 500;
+}
+
+.builder-block-product {
+  grid-area: product;
+  border-radius: 34px 999px 34px 34px;
+}
+
+.builder-block-product .builder-label {
+  font-size: clamp(32px, 2.3vw, 44px);
+  font-weight: 500;
+}
+
+.builder-block-accent {
+  animation: builderPulse 6s ease-in-out infinite;
+}
+
+@keyframes builderGlassSweep {
+  0% {
+    transform: translateX(-120%);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.5;
+  }
+
+  45% {
+    transform: translateX(120%);
+    opacity: 0.9;
+  }
+
+  100% {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+}
+
+@keyframes builderPulse {
+  0%,
+  100% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 18px 44px rgba(0, 0, 0, 0.2),
+      0 0 0 1px rgba(247, 210, 55, 0.04);
+  }
+
+  50% {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 18px 44px rgba(0, 0, 0, 0.24),
+      0 0 24px rgba(247, 210, 55, 0.08);
+  }
+}
 
         .analysis-right-card-plain {
           background: transparent;
@@ -3883,27 +4040,29 @@ box-shadow:
             grid-template-columns: 1fr 1fr;
           }
 
-          .snapshot-builder {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-          }
+          .snapshot-builder.snapshot-builder-mosaic {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+    "company"
+    "positioning"
+    "economics"
+    "clients"
+    "product";
+  min-height: auto;
+}
 
-          .builder-block-1,
-          .builder-block-2,
-          .builder-block-3,
-          .builder-block-4,
-          .builder-block-5 {
-            grid-column: auto;
-            grid-row: auto;
-          }
-
-          .builder-block-4 {
-            writing-mode: horizontal-tb;
-            text-orientation: initial;
-            transform: none;
-            min-height: 120px;
-            font-size: 42px;
-          }
+.builder-block-company,
+.builder-block-positioning,
+.builder-block-economics,
+.builder-block-clients,
+.builder-block-product {
+  min-height: 120px;
+  padding-left: 24px;
+  padding-right: 24px;
+  justify-content: center;
+  border-radius: 28px;
+}
 
           .start-cards-row {
             grid-template-columns: 1fr;
@@ -4269,24 +4428,29 @@ box-shadow:
             top: 14px;
           }
 
-          .builder-block-3 {
-            min-height: 110px;
-            padding-left: 0;
-            font-size: 46px;
-            justify-content: center;
-          }
+.snapshot-builder.snapshot-builder-mosaic {
+  gap: 12px;
+}
 
-          .builder-block-1,
-          .builder-block-2,
-          .builder-block-5 {
-            min-height: 66px;
-            font-size: 20px;
-          }
+.builder-block-company,
+.builder-block-positioning,
+.builder-block-economics,
+.builder-block-clients,
+.builder-block-product {
+  min-height: 84px;
+  border-radius: 24px;
+}
 
-          .builder-block-4 {
-            font-size: 28px;
-            min-height: 88px;
-          }
+.builder-block-company .builder-label,
+.builder-block-clients .builder-label,
+.builder-block-product .builder-label {
+  font-size: 22px;
+}
+
+.builder-block-positioning .builder-label,
+.builder-block-economics .builder-label {
+  font-size: 28px;
+}
 
           .start-card-inner,
           .start-card-overlay {
