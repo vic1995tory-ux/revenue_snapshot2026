@@ -454,19 +454,18 @@ function ResultDocCard({
   tab,
   title,
   text,
-  cta,
+  className = "",
 }: {
   tab: string;
   title: string;
   text: string;
-  cta?: ReactNode;
+  className?: string;
 }) {
   return (
-    <div className="result-doc-card tilt-card">
+    <div className={`result-doc-card result-doc-card-shaped tilt-card ${className}`}>
       <div className="result-doc-card-inner tilt-inner glare-card">
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
-          {cta ? <div className="result-doc-cta">{cta}</div> : null}
         </div>
 
         <div className="result-doc-title">{title}</div>
@@ -1385,47 +1384,68 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Что вы получите</div>
-            <h2 className="section-title">Цели Revenue Snapshot</h2>
-            <p className="section-copy">
-              Понять, каким должен быть первый{" "}
-              <span className="accent-word">верный</span> шаг к построению новой
-              стратегии для новых рубежей.
-            </p>
-          </div>
+<section className="mb-16">
+  <div className="section-head">
+    <div className="section-kicker">Что вы получите</div>
+    <h2 className="section-title">Цели Revenue Snapshot</h2>
+    <p className="section-copy">
+      Понять, каким должен быть первый{" "}
+      <span className="accent-word">верный</span> шаг к построению новой
+      стратегии для новых рубежей.
+    </p>
+  </div>
 
-          <div className="results-grid-2x2">
-            <ResultDocCard
-              tab="ECONOMIC RATE"
-              title="Executive Summary"
-              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
-            />
+  <div className="results-shaped-wrap">
+    <div className="results-shaped-grid">
+      <ResultDocCard
+        className="result-shaped result-shaped-top-left"
+        tab="ECONOMIC RATE"
+        title="Executive Summary"
+        text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
+      />
 
-            <ResultDocCard
-              tab="GROWTH LIMIT"
-              title="Key Conclusions"
-              text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
-            />
+      <ResultDocCard
+        className="result-shaped result-shaped-top-right"
+        tab="GROWTH LIMIT"
+        title="Key Conclusions"
+        text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
+      />
 
-            <ResultDocCard
-              tab="SOLUTION"
-              title="Strategy&Practice"
-              text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
-            />
+      <ResultDocCard
+        className="result-shaped result-shaped-bottom-left"
+        tab="SOLUTION"
+        title="Strategy&Practice"
+        text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
+      />
 
-            <ResultDocCard
-              tab="JTBD"
-              title="RoadMap"
-              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
-              cta={
-                <a href={payUrl} className="result-doc-start-btn">
-                  Начать
-                </a>
-              }
-            />
-          </div>
+      <ResultDocCard
+        className="result-shaped result-shaped-bottom-right"
+        tab="JTBD"
+        title="RoadMap"
+        text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+      />
+    </div>
+
+    <a href={payUrl} className="results-center-play" aria-label="Начать">
+      <span className="results-center-play-inner">
+        <svg
+          viewBox="0 0 24 24"
+          className="results-center-play-icon"
+          aria-hidden="true"
+        >
+          <path d="M8 6.5v11l9-5.5-9-5.5Z" fill="currentColor" />
+        </svg>
+      </span>
+    </a>
+  </div>
+
+  <div className="results-roadmap-note">
+    После получения и изучения результатов у Вас есть возможность
+    назначить <span>30-минутную встречу</span> с нашими C-level
+    специалистами в сфере Маркетинга и Продаж{" "}
+    <span>для декомпозиции результатов</span>.
+  </div>
+</section>
 
           <div className="results-roadmap-note">
             После получения и изучения результатов у Вас есть возможность
