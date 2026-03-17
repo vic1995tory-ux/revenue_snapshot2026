@@ -2222,15 +2222,14 @@ box-shadow:
           transform-origin: left center;
         }
 
-        .bar-good {
-          background: linear-gradient(
-            90deg,
-            rgba(190, 140, 255, 0.95) 0%,
-            rgba(299, 281, 114, 1) 48%,
-            rgba(201, 91, 63, 1) 100%
-          );
-        }
-
+.bar-good {
+  background: linear-gradient(
+    90deg,
+    #c4a8ff 0%,
+    #8b5cf6 50%,
+    #4c1d95 100%
+  );
+}
         .bar-bad {
           background: linear-gradient(
             90deg,
