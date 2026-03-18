@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -410,30 +410,89 @@ function HeroEconomyChart() {
 }
 
 function SnapshotStructure() {
+  const layers = [
+    {
+      title: "Позиционирование",
+      weight: "27%",
+      hint: "точка входа",
+      points: ["что обещание делает понятным", "какой сегмент готов реагировать первым"],
+      level: 27,
+      tone: "violet",
+    },
+    {
+      title: "Структура компании",
+      weight: "27%",
+      hint: "ресурсы и роли",
+      points: ["кто удерживает выручку в системе", "где ручное управление тормозит рост"],
+      level: 27,
+      tone: "blue",
+    },
+    {
+      title: "Экономика",
+      weight: "18%",
+      hint: "unit-логика",
+      points: ["что происходит с маржой и cost stack", "какой рычаг даёт главный финансовый сдвиг"],
+      level: 18,
+      tone: "gold",
+    },
+    {
+      title: "Клиенты",
+      weight: "14%",
+      hint: "спрос и поведение",
+      points: ["кто приносит деньги сейчас", "где теряется конверсия по пути"],
+      level: 14,
+      tone: "slate",
+    },
+    {
+      title: "Продукт",
+      weight: "14%",
+      hint: "ценность и упаковка",
+      points: ["что продаётся легче всего", "какая версия оффера масштабируется"],
+      level: 14,
+      tone: "indigo",
+    },
+  ];
+
   return (
     <>
       <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
       <p className="snapshot-builder-copy">
-        ваши данные под защищенными протоколами обрабатываются инструментом для
-        формирования стратегических решений вашего бизнеса
+        Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор
+        ответов, а карту решений: где находится ограничение роста, почему оно
+        появилось и какой слой модели нужно усиливать первым.
       </p>
 
-      <div className="snapshot-builder snapshot-builder-mosaic">
-        <div className="builder-block builder-block-positioning">
-          <span className="builder-label">Позиционирование</span>
-        </div>
-        <div className="builder-block builder-block-structure">
-          <span className="builder-label">Структура компании</span>
-        </div>
-        <div className="builder-block builder-block-economics">
-          <span className="builder-label">Экономика</span>
-        </div>
-        <div className="builder-block builder-block-clients">
-          <span className="builder-label">Клиенты</span>
-        </div>
-        <div className="builder-block builder-block-product">
-          <span className="builder-label">Продукт</span>
-        </div>
+      <div className="signal-board">
+        {layers.map((layer) => (
+          <article
+            key={layer.title}
+            className={`signal-card signal-card-${layer.tone}`}
+            style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
+          >
+            <div className="signal-card-top">
+              <span className="signal-card-hint">{layer.hint}</span>
+              <span className="signal-card-weight">{layer.weight}</span>
+            </div>
+
+            <div className="signal-card-title">{layer.title}</div>
+
+            <div className="signal-card-points">
+              {layer.points.map((point) => (
+                <div key={point} className="signal-card-point">
+                  <span className="signal-card-dot" />
+                  <span>{point}</span>
+                </div>
+              ))}
+            </div>
+
+            <div className="signal-card-bottom">
+              <div className="signal-meter">
+                <span style={{ width: `${layer.level * 3}%` }} />
+              </div>
+              <div className="signal-caption">вес слоя в гипотезе</div>
+            </div>
+          </article>
+        ))}
       </div>
     </>
   );
@@ -466,22 +525,39 @@ function StartCard({
   icon,
   price,
   href,
+  stats,
 }: {
   title: string;
   icon: string;
   price: string;
   href: string;
+  stats: Array<{ label: string; value: string }>;
 }) {
   return (
     <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <img src={icon} alt={title} className="start-card-frame" />
         <div className="start-card-overlay start-card-overlay-plain">
+          <div className="start-card-headline-row">
+            <div className="start-card-title">{title}</div>
+            <span className="start-card-status-dot" />
+          </div>
+
           <div className="start-card-price-float">{price}</div>
+
           <div className="start-card-btn-row">
             <a href={href} className="start-card-btn start-card-btn-floating">
-              Оплатить
+              Попробовать Snapshot
             </a>
+          </div>
+
+          <div className="start-card-stats-grid">
+            {stats.map((stat) => (
+              <div key={stat.label} className="start-card-stat">
+                <div className="start-card-stat-label">{stat.label}</div>
+                <div className="start-card-stat-value">{stat.value}</div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -559,8 +635,6 @@ function StageCard({ item, isFront }: { item: StageItem; isFront: boolean }) {
             </div>
           </div>
         </div>
-
-        <img src={item.icon} alt={item.stage} className="stage-card-watermark-icon" />
       </div>
     </div>
   );
@@ -937,7 +1011,6 @@ export default function Home() {
         <div className="aurora aurora-2" />
         <div className="aurora aurora-3" />
         <div className="aurora aurora-4" />
-        <div className="line-grid" />
         <div className="vignette" />
       </div>
 
@@ -1179,7 +1252,7 @@ export default function Home() {
         <section id="analysis" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title">После оплаты пользователь переходит в Telegram</h2>
+            <h2 className="section-title analysis-section-title">После оплаты пользователь переходит в Telegram</h2>
             <p className="section-copy">
               Telegram используется как удобный интерфейс сбора данных. Ответы анализируются автоматически и превращаются в структурированный результат.
             </p>
@@ -1189,8 +1262,30 @@ export default function Home() {
             <SnapshotStructure />
             <div className="analysis-right-card analysis-right-card-plain">
               <div className="start-cards-row">
-                <StartCard title="Страт сессия" icon="/stratsession.svg" price="$770" href={tgContactUrl} />
-                <StartCard title="Snapshot" icon="/snapshot.svg" price="$114" href={payUrl} />
+                <StartCard
+                  title="On Rec"
+                  icon="/stratsession.svg"
+                  price="$770"
+                  href={tgContactUrl}
+                  stats={[
+                    { label: "Формат", value: "live 45 мин" },
+                    { label: "Фокус", value: "гипотезы" },
+                    { label: "Roadmap", value: "24ч" },
+                    { label: "Сопровождение", value: "1:1" },
+                  ]}
+                />
+                <StartCard
+                  title="Online-playground"
+                  icon="/snapshot.svg"
+                  price="$114"
+                  href={payUrl}
+                  stats={[
+                    { label: "Data", value: "6 блоков" },
+                    { label: "Due", value: "27 мин" },
+                    { label: "Render", value: "24ч" },
+                    { label: "Decompose", value: "30 мин" },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -1226,7 +1321,7 @@ export default function Home() {
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         body {
-          background: #041027;
+          background: #0a1526;
           color: #fefefe;
           overflow-x: hidden;
         }
@@ -1234,7 +1329,8 @@ export default function Home() {
         .page-shell {
           position: relative;
           min-height: 100vh;
-          background: radial-gradient(circle at top, rgba(12, 38, 84, 0.5), transparent 42%), #041027;
+          background: #0a1526;
+          overflow: clip;
           color: #fefefe;
         }
         .page-background {
@@ -1242,6 +1338,13 @@ export default function Home() {
           position: fixed;
           inset: 0;
           z-index: 0;
+          background:
+            radial-gradient(circle at 18% 22%, rgba(112,134,255,0.12), transparent 26%),
+            radial-gradient(circle at 82% 18%, rgba(255,255,255,0.05), transparent 22%),
+            radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
+            linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
+          background-size: 140% 140%;
+          animation: pageAmbient 26s ease-in-out infinite alternate;
         }
         .content-wrap {
           position: relative;
@@ -1393,21 +1496,11 @@ export default function Home() {
         .aurora-2 { width: 300px; height: 300px; right: 5%; top: 80px; background: rgba(247, 210, 55, 0.12); }
         .aurora-3 { width: 360px; height: 360px; left: 26%; top: 36%; background: rgba(88, 114, 255, 0.16); }
         .aurora-4 { width: 300px; height: 300px; right: 10%; bottom: 12%; background: rgba(255,255,255,0.08); }
-        .line-grid {
-          position: absolute;
-          inset: 0;
-          background-image:
-            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
-          background-size: 44px 44px;
-          mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
-          -webkit-mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
-          opacity: .6;
-        }
+        .line-grid { display: none; }
         .vignette {
           position: absolute;
           inset: 0;
-          background: radial-gradient(circle at center, transparent 48%, rgba(4,16,39,0.38) 72%, rgba(4,16,39,0.82) 100%);
+          background: radial-gradient(circle at center, transparent 42%, rgba(10,21,38,0.24) 72%, rgba(10,21,38,0.74) 100%);
         }
         .glass-card {
           position: relative;
@@ -1499,13 +1592,15 @@ export default function Home() {
         }
         .section-title {
           margin: 0;
-          font-size: clamp(36px, 4vw, 60px);
-          line-height: .95;
+          font-size: clamp(34px, 3.8vw, 58px);
+          line-height: .96;
           letter-spacing: -.055em;
           font-weight: 700;
           color: #fff;
-          max-width: 900px;
+          max-width: 760px;
+          text-wrap: balance;
         }
+        .analysis-section-title { max-width: 780px; }
         .section-copy {
           margin-top: 16px;
           max-width: 840px;
@@ -1866,13 +1961,14 @@ export default function Home() {
         }
         .stage-card-analytics {
           position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(13,24,46,.96) 0%, rgba(10,18,36,.94) 100%);
+          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(16,27,49,.985) 0%, rgba(11,20,38,.975) 100%);
+          backdrop-filter: blur(22px) saturate(120%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
         }
         .stage-card-analytics::after { display: none; }
         .stage-card-top-panel {
           display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; padding: 20px 20px 16px; min-height: 184px;
-          background: linear-gradient(135deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 100%);
+          background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.025) 100%);
         }
         .stage-card-copy { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
         .stage-copy-block h4 {
@@ -1886,7 +1982,8 @@ export default function Home() {
         .stage-card-bottom-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 100%; }
         .compact-metrics-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
         .stage-inline-metric {
-          border-radius: 18px; padding: 10px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
+          border-radius: 18px; padding: 12px; background: rgba(255,255,255,.065); border: 1px solid rgba(255,255,255,.1);
+          backdrop-filter: blur(16px);
         }
         .stage-ring-label { color: rgba(255,255,255,.56); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
         .stage-inline-metric-value { margin-top: 8px; font-size: 22px; line-height: 1; letter-spacing: -.04em; font-weight: 700; }
@@ -1900,42 +1997,188 @@ export default function Home() {
         .stage-bar-fill { height: 100%; border-radius: inherit; }
         .stage-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96)); }
         .stage-bar-fill-plan { background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82)); }
-        .stage-card-watermark-icon { position: absolute; width: 22px; height: 22px; left: 18px; bottom: 18px; opacity: .7; }
-        .stage-carousel-hint {
-          margin-top: 18px; text-align: center; font-size: 12px; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.42);
+        .stage-card-watermark-icon { display: none; }
+        .analysis-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 0.92fr) minmax(700px, 1.08fr);
+          gap: 26px;
+          align-items: start;
         }
-        .analysis-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); gap: 20px; align-items: start; }
-        .analysis-left-title { margin: 0; font-size: clamp(32px, 3vw, 46px); line-height: .96; letter-spacing: -.05em; font-weight: 700; }
-        .snapshot-builder-copy { margin: 14px 0 18px; max-width: 720px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
-        .snapshot-builder-mosaic {
+        .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
+        .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
+        .signal-board {
           display: grid;
           grid-template-columns: 27fr 27fr 18fr 14fr 14fr;
-          gap: 12px;
+          gap: 14px;
           align-items: stretch;
         }
-        .builder-block {
-          min-height: 190px; border-radius: 28px; display: flex; align-items: center; justify-content: center; text-align: center;
-          background: linear-gradient(180deg, rgba(224,225,227,.12), rgba(224,225,227,.08)); border: 1px solid rgba(255,255,255,.12);
-          position: relative; overflow: hidden; padding: 18px;
+        .signal-card {
+          position: relative;
+          min-height: 254px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 18px;
+          border-radius: 26px;
+          overflow: hidden;
+          background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.045));
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.16);
+          backdrop-filter: blur(18px) saturate(122%);
         }
-        .builder-label {
-          font-size: clamp(22px, 2vw, 34px); line-height: .96; letter-spacing: -.04em; font-weight: 600;
+        .signal-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: radial-gradient(circle at 20% 18%, rgba(255,255,255,.12), transparent 28%);
+          opacity: .85;
         }
-        .builder-block-economics { min-height: 230px; }
-        .analysis-right-card-plain { min-height: 100%; }
-        .start-cards-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
-        .start-card-inner,.start-card-overlay { min-height: 292px; }
+        .signal-card-blue::after,
+        .signal-card-violet::after,
+        .signal-card-gold::after,
+        .signal-card-slate::after,
+        .signal-card-indigo::after {
+          content: "";
+          position: absolute;
+          left: 16px;
+          right: 16px;
+          bottom: 14px;
+          height: 1px;
+          opacity: .9;
+          background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.24), rgba(255,255,255,.06));
+        }
+        .signal-card-blue { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(35,88,255,.08); }
+        .signal-card-violet { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(109,76,255,.08); }
+        .signal-card-gold { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(247,210,55,.08); }
+        .signal-card-slate { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(120,136,190,.08); }
+        .signal-card-indigo { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(98,112,255,.08); }
+        .signal-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: rgba(255,255,255,.54);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+        }
+        .signal-card-weight {
+          color: #f7d237;
+          font-weight: 700;
+          font-size: 12px;
+        }
+        .signal-card-title {
+          margin-top: 14px;
+          font-size: clamp(22px, 2vw, 34px);
+          line-height: .98;
+          letter-spacing: -.05em;
+          font-weight: 700;
+          max-width: 12ch;
+        }
+        .signal-card-points {
+          margin-top: 18px;
+          display: grid;
+          gap: 10px;
+        }
+        .signal-card-point {
+          display: grid;
+          grid-template-columns: 10px 1fr;
+          gap: 10px;
+          align-items: start;
+          color: rgba(255,255,255,.72);
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .signal-card-dot {
+          width: 6px;
+          height: 6px;
+          margin-top: 6px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 0 4px rgba(247,210,55,.08);
+        }
+        .signal-card-bottom { margin-top: 18px; }
+        .signal-meter {
+          height: 7px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(255,255,255,.04);
+        }
+        .signal-meter span {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, rgba(247,210,55,.94), rgba(145,120,255,.84));
+        }
+        .signal-caption {
+          margin-top: 8px;
+          color: rgba(255,255,255,.46);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .12em;
+        }
+        .analysis-right-card-plain { min-height: 100%; overflow: visible; }
+        .start-cards-row {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(340px, 1fr));
+          gap: 18px;
+        }
+        .start-card-inner,.start-card-overlay { min-height: 390px; }
         .start-card-inner {
           position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
+          box-shadow: 0 22px 54px rgba(0,0,0,.22);
         }
-        .start-card-frame { width: 100%; height: 100%; object-fit: cover; opacity: .88; }
+        .start-card-frame { width: 100%; height: 100%; object-fit: cover; opacity: .98; }
         .start-card-overlay {
-          position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 18px;
-          background: linear-gradient(180deg, rgba(4,16,39,.04), rgba(4,16,39,.4) 55%, rgba(4,16,39,.72) 100%);
+          position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 22px;
+          background: linear-gradient(180deg, rgba(4,16,39,.05), rgba(4,16,39,.16) 38%, rgba(4,16,39,.56) 70%, rgba(4,16,39,.82) 100%);
         }
-        .start-card-price-float { font-size: 40px; line-height: .94; letter-spacing: -.05em; font-weight: 700; }
-        .start-card-btn-row { margin-top: 18px; }
+        .start-card-headline-row {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 14px;
+        }
+        .start-card-title {
+          max-width: 11ch;
+          font-size: clamp(28px, 2.1vw, 38px);
+          line-height: .98;
+          letter-spacing: -.05em;
+          font-weight: 400;
+        }
+        .start-card-status-dot {
+          width: 14px;
+          height: 14px;
+          border-radius: 999px;
+          background: #36c76f;
+          box-shadow: 0 0 0 6px rgba(54,199,111,.14);
+          flex-shrink: 0;
+          margin-top: 8px;
+        }
+        .start-card-price-float { font-size: clamp(72px, 5vw, 102px); line-height: .92; letter-spacing: -.06em; font-weight: 700; margin-top: auto; }
+                .start-card-stat { display: grid; gap: 4px; }
+        .start-card-stats-grid {
+          margin-top: 18px;
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0,1fr));
+          gap: 10px;
+          align-items: end;
+        }
+        .start-card-stat-label {
+          color: rgba(255,255,255,.58);
+          font-size: 11px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .start-card-stat-value {
+          color: #ffffff;
+          font-size: 16px;
+          line-height: 1.1;
+          font-weight: 700;
+        }
         .start-card-btn {
           display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
           color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
@@ -1956,6 +2199,11 @@ export default function Home() {
         .text-emerald-300 { color: #a7f3d0; }
         .text-rose-300 { color: #fda4af; }
         .text-white\/50 { color: rgba(255,255,255,.5); }
+        @keyframes pageAmbient {
+          0% { transform: translate3d(0,0,0) scale(1); filter: hue-rotate(0deg); }
+          50% { transform: translate3d(0,0,0) scale(1.05); filter: hue-rotate(4deg); }
+          100% { transform: translate3d(0,0,0) scale(1.02); filter: hue-rotate(-4deg); }
+        }
         @keyframes premiumGlassShift {
           0% { transform: translate3d(-12px,0,0); }
           50% { transform: translate3d(14px,-6px,0); }
@@ -2017,13 +2265,13 @@ export default function Home() {
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2 { grid-template-columns: 1fr; }
           .stage-carousel-item-free { width: min(680px, 78vw); }
-          .snapshot-builder-mosaic { grid-template-columns: repeat(2, minmax(0,1fr)); }
-          .builder-block-economics { min-height: 190px; }
+          .signal-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
         @media (max-width: 1023px) {
           .content-wrap { padding-top: 150px; }
           .hero-section { min-height: auto; padding: 24px 18px; }
-          .hero-chart-metrics-row,.dashboard-grid,.start-cards-row,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
+          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
+          .start-cards-row { grid-template-columns: 1fr 1fr; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2047,7 +2295,8 @@ export default function Home() {
           .hero-main-title { font-size: clamp(48px, 16vw, 78px); }
           .hero-main-subtitle { font-size: 24px; }
           .hero-main-copy { font-size: 17px; }
-          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.start-cards-row,.compact-metrics-grid { grid-template-columns: 1fr; }
+          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
+          .start-cards-row { grid-template-columns: 1fr; }
           .metric-main-value,.model-main-value,.reserve-amount { font-size: 24px; }
           .stage-carousel-scene { min-height: 470px; }
           .stage-carousel-drum { height: 390px; }
@@ -2060,9 +2309,10 @@ export default function Home() {
           .stage-card-bottom-panel { padding: 14px; }
           .stage-inline-metric-value { font-size: 22px; }
           .stage-bars-title { font-size: 24px; }
-          .snapshot-builder-mosaic { grid-template-columns: 1fr; }
-          .builder-block { min-height: 108px; border-radius: 24px; }
-          .builder-label { font-size: 24px; }
+          .signal-board { grid-template-columns: 1fr; }
+          .signal-card { min-height: 178px; border-radius: 22px; }
+          .signal-card-title { font-size: 24px; }
+          .start-card-stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
