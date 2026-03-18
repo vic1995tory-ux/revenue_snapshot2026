@@ -528,10 +528,6 @@ function StartCard({
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <img src={icon} alt={title} className="start-card-frame" />
         <div className="start-card-overlay start-card-overlay-plain">
-          <div className="start-card-headline-row">
-            <div className="start-card-title">{title}</div>
-          </div>
-
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
             <a href={href} className="start-card-btn start-card-btn-floating">
@@ -1995,24 +1991,27 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.24fr) minmax(360px, .76fr);
+          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
           gap: 28px;
-          align-items: start;
+          align-items: stretch;
         }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
         .signal-board {
           display: grid;
           grid-template-columns: repeat(6, minmax(0, 1fr));
+          grid-template-rows: 1fr 1fr;
           grid-template-areas:
             "pos pos pos struct struct struct"
             "econ econ clients clients product product";
           gap: 16px;
           align-items: stretch;
+          height: 790px;
         }
         .signal-card {
           position: relative;
-          min-height: 286px;
+          min-height: 0;
+          height: 100%;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
@@ -2125,6 +2124,7 @@ export default function Home() {
         }
         .analysis-right-card-plain {
           min-height: 100%;
+          height: 790px;
           overflow: visible;
           max-width: none;
         }
@@ -2132,8 +2132,10 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           gap: 18px;
+          height: 100%;
         }
-        .start-card-inner,.start-card-overlay { min-height: 310px; }
+        .start-card { flex: 1 1 0; }
+        .start-card-inner,.start-card-overlay { min-height: 0; height: 100%; }
         .start-card-inner {
           position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
@@ -2144,26 +2146,16 @@ export default function Home() {
           position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 22px;
           background: linear-gradient(180deg, rgba(4,16,39,.04), rgba(4,16,39,.1) 32%, rgba(4,16,39,.34) 62%, rgba(4,16,39,.66) 100%);
         }
-        .start-card-headline-row {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 14px;
-        }
-        .start-card-title {
-          max-width: 12ch;
-          font-size: clamp(24px, 1.9vw, 34px);
-          line-height: .98;
-          letter-spacing: -.05em;
-          font-weight: 400;
-        }
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
           display: flex;
           flex-direction: column;
           align-items: flex-start;
-          gap: 14px;
+          justify-content: flex-end;
+          gap: 16px;
           margin-top: auto;
+          height: 100%;
+          padding-bottom: 6px;
         }
         .start-card-price-float { font-size: clamp(66px, 4.8vw, 96px); line-height: .92; letter-spacing: -.06em; font-weight: 700; margin-top: auto; }
         .start-card-btn {
