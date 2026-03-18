@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -179,10 +173,8 @@ function Slider({
   return (
     <div className="glass-card soft-glow glare-card slider-card">
       <div>
-        <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[36px] text-xs leading-snug text-white/42">
-          {subtitle}
-        </div>
+        <div className="slider-title">{title}</div>
+        <div className="slider-subtitle">{subtitle}</div>
       </div>
 
       <div className="mt-auto">
@@ -209,9 +201,7 @@ function Slider({
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-        <div className="mt-2 text-xs text-white/50">
-          {Math.round(value * 100)}%
-        </div>
+        <div className="slider-percent">{Math.round(value * 100)}%</div>
       </div>
     </div>
   );
@@ -232,7 +222,7 @@ function HeroEconomyChart() {
   const drivers = [
     {
       key: "marketing",
-      label: "#Маркетинг",
+      label: "Маркетинг",
       full: "Маркетинг",
       deltaLabel: "+30% лидов и рост спроса",
       leads: 13,
@@ -246,7 +236,7 @@ function HeroEconomyChart() {
     },
     {
       key: "aov",
-      label: "#AOV",
+      label: "AOV",
       full: "AOV",
       deltaLabel: "+рост среднего заказа",
       leads: 10,
@@ -260,7 +250,7 @@ function HeroEconomyChart() {
     },
     {
       key: "sales",
-      label: "#Продажи",
+      label: "Продажи",
       full: "Продажи",
       deltaLabel: "+0.8 сделки",
       leads: 10,
@@ -274,7 +264,7 @@ function HeroEconomyChart() {
     },
     {
       key: "costs",
-      label: "#Модель расходов",
+      label: "Модель расходов",
       full: "Модель расходов",
       deltaLabel: "−давление на OPEX и Margin",
       leads: 10,
@@ -303,25 +293,19 @@ function HeroEconomyChart() {
 
   const setDriver = (index: number) => {
     setActiveIndex(index);
-
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-    }
-
+    if (timerRef.current) window.clearInterval(timerRef.current);
     timerRef.current = window.setInterval(() => {
       setActiveIndex((v) => (v + 1) % drivers.length);
     }, 3400);
   };
 
   const active = drivers[activeIndex];
-
   const bars = [
     { name: "Revenue", value: active.revenue, good: true },
     { name: "OPEX", value: active.opex, good: false },
     { name: "COGS", value: active.cogs, good: false },
     { name: "Gross Profit", value: active.grossProfit, good: true },
   ];
-
   const maxBar = 20000;
 
   return (
@@ -335,9 +319,7 @@ function HeroEconomyChart() {
               key={item.key}
               type="button"
               onClick={() => setDriver(index)}
-              className={`hero-tag ${
-                index === activeIndex ? "hero-tag-active" : ""
-              }`}
+              className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
             >
               {item.label}
             </button>
@@ -391,9 +373,7 @@ function HeroEconomyChart() {
 
                     <div className="bar-chart-bar-shell-horizontal">
                       <div
-                        className={`bar-chart-bar bar-chart-bar-horizontal ${
-                          bar.good ? "bar-good" : "bar-bad"
-                        } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+                        className={`bar-chart-bar bar-chart-bar-horizontal ${bar.good ? "bar-good" : "bar-bad"} ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
                         style={{ width: `${width}%` }}
                       />
                     </div>
@@ -433,31 +413,24 @@ function SnapshotStructure() {
   return (
     <>
       <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
-
       <p className="snapshot-builder-copy">
         ваши данные под защищенными протоколами обрабатываются инструментом для
         формирования стратегических решений вашего бизнеса
       </p>
 
-      <div className="snapshot-builder snapshot-builder-editorial">
+      <div className="snapshot-builder snapshot-builder-mosaic">
+        <div className="builder-block builder-block-positioning">
+          <span className="builder-label">Позиционирование</span>
+        </div>
         <div className="builder-block builder-block-structure">
           <span className="builder-label">Структура компании</span>
         </div>
-
-        <div className="builder-middle-grid">
-          <div className="builder-block builder-block-positioning">
-            <span className="builder-label">Позиционирование</span>
-          </div>
-
-          <div className="builder-block builder-block-economics">
-            <span className="builder-label">Экономика</span>
-          </div>
+        <div className="builder-block builder-block-economics">
+          <span className="builder-label">Экономика</span>
         </div>
-
         <div className="builder-block builder-block-clients">
           <span className="builder-label">Клиенты</span>
         </div>
-
         <div className="builder-block builder-block-product">
           <span className="builder-label">Продукт</span>
         </div>
@@ -470,33 +443,19 @@ function ResultDocCard({
   tab,
   title,
   text,
-  bottomGlow = false,
 }: {
   tab: string;
   title: string;
   text: string;
-  bottomGlow?: boolean;
 }) {
   return (
     <div className="result-doc-card tilt-card">
-      <div
-        className={`result-doc-card-inner tilt-inner glare-card ${
-          bottomGlow ? "result-doc-card-inner-roadmap" : ""
-        }`}
-      >
+      <div className="result-doc-card-inner tilt-inner glare-card">
         <div className="result-doc-top">
           <div className="result-doc-tab">{tab}</div>
         </div>
-
         <div className="result-doc-title">{title}</div>
         <div className="result-doc-text">{text}</div>
-
-        {bottomGlow ? (
-          <div className="result-doc-bottom-glow" aria-hidden="true">
-            <div className="result-doc-bottom-glow-core" />
-            <div className="result-doc-bottom-glow-shine" />
-          </div>
-        ) : null}
       </div>
     </div>
   );
@@ -517,10 +476,8 @@ function StartCard({
     <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <img src={icon} alt={title} className="start-card-frame" />
-
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-price-float">{price}</div>
-
           <div className="start-card-btn-row">
             <a href={href} className="start-card-btn start-card-btn-floating">
               Оплатить
@@ -532,174 +489,122 @@ function StartCard({
   );
 }
 
-function StageCard({
-  stage,
-  icon,
-  isActive = false,
-}: {
+type StageItem = {
   stage: string;
   icon: string;
-  isActive?: boolean;
-}) {
-  const content = {
-    Seed: {
-      intro:
-        'Первые пилоты подтверждают интерес к продукту, но команда ещё не понимает, что именно тормозит рост: входной оффер, цикл сделки или экономика пилота.',
-      focus:
-        'Snapshot показал, что спрос уже существует, а основной барьер находится в формате первого шага и структуре предложения для рынка.',
-      outcome: 'Сформирован входной MVP для пилота',
-      numbers: [
-        { label: 'Пилоты', value: '6 → 11', delta: 83 },
-        { label: 'Цикл сделки', value: '41 → 26 дн.', delta: -37 },
-        { label: 'Conversion', value: '18% → 29%', delta: 61 },
-      ],
-      bars: [
-        { label: 'Leads → Demo', fact: 8, target: 14 },
-        { label: 'Demo → Pilot', fact: 3, target: 5 },
-      ],
-    },
-    Startup: {
-      intro:
-        'Выручка уже появилась, но рост неровный: часть каналов перестаёт окупаться, а платёжеспособный сегмент не отделён от шумового трафика.',
-      focus:
-        'Snapshot разложил экономику по сегментам и показал, что главный резерв находится в перераспределении фокуса и выравнивании среднего чека.',
-      outcome: 'Пересобран канал роста без перегрева бюджета',
-      numbers: [
-        { label: 'CAC', value: '$91 → $63', delta: -31 },
-        { label: 'AOV', value: '$148 → $196', delta: 32 },
-        { label: 'ROMI', value: '+18 п.п.', delta: 18 },
-      ],
-      bars: [
-        { label: 'Qualified leads', fact: 32, target: 45 },
-        { label: 'Deals', fact: 9, target: 14 },
-      ],
-    },
-    Growth: {
-      intro:
-        'Продукт уже доказал ценность, но дальнейшее масштабирование упирается в разрыв между продажами, повторными сделками и загрузкой команды.',
-      focus:
-        'Snapshot подсветил, что узкое место — не лидогенерация сама по себе, а связка позиционирования, сегментации и операционной ёмкости на длинных сделках.',
-      outcome: 'Выделен самый прибыльный сегмент и рычаг масштаба',
-      numbers: [
-        { label: 'MRR', value: '$42k → $57k', delta: 36 },
-        { label: 'Gross profit', value: '+$9.4k', delta: 28 },
-        { label: 'Load', value: '−17%', delta: 17 },
-      ],
-      bars: [
-        { label: 'SQL → Proposal', fact: 17, target: 24 },
-        { label: 'Proposal → Deal', fact: 6, target: 9 },
-      ],
-    },
-    Expansion: {
-      intro:
-        'Бизнес выходит в новые направления, но часть сценариев масштабирования создаёт рост только на поверхности и начинает съедать маржу.',
-      focus:
-        'Snapshot собрал карту сегментов и показал, какие продукты усиливают доход, а какие только визуально расширяют бизнес без реального эффекта.',
-      outcome: 'Убраны убыточные сценарии расширения',
-      numbers: [
-        { label: 'Маржа', value: '24% → 31%', delta: 29 },
-        { label: 'Opex', value: '−12%', delta: 12 },
-        { label: 'Net revenue', value: '+$18k', delta: 22 },
-      ],
-      bars: [
-        { label: 'Новые сегменты', fact: 2, target: 3 },
-        { label: 'Окупаемые гипотезы', fact: 4, target: 6 },
-      ],
-    },
-  }[stage as 'Seed' | 'Startup' | 'Growth' | 'Expansion'] ?? {
-    intro: '',
-    focus: '',
-    outcome: '',
-    numbers: [],
-    bars: [],
-  };
+  industries: string[];
+  setup: string;
+  direction: string;
+  metrics: Array<{ label: string; value: string }>;
+  bars: Array<{ label: string; fact: number; plan: number }>;
+};
 
+function StageCard({ item, isFront }: { item: StageItem; isFront: boolean }) {
   return (
-    <div className={`stage-card-analytics glare-card ${isActive ? 'stage-card-analytics-active' : ''}`}>
-      <div className="stage-card-top-panel stage-card-top-panel-v2">
-        <div>
-          <div className="stage-card-heading-v2">
-            <span>Stage</span>
-            <strong>{stage}</strong>
+    <div className={`stage-card-analytics glare-card ${isFront ? "is-front" : ""}`}>
+      <div className="stage-card-top-panel">
+        <div className="stage-card-copy">
+          <div className="stage-copy-block">
+            <h4>Starting Position</h4>
+            <p>{item.setup}</p>
+          </div>
+          <div className="stage-copy-block">
+            <h4>Strategic Direction</h4>
+            <p>{item.direction}</p>
           </div>
         </div>
 
-        <img src={icon} alt={stage} className="stage-card-watermark-icon" />
-      </div>
-
-      <div className="stage-card-copy-grid">
-        <div className="stage-copy-box">
-          <div className="stage-copy-title">Исходная точка</div>
-          <p>{content.intro}</p>
-        </div>
-
-        <div className="stage-copy-box">
-          <div className="stage-copy-title">Фокус Snapshot</div>
-          <p>{content.focus}</p>
+        <div className="stage-card-heading">
+          <span>Stage</span>
+          <strong>{item.stage}</strong>
         </div>
       </div>
 
-      <div className="stage-card-bottom-panel stage-card-bottom-panel-v2">
-        <div className="stage-outcome-head">
-          <span>Результат</span>
-          <strong>{content.outcome}</strong>
-        </div>
-
-        <div className="stage-numbers-grid">
-          {content.numbers.map((metric) => (
-            <div key={metric.label} className="stage-number-card">
-              <span>{metric.label}</span>
-              <strong>{metric.value}</strong>
-              <small className={metric.delta >= 0 ? 'good' : 'bad'}>{pct(metric.delta)}</small>
-            </div>
-          ))}
-        </div>
-
-        <div className="stage-bars-wrap-v2">
-          {content.bars.map((bar) => {
-            const max = Math.max(bar.fact, bar.target, 1);
-            return (
-              <div key={bar.label} className="stage-bar-group-v2">
-                <div className="stage-bar-meta-v2">
-                  <span>{bar.label}</span>
-                  <span>
-                    факт {bar.fact} / цель {bar.target}
-                  </span>
-                </div>
-
-                <div className="stage-bar-track-v2 stage-bar-track-v2-top">
-                  <div
-                    className="stage-bar-fill-v2 stage-bar-fill-v2-fact"
-                    style={{ width: `${(bar.fact / max) * 100}%` }}
-                  />
-                </div>
-
-                <div className="stage-bar-track-v2">
-                  <div
-                    className="stage-bar-fill-v2 stage-bar-fill-v2-target"
-                    style={{ width: `${(bar.target / max) * 100}%` }}
-                  />
-                </div>
+      <div className="stage-card-bottom-panel">
+        <div className="stage-card-bottom-inner">
+          <div className="stage-rings-grid compact-metrics-grid">
+            {item.metrics.map((metric) => (
+              <div key={metric.label} className="stage-inline-metric">
+                <div className="stage-ring-label">{metric.label}</div>
+                <div className="stage-inline-metric-value">{metric.value}</div>
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          <div className="stage-bars-area">
+            <div className="stage-bars-title">fact / plan</div>
+            <div className="stage-bars-wrap">
+              {item.bars.map((bar) => {
+                const max = Math.max(bar.fact, bar.plan, 1);
+                return (
+                  <div className="stage-bar-group" key={bar.label}>
+                    <div className="stage-bar-label">{bar.label}</div>
+                    <div className="stage-bar-stack">
+                      <div className="stage-bar-track">
+                        <div
+                          className="stage-bar-fill stage-bar-fill-fact"
+                          style={{ width: `${(bar.fact / max) * 100}%` }}
+                        />
+                      </div>
+                      <div className="stage-bar-track stage-bar-track-thin">
+                        <div
+                          className="stage-bar-fill stage-bar-fill-plan"
+                          style={{ width: `${(bar.plan / max) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+
+        <img src={item.icon} alt={item.stage} className="stage-card-watermark-icon" />
       </div>
     </div>
   );
 }
 
 function StageCarousel() {
-  const items = [
+  const items: StageItem[] = [
     {
       stage: "Seed",
       icon: "/seed.svg",
       industries: ["industry-saas", "industry-healthtech"],
+      setup:
+        "Есть ранний спрос и подтверждённая ценность, но модель ещё не собрана в устойчивый контур продаж.",
+      direction:
+        "Snapshot помогает найти первый входной продукт и выстроить опорную логику monetization без лишнего масштаба.",
+      metrics: [
+        { label: "Leads", value: "25 / 40" },
+        { label: "Qual leads", value: "6 / 15" },
+        { label: "Demo", value: "2 / 5" },
+        { label: "Deals", value: "1 / 2" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 5, plan: 3 },
+        { label: "CAC payback", fact: 9, plan: 6 },
+      ],
     },
     {
       stage: "Startup",
       icon: "/startup.svg",
       industries: ["industry-fintech", "industry-ecom"],
+      setup:
+        "Продукт уже продаётся, но рост держится на ручных усилиях и не превращается в предсказуемую систему.",
+      direction:
+        "Snapshot выделяет главный ограничитель роста и показывает, где усилие даст максимальный сдвиг в unit-экономике.",
+      metrics: [
+        { label: "Leads", value: "70 / 95" },
+        { label: "Qual leads", value: "22 / 30" },
+        { label: "Demo", value: "10 / 14" },
+        { label: "Deals", value: "4 / 6" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 8, plan: 5 },
+        { label: "Margin", fact: 37, plan: 46 },
+      ],
     },
     {
       stage: "Growth",
@@ -712,41 +617,65 @@ function StageCarousel() {
         "industry-healthtech",
         "industry-b2b",
       ],
+      setup:
+        "Рост уже есть, но он начинает упираться в связку positioning, cost stack и качество каналов.",
+      direction:
+        "Snapshot помогает перераспределить фокус между продажами, маркетингом и моделью расходов без потери темпа.",
+      metrics: [
+        { label: "Leads", value: "180 / 230" },
+        { label: "Qual leads", value: "62 / 80" },
+        { label: "Demo", value: "28 / 34" },
+        { label: "Deals", value: "11 / 14" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 11, plan: 8 },
+        { label: "CAC payback", fact: 7, plan: 5 },
+      ],
     },
     {
       stage: "Expansion",
       icon: "/expansion.svg",
       industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
+      setup:
+        "Компания масштабируется, но экономика новых направлений и каналов может размывать прибыльность.",
+      direction:
+        "Snapshot показывает, какие элементы системы можно расширять, а где требуется удержать дисциплину модели.",
+      metrics: [
+        { label: "Leads", value: "340 / 420" },
+        { label: "Qual leads", value: "120 / 150" },
+        { label: "Demo", value: "54 / 66" },
+        { label: "Deals", value: "19 / 24" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 14, plan: 10 },
+        { label: "Margin", fact: 31, plan: 39 },
+      ],
     },
   ];
 
   const [rotation, setRotation] = useState(0);
   const [isDraggingState, setIsDraggingState] = useState(false);
-
   const dragStartX = useRef<number | null>(null);
   const dragStartRotation = useRef(0);
   const isDragging = useRef(false);
 
   const itemAngle = 360 / items.length;
-  const radius = 280;
+  const radius = 300;
 
   const activeIndex = useMemo(() => {
     let frontIndex = 0;
     let maxZ = -Infinity;
-
     items.forEach((_, index) => {
       const angle = rotation + index * itemAngle;
       const radians = (angle * Math.PI) / 180;
       const z = Math.cos(radians) * radius;
-
       if (z > maxZ) {
         maxZ = z;
         frontIndex = index;
       }
     });
-
     return frontIndex;
-  }, [rotation, itemAngle, radius]);
+  }, [rotation, itemAngle]);
 
   const activeIndustries = new Set(items[activeIndex].industries);
 
@@ -773,66 +702,25 @@ function StageCarousel() {
   return (
     <div className="stage-carousel-wrap">
       <div className="industries-pills industries-pills-carousel">
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-saas")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          SaaS
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-ecom")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          E-com
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-fintech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          FinTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-edtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          EdTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-healthtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          HealthTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-b2b")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          B2B
-        </span>
+        {[
+          ["industry-saas", "SaaS"],
+          ["industry-ecom", "E-com"],
+          ["industry-fintech", "FinTech"],
+          ["industry-edtech", "EdTech"],
+          ["industry-healthtech", "HealthTech"],
+          ["industry-b2b", "B2B"],
+        ].map(([key, label]) => (
+          <span
+            key={key}
+            className={`industry-pill ${activeIndustries.has(key) ? "industry-pill-active" : "industry-pill-dim"}`}
+          >
+            {label}
+          </span>
+        ))}
       </div>
 
       <div
-        className={`stage-carousel-scene ${
-          isDraggingState ? "is-dragging" : ""
-        }`}
+        className={`stage-carousel-scene ${isDraggingState ? "is-dragging" : ""}`}
         onMouseDown={(e) => startDrag(e.clientX)}
         onMouseMove={(e) => moveDrag(e.clientX)}
         onMouseUp={endDrag}
@@ -845,47 +733,39 @@ function StageCarousel() {
           {items.map((item, index) => {
             const angle = rotation + index * itemAngle;
             const radians = (angle * Math.PI) / 180;
-
             const x = Math.sin(radians) * radius;
             const z = Math.cos(radians) * radius;
-
-            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
-            const opacity = 0.28 + ((z + radius) / (radius * 2)) * 0.72;
-            const blur = Math.max(0, (1 - scale) * 2.2);
+            const scale = 0.74 + ((z + radius) / (radius * 2)) * 0.24;
+            const opacity = 0.34 + ((z + radius) / (radius * 2)) * 0.66;
+            const blur = Math.max(0, (1 - scale) * 2);
+            const rotateY = Math.sin(radians) * -10;
 
             return (
               <div
                 key={item.stage}
                 className="stage-carousel-item stage-carousel-item-free"
                 style={{
-                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) scale(${scale})`,
+                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) rotateY(${rotateY}deg) scale(${scale})`,
                   opacity,
                   filter: `blur(${blur}px)`,
                   zIndex: Math.round(z + radius),
                 }}
               >
-                <StageCard
-                  stage={item.stage}
-                  icon={item.icon}
-                  isActive={index === activeIndex}
-                />
+                <StageCard item={item} isFront={activeIndex === index} />
               </div>
             );
           })}
         </div>
 
-        <div className="stage-carousel-hint">
-          Потяните барабан влево или вправо
-        </div>
+        <div className="stage-carousel-hint">Потяните барабан влево или вправо</div>
       </div>
     </div>
   );
 }
 
 export default function Home() {
-  const [clientsInput, setClientsInput] = useState("20");
-  const [checkInput, setCheckInput] = useState("2000");
-
+  const [clientsInput, setClientsInput] = useState("");
+  const [checkInput, setCheckInput] = useState("");
   const clientsBase = parseNumeric(clientsInput, 0);
   const checkBase = parseNumeric(checkInput, 0);
 
@@ -907,7 +787,6 @@ export default function Home() {
 
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
-
   const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
@@ -919,9 +798,7 @@ export default function Home() {
         setCursor({ x: e.clientX, y: e.clientY });
       });
     };
-
     window.addEventListener("mousemove", onMove, { passive: true });
-
     return () => {
       window.removeEventListener("mousemove", onMove);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
@@ -929,10 +806,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const tiltCards = Array.from(
-      document.querySelectorAll<HTMLElement>(".tilt-card")
-    );
-
+    const tiltCards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
     const cleanups: Array<() => void> = [];
 
     tiltCards.forEach((card) => {
@@ -943,70 +817,53 @@ export default function Home() {
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-
         const px = x / rect.width;
         const py = y / rect.height;
-
-        const rotateY = (px - 0.5) * 9;
-        const rotateX = (0.5 - py) * 9;
-
+        const rotateY = (px - 0.5) * 8;
+        const rotateX = (0.5 - py) * 8;
         inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
       };
 
       const handleLeave = () => {
-        inner.style.transform =
-          "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+        inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
       };
 
       card.addEventListener("mousemove", handleMove);
       card.addEventListener("mouseleave", handleLeave);
-
       cleanups.push(() => {
         card.removeEventListener("mousemove", handleMove);
         card.removeEventListener("mouseleave", handleLeave);
       });
     });
 
-    return () => {
-      cleanups.forEach((fn) => fn());
-    };
+    return () => cleanups.forEach((fn) => fn());
   }, []);
 
   const pushHistory = () => {
     setHistory((prev) => [
       ...prev,
-      {
-        clientsInput,
-        checkInput,
-        sales,
-        retention,
-        upsell,
-        opexEff,
-      },
+      { clientsInput, checkInput, sales, retention, upsell, opexEff },
     ]);
   };
 
   const handleUndo = () => {
     setHistory((prev) => {
       if (!prev.length) return prev;
-
       const last = prev[prev.length - 1];
-
       setClientsInput(last.clientsInput);
       setCheckInput(last.checkInput);
       setSales(last.sales);
       setRetention(last.retention);
       setUpsell(last.upsell);
       setOpexEff(last.opexEff);
-
       return prev.slice(0, -1);
     });
   };
 
   const handleReset = () => {
     pushHistory();
-    setClientsInput("20");
-    setCheckInput("2000");
+    setClientsInput("");
+    setCheckInput("");
     setSales(0);
     setRetention(0);
     setUpsell(0);
@@ -1016,29 +873,17 @@ export default function Home() {
   const data = useMemo(() => {
     const safeClients = Math.max(0, clientsBase);
     const safeCheck = Math.max(0, checkBase);
-
     const newClients = safeClients * (1 + sales * 0.6);
     const retainedRevenueLift = 1 + retention * 0.35;
     const avgCheck = safeCheck * (1 + upsell * 0.7);
-
     const revenue = newClients * avgCheck * retainedRevenueLift;
     const salesCost = revenue * 0.18 * (1 + sales * 0.4);
     const support = revenue * 0.06 * (1 + retention * 0.25);
     const opex = revenue * 0.35 * (1 - opexEff * 0.8);
-
     const costs = salesCost + support + opex;
     const profit = revenue - costs;
 
-    return {
-      clients: newClients,
-      avgCheck,
-      revenue,
-      salesCost,
-      support,
-      opex,
-      costs,
-      profit,
-    };
+    return { clients: newClients, avgCheck, revenue, salesCost, support, opex, costs, profit };
   }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
 
   const base = useMemo(() => {
@@ -1048,71 +893,28 @@ export default function Home() {
     const opex = revenue * 0.35;
     const costs = salesCost + support + opex;
     const profit = revenue - costs;
-
-    return {
-      clients: clientsBase,
-      avgCheck: checkBase,
-      revenue,
-      salesCost,
-      support,
-      opex,
-      costs,
-      profit,
-    };
+    return { clients: clientsBase, avgCheck: checkBase, revenue, salesCost, support, opex, costs, profit };
   }, [clientsBase, checkBase]);
 
   const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
-
   const revDelta = safeDiv(data.revenue - base.revenue, base.revenue);
   const costDelta = safeDiv(data.costs - base.costs, base.costs);
   const profitDelta = safeDiv(data.profit - base.profit, base.profit);
-
   const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
   const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(
-    data.salesCost - base.salesCost,
-    base.salesCost
-  );
-  const opexSupportDelta = safeDiv(
-    data.opex + data.support - (base.opex + base.support),
-    base.opex + base.support
-  );
-
-  const strongestLever = useMemo(() => {
-    const levers = [
-      { name: "Эффективность продаж", value: Math.abs(sales * 0.6) },
-      { name: "Повторные продажи", value: Math.abs(retention * 0.5) },
-      { name: "Средний чек", value: Math.abs(upsell * 0.7) },
-      { name: "Загрузка команды", value: Math.abs(opexEff * 0.8) },
-    ];
-
-    levers.sort((a, b) => b.value - a.value);
-    return levers[0];
-  }, [sales, retention, upsell, opexEff]);
-
-  const hasInteraction =
-    Math.abs(sales) > 0.001 ||
-    Math.abs(retention) > 0.001 ||
-    Math.abs(upsell) > 0.001 ||
-    Math.abs(opexEff) > 0.001;
+  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
+  const opexSupportDelta = safeDiv(data.opex + data.support - (base.opex + base.support), base.opex + base.support);
 
   const estimatedGap = Math.max(
     0,
-    Math.round(
-      (data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45
-    )
+    Math.round((data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45)
   );
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#041027] text-[#fefefe]">
-      <div
-        className="cursor-glow"
-        style={{
-          transform: `translate(${cursor.x - 66}px, ${cursor.y - 66}px)`,
-        }}
-      />
+    <main className="page-shell">
+      <div className="cursor-glow" style={{ transform: `translate(${cursor.x - 54}px, ${cursor.y - 54}px)` }} />
 
-      <div className="pointer-events-none absolute inset-0">
+      <div className="page-background" aria-hidden="true">
         <div className="aurora aurora-1" />
         <div className="aurora aurora-2" />
         <div className="aurora aurora-3" />
@@ -1121,55 +923,25 @@ export default function Home() {
         <div className="vignette" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-10">
-        <header className="sticky-header mb-7 md:mb-10">
-          <div className="header-row">
-            <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
+      <header className="header-fixed">
+        <div className="header-inner">
+          <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
 
-            <nav className="header-nav hidden lg:flex" aria-label="Навигация по странице">
-              <a href="#how-it-works" className="header-nav-link">Блок 1</a>
-              <a href="#preview" className="header-nav-link">Блок 2</a>
-              <a href="#goals" className="header-nav-link">Блок 3</a>
-              <a href="#cases" className="header-nav-link">Блок 4</a>
-              <a href="#analysis" className="header-nav-link">Блок 5</a>
-            </nav>
+          <nav className="header-nav">
+            <a href="#how-it-works" className="header-link">Как это работает</a>
+            <a href="#preview" className="header-link">Интерактивное превью</a>
+            <a href="#results" className="header-link">Что вы получите</a>
+            <a href="#analysis" className="header-link">Как проходит анализ</a>
+          </nav>
 
-            <div className="header-actions">
-              <a
-                href={tgContactUrl}
-                className="contact-btn contact-btn-invert"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TG
-              </a>
-
-              <a
-                href={waContactUrl}
-                className="contact-btn contact-btn-invert"
-                target="_blank"
-                rel="noreferrer"
-              >
-                WA
-              </a>
-
-              <a
-                href="#how-it-works"
-                className="ghost-link hidden md:inline-flex"
-              >
-                Как это работает
-              </a>
-
-              <a
-                href="#try"
-                className="tg-gradient-btn tg-gradient-btn-header inline-flex"
-              >
-                Попробовать Snapshot
-              </a>
-            </div>
+          <div className="header-actions">
+            <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
+            <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="content-wrap">
         <section className="hero-section mb-16">
           <div className="hero-grid hero-grid-frame">
             <div className="hero-left">
@@ -1193,16 +965,9 @@ export default function Home() {
                 <div className="hero-highlight-chip">Scaling</div>
               </div>
 
-              <div className="hero-actions">
-                <a href="#try" className="tg-gradient-btn inline-flex">
-                  Попробовать Snapshot
-                </a>
-                <a
-                  href="#preview"
-                  className="ghost-link ghost-link-large ghost-link-dark inline-flex"
-                >
-                  Побаловаться
-                </a>
+              <div className="hero-actions-row">
+                <a href="#try" className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
+                <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Побаловаться</a>
               </div>
             </div>
 
@@ -1213,9 +978,7 @@ export default function Home() {
         <section id="how-it-works" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как это работает</div>
-            <h2 className="section-title">
-              Путь от простых ответов к комплексному результату
-            </h2>
+            <h2 className="section-title">Путь от простых ответов к комплексному результату</h2>
             <p className="section-copy">
               От базовых параметров — к полной картине экономики бизнеса:
               ограничения, точки роста и сценарии развития.
@@ -1224,45 +987,21 @@ export default function Home() {
 
           <div className="journey-compact">
             <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">1</div>
-                <div className="journey-compact-arrow" />
-              </div>
-              <div className="journey-compact-title">
-                Фиксация параметров бизнеса
-              </div>
-              <div className="journey-compact-text">
-                Определяются ключевые показатели текущей модели: экономика,
-                структура продаж, ресурсы и ограничения. Это формирует основу для
-                дальнейшего анализа.
-              </div>
+              <div className="journey-compact-top"><div className="journey-compact-badge">1</div><div className="journey-compact-arrow" /></div>
+              <div className="journey-compact-title">Фиксация параметров бизнеса</div>
+              <div className="journey-compact-text">Определяются ключевые показатели текущей модели: экономика, структура продаж, ресурсы и ограничения. Это формирует основу для дальнейшего анализа.</div>
             </div>
 
             <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">2</div>
-                <div className="journey-compact-arrow" />
-              </div>
-              <div className="journey-compact-title">
-                Сборка аналитической модели
-              </div>
-              <div className="journey-compact-text">
-                Инструмент структурирует данные и формирует целостную картину
-                бизнеса: выявляет ограничения, точки роста и взаимосвязи между
-                показателями.
-              </div>
+              <div className="journey-compact-top"><div className="journey-compact-badge">2</div><div className="journey-compact-arrow" /></div>
+              <div className="journey-compact-title">Сборка аналитической модели</div>
+              <div className="journey-compact-text">Инструмент структурирует данные и формирует целостную картину бизнеса: выявляет ограничения, точки роста и взаимосвязи между показателями.</div>
             </div>
 
             <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">3</div>
-              </div>
+              <div className="journey-compact-top"><div className="journey-compact-badge">3</div></div>
               <div className="journey-compact-title">Результат Snapshot</div>
-              <div className="journey-compact-text">
-                Вы получаете аналитический срез бизнеса с ключевыми выводами:
-                приоритетной точкой роста, оценкой экономического эффекта
-                изменений и пониманием устойчивости текущей модели.
-              </div>
+              <div className="journey-compact-text">Вы получаете аналитический срез бизнеса с ключевыми выводами: приоритетной точкой роста, оценкой экономического эффекта изменений и пониманием устойчивости текущей модели.</div>
             </div>
           </div>
         </section>
@@ -1279,192 +1018,80 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="preview-grid">
             <div>
               <div className="input-grid mb-6 gap-3">
                 <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">
-                    Клиентов / месяц
-                  </span>
-
+                  <span className="input-label input-label-strong">Клиентов / месяц</span>
                   <div className="input-wrap input-wrap-primary">
-                    <span className="input-badge">ввод</span>
                     <input
                       type="text"
                       inputMode="numeric"
                       value={clientsInput}
                       onFocus={pushHistory}
-                      onChange={(e) =>
-                        setClientsInput(normalizeDigits(e.target.value))
-                      }
+                      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
                       className="glass-input glass-input-primary"
-                      placeholder="Например, 20"
+                      placeholder="20"
                     />
                   </div>
                 </label>
 
                 <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">
-                    Средний чек
-                  </span>
-
+                  <span className="input-label input-label-strong">Средний чек</span>
                   <div className="input-wrap input-wrap-primary">
-                    <span className="input-badge">ввод</span>
                     <input
                       type="text"
                       inputMode="numeric"
                       value={checkInput}
                       onFocus={pushHistory}
-                      onChange={(e) =>
-                        setCheckInput(normalizeDigits(e.target.value))
-                      }
+                      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
                       className="glass-input glass-input-primary"
-                      placeholder="Например, 2000"
+                      placeholder="2000"
                     />
                   </div>
                 </label>
               </div>
 
               <section className="dashboard-grid">
-                <TopMetricCard
-                  title="Выручка"
-                  value={fmtMoney(data.revenue)}
-                  delta={revDelta}
-                  type="revenue"
-                />
-                <TopMetricCard
-                  title="Прибыль"
-                  value={fmtMoney(data.profit)}
-                  delta={profitDelta}
-                  type="profit"
-                />
-                <TopMetricCard
-                  title="Расходы"
-                  value={fmtMoney(data.costs)}
-                  delta={costDelta}
-                  type="costs"
-                  invert
-                />
+                <TopMetricCard title="Выручка" value={fmtMoney(data.revenue)} delta={revDelta} type="revenue" />
+                <TopMetricCard title="Прибыль" value={fmtMoney(data.profit)} delta={profitDelta} type="profit" />
+                <TopMetricCard title="Расходы" value={fmtMoney(data.costs)} delta={costDelta} type="costs" invert />
               </section>
 
               <div className="mt-5">
-                <div className="mb-3 text-sm text-white/58">
-                  Формирование экономики
-                </div>
-
+                <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <ModelCard
-                    title="Клиенты"
-                    value={Math.round(data.clients)}
-                    delta={clientsDelta}
-                  />
-                  <ModelCard
-                    title="Средний чек"
-                    value={fmtMoney(data.avgCheck)}
-                    delta={avgCheckDelta}
-                  />
-                  <ModelCard
-                    title="Sales cost"
-                    value={fmtMoney(data.salesCost)}
-                    delta={salesCostDelta}
-                  />
-                  <ModelCard
-                    title="Opex + Support"
-                    value={fmtMoney(data.opex + data.support)}
-                    delta={opexSupportDelta}
-                    invert
-                  />
+                  <ModelCard title="Клиенты" value={Math.round(data.clients)} delta={clientsDelta} />
+                  <ModelCard title="Средний чек" value={fmtMoney(data.avgCheck)} delta={avgCheckDelta} />
+                  <ModelCard title="Sales cost" value={fmtMoney(data.salesCost)} delta={salesCostDelta} />
+                  <ModelCard title="Opex + Support" value={fmtMoney(data.opex + data.support)} delta={opexSupportDelta} invert />
                 </div>
               </div>
 
               <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
                 <div className="text-sm text-white/58">Рычаги управления</div>
-
                 <div className="preview-actions-inline">
-                  <button
-                    type="button"
-                    onClick={handleUndo}
-                    className="reset-link"
-                    disabled={!history.length}
-                  >
-                    Отменить действие
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="reset-link"
-                  >
-                    Сбросить
-                  </button>
+                  <button type="button" onClick={handleUndo} className="reset-link" disabled={!history.length}>Отменить действие</button>
+                  <button type="button" onClick={handleReset} className="reset-link">Сбросить</button>
                 </div>
               </div>
 
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Slider
-                  title="Эффективность продаж"
-                  subtitle="Влияние на конверсию и поток клиентов."
-                  value={sales}
-                  set={setSales}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Повторные продажи"
-                  subtitle="Влияние на устойчивость выручки."
-                  value={retention}
-                  set={setRetention}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Средний чек"
-                  subtitle="Рост денег без роста трафика."
-                  value={upsell}
-                  set={setUpsell}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Загрузка команды"
-                  subtitle="Влияние на расходы и маржу."
-                  value={opexEff}
-                  set={setOpexEff}
-                  onStart={pushHistory}
-                />
+                <Slider title="Эффективность продаж" subtitle="Влияние на конверсию и поток клиентов." value={sales} set={setSales} onStart={pushHistory} />
+                <Slider title="Повторные продажи" subtitle="Влияние на устойчивость выручки." value={retention} set={setRetention} onStart={pushHistory} />
+                <Slider title="Средний чек" subtitle="Рост денег без роста трафика." value={upsell} set={setUpsell} onStart={pushHistory} />
+                <Slider title="Загрузка команды" subtitle="Влияние на расходы и маржу." value={opexEff} set={setOpexEff} onStart={pushHistory} />
               </div>
             </div>
 
-            <aside className="glass-card glare-card h-fit lg:sticky lg:top-24">
+            <aside className="glass-card glare-card preview-side">
               <div className="reserve-kicker">Оценочный резерв</div>
-
               <div className="hero-preview-box mt-4 glare-card-lite">
-                <div className="reserve-amount">
-                  ≈ {fmtMoney(estimatedGap)} / мес
-                </div>
+                <div className="reserve-amount">≈ {fmtMoney(estimatedGap)} <span>/ мес</span></div>
                 <p className="mt-4 text-sm leading-7 text-white/65">
                   Это только механика. Полный разбор раскрывает реальные
                   возможности при текущей ситуации вашего бизнеса.
                 </p>
-              </div>
-
-              <div className="side-note-card mt-4 glare-card-lite">
-                {hasInteraction ? (
-                  <>
-                    <div className="text-xs uppercase tracking-[0.14em] text-white/42">
-                      Наиболее заметный рычаг
-                    </div>
-                    <div className="mt-2 text-base font-semibold text-white/92">
-                      {strongestLever.name}
-                    </div>
-                    <div className="mt-3 text-sm leading-relaxed text-white/68">
-                      Сейчас именно этот параметр заметнее всего влияет на общую
-                      динамику модели.
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm leading-relaxed text-white/68">
-                    Подвигайте ползунки ниже, чтобы увидеть, какой рычаг заметнее
-                    всего влияет на экономику модели.
-                  </div>
-                )}
               </div>
 
               <div className="mt-4 space-y-3 text-sm">
@@ -1473,106 +1100,58 @@ export default function Home() {
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">
-                Попробовать Snapshot
-              </a>
+              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
             </aside>
           </div>
         </section>
 
-        <section id="goals" className="mb-16">
+        <section id="results" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Что вы получите</div>
             <h2 className="section-title">Цели Revenue Snapshot</h2>
             <p className="section-copy">
-              Понять, каким должен быть первый{" "}
-              <span className="accent-word">верный</span> шаг к построению новой
-              стратегии для новых рубежей.
+              Понять, каким должен быть первый <span className="accent-word">верный</span> шаг к построению новой стратегии для новых рубежей.
             </p>
           </div>
 
           <div className="results-grid-2x2">
-            <ResultDocCard
-              tab="ECONOMIC RATE"
-              title="Executive Summary"
-              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
-            />
-
-            <ResultDocCard
-              tab="GROWTH LIMIT"
-              title="Key Conclusions"
-              text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
-            />
-
-            <ResultDocCard
-              tab="SOLUTION"
-              title="Strategy&Practice"
-              text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
-            />
-
-<ResultDocCard
-  tab="JTBD"
-  title="RoadMap"
-  text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
-/>
+            <ResultDocCard tab="ECONOMIC RATE" title="Executive Summary" text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент." />
+            <ResultDocCard tab="GROWTH LIMIT" title="Key Conclusions" text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели." />
+            <ResultDocCard tab="SOLUTION" title="Strategy&Practice" text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода." />
+            <ResultDocCard tab="JTBD" title="RoadMap" text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP." />
           </div>
 
-<div className="results-bottom-row">
-  <div className="results-roadmap-note">
-    После получения и изучения результатов у Вас есть возможность
-    назначить <span>30-минутную встречу</span> с нашими C-level
-    специалистами в сфере Маркетинга и Продаж{" "}
-    <span>для декомпозиции результатов</span>.
-  </div>
-
-  <a href={payUrl} className="result-doc-start-btn results-start-btn">
-    Начать
-  </a>
-</div>
+          <div className="results-bottom-stack">
+            <div className="results-roadmap-note">
+              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+            </div>
+            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать путь со Snapshot</a>
+          </div>
         </section>
 
-        <section id="cases" className="mb-16 stage-hover-map">
+        <section className="mb-16 stage-hover-map">
           <div className="section-head">
             <div className="section-kicker">Для кого этот инструмент</div>
-            <h2 className="section-title">
-              Где Revenue Snapshot показал результат
-            </h2>
+            <h2 className="section-title">Где Revenue Snapshot показал результат</h2>
           </div>
-
           <StageCarousel />
         </section>
 
         <section id="analysis" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title">
-              После оплаты пользователь переходит в Telegram
-            </h2>
+            <h2 className="section-title">После оплаты пользователь переходит в Telegram</h2>
             <p className="section-copy">
-              Telegram используется как удобный интерфейс сбора данных. Ответы
-              анализируются автоматически и превращаются в структурированный
-              результат.
+              Telegram используется как удобный интерфейс сбора данных. Ответы анализируются автоматически и превращаются в структурированный результат.
             </p>
           </div>
 
           <div className="analysis-grid">
             <SnapshotStructure />
-
             <div className="analysis-right-card analysis-right-card-plain">
               <div className="start-cards-row">
-                <StartCard
-                  title="Страт сессия"
-                  icon="/stratsession.svg"
-                  price="$770"
-                  href={tgContactUrl}
-                />
-
-                <StartCard
-                  title="Snapshot"
-                  icon="/snapshot.svg"
-                  price="$114"
-                  href={payUrl}
-                />
+                <StartCard title="Страт сессия" icon="/stratsession.svg" price="$770" href={tgContactUrl} />
+                <StartCard title="Snapshot" icon="/snapshot.svg" price="$114" href={payUrl} />
               </div>
             </div>
           </div>
@@ -1582,199 +1161,233 @@ export default function Home() {
           <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
-                Откройте полный Revenue Snapshot
-              </h2>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Откройте полный Revenue Snapshot</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
-                После оплаты пользователь переходит в Telegram, проходит
-                диагностику и получает структурированный результат с финансовой
-                логикой, проблемными зонами и главным направлением усиления.
+                После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
               </p>
             </div>
 
             <div className="cta-box glare-card-lite">
               <div className="text-sm text-white/55">Следующий шаг</div>
-              <div className="mt-2 text-2xl font-semibold text-white">
-                Попробовать Snapshot
-              </div>
-              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">
-                Получить Revenue Snapshot
-              </a>
-              <div className="mt-3 text-xs text-white/45">
-                Здесь можно поставить ссылку на оплату
+              <div className="mt-2 text-2xl font-semibold text-white">Попробовать Snapshot</div>
+              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">Получить Revenue Snapshot</a>
+              <div className="mt-4 footer-mini-links">
+                <a href="/terms-of-use">Terms of Use</a>
+                <a href="/privacy-policy">Privacy Policy</a>
               </div>
             </div>
           </div>
         </section>
-      </div>
 
-        <footer className="site-footer">
-          <div className="site-footer-inner">
-            <div className="site-footer-left">
-              <div className="site-footer-brand">Growth Avenue</div>
-              <div className="site-footer-copy">
-                Revenue Snapshot — предварительная интрига перед полным разбором.
-              </div>
-            </div>
-
-            <div className="site-footer-links">
-              <a href="/terms-of-use">Terms of Use</a>
-              <a href="/privacy-policy">Privacy Policy</a>
-            </div>
+        <footer className="page-footer">
+          <div>Growth Avenue</div>
+          <div className="page-footer-links">
+            <a href="/terms-of-use">Terms of Use</a>
+            <a href="/privacy-policy">Privacy Policy</a>
           </div>
         </footer>
+      </div>
 
       <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
-
+        html { scroll-behavior: smooth; }
         body {
           background: #041027;
+          color: #fefefe;
+          overflow-x: hidden;
         }
-
-        img {
-          max-width: 100%;
+        img { max-width: 100%; }
+        .page-shell {
+          position: relative;
+          min-height: 100vh;
+          background: radial-gradient(circle at top, rgba(12, 38, 84, 0.5), transparent 42%), #041027;
+          color: #fefefe;
         }
-
+        .page-background {
+          pointer-events: none;
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+        }
+        .content-wrap {
+          position: relative;
+          z-index: 2;
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 108px 16px 40px;
+        }
+        .header-fixed {
+          position: fixed;
+          inset: 0 0 auto 0;
+          z-index: 80;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          background: linear-gradient(180deg, rgba(4,16,39,0.92), rgba(4,16,39,0.62));
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .header-inner {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 14px 16px 12px;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 18px;
+        }
+        .header-nav {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          min-width: 0;
+          flex-wrap: wrap;
+        }
+        .header-link {
+          color: #f7d237;
+          font-size: 13px;
+          font-weight: 700;
+          text-decoration: none;
+          line-height: 1;
+          white-space: nowrap;
+          letter-spacing: -0.02em;
+          transition: opacity .2s ease, transform .2s ease;
+        }
+        .header-link:hover { opacity: .82; transform: translateY(-1px); }
+        .header-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .header-pill,
+        .hero-tag,
+        .hero-highlight-chip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+          color: #0b1d3a;
+          background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(247,210,55,0.88));
+          box-shadow: 0 10px 24px rgba(247, 210, 55, 0.16);
+        }
+        .logo-main {
+          width: 250px;
+          height: 62px;
+          object-fit: contain;
+          object-position: left center;
+          display: block;
+          flex-shrink: 0;
+        }
         .cursor-glow {
           position: fixed;
           left: 0;
-          top: 10px;
-          width: 132px;
-          height: 132px;
+          top: 0;
+          width: 108px;
+          height: 108px;
           border-radius: 9999px;
           pointer-events: none;
           z-index: 1;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.11) 0%,
-            rgba(247, 210, 55, 0.06) 34%,
-            rgba(247, 210, 55, 0.015) 60%,
-            transparent 78%
-          );
-          filter: blur(24px);
-          opacity: 0.56;
+          background: radial-gradient(circle, rgba(247,210,55,0.18) 0%, rgba(247,210,55,0.08) 35%, rgba(247,210,55,0.02) 62%, transparent 80%);
+          filter: blur(16px);
+          opacity: 0.62;
           mix-blend-mode: screen;
           transition: transform 0.08s linear;
         }
-
+        .aurora {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(110px);
+          opacity: .26;
+        }
+        .aurora-1 { width: 380px; height: 380px; left: -80px; top: 40px; background: rgba(80, 127, 255, 0.22); }
+        .aurora-2 { width: 300px; height: 300px; right: 5%; top: 80px; background: rgba(247, 210, 55, 0.12); }
+        .aurora-3 { width: 360px; height: 360px; left: 26%; top: 36%; background: rgba(88, 114, 255, 0.16); }
+        .aurora-4 { width: 300px; height: 300px; right: 10%; bottom: 12%; background: rgba(255,255,255,0.08); }
+        .line-grid {
+          position: absolute;
+          inset: 0;
+          background-image:
+            linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+          background-size: 44px 44px;
+          mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
+          -webkit-mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
+          opacity: .52;
+        }
+        .vignette {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at center, transparent 48%, rgba(4,16,39,0.38) 72%, rgba(4,16,39,0.82) 100%);
+        }
         .glass-card {
           position: relative;
           border-radius: 24px;
-          padding: 22px;
+          padding: 20px;
           overflow: hidden;
           isolation: isolate;
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.12) 0%,
-            rgba(224, 225, 227, 0.08) 100%
-          );
-border: 1px solid rgba(200, 200, 200, 0.15);
-box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 18px 44px rgba(0, 0, 0, 0.16);
+          background: linear-gradient(180deg, rgba(224,225,227,0.12) 0%, rgba(224,225,227,0.08) 100%);
+          border: 1px solid rgba(200,200,200,0.15);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 18px 44px rgba(0,0,0,0.16);
           backdrop-filter: blur(18px) saturate(135%);
           -webkit-backdrop-filter: blur(18px) saturate(135%);
         }
-
         .glass-card::before {
           content: "";
           position: absolute;
           inset: 0;
           pointer-events: none;
           z-index: 0;
-          opacity: 0.75;
-          background: linear-gradient(
-            115deg,
-            rgba(255, 255, 255, 0.1) 0%,
-            rgba(255, 255, 255, 0.025) 18%,
-            rgba(255, 255, 255, 0.01) 34%,
-            rgba(255, 255, 255, 0.05) 48%,
-            rgba(255, 255, 255, 0.012) 64%,
-            rgba(255, 255, 255, 0.06) 82%,
-            rgba(255, 255, 255, 0.02) 100%
-          );
+          opacity: .75;
+          background: linear-gradient(115deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.025) 18%, rgba(255,255,255,0.01) 34%, rgba(255,255,255,0.05) 48%, rgba(255,255,255,0.012) 64%, rgba(255,255,255,0.06) 82%, rgba(255,255,255,0.02) 100%);
         }
-
         .glass-card::after {
           content: "";
           position: absolute;
           inset: 0;
           pointer-events: none;
           z-index: 0;
-          opacity: 0.12;
+          opacity: .12;
           mix-blend-mode: soft-light;
           background-image:
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22) 0 0.8px, transparent 1px),
-            radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.16) 0 0.8px, transparent 1px),
-            radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.18) 0 0.7px, transparent 0.9px),
-            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.12) 0 0.7px, transparent 0.9px);
+            radial-gradient(circle at 20% 20%, rgba(255,255,255,0.22) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 70% 30%, rgba(255,255,255,0.16) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 35% 75%, rgba(255,255,255,0.18) 0 0.7px, transparent 0.9px),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.12) 0 0.7px, transparent 0.9px);
           background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
         }
-
-        .glass-card > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .soft-glow {
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 18px 50px rgba(0, 0, 0, 0.18);
-        }
-
-        .glare-card::before,
-        .glare-card-lite::before {
+        .glass-card > *,.glare-card > *,.glare-card-lite > * { position: relative; z-index: 1; }
+        .soft-glow { box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 18px 50px rgba(0,0,0,0.18); }
+        .glare-card::before,.glare-card-lite::before {
           content: "";
           position: absolute;
           width: 34%;
           height: 34%;
+          left: 14%;
+          top: 12%;
           border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.11) 0%,
-            rgba(255, 255, 255, 0.05) 38%,
-            transparent 76%
-          );
+          background: radial-gradient(circle, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 38%, transparent 76%);
           filter: blur(34px);
           pointer-events: none;
           z-index: 0;
-          opacity: 0.8;
+          opacity: .8;
         }
-
-        .glare-card > *,
-        .glare-card-lite > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .premium-glass {
-          position: relative;
-          overflow: hidden;
-          isolation: isolate;
-        }
-
+        .premium-glass { position: relative; overflow: hidden; isolation: isolate; }
         .premium-glass::before {
           content: "";
           position: absolute;
           inset: -20%;
           z-index: 0;
           pointer-events: none;
-          opacity: 0.18;
+          opacity: .18;
           filter: blur(18px);
-          background: repeating-linear-gradient(
-            105deg,
-            rgba(255, 255, 255, 0.05) 0px,
-            rgba(255, 255, 255, 0.05) 2px,
-            transparent 12px,
-            transparent 42px
-          );
+          background: repeating-linear-gradient(105deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 2px, transparent 12px, transparent 42px);
           animation: premiumGlassShift 14s linear infinite;
         }
-
         .premium-glass::after {
           content: "";
           position: absolute;
@@ -1783,129 +1396,38 @@ box-shadow:
           z-index: 0;
           pointer-events: none;
           filter: blur(42px);
-          opacity: 0.95;
+          opacity: .95;
           mix-blend-mode: screen;
           background:
-            radial-gradient(circle at 30% 40%, rgba(125, 255, 220, 0.34) 0%, transparent 42%),
-            radial-gradient(circle at 68% 50%, rgba(130, 120, 255, 0.32) 0%, transparent 44%),
-            radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0%, transparent 36%);
+            radial-gradient(circle at 30% 40%, rgba(125,255,220,0.34) 0%, transparent 42%),
+            radial-gradient(circle at 68% 50%, rgba(130,120,255,0.32) 0%, transparent 44%),
+            radial-gradient(circle at 48% 44%, rgba(255,255,255,0.12) 0%, transparent 36%);
         }
-
-        .journey-compact-card:nth-child(1)::before,
-        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
-        .metric-card:nth-child(1)::before,
-        .model-card:nth-child(1)::before,
-        .slider-card:nth-child(1)::before,
-        .hero-chart-box::before,
-        .snapshot-structure-card::before,
-        .cta-card::before {
-          left: 14%;
-          top: 10%;
+        .section-head { margin-bottom: 22px; }
+        .section-kicker {
+          margin-bottom: 10px;
+          color: #f7d237;
+          font-size: 16px;
+          font-weight: 700;
+          line-height: 1.05;
+          letter-spacing: -0.03em;
         }
-
-        .journey-compact-card:nth-child(2)::before,
-        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
-        .metric-card:nth-child(2)::before,
-        .model-card:nth-child(2)::before,
-        .slider-card:nth-child(2)::before {
-          left: 58%;
-          top: 16%;
+        .section-title {
+          margin: 0;
+          font-size: clamp(36px, 4vw, 60px);
+          line-height: .95;
+          letter-spacing: -.055em;
+          font-weight: 700;
+          color: #fff;
+          max-width: 900px;
         }
-
-        .journey-compact-card:nth-child(3)::before,
-        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
-        .metric-card:nth-child(3)::before,
-        .model-card:nth-child(3)::before,
-        .slider-card:nth-child(3)::before {
-          left: 66%;
-          top: 42%;
+        .section-copy {
+          margin-top: 16px;
+          max-width: 840px;
+          color: rgba(255,255,255,.7);
+          font-size: 18px;
+          line-height: 1.55;
         }
-
-        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
-        .slider-card:nth-child(4)::before,
-        .hero-preview-box::before,
-        .side-note-card::before,
-        .cta-box::before {
-          left: 22%;
-          top: 52%;
-        }
-
-        .sticky-header {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          margin: 0 -16px 18px;
-          padding: 12px 16px 10px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          background: linear-gradient(
-            180deg,
-            rgba(4, 16, 39, 0.94),
-            rgba(4, 16, 39, 0.7)
-          );
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .header-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .header-nav {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-left: auto;
-          margin-right: 10px;
-          flex-wrap: wrap;
-        }
-
-        .header-nav-link {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          padding: 0 14px;
-          border-radius: 999px;
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          background: rgba(255, 255, 255, 0.04);
-          color: rgba(255, 255, 255, 0.74);
-          font-size: 13px;
-          font-weight: 600;
-          transition:
-            background 0.22s ease,
-            border-color 0.22s ease,
-            color 0.22s ease,
-            transform 0.22s ease;
-        }
-
-        .header-nav-link:hover {
-          color: #ffffff;
-          border-color: rgba(247, 210, 55, 0.22);
-          background: rgba(247, 210, 55, 0.08);
-          transform: translateY(-1px);
-        }
-
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .logo-main {
-          width: 274px;
-          height: 68px;
-          object-fit: contain;
-          object-position: left center;
-          display: block;
-          flex-shrink: 0;
-        }
-
         .hero-section {
           position: relative;
           border-radius: 36px;
@@ -1913,7 +1435,6 @@ box-shadow:
           padding: 34px 28px 30px;
           min-height: 860px;
         }
-
         .hero-section::before {
           content: "";
           position: absolute;
@@ -1922,250 +1443,95 @@ box-shadow:
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
-          opacity: 1;
           z-index: 0;
         }
-
         .hero-section::after {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(
-            90deg,
-            rgba(4, 16, 39, 0.24) 0%,
-            rgba(4, 16, 39, 0.1) 38%,
-            rgba(4, 16, 39, 0.04) 62%,
-            rgba(4, 16, 39, 0.08) 100%
-          );
+          background: linear-gradient(90deg, rgba(4,16,39,0.24) 0%, rgba(4,16,39,0.1) 38%, rgba(4,16,39,0.04) 62%, rgba(4,16,39,0.08) 100%);
           z-index: 1;
         }
-
-        .hero-grid {
-          display: grid;
-          gap: 22px;
-        }
-
+        .hero-grid { display: grid; gap: 22px; }
         .hero-grid-frame {
-          grid-template-columns: minmax(0, 1fr) minmax(520px, 0.92fr);
+          grid-template-columns: minmax(0,1fr) minmax(520px,0.92fr);
           align-items: start;
           position: relative;
           z-index: 2;
         }
-
         .hero-left {
           display: flex;
           flex-direction: column;
           min-height: 100%;
           padding: 4px 6px 8px;
         }
-
         .hero-main-title {
           margin: 0;
           font-size: clamp(62px, 6.4vw, 110px);
-          line-height: 0.9;
-          letter-spacing: -0.07em;
+          line-height: .9;
+          letter-spacing: -.07em;
           font-weight: 700;
           color: #ffffff;
           max-width: 860px;
         }
-
         .hero-main-subtitle {
-          margin-top: 18px;
-          font-size: clamp(32px, 3vw, 56px);
-          line-height: 1.04;
-          letter-spacing: -0.04em;
-          font-weight: 700;
-          color: #ffffff;
-          max-width: 900px;
+          margin-top: 22px;
+          color: #fff;
+          font-size: clamp(26px, 2vw, 34px);
+          line-height: .98;
+          letter-spacing: -.045em;
+          font-weight: 500;
         }
-
         .hero-main-copy {
-          margin-top: 30px;
-          max-width: 760px;
+          max-width: 620px;
+          margin-top: 22px;
+          color: rgba(255,255,255,.78);
           font-size: 22px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.76);
+          line-height: 1.5;
         }
-
-        .hero-highlights-row {
-          margin-top: 34px;
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0;
-          border-radius: 22px;
-          overflow: hidden;
-          position: relative;
-          max-width: 760px;
-        }
-
-        .hero-highlights-row-unified {
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.1) 0%,
-            rgba(224, 225, 227, 0.07) 50%,
-            rgba(224, 225, 227, 0.05) 100%
-          );
-          backdrop-filter: blur(24px) saturate(135%);
-          -webkit-backdrop-filter: blur(24px) saturate(135%);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            0 18px 40px rgba(0, 0, 0, 0.18);
-        }
-
-        .hero-highlight-chip {
-          padding: 20px 18px;
-          color: white;
-          font-size: 22px;
-          font-weight: 700;
-          text-align: center;
-          white-space: nowrap;
-          line-height: 1.2;
-          position: relative;
-          background: transparent;
-        }
-
-        .hero-highlight-chip:not(:last-child)::after {
-          content: "";
-          position: absolute;
-          top: 14px;
-          right: 0;
-          width: 1px;
-          height: calc(100% - 28px);
-          background: rgba(255, 255, 255, 0.09);
-        }
-
-        .hero-actions {
-          margin-top: auto;
-          padding-top: 34px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          align-items: center;
-        }
-
-        .hero-visual-shell {
-          position: relative;
-          min-height: 100%;
-          display: flex;
-          align-items: flex-start;
-          justify-content: flex-end;
-          min-width: 0;
-        }
-
-        .hero-chart-float {
-          position: relative;
-          width: min(760px, 100%);
-          margin-left: auto;
-          padding-top: 8px;
-          min-width: 0;
-        }
-
-        .hero-chart-float-title {
-          font-size: 32px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 14px;
-          text-align: right;
-          padding-right: 8px;
-        }
-
-        .hero-levers-inline {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          width: 100%;
-          padding-bottom: 4px;
-        }
-
-        .hero-levers-inline-float {
-          margin-bottom: 12px;
-          justify-content: flex-end;
-        }
-
-        .hero-tag {
-          position: relative;
+        .hero-highlights-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+        .hero-actions-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .tg-gradient-btn {
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: auto;
-          min-width: fit-content;
-          min-height: 48px;
-          padding: 10px 22px;
+          min-height: 46px;
           border-radius: 999px;
-          white-space: nowrap;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.1) 0%,
-            rgba(224, 225, 227, 0.065) 48%,
-            rgba(224, 225, 227, 0.05) 100%
-          );
-          backdrop-filter: blur(24px) saturate(145%);
-          -webkit-backdrop-filter: blur(24px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 12px 24px rgba(0, 0, 0, 0.18);
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 14px;
-          font-weight: 700;
-          line-height: 1;
-          text-align: center;
-          transition: 0.25s ease;
-        }
-
-        .hero-tag::before {
-          content: "";
-          position: absolute;
-          width: 34%;
-          height: 60%;
-          left: 12%;
-          top: 10%;
-          border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.1) 0%,
-            rgba(255, 255, 255, 0.04) 38%,
-            transparent 76%
-          );
-          filter: blur(18px);
-          pointer-events: none;
-        }
-
-        .hero-tag-active {
+          padding: 0 20px;
+          text-decoration: none;
           color: #0b1d3a;
-          background: linear-gradient(
-            135deg,
-            rgba(247, 210, 55, 0.96) 0%,
-            rgba(247, 210, 55, 0.9) 100%
-          );
-          border-color: rgba(247, 210, 55, 0.55);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.18),
-            0 12px 28px rgba(247, 210, 55, 0.2);
+          font-weight: 700;
+          background: linear-gradient(135deg, #f7d237 0%, #ffe27a 100%);
+          box-shadow: 0 14px 30px rgba(247,210,55,0.18);
         }
-
-        .hero-tag-active::before {
-          content: "";
-          position: absolute;
-          width: 34%;
-          height: 60%;
-          left: 12%;
-          top: 10%;
+        .ghost-link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 46px;
           border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.18) 0%,
-            rgba(255, 255, 255, 0.07) 38%,
-            transparent 76%
-          );
-          filter: blur(18px);
-          pointer-events: none;
+          padding: 0 20px;
+          color: #fefefe;
+          text-decoration: none;
+          background: rgba(224,225,227,.07);
+          border: 1px solid rgba(255,255,255,.12);
         }
-
+        .ghost-link-dark { background: rgba(11,29,58,.42); }
+        .hero-chart-float { width: 100%; max-width: 620px; margin-left: auto; }
+        .hero-chart-float-title {
+          margin-bottom: 12px;
+          color: rgba(255,255,255,.64);
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+        }
+        .hero-levers-inline { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .hero-tag {
+          color: #0b1d3a;
+          border: none;
+          cursor: pointer;
+        }
+        .hero-tag-active { box-shadow: 0 0 0 1px rgba(247,210,55,.16), 0 14px 28px rgba(247,210,55,.18); }
         .hero-chart-box {
           position: relative;
           overflow: hidden;
@@ -2173,2761 +1539,342 @@ box-shadow:
           padding: 14px;
           display: flex;
           flex-direction: column;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.09) 0%,
-            rgba(224, 225, 227, 0.06) 45%,
-            rgba(224, 225, 227, 0.04) 100%
-          );
+          background: linear-gradient(135deg, rgba(224,225,227,.09) 0%, rgba(224,225,227,.06) 45%, rgba(224,225,227,.04) 100%);
           backdrop-filter: blur(26px) saturate(145%);
           -webkit-backdrop-filter: blur(26px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-            0 18px 50px rgba(0, 0, 0, 0.24);
-          min-width: 0;
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.05), 0 18px 50px rgba(0,0,0,.24);
         }
-
-        .hero-chart-metrics-row {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-          margin-bottom: 12px;
-        }
-
+        .hero-chart-metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 12px; }
         .hero-metric-square {
-          position: relative;
-          min-height: 86px;
+          min-height: 78px;
           border-radius: 18px;
           padding: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.07) 0%,
-            rgba(255, 255, 255, 0.045) 100%
-          );
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
+          background: rgba(255,255,255,.04);
+          border: 1px solid rgba(255,255,255,.08);
         }
-
-        .hero-metric-square span {
-          display: block;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.58);
-        }
-
-        .hero-metric-square strong {
-          display: block;
-          margin-top: 10px;
-          font-size: 22px;
-          line-height: 1.1;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
-
+        .hero-metric-square span,
+        .bar-chart-label,
+        .bar-chart-scale span,
+        .hero-money-card span,
+        .hero-money-card small { color: rgba(255,255,255,.58); font-size: 12px; }
+        .hero-metric-square strong,
+        .hero-money-card strong { display: block; margin-top: 8px; font-size: 18px; line-height: 1.05; }
         .bar-chart-wrap {
           position: relative;
-          margin-top: 4px;
           border-radius: 24px;
-          padding: 52px 18px 18px;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(255, 255, 255, 0.03) 100%
-          );
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 12px 30px rgba(0, 0, 0, 0.12);
+          padding: 16px 14px 14px;
+          background: rgba(255,255,255,.035);
+          border: 1px solid rgba(255,255,255,.08);
         }
-
-        .bar-chart-scale {
-          position: absolute;
-          top: 16px;
-          left: 18px;
-          right: 18px;
-          z-index: 3;
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          pointer-events: none;
-        }
-
-        .bar-chart-scale span {
-          font-size: 11px;
-          line-height: 1;
-          color: rgba(255, 255, 255, 0.42);
-        }
-
-        .bar-chart-scale span:first-child {
-          text-align: left;
-        }
-
-        .bar-chart-scale span:not(:first-child):not(:last-child) {
-          text-align: center;
-        }
-
-        .bar-chart-scale span:last-child {
-          text-align: right;
-        }
-
+        .bar-chart-scale { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); margin-bottom: 18px; }
         .bar-chart-grid {
           position: absolute;
-          inset: 0;
-          background-image: linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0.06) 1px,
-            transparent 1px
-          );
+          inset: 40px 14px 14px;
+          background-image: linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
           background-size: 25% 100%;
-          background-position: left top;
-          pointer-events: none;
-          opacity: 0.65;
         }
-
-        .bar-chart-columns {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .bar-chart-columns-horizontal {
-          width: 100%;
-        }
-
-        .bar-chart-row {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 0;
-        }
-
-        .bar-chart-row-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          min-width: 0;
-        }
-
-        .bar-chart-label {
-          font-size: 14px;
-          font-weight: 700;
-          color: rgba(255, 255, 255, 0.82);
-          text-align: left;
-          line-height: 1.35;
-          min-width: 0;
-        }
-
-        .bar-chart-value {
-          font-size: 14px;
-          line-height: 1.3;
-          color: rgba(255, 255, 255, 0.76);
-          text-align: right;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
+        .bar-chart-columns-horizontal { display: grid; gap: 12px; position: relative; }
+        .bar-chart-row-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+        .bar-chart-value { color: rgba(255,255,255,.82); font-size: 13px; }
         .bar-chart-bar-shell-horizontal {
-          width: 100%;
-          height: 30px;
+          height: 14px;
           border-radius: 999px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+          background: rgba(255,255,255,.05);
+          overflow: hidden;
+        }
+        .bar-chart-bar-horizontal { height: 100%; border-radius: inherit; transition: width .8s ease, transform .8s ease; }
+        .bar-good { background: linear-gradient(90deg, rgba(244,221,114,.98), rgba(255,236,149,.98)); }
+        .bar-bad { background: linear-gradient(90deg, rgba(122,149,255,.88), rgba(172,183,255,.88)); }
+        .hero-chart-bottom { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+        .hero-money-card {
+          border-radius: 18px;
+          padding: 14px;
+          background: rgba(255,255,255,.035);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .hero-active-note {
           display: flex;
           align-items: center;
-          overflow: hidden;
-        }
-
-        .bar-chart-bar {
-          display: block;
-          height: 100%;
-          min-width: 8px;
-          box-shadow:
-            0 10px 24px rgba(0, 0, 0, 0.14),
-            0 0 18px rgba(255, 255, 255, 0.04);
-        }
-
-        .bar-chart-bar-horizontal {
-          height: 100%;
-          border-radius: 999px;
-          transition: width 0.8s ease, transform 0.8s ease;
-        }
-
-        .bar-revenue {
-          transform: scaleY(1.04);
-          transform-origin: left center;
-        }
-
-.bar-good {
-  background: linear-gradient(
-    90deg,
-    #c4a8ff 0%,
-    #8b5cf6 50%,
-    #4c1d95 100%
-  );
-}
-        .bar-bad {
-          background: linear-gradient(
-            90deg,
-            rgba(124, 132, 255, 0.9) 0%,
-            rgba(93, 167, 255, 0.95) 55%,
-            rgba(95, 179, 179, 0.95) 100%
-          );
-        }
-
-        .hero-chart-bottom {
-          margin-top: 14px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
           gap: 10px;
-        }
-
-        .hero-money-card-clean {
-          border: 0;
-          background: transparent;
-          padding: 0;
-        }
-
-        .hero-money-card span {
-          display: block;
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        .hero-money-card strong {
-          display: block;
-          margin-top: 8px;
-          font-size: 22px;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
-
-        .hero-money-card small {
-          display: block;
-          margin-top: 5px;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.58);
-        }
-
-        .hero-active-note {
           margin-top: 12px;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          border-radius: 999px;
-          padding: 10px 14px;
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 14px;
+          border-radius: 18px;
+          padding: 12px 14px;
+          background: rgba(255,255,255,.04);
+          border: 1px solid rgba(255,255,255,.08);
+          color: rgba(255,255,255,.74);
+          font-size: 13px;
           line-height: 1.45;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.055);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 10px 24px rgba(0, 0, 0, 0.12);
         }
-
-        .hero-active-note b {
-          color: #f7d237;
-        }
-
         .hero-active-note-dot {
-          width: 8px;
-          height: 8px;
+          width: 10px;
+          height: 10px;
           border-radius: 999px;
           background: #f7d237;
-          box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
+          box-shadow: 0 0 16px rgba(247,210,55,.42);
           animation: pulseTinyYellow 1.8s ease-in-out infinite;
           flex-shrink: 0;
         }
-
-        .section-head {
-          max-width: 1080px;
-          margin-bottom: 18px;
-        }
-
-        .section-kicker {
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #f7d237;
-        }
-
-        .section-title {
-          margin-top: 12px;
-          font-size: clamp(36px, 4vw, 62px);
-          line-height: 1.04;
-          font-weight: 700;
-          color: white;
-        }
-
-        .section-copy {
-          margin-top: 14px;
-          font-size: 22px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.68);
-          max-width: 1160px;
-        }
-
-        .contact-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 9999px;
-          padding: 9px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          transition: 0.2s ease;
-          border: 1px solid transparent;
-        }
-
-        .contact-btn-invert {
-          background: rgba(255, 255, 255, 0.92);
-          color: #0b1d3a;
-          border-color: rgba(255, 255, 255, 0.95);
-          box-shadow:
-            0 8px 24px rgba(0, 0, 0, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-
-        .contact-btn-invert:hover {
-          background: #ffffff;
-        }
-
-        .ghost-link {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 9999px;
-          padding: 11px 16px;
-          font-size: 13px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          transition: 0.2s ease;
-        }
-
-        .ghost-link-dark {
-          background: rgba(15, 24, 48, 0.78);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.12),
-            0 12px 24px rgba(0, 0, 0, 0.18);
-        }
-
-        .ghost-link:hover {
-          background: rgba(22, 33, 60, 0.9);
-          color: white;
-        }
-
-        .ghost-link-large {
-          padding: 14px 20px;
-          font-size: 15px;
-        }
-
-        .tg-gradient-btn {
-          position: relative;
-          overflow: hidden;
-          border-radius: 9999px;
-          padding: 16px 22px;
-          color: white;
-          font-size: 16px;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-        }
-
-        .tg-gradient-btn::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.22) 25%,
-            transparent 50%
-          );
-          transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
-        }
-
-        .tg-gradient-btn > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .tg-gradient-btn:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.03);
-        }
-
-        .tg-gradient-btn-header {
-          padding: 11px 16px;
-          font-size: 13px;
-          white-space: nowrap;
-        }
-
-        .journey-compact {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 16px;
-        }
-
+        .journey-compact { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
         .journey-compact-card {
-          isolation: isolate;
           position: relative;
+          min-height: 250px;
+          border-radius: 28px;
+          padding: 22px;
           overflow: hidden;
-          border-radius: 26px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.08) 0%,
-            rgba(224, 225, 227, 0.055) 100%
-          );
-          backdrop-filter: blur(22px);
-          -webkit-backdrop-filter: blur(22px);
-          padding: 20px;
-          min-height: 230px;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.16),
-            0 18px 32px rgba(0, 0, 0, 0.16);
+          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07));
+          border: 1px solid rgba(255,255,255,.12);
+          backdrop-filter: blur(18px) saturate(130%);
         }
-
-        .journey-compact-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
+        .journey-compact-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 36px; }
         .journey-compact-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 14px;
-          background: #f7d237;
-          color: #0b1d3a;
-          font-size: 18px;
-          font-weight: 700;
+          width: 32px; height: 32px; border-radius: 999px; display: grid; place-items: center;
+          background: rgba(247,210,55,.18); color: #f7d237; font-size: 13px; font-weight: 700;
+          border: 1px solid rgba(247,210,55,.22);
         }
-
-        .journey-compact-arrow {
-          width: 52px;
-          height: 2px;
-          border-radius: 999px;
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.18),
-            rgba(247, 210, 55, 0.95)
-          );
-          position: relative;
-        }
-
-        .journey-compact-arrow::after {
-          content: "";
-          position: absolute;
-          right: -1px;
-          top: 50%;
-          width: 8px;
-          height: 8px;
-          border-top: 2px solid #f7d237;
-          border-right: 2px solid #f7d237;
-          transform: translateY(-50%) rotate(45deg);
-        }
-
-        .journey-compact-title {
-          margin-top: 16px;
-          font-size: 24px;
-          line-height: 1.15;
-          font-weight: 600;
-          color: white;
-        }
-
-        .journey-compact-text {
-          margin-top: 12px;
-          font-size: 16px;
-          line-height: 1.75;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .input-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-        }
-
+        .journey-compact-arrow { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(255,255,255,.12), rgba(247,210,55,.18)); }
+        .journey-compact-title { font-size: 24px; line-height: 1.02; letter-spacing: -.03em; font-weight: 600; }
+        .journey-compact-text { margin-top: 16px; color: rgba(255,255,255,.7); line-height: 1.55; font-size: 15px; }
+        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
+        .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
         .input-shell {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 0;
+          display: flex; flex-direction: column; gap: 8px;
+          border-radius: 22px; padding: 14px; background: rgba(224,225,227,.08); border: 1px solid rgba(255,255,255,.1);
         }
-
-        .input-shell-highlight {
-          position: relative;
-        }
-
-        .input-label {
-          font-size: 12px;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.52);
-          padding-left: 4px;
-        }
-
-        .input-label-strong {
-          color: rgba(255, 255, 255, 0.82);
-          font-weight: 700;
-          letter-spacing: 0.06em;
-        }
-
-        .input-wrap {
-          position: relative;
-        }
-
-        .input-wrap-primary::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          border-radius: 20px;
-          background: linear-gradient(
-            135deg,
-            rgba(247, 210, 55, 0.42),
-            rgba(120, 132, 255, 0.14),
-            rgba(255, 255, 255, 0.08)
-          );
-          opacity: 0.95;
-          z-index: 0;
-        }
-
-        .input-badge {
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          z-index: 3;
-          border-radius: 9999px;
-          padding: 4px 8px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #0b1d3a;
-          background: rgba(247, 210, 55, 0.95);
-          box-shadow:
-            0 4px 14px rgba(247, 210, 55, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        }
-
+        .input-label { color: rgba(255,255,255,.62); font-size: 14px; font-weight: 600; }
+        .input-wrap { border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
         .glass-input {
-          background: linear-gradient(
-            180deg,
-            rgba(17, 29, 58, 0.9),
-            rgba(24, 39, 72, 0.78)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          padding: 14px 16px;
-          border-radius: 18px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          color: white;
-          font-size: 20px;
-          font-weight: 500;
-          width: 100%;
-          transition: 0.25s ease;
+          width: 100%; height: 48px; padding: 0 14px; background: transparent; border: none; outline: none;
+          color: #fff; font-size: 14px; font-weight: 600;
         }
-
-        .glass-input-primary {
-          position: relative;
-          z-index: 1;
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.18),
-            0 12px 34px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .glass-input::placeholder {
-          color: rgba(255, 255, 255, 0.35);
-        }
-
-        .glass-input:focus {
-          outline: none;
-          border-color: rgba(247, 210, 55, 0.75);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.22),
-            0 0 30px rgba(247, 210, 55, 0.12),
-            0 10px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
-        }
-
-        .metric-card {
-          min-height: 116px;
-        }
-
-        .metric-head,
-        .model-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 10px;
-        }
-
-        .metric-title-wrap {
-          min-width: 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .metric-label,
-        .model-label {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.6);
-          line-height: 1.2;
-          padding-top: 2px;
-        }
-
+        .glass-input::placeholder { color: rgba(255,255,255,.36); }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+        .metric-card,.model-card,.slider-card { min-height: 132px; padding: 16px; }
+        .metric-head,.model-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+        .metric-label,.model-label { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600; }
         .metric-flag {
-          margin-top: 8px;
-          flex-shrink: 0;
-          border-radius: 9999px;
-          padding: 6px 10px;
-          font-size: 11px;
+          margin-top: 8px; display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 11px; line-height: 1;
+          border: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.62); background: rgba(255,255,255,.04);
+        }
+        .flag-good { color: #bbf7d0; border-color: rgba(187,247,208,.18); background: rgba(34,197,94,.08); }
+        .flag-bad { color: #fecdd3; border-color: rgba(251,113,133,.18); background: rgba(251,113,133,.08); }
+        .metric-delta-top,.model-delta-top { font-size: 12px; font-weight: 700; }
+        .metric-main-value,.model-main-value {
+          margin-top: 22px;
+          font-size: clamp(22px, 2vw, 30px);
+          line-height: .98;
+          letter-spacing: -.04em;
           font-weight: 700;
-          letter-spacing: 0.01em;
-          border: 1px solid transparent;
-          line-height: 1;
-          max-width: 100%;
         }
-
-        .metric-delta-top,
-        .model-delta-top {
-          font-size: 18px;
-          font-weight: 700;
-          line-height: 1;
-          white-space: nowrap;
-          padding-top: 2px;
-          flex-shrink: 0;
-        }
-
-        .metric-main-value {
-          margin-top: 20px;
-          font-size: clamp(2rem, 2.8vw, 3.2rem);
-          line-height: 1.02;
-          font-weight: 700;
-          white-space: nowrap;
-          letter-spacing: -0.03em;
-        }
-
-        .model-main-value {
-          margin-top: 14px;
-          font-size: clamp(1.2rem, 1.6vw, 1.8rem);
-          line-height: 1.05;
-          font-weight: 600;
-          white-space: nowrap;
-          letter-spacing: -0.01em;
-        }
-
-        .flag-good {
-          background: rgba(74, 222, 128, 0.12);
-          color: rgb(167, 243, 208);
-          border-color: rgba(74, 222, 128, 0.2);
-        }
-
-        .flag-bad {
-          background: rgba(251, 113, 133, 0.12);
-          color: rgb(253, 164, 175);
-          border-color: rgba(251, 113, 133, 0.2);
-        }
-
-        .flag-neutral {
-          background: rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.72);
-          border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .model-card {
-          min-height: 96px;
-          padding: 14px;
-        }
-
-        .slider-card {
-          min-height: 148px;
-          display: flex;
-          flex-direction: column;
-          padding: 14px;
-        }
-
+        .slider-title { font-size: 14px; line-height: 1.2; font-weight: 600; }
+        .slider-subtitle { margin-top: 10px; min-height: 34px; font-size: 12px; line-height: 1.45; color: rgba(255,255,255,.42); }
+        .slider-percent { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,.5); }
+        .range-input { height: 18px; }
+        .preview-actions-inline { display: flex; align-items: center; gap: 16px; }
         .reset-link {
-          background: transparent;
-          border: 0;
-          padding: 0;
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          font-weight: 600;
-          transition: 0.2s ease;
+          border: none; background: transparent; color: rgba(255,255,255,.54); cursor: pointer; padding: 0; font-size: 13px;
         }
-
-        .reset-link:hover {
-          color: #ffffff;
-        }
-
-        .reset-link:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-
-        .preview-actions-inline {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .range-input {
-          cursor: pointer;
-        }
-
-        .reserve-kicker {
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #f7d237;
-        }
-
+        .reset-link:disabled { opacity: .35; cursor: not-allowed; }
+        .preview-side { position: sticky; top: 100px; }
+        .reserve-kicker { color: #f7d237; font-size: 13px; font-weight: 700; }
         .hero-preview-box,
-        .side-note-card {
-          position: relative;
-          overflow: hidden;
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.065) 0%,
-            rgba(255, 255, 255, 0.035) 100%
-          );
-          padding: 18px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
-
-        .reserve-amount {
-          font-size: 3rem;
-          line-height: 1.02;
-          font-weight: 700;
-          color: #f7d237;
-          text-shadow: 0 0 24px rgba(247, 210, 55, 0.14);
-          overflow-wrap: anywhere;
-        }
-
-        .accent-word {
-          color: #f7d237;
-          font-weight: 700;
-        }
-
-        .results-grid-2x2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 22px;
-          margin-top: 24px;
-        }
-
-        .tilt-card {
-          perspective: 1400px;
-        }
-
-        .tilt-inner {
-          transform-style: preserve-3d;
-          transition: transform 0.18s ease-out;
-          will-change: transform;
-        }
-
-        .result-doc-card {
-          min-height: 320px;
-        }
-
-.result-doc-card-inner {
-  isolation: isolate;
-  position: relative;
-  min-height: 320px;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    135deg,
-    rgba(224, 225, 227, 0.09) 0%,
-    rgba(224, 225, 227, 0.06) 100%
-  );
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  padding: 26px;
-  overflow: hidden;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 20px 44px rgba(0, 0, 0, 0.16);
-  display: flex;
-  flex-direction: column;
-}
-
-.result-doc-top {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
-}
-.result-doc-card-inner-roadmap {
-  padding-bottom: 42px;
-}
-
-.result-doc-bottom-glow {
-  position: absolute;
-  left: -2%;
-  right: -2%;
-  bottom: 18px;
-  height: 96px;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.result-doc-bottom-glow-core {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 22px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 18% 50%, rgba(255, 233, 120, 0.95) 0%, rgba(255, 233, 120, 0.52) 20%, rgba(255, 233, 120, 0) 48%),
-    radial-gradient(circle at 42% 50%, rgba(247, 210, 55, 0.9) 0%, rgba(247, 210, 55, 0.45) 18%, rgba(247, 210, 55, 0) 44%),
-    radial-gradient(circle at 68% 50%, rgba(255, 220, 98, 0.85) 0%, rgba(255, 220, 98, 0.4) 18%, rgba(255, 220, 98, 0) 44%),
-    linear-gradient(
-      90deg,
-      rgba(247, 210, 55, 0.2) 0%,
-      rgba(247, 210, 55, 0.95) 22%,
-      rgba(255, 235, 150, 1) 48%,
-      rgba(247, 210, 55, 0.92) 74%,
-      rgba(247, 210, 55, 0.18) 100%
-    );
-  filter: blur(10px);
-  opacity: 0.95;
-  transform: translateY(16px) skewX(-18deg);
-}
-
-.result-doc-bottom-glow-shine {
-  position: absolute;
-  top: 8px;
-  bottom: 0;
-  left: -34%;
-  width: 34%;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 18%,
-    rgba(255, 255, 255, 0.78) 50%,
-    rgba(255, 255, 255, 0.08) 82%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  filter: blur(12px);
-  transform: skewX(-22deg);
-  animation: roadmapShine 3.2s ease-in-out infinite;
-}
-
-.results-bottom-row {
-  margin-top: 30px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 24px;
-}
-
-.results-start-btn {
-  min-width: 136px;
-  min-height: 54px;
-  padding: 0 26px;
-  font-size: 15px;
-  margin-bottom: 8px;
-}
-
-@keyframes roadmapShine {
-  0% {
-    left: -38%;
-    opacity: 0;
-  }
-
-  12% {
-    opacity: 1;
-  }
-
-  55% {
-    left: 104%;
-    opacity: 0.95;
-  }
-
-  100% {
-    left: 104%;
-    opacity: 0;
-  }
-}
-        .result-doc-start-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 110px;
-          padding: 11px 16px;
-          border-radius: 999px;
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #7c84ff 55%,
-            #c25cf3 100%
-          );
-          color: #fff;
-          font-weight: 700;
-          font-size: 14px;
-          box-shadow:
-            0 10px 24px rgba(85, 104, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-        }
-
-        .result-doc-tab {
-          position: relative;
-          z-index: 2;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          padding: 8px 14px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #0b1d3a;
-          background: #f7d237;
-        }
-
-        .result-doc-title {
-          position: relative;
-          z-index: 2;
-          margin-top: 26px;
-          font-size: clamp(34px, 3vw, 56px);
-          line-height: 1.04;
-          font-weight: 600;
-          color: white;
-          letter-spacing: -0.04em;
-        }
-
-        .result-doc-text {
-          position: relative;
-          z-index: 2;
-          margin-top: 20px;
-          font-size: 17px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.72);
-        }
-
-        .results-roadmap-note {
-          margin-top: 18px;
-          font-size: 18px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.72);
-          max-width: 980px;
-        }
-
-        .results-roadmap-note span {
-          color: #f7d237;
-          font-weight: 700;
-        }
-
-        .industries-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          margin-top: 18px;
-          margin-bottom: 6px;
-        }
-
-        .industry-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 56px;
-          padding: 0 24px;
-          border-radius: 999px;
-          background: #f7d237;
-          color: #0b1d3a;
-          font-size: 18px;
-          font-weight: 800;
-          line-height: 1;
-          border: 1px solid rgba(247, 210, 55, 0.45);
-          box-shadow:
-            0 10px 24px rgba(247, 210, 55, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.36);
-          transition:
-            opacity 0.28s ease,
-            transform 0.28s ease,
-            filter 0.28s ease,
-            box-shadow 0.28s ease;
-        }
-
-        .stage-carousel-wrap {
-          margin-top: 24px;
-        }
-
-        .industries-pills-carousel {
-          justify-content: center;
-          margin-bottom: 22px;
-        }
-
-        .industry-pill-dim {
-          opacity: 0.22;
-          filter: saturate(0.7);
-          transform: scale(0.985);
-        }
-
-        .industry-pill-active {
-          opacity: 1;
-          filter: saturate(1);
-          transform: scale(1);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.2),
-            0 12px 28px rgba(247, 210, 55, 0.18),
-            0 0 24px rgba(247, 210, 55, 0.14);
-        }
-
-        .stage-carousel-scene {
-          position: relative;
-          perspective: 2200px;
-          min-height: 560px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          touch-action: pan-y;
-          user-select: none;
-          -webkit-user-select: none;
-          cursor: grab;
-          overflow: hidden;
-        }
-
-        .stage-carousel-scene.is-dragging {
-          cursor: grabbing;
-        }
-
-        .stage-carousel-drum {
-          position: relative;
-          width: 100%;
-          height: 460px;
-          transform-style: preserve-3d;
-        }
-
-        .stage-carousel-item-free {
-          position: absolute;
-          top: 18px;
-          left: 50%;
-          width: min(760px, 62vw);
-          transform-style: preserve-3d;
-          transition:
-            transform 0.04s linear,
-            opacity 0.04s linear,
-            filter 0.04s linear;
-          will-change: transform, opacity, filter;
-        }
-
-        .stage-carousel-hint {
-          margin-top: 18px;
-          text-align: center;
-          font-size: 12px;
-          line-height: 1.4;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.42);
-        }
-
-        .stage-card-analytics {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          min-height: 460px;
-          border-radius: 34px;
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.11) 0%,
-            rgba(224, 225, 227, 0.07) 100%
-          );
-          box-shadow:
-            0 24px 54px rgba(0, 0, 0, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .stage-card-top-panel {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 24px;
-          padding: 28px 28px 24px;
-          min-height: 248px;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.18) 0%,
-            rgba(224, 225, 227, 0.09) 100%
-          );
-        }
-
-        .stage-card-copy {
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          gap: 22px;
-          min-width: 0;
-        }
-
-        .stage-copy-block h4 {
-          margin: 0;
-          font-size: 26px;
-          line-height: 1.06;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.96);
-          letter-spacing: -0.03em;
-        }
-
-        .stage-copy-block p {
-          margin: 10px 0 0;
-          max-width: 560px;
-          font-size: 17px;
-          line-height: 1.55;
-          color: rgba(255, 255, 255, 0.86);
-        }
-
-        .stage-card-heading {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          justify-content: flex-start;
-          text-align: right;
-          min-width: 180px;
-        }
-
-        .stage-card-heading span {
-          font-size: 15px;
-          line-height: 1;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.88);
-        }
-
-        .stage-card-heading strong {
-          margin-top: 8px;
-          font-size: clamp(54px, 6vw, 92px);
-          line-height: 0.9;
-          font-weight: 700;
-          letter-spacing: -0.07em;
-          color: #ffffff;
-        }
-
-        .stage-card-bottom-panel {
-          position: relative;
-          flex: 1;
-          overflow: hidden;
-          padding: 22px 26px 24px;
-          background:
-            radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
-            radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
-            radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
-            radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
-            linear-gradient(
-              135deg,
-              #081a63 0%,
-              #09185a 18%,
-              #151a74 34%,
-              #2a1584 52%,
-              #3a1c79 66%,
-              #4b1a74 82%,
-              #301346 100%
-            );
-        }
-
-        .stage-card-bottom-inner {
-          position: relative;
-          z-index: 2;
-          display: grid;
-          grid-template-columns: 1.05fr 1.25fr;
-          align-items: end;
-          gap: 28px;
-          min-height: 190px;
-        }
-
-        .stage-rings-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px 22px;
-          align-self: start;
-        }
-
-        .stage-ring-metric {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .stage-ring-label {
-          font-size: 15px;
-          line-height: 1.2;
-          color: rgba(255, 255, 255, 0.96);
-        }
-
-        .stage-ring {
-          position: relative;
-          width: 74px;
-          height: 74px;
-        }
-
-        .stage-ring-outer,
-        .stage-ring-inner {
-          position: absolute;
-          inset: 0;
-          border-radius: 999px;
-        }
-
-        .stage-ring-outer {
-          border: 12px solid rgba(255, 178, 64, 0.88);
-          border-right-color: transparent;
-          transform: rotate(-12deg);
-        }
-
-        .stage-ring-inner {
-          inset: 14px;
-          border: 8px solid rgba(247, 210, 55, 0.98);
-          border-right-color: transparent;
-          transform: rotate(18deg);
-        }
-
-        .stage-ring-center {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          font-weight: 500;
-          color: #ffffff;
-        }
-
-        .stage-bars-area {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          min-height: 190px;
-        }
-
-        .stage-bars-title {
-          align-self: flex-end;
-          font-size: clamp(34px, 4vw, 56px);
-          line-height: 0.95;
-          font-weight: 700;
-          letter-spacing: -0.06em;
-          color: rgba(255, 255, 255, 0.96);
-        }
-
-        .stage-bars-wrap {
-          margin-top: auto;
-          padding-top: 10px;
-        }
-
-        .stage-bar-group {
-          width: 100%;
-          max-width: 420px;
-        }
-
-        .stage-bar-label {
-          margin-bottom: 14px;
-          font-size: 15px;
-          line-height: 1.2;
-          color: rgba(255, 255, 255, 0.95);
-        }
-
-        .stage-bar-row {
-          display: flex;
-          align-items: center;
-        }
-
-        .stage-bar-row-top {
-          gap: 18px;
-        }
-
-        .stage-bar-row-bottom {
-          margin-top: 14px;
-        }
-
-        .stage-bar {
-          height: 30px;
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.95) 0%,
-            rgba(244, 221, 114, 0.98) 100%
-          );
-          box-shadow:
-            0 8px 18px rgba(247, 210, 55, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        }
-
-        .stage-bar-short {
-          width: 168px;
-        }
-
-        .stage-bar-long {
-          width: 310px;
-        }
-
-        .stage-bar-marker {
-          width: 0;
-          height: 0;
-          border-left: 12px solid transparent;
-          border-right: 12px solid transparent;
-          border-bottom: 22px solid rgba(255, 255, 255, 0.94);
-        }
-
-        .stage-card-watermark-icon {
-          position: absolute;
-          left: 24px;
-          top: 22px;
-          width: 28px;
-          height: 28px;
-          opacity: 0.12;
-          object-fit: contain;
-          pointer-events: none;
-        }
-
-        .analysis-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 18px;
-          align-items: start;
-        }
-
-.snapshot-structure-card {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.analysis-left-title {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.snapshot-builder-copy {
-  margin-top: 14px;
-  max-width: 780px;
-  font-size: 16px;
-  line-height: 1.75;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.snapshot-builder.snapshot-builder-editorial {
-  margin-top: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.builder-middle-grid {
-  display: grid;
-  grid-template-columns: 27fr 18fr;
-  gap: 18px;
-}
-
-/* База карточек */
-.builder-block {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px 28px;
-  color: #f4f5f7;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 28%, rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(18, 34, 74, 0.68) 0%, rgba(11, 29, 58, 0.88) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 14px 34px rgba(0, 0, 0, 0.16);
-  transition:
-    transform 0.35s ease,
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
-}
-
-.builder-block::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.015) 26%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.02) 74%,
-      rgba(255, 255, 255, 0) 100%
-    );
-  transform: translateX(-120%);
-  animation: snapshotCardSweep 7.5s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.builder-block::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 82% 18%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0) 32%),
-    radial-gradient(circle at 14% 85%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0) 36%);
-  opacity: 0.9;
-}
-
-.builder-block:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 42px rgba(0, 0, 0, 0.22);
-}
-
-.builder-label {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-  white-space: normal;
-}
-
-/* Пропорции и формы */
-.builder-block-structure {
-  min-height: 154px;
-  border-radius: 34px 34px 56px 34px;
-}
-
-.builder-block-structure .builder-label {
-  font-size: clamp(28px, 2.4vw, 44px);
-  font-weight: 500;
-}
-
-.builder-block-positioning {
-  min-height: 258px;
-  border-radius: 30px 44px 30px 52px;
-}
-
-.builder-block-positioning .builder-label {
-  font-size: clamp(24px, 2vw, 36px);
-  font-weight: 500;
-}
-
-.builder-block-economics {
-  min-height: 258px;
-  border-radius: 34px 30px 46px 30px;
-  border-color: rgba(247, 210, 55, 0.18);
-  background:
-    radial-gradient(circle at 20% 18%, rgba(255, 239, 168, 0.11) 0%, rgba(255, 255, 255, 0.025) 26%, rgba(255, 255, 255, 0) 54%),
-    linear-gradient(135deg, rgba(20, 35, 72, 0.72) 0%, rgba(12, 30, 61, 0.92) 100%);
-}
-
-.builder-block-economics .builder-label {
-  font-size: clamp(22px, 1.9vw, 34px);
-  font-weight: 500;
-}
-
-.builder-block-clients {
-  min-height: 104px;
-  justify-content: flex-start;
-  padding-left: 72px;
-  border-radius: 999px 34px 34px 999px;
-}
-
-.builder-block-clients .builder-label {
-  font-size: clamp(22px, 1.7vw, 30px);
-  font-weight: 500;
-  text-align: left;
-}
-
-.builder-block-product {
-  min-height: 108px;
-  border-radius: 34px 999px 34px 34px;
-}
-
-.builder-block-product .builder-label {
-  font-size: clamp(22px, 1.7vw, 30px);
-  font-weight: 500;
-}
-
-/* Лёгкий акцент в духе референса */
-.builder-block-structure {
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 30%, rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(23, 43, 88, 0.74) 0%, rgba(12, 31, 63, 0.92) 100%);
-}
-
-.builder-block-positioning {
-  background:
-    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.022) 26%, rgba(255, 255, 255, 0) 56%),
-    linear-gradient(135deg, rgba(24, 43, 84, 0.72) 0%, rgba(13, 31, 59, 0.92) 100%);
-}
-
-.builder-block-clients {
-  background:
-    radial-gradient(circle at 18% 50%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0.02) 24%, rgba(247, 210, 55, 0) 48%),
-    linear-gradient(135deg, rgba(24, 42, 82, 0.72) 0%, rgba(12, 30, 59, 0.9) 100%);
-}
-
-.builder-block-product {
-  background:
-    radial-gradient(circle at 72% 24%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0.02) 28%, rgba(122, 132, 255, 0) 52%),
-    linear-gradient(135deg, rgba(23, 41, 80, 0.72) 0%, rgba(12, 30, 58, 0.9) 100%);
-}
-
-@keyframes snapshotCardSweep {
-  0% {
-    transform: translateX(-120%);
-    opacity: 0;
-  }
-
-  12% {
-    opacity: 0.45;
-  }
-
-  46% {
-    transform: translateX(120%);
-    opacity: 0.85;
-  }
-
-  100% {
-    transform: translateX(120%);
-    opacity: 0;
-  }
-}
-        .analysis-right-card-plain {
-          background: transparent;
-          backdrop-filter: none;
-          border: 0;
-          box-shadow: none;
-          padding: 0;
-        }
-
-        .start-cards-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 18px;
-          margin-top: 0;
-        }
-
-        .start-card-inner {
-          position: relative;
-          border-radius: 0;
-          overflow: visible;
-          box-shadow: none;
-          background: transparent;
-          min-height: auto;
-        }
-
-        .start-card-inner-plain {
-          border-radius: 0;
-          background: transparent;
-          box-shadow: none;
-        }
-
-        .start-card-frame {
-          position: relative;
-          width: 100%;
-          height: auto;
-          display: block;
-          object-fit: contain;
-          object-position: center;
-        }
-
-        .start-card-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          pointer-events: none;
-        }
-
-        .start-card-overlay-plain {
-          background: none;
-        }
-
-        .start-card-price-float {
-          position: absolute;
-          top: 18.33%;
-          right: 6.02%;
-          font-size: 42px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          text-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
-          white-space: nowrap;
-        }
-
-        .start-card-btn-row {
-          position: absolute;
-          left: 4.54%;
-          bottom: 23.06%;
-        }
-
-        .start-card-btn {
-          position: relative;
-          overflow: hidden;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          color: #fff;
-          font-weight: 700;
-          text-decoration: none;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          transition: transform 0.2s ease, filter 0.2s ease;
-          pointer-events: auto;
-        }
-
-        .start-card-btn::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.22) 25%,
-            transparent 50%
-          );
-          transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
-        }
-
-        .start-card-btn > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .start-card-btn:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.03);
-        }
-
-        .start-card-btn-floating {
-          min-width: 0;
-          padding: 12px 20px;
-          font-size: 14px;
-          line-height: 1;
-        }
-
-        .cta-card {
-          display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 24px;
-          align-items: center;
-        }
-
+        .side-note-card,
         .cta-box {
-          min-width: 280px;
-          max-width: 320px;
-          position: relative;
-          overflow: hidden;
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(255, 255, 255, 0.035) 100%
-          );
-          padding: 22px;
+          border-radius: 20px; padding: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
         }
-
-        .line-grid {
-          position: absolute;
-          inset: 0;
-          background-image: linear-gradient(
-            rgba(255, 255, 255, 0.04) 1px,
-            transparent 1px
-          );
-          background-size: 100% 76px;
-          opacity: 0.16;
-          pointer-events: none;
+        .reserve-amount {
+          font-size: clamp(22px, 2vw, 30px);
+          line-height: .98;
+          letter-spacing: -.04em;
+          font-weight: 700;
+          color: #f7d237;
         }
-
-        .aurora {
-          position: absolute;
-          border-radius: 9999px;
-          filter: blur(120px);
-          opacity: 0.44;
-          animation-timing-function: ease-in-out;
-          animation-iteration-count: infinite;
-          animation-direction: alternate;
-          will-change: transform, opacity;
+        .reserve-amount span { color: rgba(255,255,255,.62); font-size: inherit; font-weight: inherit; }
+        .results-grid-2x2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+        .result-doc-card { min-height: 250px; perspective: 1400px; }
+        .result-doc-card-inner {
+          height: 100%; min-height: 250px; border-radius: 28px; padding: 22px; transform-style: preserve-3d; transition: transform .18s ease-out;
+          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07)); border: 1px solid rgba(255,255,255,.12);
         }
-
-        .aurora-1 {
-          width: 34vw;
-          height: 34vw;
-          min-width: 320px;
-          min-height: 320px;
-          left: -6vw;
-          top: -8vh;
-          background: radial-gradient(
-            circle,
-            rgba(106, 160, 255, 0.16),
-            rgba(106, 160, 255, 0.06) 42%,
-            transparent 72%
-          );
-          animation: driftOne 16s infinite alternate ease-in-out;
+        .result-doc-top { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 30px; }
+        .result-doc-tab { color: #f7d237; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+        .result-doc-title { font-size: 28px; line-height: .98; letter-spacing: -.04em; font-weight: 600; }
+        .result-doc-text { margin-top: 16px; color: rgba(255,255,255,.72); font-size: 15px; line-height: 1.55; max-width: 92%; }
+        .results-bottom-stack { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 18px; }
+        .results-roadmap-note {
+          max-width: 860px; text-align: center; color: rgba(255,255,255,.68); font-size: 15px; line-height: 1.65;
         }
-
-        .aurora-2 {
-          width: 30vw;
-          height: 30vw;
-          min-width: 280px;
-          min-height: 280px;
-          right: 4vw;
-          top: 6vh;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.11),
-            rgba(247, 210, 55, 0.035) 42%,
-            transparent 72%
-          );
-          animation: driftTwo 18s infinite alternate ease-in-out;
+        .results-roadmap-note span { color: #fff; }
+        .result-doc-start-btn {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 22px; border-radius: 999px;
+          text-decoration: none; color: #0b1d3a; font-weight: 700; background: linear-gradient(135deg, #f7d237, #ffe27a);
+          box-shadow: 0 14px 30px rgba(247,210,55,.18);
         }
-
-        .aurora-3 {
-          width: 38vw;
-          height: 38vw;
-          min-width: 360px;
-          min-height: 360px;
-          left: 18vw;
-          bottom: -10vh;
-          background: radial-gradient(
-            circle,
-            rgba(124, 132, 255, 0.12),
-            rgba(124, 132, 255, 0.04) 44%,
-            transparent 74%
-          );
-          animation: driftThree 20s infinite alternate ease-in-out;
+        .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+        .industry-pill {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 14px; border-radius: 999px;
+          font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: rgba(255,255,255,.48);
         }
-
-        .aurora-4 {
-          width: 24vw;
-          height: 24vw;
-          min-width: 220px;
-          min-height: 220px;
-          right: 18vw;
-          bottom: 12vh;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.06),
-            rgba(255, 255, 255, 0.02) 38%,
-            transparent 72%
-          );
-          animation: driftFour 15s infinite alternate ease-in-out;
+        .industry-pill-active { color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88)); border-color: rgba(247,210,55,.28); }
+        .stage-carousel-scene {
+          position: relative; perspective: 2200px; min-height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
         }
-
-        .vignette {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-            ellipse at center,
-            transparent 48%,
-            rgba(0, 0, 0, 0.22) 100%
-          );
+        .stage-carousel-scene.is-dragging { cursor: grabbing; }
+        .stage-carousel-drum { position: relative; width: 100%; height: 470px; transform-style: preserve-3d; }
+        .stage-carousel-item-free {
+          position: absolute; top: 22px; left: 50%; width: min(640px, 56vw); transform-style: preserve-3d;
+          transition: transform .04s linear, opacity .04s linear, filter .04s linear; will-change: transform, opacity, filter;
         }
-
-        @keyframes premiumGlassShift {
-          0% {
-            transform: translate3d(-12px, 0, 0);
-          }
-          50% {
-            transform: translate3d(14px, -6px, 0);
-          }
-          100% {
-            transform: translate3d(-12px, 0, 0);
-          }
-        }
-
-        @keyframes pulseTinyYellow {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.22);
-            opacity: 0.72;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
-
-        @keyframes tgGradientFlow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        @keyframes tgShine {
-          0% {
-            transform: translateX(-130%);
-          }
-          55% {
-            transform: translateX(130%);
-          }
-          100% {
-            transform: translateX(130%);
-          }
-        }
-
-        @keyframes driftOne {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(90px, 60px, 0) scale(1.15);
-          }
-        }
-
-        @keyframes driftTwo {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(-80px, 70px, 0) scale(1.12);
-          }
-        }
-
-        @keyframes driftThree {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(50px, -30px, 0) scale(1.08);
-          }
-        }
-
-        @keyframes driftFour {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(-50px, 42px, 0) scale(1.1);
-          }
-        }
-
-
         .stage-card-analytics {
-          height: 100%;
+          position: relative; display: flex; flex-direction: column; min-height: 390px; border-radius: 32px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(224,225,227,.16) 0%, rgba(224,225,227,.11) 100%);
+          box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .stage-card-analytics::after { display: none; }
+        .stage-card-top-panel {
+          display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 20px; padding: 22px 22px 18px; min-height: 206px;
+          background: linear-gradient(135deg, rgba(224,225,227,.22) 0%, rgba(224,225,227,.12) 100%);
+        }
+        .stage-card-copy { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+        .stage-copy-block h4 {
+          margin: 0; font-size: 22px; line-height: 1.04; font-weight: 500; color: rgba(255,255,255,.96); letter-spacing: -.03em;
+        }
+        .stage-copy-block p { margin: 8px 0 0; font-size: 14px; line-height: 1.55; color: rgba(255,255,255,.86); }
+        .stage-card-heading { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; min-width: 130px; }
+        .stage-card-heading span { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.5); }
+        .stage-card-heading strong { margin-top: 6px; font-size: 48px; line-height: .92; letter-spacing: -.06em; }
+        .stage-card-bottom-panel { position: relative; padding: 18px 20px 20px; flex: 1; }
+        .stage-card-bottom-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 100%; }
+        .compact-metrics-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+        .stage-inline-metric {
+          border-radius: 18px; padding: 12px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.08);
+        }
+        .stage-ring-label { color: rgba(255,255,255,.56); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+        .stage-inline-metric-value { margin-top: 10px; font-size: 26px; line-height: 1; letter-spacing: -.04em; font-weight: 700; }
+        .stage-bars-title { font-size: 28px; line-height: 1; letter-spacing: -.06em; font-weight: 700; }
+        .stage-bars-wrap { display: grid; gap: 14px; margin-top: 16px; }
+        .stage-bar-group { max-width: none; }
+        .stage-bar-label { margin-bottom: 8px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.52); }
+        .stage-bar-stack { display: grid; gap: 8px; }
+        .stage-bar-track { height: 18px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.06); }
+        .stage-bar-track-thin { height: 12px; }
+        .stage-bar-fill { height: 100%; border-radius: inherit; }
+        .stage-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96)); }
+        .stage-bar-fill-plan { background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82)); }
+        .stage-card-watermark-icon { position: absolute; width: 22px; height: 22px; left: 18px; bottom: 18px; opacity: .7; }
+        .stage-carousel-hint {
+          margin-top: 18px; text-align: center; font-size: 12px; line-height: 1.4; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.42);
+        }
+        .analysis-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(360px, .95fr); gap: 20px; align-items: start; }
+        .analysis-left-title { margin: 0; font-size: clamp(32px, 3vw, 46px); line-height: .96; letter-spacing: -.05em; font-weight: 700; }
+        .snapshot-builder-copy { margin: 14px 0 18px; max-width: 720px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
+        .snapshot-builder-mosaic {
           display: grid;
-          grid-template-rows: auto auto 1fr;
-          gap: 18px;
-          padding: 22px;
-          border-radius: 34px;
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.11),
-            rgba(224, 225, 227, 0.05)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 30px 70px rgba(0, 0, 0, 0.22);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
-
-        .stage-card-analytics-active {
-          border-color: rgba(247, 210, 55, 0.24);
-        }
-
-        .stage-card-top-panel-v2 {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 18px;
-          min-height: 120px;
-        }
-
-        .stage-card-heading-v2 span,
-        .stage-copy-title,
-        .stage-outcome-head span {
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.12em;
-        }
-
-        .stage-card-heading-v2 strong {
-          display: block;
-          margin-top: 10px;
-          font-size: clamp(38px, 6vw, 74px);
-          line-height: 0.92;
-          letter-spacing: -0.08em;
-          font-weight: 700;
-          color: #ffffff;
-        }
-
-        .stage-card-copy-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
-        }
-
-        .stage-copy-box,
-        .stage-card-bottom-panel-v2 {
-          border-radius: 24px;
-          padding: 18px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .stage-copy-box p {
-          margin: 12px 0 0;
-          color: rgba(255, 255, 255, 0.72);
-          line-height: 1.72;
-        }
-
-        .stage-card-bottom-panel-v2 {
-          display: grid;
-          gap: 18px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .stage-outcome-head {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-end;
+          grid-template-columns: 27fr 27fr 18fr 14fr 14fr;
           gap: 12px;
+          align-items: stretch;
         }
-
-        .stage-outcome-head strong {
-          max-width: 70%;
-          font-size: clamp(22px, 3vw, 30px);
-          line-height: 1.08;
-          color: #ffffff;
+        .builder-block {
+          min-height: 190px; border-radius: 28px; display: flex; align-items: center; justify-content: center; text-align: center;
+          background: linear-gradient(180deg, rgba(224,225,227,.12), rgba(224,225,227,.08)); border: 1px solid rgba(255,255,255,.12);
+          position: relative; overflow: hidden; padding: 18px;
         }
-
-        .stage-numbers-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
+        .builder-label {
+          font-size: clamp(22px, 2vw, 34px); line-height: .96; letter-spacing: -.04em; font-weight: 600;
         }
-
-        .stage-number-card {
-          border-radius: 18px;
-          padding: 14px;
-          background: rgba(4, 16, 39, 0.34);
-          border: 1px solid rgba(255, 255, 255, 0.06);
+        .builder-block-economics { min-height: 230px; }
+        .analysis-right-card-plain { min-height: 100%; }
+        .start-cards-row { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+        .start-card-inner,.start-card-overlay { min-height: 260px; }
+        .start-card-inner {
+          position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
+          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
         }
-
-        .stage-number-card span {
-          color: rgba(255, 255, 255, 0.5);
-          font-size: 12px;
+        .start-card-frame { width: 100%; height: 100%; object-fit: cover; opacity: .88; }
+        .start-card-overlay {
+          position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; padding: 18px;
+          background: linear-gradient(180deg, rgba(4,16,39,.04), rgba(4,16,39,.4) 55%, rgba(4,16,39,.72) 100%);
         }
-
-        .stage-number-card strong {
-          display: block;
-          margin-top: 8px;
-          font-size: 24px;
-          line-height: 1.02;
-          color: #ffffff;
+        .start-card-price-float { font-size: 36px; line-height: .94; letter-spacing: -.05em; font-weight: 700; }
+        .start-card-btn-row { margin-top: 18px; }
+        .start-card-btn {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
+          color: #0b1d3a; font-weight: 700; background: linear-gradient(135deg, #f7d237, #ffe27a);
         }
-
-        .stage-number-card small {
-          display: block;
-          margin-top: 10px;
+        .cta-card {
+          display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
         }
-
-        .stage-number-card .good {
-          color: #b2f2cf;
+        .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+        .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
+        .page-footer {
+          margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08);
+          display: flex; align-items: center; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.52); font-size: 13px;
         }
-
-        .stage-number-card .bad {
-          color: #ffc4cf;
+        .accent-word { color: #f7d237; }
+        .text-emerald-300 { color: #a7f3d0; }
+        .text-rose-300 { color: #fda4af; }
+        .text-white\/50 { color: rgba(255,255,255,.5); }
+        @keyframes premiumGlassShift {
+          0% { transform: translate3d(-12px,0,0); }
+          50% { transform: translate3d(14px,-6px,0); }
+          100% { transform: translate3d(-12px,0,0); }
         }
-
-        .stage-bars-wrap-v2 {
-          display: grid;
-          gap: 12px;
+        @keyframes pulseTinyYellow {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.22); opacity: .72; }
+          100% { transform: scale(1); opacity: 1; }
         }
-
-        .stage-bar-group-v2 {
-          display: grid;
-          gap: 8px;
-        }
-
-        .stage-bar-meta-v2 {
-          display: flex;
-          justify-content: space-between;
-          gap: 12px;
-          color: rgba(255, 255, 255, 0.62);
-          font-size: 13px;
-        }
-
-        .stage-bar-track-v2 {
-          height: 14px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.06);
-          overflow: hidden;
-        }
-
-        .stage-bar-track-v2-top {
-          margin-bottom: 4px;
-        }
-
-        .stage-bar-fill-v2 {
-          height: 100%;
-          border-radius: inherit;
-          transition: width 0.7s ease;
-        }
-
-        .stage-bar-fill-v2-fact {
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.94),
-            rgba(255, 226, 122, 0.98)
-          );
-        }
-
-        .stage-bar-fill-v2-target {
-          background: linear-gradient(
-            90deg,
-            rgba(93, 167, 255, 0.88),
-            rgba(156, 109, 255, 0.8)
-          );
-        }
-
-        .site-footer {
-          margin-top: 28px;
-          padding: 22px 0 8px;
-          border-top: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .site-footer-inner {
-          max-width: 1280px;
-          margin: 0 auto;
-          padding: 0 16px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 18px;
-        }
-
-        .site-footer-brand {
-          font-size: 14px;
-          font-weight: 700;
-          color: rgba(255, 255, 255, 0.86);
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-        }
-
-        .site-footer-copy {
-          margin-top: 8px;
-          max-width: 480px;
-          font-size: 14px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.48);
-        }
-
-        .site-footer-links {
-          display: flex;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-          gap: 16px;
-        }
-
-        .site-footer-links a {
-          color: rgba(255, 255, 255, 0.64);
-          font-size: 14px;
-          transition: color 0.2s ease;
-        }
-
-        .site-footer-links a:hover {
-          color: #ffffff;
-        }
-
         @media (max-width: 1280px) {
-          .hero-section {
-            min-height: 680px;
-          }
-
-          .hero-main-title {
-            font-size: clamp(48px, 5.5vw, 78px);
-          }
-
-          .hero-main-copy,
-          .section-copy {
-            font-size: 20px;
-          }
+          .hero-section { min-height: 720px; }
+          .hero-main-copy,.section-copy { font-size: 19px; }
+          .stage-carousel-item-free { width: min(620px, 62vw); }
         }
-
         @media (max-width: 1180px) {
-          .journey-compact {
-            grid-template-columns: 1fr;
-          }
-
-          .journey-compact-arrow {
-            display: none;
-          }
-
-          .analysis-grid,
-          .results-grid-2x2 {
-            grid-template-columns: 1fr;
-          }
+          .header-inner { grid-template-columns: 1fr; justify-items: start; }
+          .header-nav { justify-content: flex-start; }
+          .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .preview-side { position: static; }
+          .journey-compact,.results-grid-2x2 { grid-template-columns: 1fr; }
+          .stage-carousel-item-free { width: min(680px, 78vw); }
+          .snapshot-builder-mosaic { grid-template-columns: repeat(2, minmax(0,1fr)); }
+          .builder-block-economics { min-height: 190px; }
         }
-
         @media (max-width: 1023px) {
-          .hero-section {
-            min-height: auto;
-            padding: 26px 18px 24px;
-          }
-
-          .hero-grid-frame,
-          .cta-card {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-chart-float {
-            width: 100%;
-          }
-
-          .hero-actions {
-            padding-top: 24px;
-          }
-
-          .hero-chart-metrics-row,
-          .dashboard-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-
-          .snapshot-builder.snapshot-builder-mosaic {
-  grid-template-columns: 1fr;
-  grid-template-rows: auto;
-  grid-template-areas:
-    "company"
-    "positioning"
-    "economics"
-    "clients"
-    "product";
-  min-height: auto;
-}
-
-.builder-block-company,
-.builder-block-positioning,
-.builder-block-economics,
-.builder-block-clients,
-.builder-block-product {
-  min-height: 120px;
-  padding-left: 24px;
-  padding-right: 24px;
-  justify-content: center;
-  border-radius: 28px;
-}
-
-          .start-cards-row {
-            grid-template-columns: 1fr;
-          }
-
-          .stage-carousel-scene {
-            min-height: 500px;
-            perspective: 1800px;
-          }
-
-          .stage-carousel-drum {
-            height: 420px;
-          }
-
-          .stage-carousel-item-free {
-            width: min(700px, 78vw);
-          }
-
-          .stage-card-analytics {
-            min-height: 400px;
-            border-radius: 28px;
-          }
-
-          .stage-card-top-panel {
-            padding: 22px 22px 18px;
-            min-height: 210px;
-            gap: 18px;
-          }
-
-          .stage-copy-block h4 {
-            font-size: 22px;
-          }
-
-          .stage-copy-block p {
-            font-size: 15px;
-            line-height: 1.5;
-          }
-
-          .stage-card-heading strong {
-            font-size: 62px;
-          }
-
-          .stage-card-bottom-panel {
-            padding: 18px 20px 20px;
-          }
-
-          .stage-card-bottom-inner {
-            grid-template-columns: 1fr 1.1fr;
-            gap: 20px;
-          }
-
-          .stage-bars-title {
-            font-size: 42px;
-          }
-
-          .stage-bar-short {
-            width: 132px;
-          }
-
-          .stage-bar-long {
-            width: 240px;
-          }
+          .content-wrap { padding-top: 150px; }
+          .hero-section { min-height: auto; padding: 24px 18px; }
+          .hero-chart-metrics-row,.dashboard-grid,.start-cards-row,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
+          .stage-carousel-scene { min-height: 520px; }
+          .stage-carousel-drum { height: 440px; }
+          .stage-carousel-item-free { width: min(700px, 82vw); }
+          .stage-card-top-panel,.stage-card-bottom-inner { grid-template-columns: 1fr; }
+          .stage-card-heading { align-items: flex-start; }
         }
-
         @media (max-width: 767px) {
-          .cursor-glow {
-            display: none;
-          }
-
-          .sticky-header {
-            top: 0;
-            margin: 0 -16px 18px;
-            padding: 10px 16px 8px;
-          }
-
-          .header-row {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .header-actions {
-            width: 100%;
-            justify-content: space-between;
-          }
-
-          .logo-main {
-            width: 150px;
-            height: 42px;
-          }
-
-          .contact-btn {
-            min-width: 44px;
-            height: 40px;
-            padding: 0 12px;
-            font-size: 12px;
-          }
-
-          .ghost-link {
-            display: none;
-          }
-
-          .tg-gradient-btn {
-            padding: 13px 16px;
-            font-size: 15px;
-          }
-
-          .tg-gradient-btn-header {
-            padding: 10px 14px;
-            font-size: 12px;
-            margin-left: auto;
-          }
-
-          .hero-main-title {
-            font-size: 52px;
-          }
-
-          .hero-main-subtitle {
-            font-size: 28px;
-          }
-
-          .hero-main-copy,
-          .section-copy {
-            font-size: 17px;
-            line-height: 1.65;
-          }
-
-          .section-title {
-            font-size: 34px;
-          }
-
-          .hero-highlights-row {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-highlight-chip {
-            white-space: normal;
-            font-size: 18px;
-          }
-
-          .hero-highlight-chip:not(:last-child)::after {
-            display: none;
-          }
-
-          .hero-chart-metrics-row,
-          .input-grid,
-          .dashboard-grid,
-          .results-grid-2x2 {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-levers-inline-float {
-            justify-content: flex-start;
-          }
-
-          .hero-chart-float-title {
-            text-align: left;
-            font-size: 24px;
-            padding-right: 0;
-          }
-
-          .hero-tag {
-            font-size: 11px;
-            min-height: 42px;
-            padding: 10px 16px;
-          }
-
-          .bar-chart-wrap {
-            padding: 48px 14px 14px;
-          }
-
-          .bar-chart-columns {
-            gap: 10px;
-          }
-
-          .bar-chart-row-top {
-            gap: 8px;
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .metric-head {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-
-          .glass-card {
-            border-radius: 22px;
-            padding: 16px;
-          }
-
-          .reserve-amount {
-            font-size: 2.2rem;
-          }
-.results-bottom-row {
-  grid-template-columns: 1fr;
-  align-items: stretch;
-}
-
-.results-start-btn {
-  width: fit-content;
-  margin-bottom: 0;
-}
-
-.result-doc-bottom-glow {
-  height: 74px;
-}
-          .metric-main-value {
-            font-size: 1.85rem;
-            white-space: normal;
-          }
-
-          .model-main-value {
-            font-size: 1.2rem;
-            white-space: normal;
-          }
-
-          .preview-actions-inline {
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-          }
-
-          .industry-pill {
-            min-height: 44px;
-            padding: 0 14px;
-            font-size: 14px;
-          }
-
-          .industries-pills-carousel {
-            justify-content: flex-start;
-          }
-
-          .stage-carousel-scene {
-            min-height: 420px;
-            perspective: 1600px;
-          }
-
-          .stage-carousel-drum {
-            height: 320px;
-          }
-
-          .stage-carousel-item-free {
-            width: min(420px, 88vw);
-            top: 8px;
-          }
-
-          .stage-card-analytics {
-            min-height: 320px;
-            border-radius: 22px;
-          }
-
-          .stage-card-top-panel {
-            grid-template-columns: 1fr;
-            gap: 14px;
-            padding: 16px 16px 14px;
-            min-height: auto;
-          }
-
-          .stage-card-copy {
-            gap: 14px;
-          }
-
-          .stage-copy-block h4 {
-            font-size: 16px;
-          }
-
-          .stage-copy-block p {
-            margin-top: 6px;
-            font-size: 12px;
-            line-height: 1.45;
-            max-width: none;
-          }
-
-          .stage-card-heading {
-            align-items: flex-start;
-            text-align: left;
-            min-width: 0;
-          }
-
-          .stage-card-heading span {
-            font-size: 10px;
-          }
-
-          .stage-card-heading strong {
-            margin-top: 4px;
-            font-size: 42px;
-          }
-
-          .stage-card-bottom-panel {
-            padding: 14px 14px 16px;
-          }
-
-          .stage-card-bottom-inner {
-            grid-template-columns: 1fr;
-            gap: 16px;
-            min-height: auto;
-          }
-
-          .stage-rings-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px 16px;
-          }
-
-          .stage-ring-label {
-            font-size: 11px;
-          }
-
-          .stage-ring {
-            width: 56px;
-            height: 56px;
-          }
-
-          .stage-ring-outer {
-            border-width: 9px;
-          }
-
-          .stage-ring-inner {
-            inset: 10px;
-            border-width: 6px;
-          }
-
-          .stage-ring-center {
-            font-size: 11px;
-          }
-
-          .stage-bars-title {
-            align-self: flex-start;
-            font-size: 28px;
-          }
-
-          .stage-bar-group {
-            max-width: none;
-          }
-
-          .stage-bar-label {
-            margin-bottom: 10px;
-            font-size: 11px;
-          }
-
-          .stage-bar {
-            height: 20px;
-          }
-
-          .stage-bar-short {
-            width: 96px;
-          }
-
-          .stage-bar-long {
-            width: 180px;
-          }
-
-          .stage-bar-marker {
-            border-left-width: 8px;
-            border-right-width: 8px;
-            border-bottom-width: 15px;
-          }
-
-          .stage-card-watermark-icon {
-            width: 20px;
-            height: 20px;
-            left: 14px;
-            top: 14px;
-          }
-
-.snapshot-builder.snapshot-builder-mosaic {
-  gap: 12px;
-}
-
-.builder-block-company,
-.builder-block-positioning,
-.builder-block-economics,
-.builder-block-clients,
-.builder-block-product {
-  min-height: 84px;
-  border-radius: 24px;
-}
-
-.builder-block-company .builder-label,
-.builder-block-clients .builder-label,
-.builder-block-product .builder-label {
-  font-size: 22px;
-}
-
-.builder-block-positioning .builder-label,
-.builder-block-economics .builder-label {
-  font-size: 28px;
-}
-
-          .start-card-inner,
-          .start-card-overlay {
-            min-height: 190px;
-          }
-
-          .start-card-price-float {
-            font-size: 30px;
-          }
-
-          .result-doc-card,
-          .result-doc-card-inner {
-            min-height: auto;
-          }
-
-          .result-doc-title {
-            font-size: 32px;
-          }
-
-          .result-doc-text {
-            font-size: 16px;
-            line-height: 1.75;
-          }
-
-          .result-doc-start-btn {
-            min-width: 92px;
-            padding: 10px 14px;
-            font-size: 13px;
-          }
-
-          .cta-box {
-            min-width: 0;
-            max-width: none;
-            width: 100%;
-          }
-
-          .hero-chart-bottom {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-money-card strong {
-            white-space: normal;
-          }
-
-          .hero-active-note {
-            border-radius: 18px;
-            display: flex;
-            align-items: flex-start;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .hero-section {
-            padding: 18px 14px 18px;
-            border-radius: 28px;
-          }
-
-          .hero-main-title {
-            font-size: 42px;
-            line-height: 0.92;
-          }
-
-          .hero-main-subtitle {
-            margin-top: 14px;
-            font-size: 22px;
-          }
-
-          .hero-main-copy {
-            margin-top: 18px;
-            font-size: 15px;
-          }
-
-          .hero-actions {
-            gap: 10px;
-          }
-
-          .section-title {
-            font-size: 28px;
-          }
-
-          .section-copy {
-            font-size: 15px;
-          }
-
-          .journey-compact-title {
-            font-size: 20px;
-          }
-
-          .journey-compact-text {
-            font-size: 14px;
-            line-height: 1.65;
-          }
-
-          .glass-input {
-            font-size: 18px;
-            padding: 13px 14px;
-          }
-
-          .metric-delta-top,
-          .model-delta-top {
-            font-size: 16px;
-          }
-
-          .metric-label,
-          .model-label {
-            font-size: 14px;
-          }
-
-          .metric-flag {
-            font-size: 10px;
-            padding: 5px 8px;
-          }
-
-          .reserve-amount {
-            font-size: 1.9rem;
-          }
-
-          .results-roadmap-note {
-            font-size: 15px;
-            line-height: 1.7;
-          }
-
-          .analysis-left-title {
-            font-size: 18px;
-          }
-
-          .snapshot-builder-copy {
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .start-card-price-float {
-            font-size: 24px;
-          }
-
-          .start-card-btn-floating {
-            padding: 10px 16px;
-            font-size: 13px;
-          }
+          .cursor-glow { display: none; }
+          .content-wrap { padding: 162px 14px 32px; }
+          .logo-main { width: 210px; height: 52px; }
+          .header-link { font-size: 12px; }
+          .hero-main-title { font-size: clamp(48px, 16vw, 78px); }
+          .hero-main-subtitle { font-size: 24px; }
+          .hero-main-copy { font-size: 17px; }
+          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.start-cards-row,.compact-metrics-grid { grid-template-columns: 1fr; }
+          .metric-main-value,.model-main-value,.reserve-amount { font-size: 24px; }
+          .stage-carousel-scene { min-height: 470px; }
+          .stage-carousel-drum { height: 390px; }
+          .stage-carousel-item-free { width: min(420px, 90vw); top: 8px; }
+          .stage-card-analytics { min-height: 332px; border-radius: 24px; }
+          .stage-card-top-panel { padding: 16px; min-height: auto; gap: 14px; }
+          .stage-copy-block h4 { font-size: 16px; }
+          .stage-copy-block p { font-size: 12px; line-height: 1.45; }
+          .stage-card-heading strong { font-size: 40px; }
+          .stage-card-bottom-panel { padding: 14px; }
+          .stage-inline-metric-value { font-size: 22px; }
+          .stage-bars-title { font-size: 24px; }
+          .snapshot-builder-mosaic { grid-template-columns: 1fr; }
+          .builder-block { min-height: 108px; border-radius: 24px; }
+          .builder-label { font-size: 24px; }
+          .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
     </main>
