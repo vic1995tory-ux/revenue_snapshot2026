@@ -1995,8 +1995,8 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.15fr) 360px;
-          gap: 26px;
+          grid-template-columns: minmax(0, 1fr);
+          gap: 24px;
           align-items: start;
         }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
@@ -2115,13 +2115,17 @@ export default function Home() {
           text-transform: uppercase;
           letter-spacing: .12em;
         }
-        .analysis-right-card-plain { min-height: 100%; overflow: visible; }
+        .analysis-right-card-plain {
+          min-height: 100%;
+          overflow: visible;
+          max-width: 560px;
+        }
         .start-cards-row {
-          display: grid;
-          grid-template-columns: 1fr;
+          display: flex;
+          flex-direction: column;
           gap: 18px;
         }
-        .start-card-inner,.start-card-overlay { min-height: 332px; }
+        .start-card-inner,.start-card-overlay { min-height: 364px; }
         .start-card-inner {
           position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
