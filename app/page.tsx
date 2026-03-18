@@ -454,47 +454,38 @@ function SnapshotStructure() {
   ];
 
   return (
-    <>
-      <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
-      <p className="snapshot-builder-copy">
-        Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор
-        ответов, а карту решений: где находится ограничение роста, почему оно
-        появилось и какой слой модели нужно усиливать первым.
-      </p>
+    <div className="signal-board">
+      {layers.map((layer) => (
+        <article
+          key={layer.title}
+          className={`signal-card signal-card-${layer.tone}`}
+          style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
+        >
+          <div className="signal-card-top">
+            <span className="signal-card-hint">{layer.hint}</span>
+            <span className="signal-card-weight">{layer.weight}</span>
+          </div>
 
-      <div className="signal-board">
-        {layers.map((layer) => (
-          <article
-            key={layer.title}
-            className={`signal-card signal-card-${layer.tone}`}
-            style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
-          >
-            <div className="signal-card-top">
-              <span className="signal-card-hint">{layer.hint}</span>
-              <span className="signal-card-weight">{layer.weight}</span>
-            </div>
+          <div className="signal-card-title">{layer.title}</div>
 
-            <div className="signal-card-title">{layer.title}</div>
-
-            <div className="signal-card-points">
-              {layer.points.map((point) => (
-                <div key={point} className="signal-card-point">
-                  <span className="signal-card-dot" />
-                  <span>{point}</span>
-                </div>
-              ))}
-            </div>
-
-            <div className="signal-card-bottom">
-              <div className="signal-meter">
-                <span style={{ width: `${layer.level * 3}%` }} />
+          <div className="signal-card-points">
+            {layer.points.map((point) => (
+              <div key={point} className="signal-card-point">
+                <span className="signal-card-dot" />
+                <span>{point}</span>
               </div>
-              <div className="signal-caption">вес слоя в гипотезе</div>
+            ))}
+          </div>
+
+          <div className="signal-card-bottom">
+            <div className="signal-meter">
+              <span style={{ width: `${layer.level * 3}%` }} />
             </div>
-          </article>
-        ))}
-      </div>
-    </>
+            <div className="signal-caption">вес слоя в гипотезе</div>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 
@@ -525,13 +516,12 @@ function StartCard({
   icon,
   price,
   href,
-  stats,
 }: {
   title: string;
   icon: string;
   price: string;
   href: string;
-  stats: Array<{ label: string; value: string }>;
+  stats?: Array<{ label: string; value: string }>;
 }) {
   return (
     <div className="start-card tilt-card">
@@ -540,24 +530,13 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-headline-row">
             <div className="start-card-title">{title}</div>
-            <span className="start-card-status-dot" />
           </div>
 
-          <div className="start-card-price-float">{price}</div>
-
-          <div className="start-card-btn-row">
+          <div className="start-card-bottom-simple">
+            <div className="start-card-price-float">{price}</div>
             <a href={href} className="start-card-btn start-card-btn-floating">
               Попробовать Snapshot
             </a>
-          </div>
-
-          <div className="start-card-stats-grid">
-            {stats.map((stat) => (
-              <div key={stat.label} className="start-card-stat">
-                <div className="start-card-stat-label">{stat.label}</div>
-                <div className="start-card-stat-value">{stat.value}</div>
-              </div>
-            ))}
           </div>
         </div>
       </div>
@@ -776,29 +755,33 @@ function StageCarousel() {
   return (
     <div className="stage-carousel-wrap">
       <div className="industries-pills industries-pills-carousel">
-        <div className="stage-rotate-cue" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none">
-            <path d="M35.5 17.5A14.5 14.5 0 0 0 11.8 14" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"/>
-            <path d="M12.2 14.2H18.8M12.2 14.2V7.8" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12.5 30.5A14.5 14.5 0 0 0 36.2 34" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round"/>
-            <path d="M35.8 33.8H29.2M35.8 33.8V40.2" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round"/>
+        <div className="industries-pills-left">
+          {[
+            ["industry-saas", "SaaS"],
+            ["industry-ecom", "E-com"],
+            ["industry-fintech", "FinTech"],
+            ["industry-edtech", "EdTech"],
+            ["industry-healthtech", "HealthTech"],
+            ["industry-b2b", "B2B"],
+          ].map(([key, label]) => (
+            <span
+              key={key}
+              className={`industry-pill ${activeIndustries.has(key) ? "industry-pill-active" : "industry-pill-dim"}`}
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+
+        <div className="stage-rotate-cue stage-rotate-cue-right" aria-hidden="true">
+          <span className="stage-rotate-cue-label">drag</span>
+          <svg viewBox="0 0 56 32" fill="none">
+            <path d="M20 7H6M6 7l4-4M6 7l4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M36 25h14m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 8.5c1.8-2.6 4.1-3.9 7-3.9 4.8 0 8.2 3.6 8.2 8.1 0 1.9-.6 3.4-1.8 4.9" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
+            <path d="M34 23.5c-1.7 2.6-4.1 3.9-7 3.9-4.8 0-8.2-3.6-8.2-8.1 0-1.8.6-3.4 1.8-4.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
           </svg>
         </div>
-        {[
-          ["industry-saas", "SaaS"],
-          ["industry-ecom", "E-com"],
-          ["industry-fintech", "FinTech"],
-          ["industry-edtech", "EdTech"],
-          ["industry-healthtech", "HealthTech"],
-          ["industry-b2b", "B2B"],
-        ].map(([key, label]) => (
-          <span
-            key={key}
-            className={`industry-pill ${activeIndustries.has(key) ? "industry-pill-active" : "industry-pill-dim"}`}
-          >
-            {label}
-          </span>
-        ))}
       </div>
 
       <div
@@ -1103,7 +1086,7 @@ export default function Home() {
             <div className="journey-compact-card glare-card">
               <div className="journey-compact-top">
                 <div className="journey-compact-badge">2</div>
-                <div className="journey-compact-title">Сборка аналитической модели</div>
+                <div className="journey-compact-title">Сборка аналитической<br />модели</div>
               </div>
               <div className="journey-compact-text">Инструмент структурирует данные и формирует целостную картину бизнеса: выявляет ограничения, точки роста и взаимосвязи между показателями.</div>
             </div>
@@ -1252,9 +1235,9 @@ export default function Home() {
         <section id="analysis" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title analysis-section-title">После оплаты пользователь переходит в Telegram</h2>
+            <h2 className="section-title analysis-section-title">Что вас ждет</h2>
             <p className="section-copy">
-              Telegram используется как удобный интерфейс сбора данных. Ответы анализируются автоматически и превращаются в структурированный результат.
+              Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор ответов, а карту решений.
             </p>
           </div>
 
@@ -1267,24 +1250,14 @@ export default function Home() {
                   icon="/stratsession.svg"
                   price="$770"
                   href={tgContactUrl}
-                  stats={[
-                    { label: "Формат", value: "live 45 мин" },
-                    { label: "Фокус", value: "гипотезы" },
-                    { label: "Roadmap", value: "24ч" },
-                    { label: "Сопровождение", value: "1:1" },
-                  ]}
+
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
                   price="$114"
                   href={payUrl}
-                  stats={[
-                    { label: "Data", value: "6 блоков" },
-                    { label: "Due", value: "27 мин" },
-                    { label: "Render", value: "24ч" },
-                    { label: "Decompose", value: "30 мин" },
-                  ]}
+
                 />
               </div>
             </div>
@@ -1349,9 +1322,9 @@ export default function Home() {
         .content-wrap {
           position: relative;
           z-index: 2;
-          max-width: 1400px;
+          max-width: 1440px;
           margin: 0 auto;
-          padding: 108px 16px 40px;
+          padding: 108px 20px 40px;
         }
         .header-fixed {
           position: fixed;
@@ -1508,11 +1481,11 @@ export default function Home() {
           padding: 20px;
           overflow: hidden;
           isolation: isolate;
-          background: linear-gradient(180deg, rgba(224,225,227,0.12) 0%, rgba(224,225,227,0.08) 100%);
-          border: 1px solid rgba(200,200,200,0.15);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 18px 44px rgba(0,0,0,0.16);
-          backdrop-filter: blur(18px) saturate(135%);
-          -webkit-backdrop-filter: blur(18px) saturate(135%);
+          background: linear-gradient(180deg, rgba(224,225,227,0.08) 0%, rgba(224,225,227,0.045) 100%);
+          border: 1px solid rgba(200,200,200,0.13);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -1px 0 rgba(255,255,255,0.03), 0 18px 44px rgba(0,0,0,0.14);
+          backdrop-filter: blur(28px) saturate(140%);
+          -webkit-backdrop-filter: blur(28px) saturate(140%);
         }
         .glass-card::before {
           content: "";
@@ -1843,14 +1816,14 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.12);
           backdrop-filter: blur(18px) saturate(130%);
         }
-        .journey-compact-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 16px; }
+        .journey-compact-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
         .journey-compact-badge {
           width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0;
           background: transparent; color: #f7d237; font-size: 13px; font-weight: 700;
           border: 1px solid rgba(247,210,55,.34);
         }
         .journey-compact-arrow { display: none; }
-        .journey-compact-title { font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
+        .journey-compact-title { padding-top: 4px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
         .journey-compact-text { margin-top: 0; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -1914,7 +1887,7 @@ export default function Home() {
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07)); border: 1px solid rgba(255,255,255,.12);
         }
         .result-doc-top { display: flex; justify-content: flex-start; gap: 10px; margin-bottom: 24px; }
-        .result-doc-tab { display: inline-flex; align-items: center; min-height: 30px; padding: 0 12px; border-radius: 999px; background: rgba(247,210,55,.16); border: 1px solid rgba(247,210,55,.18); color: #ffffff; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+        .result-doc-tab { display: inline-flex; align-items: center; min-height: 30px; padding: 0 12px; border-radius: 999px; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.9)); border: 1px solid rgba(247,210,55,.24); color: #0b1d3a; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
         .result-doc-title { font-size: 28px; line-height: .98; letter-spacing: -.04em; font-weight: 600; }
         .result-doc-text { margin-top: 16px; color: rgba(255,255,255,.72); font-size: 15px; line-height: 1.55; max-width: 92%; }
         .results-bottom-stack { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 18px; }
@@ -1930,20 +1903,41 @@ export default function Home() {
           animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .industries-pills-carousel {
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+        }
+        .industries-pills-left {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          align-items: center;
+        }
         .stage-rotate-cue {
-          margin-left: auto;
-          width: 42px;
-          height: 42px;
           display: inline-flex;
           align-items: center;
+          gap: 10px;
           justify-content: center;
-          color: rgba(255,255,255,.54);
+          min-width: 118px;
+          height: 44px;
+          padding: 0 14px;
+          color: rgba(255,255,255,.72);
           border-radius: 999px;
-          border: 1px solid rgba(255,255,255,.1);
-          background: rgba(255,255,255,.04);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+          border: 1px solid rgba(255,255,255,.11);
+          background: rgba(255,255,255,.035);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
         }
-        .stage-rotate-cue svg { width: 20px; height: 20px; }
+        .stage-rotate-cue-label {
+          font-size: 11px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,.54);
+        }
+        .stage-rotate-cue-right { margin-left: auto; }
+        .stage-rotate-cue svg { width: 42px; height: 22px; }
         .industry-pill {
           display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 14px; border-radius: 999px;
           font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: rgba(255,255,255,.48);
@@ -1961,8 +1955,9 @@ export default function Home() {
         }
         .stage-card-analytics {
           position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(16,27,49,.985) 0%, rgba(11,20,38,.975) 100%);
-          backdrop-filter: blur(22px) saturate(120%);
+          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(16,27,49,.72) 0%, rgba(11,20,38,.62) 100%);
+          backdrop-filter: blur(30px) saturate(128%);
+          -webkit-backdrop-filter: blur(30px) saturate(128%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
         }
         .stage-card-analytics::after { display: none; }
@@ -2000,7 +1995,7 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 0.92fr) minmax(700px, 1.08fr);
+          grid-template-columns: minmax(0, 1.15fr) 360px;
           gap: 26px;
           align-items: start;
         }
@@ -2014,17 +2009,18 @@ export default function Home() {
         }
         .signal-card {
           position: relative;
-          min-height: 254px;
+          min-height: 286px;
           display: flex;
           flex-direction: column;
           justify-content: space-between;
           padding: 18px;
-          border-radius: 26px;
+          border-radius: 28px;
           overflow: hidden;
-          background: linear-gradient(180deg, rgba(255,255,255,.075), rgba(255,255,255,.045));
+          background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
           border: 1px solid rgba(255,255,255,.12);
           box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.16);
-          backdrop-filter: blur(18px) saturate(122%);
+          backdrop-filter: blur(28px) saturate(128%);
+          -webkit-backdrop-filter: blur(28px) saturate(128%);
         }
         .signal-card::before {
           content: "";
@@ -2122,19 +2118,19 @@ export default function Home() {
         .analysis-right-card-plain { min-height: 100%; overflow: visible; }
         .start-cards-row {
           display: grid;
-          grid-template-columns: repeat(2, minmax(340px, 1fr));
+          grid-template-columns: 1fr;
           gap: 18px;
         }
-        .start-card-inner,.start-card-overlay { min-height: 390px; }
+        .start-card-inner,.start-card-overlay { min-height: 332px; }
         .start-card-inner {
           position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
           box-shadow: 0 22px 54px rgba(0,0,0,.22);
         }
-        .start-card-frame { width: 100%; height: 100%; object-fit: cover; opacity: .98; }
+        .start-card-frame { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 1; }
         .start-card-overlay {
           position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 22px;
-          background: linear-gradient(180deg, rgba(4,16,39,.05), rgba(4,16,39,.16) 38%, rgba(4,16,39,.56) 70%, rgba(4,16,39,.82) 100%);
+          background: linear-gradient(180deg, rgba(4,16,39,.04), rgba(4,16,39,.1) 32%, rgba(4,16,39,.34) 62%, rgba(4,16,39,.66) 100%);
         }
         .start-card-headline-row {
           display: flex;
@@ -2143,42 +2139,21 @@ export default function Home() {
           gap: 14px;
         }
         .start-card-title {
-          max-width: 11ch;
-          font-size: clamp(28px, 2.1vw, 38px);
+          max-width: 12ch;
+          font-size: clamp(24px, 1.9vw, 34px);
           line-height: .98;
           letter-spacing: -.05em;
           font-weight: 400;
         }
-        .start-card-status-dot {
-          width: 14px;
-          height: 14px;
-          border-radius: 999px;
-          background: #36c76f;
-          box-shadow: 0 0 0 6px rgba(54,199,111,.14);
-          flex-shrink: 0;
-          margin-top: 8px;
+        .start-card-status-dot { display: none; }
+        .start-card-bottom-simple {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 14px;
+          margin-top: auto;
         }
-        .start-card-price-float { font-size: clamp(72px, 5vw, 102px); line-height: .92; letter-spacing: -.06em; font-weight: 700; margin-top: auto; }
-                .start-card-stat { display: grid; gap: 4px; }
-        .start-card-stats-grid {
-          margin-top: 18px;
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0,1fr));
-          gap: 10px;
-          align-items: end;
-        }
-        .start-card-stat-label {
-          color: rgba(255,255,255,.58);
-          font-size: 11px;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-        }
-        .start-card-stat-value {
-          color: #ffffff;
-          font-size: 16px;
-          line-height: 1.1;
-          font-weight: 700;
-        }
+        .start-card-price-float { font-size: clamp(66px, 4.8vw, 96px); line-height: .92; letter-spacing: -.06em; font-weight: 700; margin-top: auto; }
         .start-card-btn {
           display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
           color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
@@ -2269,9 +2244,12 @@ export default function Home() {
         }
         @media (max-width: 1023px) {
           .content-wrap { padding-top: 150px; }
+          .industries-pills-carousel { align-items: flex-start; }
+          .industries-pills-left { width: 100%; }
+          .stage-rotate-cue-right { margin-left: 0; }
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
-          .start-cards-row { grid-template-columns: 1fr 1fr; }
+          .start-cards-row { grid-template-columns: 1fr; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2312,7 +2290,6 @@ export default function Home() {
           .signal-board { grid-template-columns: 1fr; }
           .signal-card { min-height: 178px; border-radius: 22px; }
           .signal-card-title { font-size: 24px; }
-          .start-card-stats-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
