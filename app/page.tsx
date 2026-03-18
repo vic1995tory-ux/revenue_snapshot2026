@@ -455,10 +455,10 @@ function SnapshotStructure() {
 
   return (
     <div className="signal-board">
-      {layers.map((layer) => (
+      {layers.map((layer, index) => (
         <article
           key={layer.title}
-          className={`signal-card signal-card-${layer.tone}`}
+          className={`signal-card signal-card-${layer.tone} signal-card-layout-${index + 1}`}
           style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
         >
           <div className="signal-card-top">
@@ -1481,11 +1481,11 @@ export default function Home() {
           padding: 20px;
           overflow: hidden;
           isolation: isolate;
-          background: linear-gradient(180deg, rgba(224,225,227,0.08) 0%, rgba(224,225,227,0.045) 100%);
-          border: 1px solid rgba(200,200,200,0.13);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), inset 0 -1px 0 rgba(255,255,255,0.03), 0 18px 44px rgba(0,0,0,0.14);
-          backdrop-filter: blur(28px) saturate(140%);
-          -webkit-backdrop-filter: blur(28px) saturate(140%);
+          background: linear-gradient(180deg, rgba(224,225,227,0.055) 0%, rgba(224,225,227,0.024) 100%);
+          border: 1px solid rgba(214,220,232,0.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.025), 0 18px 44px rgba(0,0,0,0.16);
+          backdrop-filter: blur(42px) saturate(155%);
+          -webkit-backdrop-filter: blur(42px) saturate(155%);
         }
         .glass-card::before {
           content: "";
@@ -1521,8 +1521,8 @@ export default function Home() {
           left: 14%;
           top: 12%;
           border-radius: 999px;
-          background: radial-gradient(circle, rgba(255,255,255,0.11) 0%, rgba(255,255,255,0.05) 38%, transparent 76%);
-          filter: blur(34px);
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.035) 38%, transparent 76%);
+          filter: blur(44px);
           pointer-events: none;
           z-index: 0;
           opacity: .8;
@@ -1955,9 +1955,9 @@ export default function Home() {
         }
         .stage-card-analytics {
           position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.12); background: linear-gradient(180deg, rgba(16,27,49,.72) 0%, rgba(11,20,38,.62) 100%);
-          backdrop-filter: blur(30px) saturate(128%);
-          -webkit-backdrop-filter: blur(30px) saturate(128%);
+          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.5) 0%, rgba(11,20,38,.36) 100%);
+          backdrop-filter: blur(44px) saturate(145%);
+          -webkit-backdrop-filter: blur(44px) saturate(145%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
         }
         .stage-card-analytics::after { display: none; }
@@ -1995,16 +1995,19 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1fr);
-          gap: 24px;
+          grid-template-columns: minmax(0, 1.24fr) minmax(360px, .76fr);
+          gap: 28px;
           align-items: start;
         }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
         .signal-board {
           display: grid;
-          grid-template-columns: 27fr 27fr 18fr 14fr 14fr;
-          gap: 14px;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          grid-template-areas:
+            "pos pos pos struct struct struct"
+            "econ econ clients clients product product";
+          gap: 16px;
           align-items: stretch;
         }
         .signal-card {
@@ -2016,12 +2019,17 @@ export default function Home() {
           padding: 18px;
           border-radius: 28px;
           overflow: hidden;
-          background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
-          border: 1px solid rgba(255,255,255,.12);
+          background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+          border: 1px solid rgba(255,255,255,.13);
           box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.16);
-          backdrop-filter: blur(28px) saturate(128%);
-          -webkit-backdrop-filter: blur(28px) saturate(128%);
+          backdrop-filter: blur(42px) saturate(145%);
+          -webkit-backdrop-filter: blur(42px) saturate(145%);
         }
+        .signal-card-layout-1 { grid-area: pos; }
+        .signal-card-layout-2 { grid-area: struct; }
+        .signal-card-layout-3 { grid-area: econ; }
+        .signal-card-layout-4 { grid-area: clients; }
+        .signal-card-layout-5 { grid-area: product; }
         .signal-card::before {
           content: "";
           position: absolute;
@@ -2118,14 +2126,14 @@ export default function Home() {
         .analysis-right-card-plain {
           min-height: 100%;
           overflow: visible;
-          max-width: 560px;
+          max-width: none;
         }
         .start-cards-row {
           display: flex;
           flex-direction: column;
           gap: 18px;
         }
-        .start-card-inner,.start-card-overlay { min-height: 364px; }
+        .start-card-inner,.start-card-overlay { min-height: 310px; }
         .start-card-inner {
           position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
           background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
