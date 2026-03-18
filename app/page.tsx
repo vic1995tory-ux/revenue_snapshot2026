@@ -787,6 +787,7 @@ export default function Home() {
 
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
@@ -803,6 +804,15 @@ export default function Home() {
       window.removeEventListener("mousemove", onMove);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 860) setMobileMenuOpen(false);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
   }, []);
 
   useEffect(() => {
@@ -911,7 +921,7 @@ export default function Home() {
   );
 
   return (
-    <main className="page-shell">
+    <main className="page-shell" id="top">
       <div className="cursor-glow" style={{ transform: `translate(${cursor.x - 54}px, ${cursor.y - 54}px)` }} />
 
       <div className="page-background" aria-hidden="true">
@@ -923,18 +933,33 @@ export default function Home() {
         <div className="vignette" />
       </div>
 
-      <header className="header-fixed">
+      <header className={`header-fixed ${mobileMenuOpen ? "header-open" : ""}`}>
         <div className="header-inner">
-          <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
+          <a href="#top" className="logo-link" aria-label="Growth Avenue home">
+            <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
+          </a>
 
-          <nav className="header-nav">
-            <a href="#how-it-works" className="header-link">Как это работает</a>
-            <a href="#preview" className="header-link">Интерактивное превью</a>
-            <a href="#results" className="header-link">Что вы получите</a>
-            <a href="#analysis" className="header-link">Как проходит анализ</a>
+          <button
+            type="button"
+            className={`header-burger ${mobileMenuOpen ? "is-open" : ""}`}
+            aria-label="Открыть меню"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav className={`header-nav ${mobileMenuOpen ? "is-open" : ""}`}>
+            <a href="#how-it-works" className="header-link" onClick={() => setMobileMenuOpen(false)}>Как это работает</a>
+            <a href="#preview" className="header-link" onClick={() => setMobileMenuOpen(false)}>Интерактивное превью</a>
+            <a href="#results" className="header-link" onClick={() => setMobileMenuOpen(false)}>Что вы получите</a>
+            <a href="#analysis" className="header-link" onClick={() => setMobileMenuOpen(false)}>Как проходит анализ</a>
           </nav>
 
-          <div className="header-actions">
+          <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
+            <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1224,6 +1249,10 @@ export default function Home() {
           background: linear-gradient(180deg, rgba(4,16,39,0.92), rgba(4,16,39,0.62));
           border-bottom: 1px solid rgba(255,255,255,0.06);
         }
+        .header-open .header-inner {
+          background: rgba(4,16,39,.94);
+          border-color: rgba(255,255,255,.12);
+        }
         .header-inner {
           max-width: 1400px;
           margin: 0 auto;
@@ -1232,7 +1261,9 @@ export default function Home() {
           grid-template-columns: auto 1fr auto;
           align-items: center;
           gap: 18px;
+          border-radius: 0 0 22px 22px;
         }
+        .logo-link { display: inline-flex; align-items: center; }
         .header-nav {
           display: flex;
           align-items: center;
@@ -1242,16 +1273,16 @@ export default function Home() {
           flex-wrap: wrap;
         }
         .header-link {
-          color: #f7d237;
+          color: rgba(255,255,255,.92);
           font-size: 13px;
-          font-weight: 700;
+          font-weight: 600;
           text-decoration: none;
           line-height: 1;
           white-space: nowrap;
           letter-spacing: -0.02em;
-          transition: opacity .2s ease, transform .2s ease;
+          transition: opacity .2s ease, transform .2s ease, color .2s ease;
         }
-        .header-link:hover { opacity: .82; transform: translateY(-1px); }
+        .header-link:hover { opacity: 1; color: #fff; transform: translateY(-1px); }
         .header-actions {
           display: flex;
           align-items: center;
@@ -1259,8 +1290,37 @@ export default function Home() {
           gap: 8px;
           flex-wrap: wrap;
         }
+        .header-cta {
+          min-height: 40px;
+          padding: 0 18px;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+        .header-burger {
+          display: none;
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(11,29,58,.6);
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 0;
+          flex-direction: column;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .header-burger span {
+          width: 18px;
+          height: 2px;
+          border-radius: 999px;
+          background: #ffffff;
+          transition: transform .22s ease, opacity .22s ease;
+        }
+        .header-burger.is-open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .header-burger.is-open span:nth-child(2) { opacity: 0; }
+        .header-burger.is-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
         .header-pill,
-        .hero-tag,
         .hero-highlight-chip {
           display: inline-flex;
           align-items: center;
@@ -1274,6 +1334,21 @@ export default function Home() {
           color: #0b1d3a;
           background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(247,210,55,0.88));
           box-shadow: 0 10px 24px rgba(247, 210, 55, 0.16);
+        }
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+          color: rgba(255,255,255,.78);
+          background: rgba(224,225,227,.07);
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
         }
         .logo-main {
           width: 250px;
@@ -1317,7 +1392,7 @@ export default function Home() {
           background-size: 44px 44px;
           mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
           -webkit-mask-image: radial-gradient(circle at center, black 34%, transparent 100%);
-          opacity: .52;
+          opacity: .6;
         }
         .vignette {
           position: absolute;
@@ -1492,6 +1567,8 @@ export default function Home() {
         .hero-highlights-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
         .hero-actions-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
         .tg-gradient-btn {
+          position: relative;
+          overflow: hidden;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -1499,11 +1576,24 @@ export default function Home() {
           border-radius: 999px;
           padding: 0 20px;
           text-decoration: none;
-          color: #0b1d3a;
+          color: #ffffff;
           font-weight: 700;
-          background: linear-gradient(135deg, #f7d237 0%, #ffe27a 100%);
-          box-shadow: 0 14px 30px rgba(247,210,55,0.18);
+          border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%;
+          box-shadow: 0 10px 30px rgba(71, 96, 255, 0.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
+        .tg-gradient-btn::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 25%, transparent 50%);
+          transform: translateX(-130%);
+          animation: tgShine 3.8s ease-in-out infinite;
+        }
+        .tg-gradient-btn > * { position: relative; z-index: 1; }
+        .tg-gradient-btn:hover { transform: translateY(-1px); }
         .ghost-link {
           display: inline-flex;
           align-items: center;
@@ -1527,11 +1617,16 @@ export default function Home() {
         }
         .hero-levers-inline { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
         .hero-tag {
-          color: #0b1d3a;
-          border: none;
+          border: 1px solid rgba(255,255,255,.12);
           cursor: pointer;
+          transition: background .22s ease, color .22s ease, box-shadow .22s ease, border-color .22s ease;
         }
-        .hero-tag-active { box-shadow: 0 0 0 1px rgba(247,210,55,.16), 0 14px 28px rgba(247,210,55,.18); }
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(247,210,55,0.88));
+          border-color: rgba(247,210,55,.24);
+          box-shadow: 0 0 0 1px rgba(247,210,55,.16), 0 14px 28px rgba(247,210,55,.18);
+        }
         .hero-chart-box {
           position: relative;
           overflow: hidden;
@@ -1586,12 +1681,22 @@ export default function Home() {
         .bar-chart-bar-horizontal { height: 100%; border-radius: inherit; transition: width .8s ease, transform .8s ease; }
         .bar-good { background: linear-gradient(90deg, rgba(244,221,114,.98), rgba(255,236,149,.98)); }
         .bar-bad { background: linear-gradient(90deg, rgba(122,149,255,.88), rgba(172,183,255,.88)); }
-        .hero-chart-bottom { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin-top: 12px; }
+        .hero-chart-bottom {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          gap: 10px;
+          margin-top: 12px;
+          position: relative;
+          z-index: 3;
+        }
         .hero-money-card {
           border-radius: 18px;
           padding: 14px;
-          background: rgba(255,255,255,.035);
-          border: 1px solid rgba(255,255,255,.08);
+          background: rgba(8,18,40,.74);
+          border: 1px solid rgba(255,255,255,.14);
+          backdrop-filter: blur(18px) saturate(130%);
+          -webkit-backdrop-filter: blur(18px) saturate(130%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 36px rgba(0,0,0,.16);
         }
         .hero-active-note {
           display: flex;
@@ -1600,11 +1705,13 @@ export default function Home() {
           margin-top: 12px;
           border-radius: 18px;
           padding: 12px 14px;
-          background: rgba(255,255,255,.04);
-          border: 1px solid rgba(255,255,255,.08);
-          color: rgba(255,255,255,.74);
+          background: rgba(8,18,40,.68);
+          border: 1px solid rgba(255,255,255,.12);
+          color: rgba(255,255,255,.76);
           font-size: 13px;
           line-height: 1.45;
+          position: relative;
+          z-index: 3;
         }
         .hero-active-note-dot {
           width: 10px;
@@ -1707,8 +1814,10 @@ export default function Home() {
         .results-roadmap-note span { color: #fff; }
         .result-doc-start-btn {
           display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 22px; border-radius: 999px;
-          text-decoration: none; color: #0b1d3a; font-weight: 700; background: linear-gradient(135deg, #f7d237, #ffe27a);
-          box-shadow: 0 14px 30px rgba(247,210,55,.18);
+          text-decoration: none; color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
         .industry-pill {
@@ -1800,7 +1909,10 @@ export default function Home() {
         .start-card-btn-row { margin-top: 18px; }
         .start-card-btn {
           display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
-          color: #0b1d3a; font-weight: 700; background: linear-gradient(135deg, #f7d237, #ffe27a);
+          color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
@@ -1820,6 +1932,16 @@ export default function Home() {
           50% { transform: translate3d(14px,-6px,0); }
           100% { transform: translate3d(-12px,0,0); }
         }
+        @keyframes tgGradientFlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes tgShine {
+          0% { transform: translateX(-130%); }
+          55% { transform: translateX(130%); }
+          100% { transform: translateX(130%); }
+        }
         @keyframes pulseTinyYellow {
           0% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.22); opacity: .72; }
@@ -1831,8 +1953,37 @@ export default function Home() {
           .stage-carousel-item-free { width: min(620px, 62vw); }
         }
         @media (max-width: 1180px) {
-          .header-inner { grid-template-columns: 1fr; justify-items: start; }
-          .header-nav { justify-content: flex-start; }
+          .header-inner {
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 14px;
+          }
+          .header-burger { display: inline-flex; }
+          .header-nav,
+          .header-actions {
+            display: none;
+            width: 100%;
+            grid-column: 1 / -1;
+          }
+          .header-nav.is-open,
+          .header-actions.is-open {
+            display: flex;
+          }
+          .header-nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 0 2px;
+          }
+          .header-actions {
+            gap: 10px;
+            padding-top: 4px;
+            justify-content: flex-start;
+          }
+          .header-cta {
+            width: 100%;
+            justify-content: center;
+          }
           .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2 { grid-template-columns: 1fr; }
@@ -1854,7 +2005,16 @@ export default function Home() {
           .cursor-glow { display: none; }
           .content-wrap { padding: 162px 14px 32px; }
           .logo-main { width: 210px; height: 52px; }
-          .header-link { font-size: 12px; }
+          .header-link { font-size: 14px; }
+          .header-actions {
+            gap: 10px;
+            padding-top: 4px;
+            justify-content: flex-start;
+          }
+          .header-cta {
+            width: 100%;
+            justify-content: center;
+          }
           .hero-main-title { font-size: clamp(48px, 16vw, 78px); }
           .hero-main-subtitle { font-size: 24px; }
           .hero-main-copy { font-size: 17px; }
