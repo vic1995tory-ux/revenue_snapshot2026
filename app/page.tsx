@@ -1,12 +1,16 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+type CaseItem = {
+  stage: string;
+  niche: string[];
+  intro: string;
+  challenge: string;
+  outcomeTitle: string;
+  numbers: { label: string; value: string; delta: number }[];
+  bars: { label: string; fact: number; target: number }[];
+};
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -21,17 +25,6 @@ function pct(n: number) {
   return `${sign}${Math.round(n)}%`;
 }
 
-function color(delta: number, invert = false) {
-  if (invert) {
-    if (delta < 0) return "text-emerald-300";
-    if (delta > 0) return "text-rose-300";
-  } else {
-    if (delta > 0) return "text-emerald-300";
-    if (delta < 0) return "text-rose-300";
-  }
-  return "text-white/50";
-}
-
 function normalizeDigits(value: string) {
   const digits = value.replace(/\D/g, "");
   if (!digits) return "";
@@ -44,429 +37,122 @@ function parseNumeric(value: string, fallback = 0) {
   return Number.isFinite(n) ? n : fallback;
 }
 
-function getMetricFlag(
-  type: "revenue" | "costs" | "profit",
-  delta: number
-): string {
-  if (type === "revenue") {
-    if (delta >= 10) return "Сильный рост";
-    if (delta >= 3) return "Рост";
-    if (delta <= -10) return "Сильное падение";
-    if (delta <= -3) return "Снижение";
-    return "Стабильно";
+function metricTone(delta: number, invert = false) {
+  if (invert) {
+    if (delta < 0) return "good";
+    if (delta > 0) return "bad";
+  } else {
+    if (delta > 0) return "good";
+    if (delta < 0) return "bad";
   }
-
-  if (type === "costs") {
-    if (delta <= -10) return "Снижение затрат";
-    if (delta <= -3) return "Экономия";
-    if (delta >= 10) return "Рост затрат";
-    if (delta >= 3) return "Давление затрат";
-    return "Стабильно";
-  }
-
-  if (delta >= 10) return "Рост маржи";
-  if (delta >= 3) return "Позитивная динамика";
-  if (delta <= -10) return "Просадка маржи";
-  if (delta <= -3) return "Давление на маржу";
-  return "Стабильно";
+  return "neutral";
 }
 
-function flagTone(
-  type: "revenue" | "costs" | "profit",
-  delta: number
-): string {
-  if (type === "costs") {
-    if (delta <= -3) return "flag-good";
-    if (delta >= 3) return "flag-bad";
-    return "flag-neutral";
-  }
+function Header({ activeId }: { activeId: string }) {
+  const nav = [
+    { id: "hero", label: "Блок 1" },
+    { id: "preview", label: "Блок 2" },
+    { id: "goals", label: "Блок 3" },
+    { id: "cases", label: "Блок 4" },
+    { id: "analysis", label: "Блок 5" },
+  ];
 
-  if (delta >= 3) return "flag-good";
-  if (delta <= -3) return "flag-bad";
-  return "flag-neutral";
+  return (
+    <header className="site-header">
+      <div className="site-header-inner">
+        <a href="#hero" className="brand-mark" aria-label="Revenue Snapshot">
+          <img src="/logo.svg" alt="Growth Avenue" />
+        </a>
+
+        <nav className="site-nav" aria-label="Основная навигация">
+          {nav.map((item) => (
+            <a
+              key={item.id}
+              href={`#${item.id}`}
+              className={activeId === item.id ? "nav-link is-active" : "nav-link"}
+            >
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="header-actions">
+          <a href="https://t.me/growth_avenue_company" className="header-chip">
+            TG
+          </a>
+          <a href="#try" className="header-cta">
+            Попробовать Snapshot
+          </a>
+        </div>
+      </div>
+    </header>
+  );
 }
 
-function TopMetricCard({
+function SectionHead({ kicker, title, copy }: { kicker: string; title: string; copy?: string }) {
+  return (
+    <div className="section-head">
+      <div className="section-kicker">{kicker}</div>
+      <h2 className="section-title">{title}</h2>
+      {copy ? <p className="section-copy">{copy}</p> : null}
+    </div>
+  );
+}
+
+function PreviewMetric({
   title,
   value,
   delta,
-  type,
   invert = false,
 }: {
   title: string;
   value: string;
   delta: number;
-  type: "revenue" | "costs" | "profit";
   invert?: boolean;
 }) {
   return (
-    <div className="glass-card soft-glow glare-card metric-card metric-card-main">
-      <div className="metric-head">
-        <div className="metric-title-wrap">
-          <div className="metric-label">{title}</div>
-          <div className={`metric-flag ${flagTone(type, delta)}`}>
-            {getMetricFlag(type, delta)}
-          </div>
-        </div>
-
-        <div className={`metric-delta-top ${color(delta, invert)}`}>
-          {pct(delta)}
-        </div>
+    <div className="glass-card preview-metric">
+      <div className="preview-metric-top">
+        <span>{title}</span>
+        <span className={`metric-pill ${metricTone(delta, invert)}`}>{pct(delta)}</span>
       </div>
-
-      <div className="metric-main-value">{value}</div>
+      <strong>{value}</strong>
     </div>
   );
 }
 
-function ModelCard({
+function SliderCard({
   title,
+  hint,
   value,
-  delta,
-  invert = false,
+  onChange,
 }: {
   title: string;
-  value: string | number;
-  delta: number;
-  invert?: boolean;
-}) {
-  return (
-    <div className="glass-card soft-glow glare-card model-card">
-      <div className="model-head">
-        <div className="model-label">{title}</div>
-        <div className={`model-delta-top ${color(delta, invert)}`}>
-          {pct(delta)}
-        </div>
-      </div>
-
-      <div className="model-main-value">{value}</div>
-    </div>
-  );
-}
-
-function Row({
-  label,
-  delta,
-  invert = false,
-}: {
-  label: string;
-  delta: number;
-  invert?: boolean;
-}) {
-  return (
-    <div className="flex justify-between gap-4">
-      <span className="text-white/60">{label}</span>
-      <span className={color(delta, invert)}>{pct(delta)}</span>
-    </div>
-  );
-}
-
-function Slider({
-  title,
-  subtitle,
-  value,
-  set,
-  onStart,
-}: {
-  title: string;
-  subtitle: string;
+  hint: string;
   value: number;
-  set: (v: number) => void;
-  onStart: () => void;
+  onChange: (v: number) => void;
 }) {
-  const [started, setStarted] = useState(false);
-
   return (
-    <div className="glass-card soft-glow glare-card slider-card">
-      <div>
-        <div className="text-sm font-medium leading-snug">{title}</div>
-        <div className="mt-2 min-h-[36px] text-xs leading-snug text-white/42">
-          {subtitle}
-        </div>
+    <div className="glass-card slider-card-v2">
+      <div className="slider-copy">
+        <div className="slider-title">{title}</div>
+        <div className="slider-hint">{hint}</div>
       </div>
-
-      <div className="mt-auto">
-        <input
-          type="range"
-          min="-0.3"
-          max="0.3"
-          step="0.01"
-          value={value}
-          onMouseDown={() => {
-            if (!started) {
-              onStart();
-              setStarted(true);
-            }
-          }}
-          onTouchStart={() => {
-            if (!started) {
-              onStart();
-              setStarted(true);
-            }
-          }}
-          onMouseUp={() => setStarted(false)}
-          onTouchEnd={() => setStarted(false)}
-          onChange={(e) => set(Number(e.target.value))}
-          className="range-input mt-4 w-full accent-[#f7d237]"
-        />
-        <div className="mt-2 text-xs text-white/50">
-          {Math.round(value * 100)}%
-        </div>
-      </div>
+      <input
+        className="range-input"
+        type="range"
+        min="-0.3"
+        max="0.3"
+        step="0.01"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+      />
+      <div className="slider-value">{Math.round(value * 100)}%</div>
     </div>
   );
 }
 
-function HeroEconomyChart() {
-  const base = {
-    leads: 10,
-    deals: 2.0,
-    aov: 3200,
-    margin: 40,
-    revenue: 13000,
-    opex: 3500,
-    cogs: 3900,
-    grossProfit: 5600,
-  };
-
-  const drivers = [
-    {
-      key: "marketing",
-      label: "#Маркетинг",
-      full: "Маркетинг",
-      deltaLabel: "+30% лидов и рост спроса",
-      leads: 13,
-      deals: 2.4,
-      aov: 3200,
-      margin: 42,
-      revenue: 14800,
-      opex: 3200,
-      cogs: 3600,
-      grossProfit: 6200,
-    },
-    {
-      key: "aov",
-      label: "#AOV",
-      full: "AOV",
-      deltaLabel: "+рост среднего заказа",
-      leads: 10,
-      deals: 2.0,
-      aov: 4100,
-      margin: 44,
-      revenue: 15200,
-      opex: 3300,
-      cogs: 3900,
-      grossProfit: 6700,
-    },
-    {
-      key: "sales",
-      label: "#Продажи",
-      full: "Продажи",
-      deltaLabel: "+0.8 сделки",
-      leads: 10,
-      deals: 2.8,
-      aov: 3200,
-      margin: 45,
-      revenue: 18200,
-      opex: 4600,
-      cogs: 5100,
-      grossProfit: 8500,
-    },
-    {
-      key: "costs",
-      label: "#Модель расходов",
-      full: "Модель расходов",
-      deltaLabel: "−давление на OPEX и Margin",
-      leads: 10,
-      deals: 2.0,
-      aov: 3200,
-      margin: 51,
-      revenue: 13000,
-      opex: 2500,
-      cogs: 3900,
-      grossProfit: 6600,
-    },
-  ];
-
-  const [activeIndex, setActiveIndex] = useState(0);
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [drivers.length]);
-
-  const setDriver = (index: number) => {
-    setActiveIndex(index);
-
-    if (timerRef.current) {
-      window.clearInterval(timerRef.current);
-    }
-
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-  };
-
-  const active = drivers[activeIndex];
-
-  const bars = [
-    { name: "Revenue", value: active.revenue, good: true },
-    { name: "OPEX", value: active.opex, good: false },
-    { name: "COGS", value: active.cogs, good: false },
-    { name: "Gross Profit", value: active.grossProfit, good: true },
-  ];
-
-  const maxBar = 20000;
-
-  return (
-    <div className="hero-visual-shell">
-      <div className="hero-chart-float">
-        <div className="hero-chart-float-title">MVP-Drivers</div>
-
-        <div className="hero-levers-inline hero-levers-inline-float">
-          {drivers.map((item, index) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setDriver(index)}
-              className={`hero-tag ${
-                index === activeIndex ? "hero-tag-active" : ""
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="hero-chart-box glare-card">
-          <div className="hero-chart-metrics-row">
-            <div className="hero-metric-square glare-card-lite">
-              <span>Лидов / мес</span>
-              <strong>{active.leads}</strong>
-            </div>
-
-            <div className="hero-metric-square glare-card-lite">
-              <span>Сделок / мес</span>
-              <strong>{active.deals.toFixed(1)}</strong>
-            </div>
-
-            <div className="hero-metric-square glare-card-lite">
-              <span>AOV</span>
-              <strong>{fmtMoney(active.aov)}</strong>
-            </div>
-
-            <div className="hero-metric-square glare-card-lite">
-              <span>Маржа</span>
-              <strong>{active.margin}%</strong>
-            </div>
-          </div>
-
-          <div className="bar-chart-wrap glare-card-lite">
-            <div className="bar-chart-scale">
-              <span>$0</span>
-              <span>$5 000</span>
-              <span>$10 000</span>
-              <span>$15 000</span>
-              <span>$20 000</span>
-            </div>
-
-            <div className="bar-chart-grid" />
-
-            <div className="bar-chart-columns bar-chart-columns-horizontal">
-              {bars.map((bar) => {
-                const width = Math.max(6, (bar.value / maxBar) * 100);
-
-                return (
-                  <div key={bar.name} className="bar-chart-row">
-                    <div className="bar-chart-row-top">
-                      <div className="bar-chart-label">{bar.name}</div>
-                      <div className="bar-chart-value">{fmtMoney(bar.value)}</div>
-                    </div>
-
-                    <div className="bar-chart-bar-shell-horizontal">
-                      <div
-                        className={`bar-chart-bar bar-chart-bar-horizontal ${
-                          bar.good ? "bar-good" : "bar-bad"
-                        } ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
-                        style={{ width: `${width}%` }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="hero-chart-bottom">
-            <div className="hero-money-card hero-money-card-clean">
-              <span>База</span>
-              <strong>{fmtMoney(base.revenue)}</strong>
-              <small>{fmtMoney(base.grossProfit)} gross profit / мес</small>
-            </div>
-
-            <div className="hero-money-card hero-money-card-clean">
-              <span>Активный драйвер</span>
-              <strong>{fmtMoney(active.revenue)}</strong>
-              <small>{fmtMoney(active.grossProfit)} gross profit / мес</small>
-            </div>
-          </div>
-
-          <div className="hero-active-note glare-card-lite">
-            <span className="hero-active-note-dot" />
-            <span>
-              Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function SnapshotStructure() {
-  return (
-    <>
-      <h3 className="analysis-left-title">Из чего состоит Revenue Snapshot</h3>
-
-      <p className="snapshot-builder-copy">
-        ваши данные под защищенными протоколами обрабатываются инструментом для
-        формирования стратегических решений вашего бизнеса
-      </p>
-
-      <div className="snapshot-builder snapshot-builder-editorial">
-        <div className="builder-block builder-block-structure">
-          <span className="builder-label">Структура компании</span>
-        </div>
-
-        <div className="builder-middle-grid">
-          <div className="builder-block builder-block-positioning">
-            <span className="builder-label">Позиционирование</span>
-          </div>
-
-          <div className="builder-block builder-block-economics">
-            <span className="builder-label">Экономика</span>
-          </div>
-        </div>
-
-        <div className="builder-block builder-block-clients">
-          <span className="builder-label">Клиенты</span>
-        </div>
-
-        <div className="builder-block builder-block-product">
-          <span className="builder-label">Продукт</span>
-        </div>
-      </div>
-    </>
-  );
-}
-
-function ResultDocCard({
+function GoalCard({
   tab,
   title,
   text,
@@ -478,23 +164,15 @@ function ResultDocCard({
   bottomGlow?: boolean;
 }) {
   return (
-    <div className="result-doc-card tilt-card">
-      <div
-        className={`result-doc-card-inner tilt-inner glare-card ${
-          bottomGlow ? "result-doc-card-inner-roadmap" : ""
-        }`}
-      >
-        <div className="result-doc-top">
-          <div className="result-doc-tab">{tab}</div>
-        </div>
-
-        <div className="result-doc-title">{title}</div>
-        <div className="result-doc-text">{text}</div>
-
+    <div className="goal-card tilt-card">
+      <div className={`goal-card-inner tilt-inner glass-card ${bottomGlow ? "has-bottom-glow" : ""}`}>
+        <div className="goal-tab">{tab}</div>
+        <div className="goal-title">{title}</div>
+        <div className="goal-text">{text}</div>
         {bottomGlow ? (
-          <div className="result-doc-bottom-glow" aria-hidden="true">
-            <div className="result-doc-bottom-glow-core" />
-            <div className="result-doc-bottom-glow-shine" />
+          <div className="goal-bottom-glow" aria-hidden="true">
+            <div className="goal-bottom-glow-core" />
+            <div className="goal-bottom-glow-shine" />
           </div>
         ) : null}
       </div>
@@ -502,354 +180,344 @@ function ResultDocCard({
   );
 }
 
-function StartCard({
-  title,
-  icon,
-  price,
-  href,
-}: {
-  title: string;
-  icon: string;
-  price: string;
-  href: string;
-}) {
+function CaseStageCard({ item, isActive }: { item: CaseItem; isActive: boolean }) {
   return (
-    <div className="start-card tilt-card">
-      <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
-        <img src={icon} alt={title} className="start-card-frame" />
-
-        <div className="start-card-overlay start-card-overlay-plain">
-          <div className="start-card-price-float">{price}</div>
-
-          <div className="start-card-btn-row">
-            <a href={href} className="start-card-btn start-card-btn-floating">
-              Оплатить
-            </a>
-          </div>
+    <article className={isActive ? "case-stage-card is-active" : "case-stage-card"}>
+      <div className="case-stage-card-top">
+        <div>
+          <div className="case-stage-label">Stage</div>
+          <div className="case-stage-name">{item.stage}</div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function StageCard({
-  stage,
-  icon,
-}: {
-  stage: string;
-  icon: string;
-}) {
-  return (
-    <div className="stage-card-analytics glare-card">
-      <div className="stage-card-top-panel">
-        <div className="stage-card-copy">
-          <div className="stage-copy-block">
-            <h4>Starting Position</h4>
-            <p>
-              Клиники готовы тестировать продукт, что подтверждает рыночную
-              потребность, однако цикл сделки остаётся длинным.
-            </p>
-          </div>
-
-          <div className="stage-copy-block">
-            <h4>Strategic Direction</h4>
-            <p>
-              Разработана гипотеза по внедрению структурированного пилотного
-              формата как основного входного продукта для ускорения продаж.
-            </p>
-          </div>
-        </div>
-
-        <div className="stage-card-heading">
-          <span>Stage</span>
-          <strong>{stage}</strong>
+        <div className="case-niches">
+          {item.niche.map((tag) => (
+            <span key={tag} className="case-niche-pill">
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
 
-      <div className="stage-card-bottom-panel">
-        <div className="stage-card-bottom-inner">
-          <div className="stage-rings-grid">
-            <div className="stage-ring-metric">
-              <div className="stage-ring-label">leads 25/40</div>
-              <div className="stage-ring">
-                <div className="stage-ring-outer" />
-                <div className="stage-ring-inner" />
-                <div className="stage-ring-center">62%</div>
-              </div>
-            </div>
+      <div className="case-stage-card-copy">
+        <div>
+          <div className="case-copy-title">Исходная точка</div>
+          <p>{item.intro}</p>
+        </div>
+        <div>
+          <div className="case-copy-title">Фокус Snapshot</div>
+          <p>{item.challenge}</p>
+        </div>
+      </div>
 
-            <div className="stage-ring-metric">
-              <div className="stage-ring-label">qual leads 6/15</div>
-              <div className="stage-ring">
-                <div className="stage-ring-outer" />
-                <div className="stage-ring-inner" />
-                <div className="stage-ring-center">62%</div>
-              </div>
-            </div>
-
-            <div className="stage-ring-metric">
-              <div className="stage-ring-label">demo 2/5</div>
-              <div className="stage-ring">
-                <div className="stage-ring-outer" />
-                <div className="stage-ring-inner" />
-                <div className="stage-ring-center">62%</div>
-              </div>
-            </div>
-
-            <div className="stage-ring-metric">
-              <div className="stage-ring-label">deals 1/2</div>
-              <div className="stage-ring">
-                <div className="stage-ring-outer" />
-                <div className="stage-ring-inner" />
-                <div className="stage-ring-center">62%</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="stage-bars-area">
-            <div className="stage-bars-title">fact/plan</div>
-
-            <div className="stage-bars-wrap">
-              <div className="stage-bar-group">
-                <div className="stage-bar-label">deal cycle 5/3</div>
-
-                <div className="stage-bar-row stage-bar-row-top">
-                  <div className="stage-bar stage-bar-short" />
-                  <div className="stage-bar-marker" />
-                </div>
-
-                <div className="stage-bar-row stage-bar-row-bottom">
-                  <div className="stage-bar stage-bar-long" />
-                </div>
-              </div>
-            </div>
-          </div>
+      <div className="case-stage-card-bottom">
+        <div className="case-outcome-head">
+          <span>Результат</span>
+          <strong>{item.outcomeTitle}</strong>
         </div>
 
-        <img src={icon} alt={stage} className="stage-card-watermark-icon" />
-      </div>
-    </div>
-  );
-}
+        <div className="case-numbers-grid">
+          {item.numbers.map((metric) => (
+            <div key={metric.label} className="case-number-card">
+              <span>{metric.label}</span>
+              <strong>{metric.value}</strong>
+              <small className={metric.delta >= 0 ? "good" : "bad"}>{pct(metric.delta)}</small>
+            </div>
+          ))}
+        </div>
 
-function StageCarousel() {
-  const items = [
-    {
-      stage: "Seed",
-      icon: "/seed.svg",
-      industries: ["industry-saas", "industry-healthtech"],
-    },
-    {
-      stage: "Startup",
-      icon: "/startup.svg",
-      industries: ["industry-fintech", "industry-ecom"],
-    },
-    {
-      stage: "Growth",
-      icon: "/growth.svg",
-      industries: [
-        "industry-saas",
-        "industry-ecom",
-        "industry-fintech",
-        "industry-edtech",
-        "industry-healthtech",
-        "industry-b2b",
-      ],
-    },
-    {
-      stage: "Expansion",
-      icon: "/expansion.svg",
-      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
-    },
-  ];
-
-  const [rotation, setRotation] = useState(0);
-  const [isDraggingState, setIsDraggingState] = useState(false);
-
-  const dragStartX = useRef<number | null>(null);
-  const dragStartRotation = useRef(0);
-  const isDragging = useRef(false);
-
-  const itemAngle = 360 / items.length;
-  const radius = 280;
-
-  const activeIndex = useMemo(() => {
-    let frontIndex = 0;
-    let maxZ = -Infinity;
-
-    items.forEach((_, index) => {
-      const angle = rotation + index * itemAngle;
-      const radians = (angle * Math.PI) / 180;
-      const z = Math.cos(radians) * radius;
-
-      if (z > maxZ) {
-        maxZ = z;
-        frontIndex = index;
-      }
-    });
-
-    return frontIndex;
-  }, [rotation, itemAngle, radius]);
-
-  const activeIndustries = new Set(items[activeIndex].industries);
-
-  const startDrag = (clientX: number) => {
-    isDragging.current = true;
-    setIsDraggingState(true);
-    dragStartX.current = clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const moveDrag = (clientX: number) => {
-    if (!isDragging.current || dragStartX.current === null) return;
-    const deltaX = clientX - dragStartX.current;
-    const sensitivity = 0.22;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  };
-
-  const endDrag = () => {
-    isDragging.current = false;
-    setIsDraggingState(false);
-    dragStartX.current = null;
-  };
-
-  return (
-    <div className="stage-carousel-wrap">
-      <div className="industries-pills industries-pills-carousel">
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-saas")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          SaaS
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-ecom")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          E-com
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-fintech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          FinTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-edtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          EdTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-healthtech")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          HealthTech
-        </span>
-        <span
-          className={`industry-pill ${
-            activeIndustries.has("industry-b2b")
-              ? "industry-pill-active"
-              : "industry-pill-dim"
-          }`}
-        >
-          B2B
-        </span>
-      </div>
-
-      <div
-        className={`stage-carousel-scene ${
-          isDraggingState ? "is-dragging" : ""
-        }`}
-        onMouseDown={(e) => startDrag(e.clientX)}
-        onMouseMove={(e) => moveDrag(e.clientX)}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
-        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
-        onTouchEnd={endDrag}
-      >
-        <div className="stage-carousel-drum">
-          {items.map((item, index) => {
-            const angle = rotation + index * itemAngle;
-            const radians = (angle * Math.PI) / 180;
-
-            const x = Math.sin(radians) * radius;
-            const z = Math.cos(radians) * radius;
-
-            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
-            const opacity = 0.28 + ((z + radius) / (radius * 2)) * 0.72;
-            const blur = Math.max(0, (1 - scale) * 2.2);
-
+        <div className="case-bars-wrap">
+          {item.bars.map((bar) => {
+            const max = Math.max(bar.fact, bar.target, 1);
             return (
-              <div
-                key={item.stage}
-                className="stage-carousel-item stage-carousel-item-free"
-                style={{
-                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) scale(${scale})`,
-                  opacity,
-                  filter: `blur(${blur}px)`,
-                  zIndex: Math.round(z + radius),
-                }}
-              >
-                <StageCard stage={item.stage} icon={item.icon} />
+              <div key={bar.label} className="case-bar-group">
+                <div className="case-bar-meta">
+                  <span>{bar.label}</span>
+                  <span>
+                    факт {bar.fact} / цель {bar.target}
+                  </span>
+                </div>
+                <div className="case-bar-track case-bar-track-top">
+                  <div className="case-bar-fill case-bar-fill-fact" style={{ width: `${(bar.fact / max) * 100}%` }} />
+                </div>
+                <div className="case-bar-track">
+                  <div className="case-bar-fill case-bar-fill-target" style={{ width: `${(bar.target / max) * 100}%` }} />
+                </div>
               </div>
             );
           })}
         </div>
+      </div>
+    </article>
+  );
+}
 
-        <div className="stage-carousel-hint">
-          Потяните барабан влево или вправо
+function CasesCarousel() {
+  const items: CaseItem[] = [
+    {
+      stage: "Seed",
+      niche: ["HealthTech", "SaaS"],
+      intro:
+        "Первые пилоты уже показали интерес, но команда не понимала, где именно теряется скорость: в структуре оффера, в цикле сделки или в unit-экономике входа.",
+      challenge:
+        "Snapshot показал, что проблема не в спросе, а в неупакованном пилотном предложении и слишком тяжёлом входе для клиник.",
+      outcomeTitle: "Сформирован входной MVP для пилота",
+      numbers: [
+        { label: "Пилоты", value: "6 → 11", delta: 83 },
+        { label: "Цикл сделки", value: "41 → 26 дн.", delta: -37 },
+        { label: "Conversion", value: "18% → 29%", delta: 61 },
+      ],
+      bars: [
+        { label: "Leads → Demo", fact: 8, target: 14 },
+        { label: "Demo → Pilot", fact: 3, target: 5 },
+      ],
+    },
+    {
+      stage: "Startup",
+      niche: ["FinTech", "E-com"],
+      intro:
+        "Выручка уже была, но рост происходил неровно: команда гнала объём, не понимая, какие сегменты тянут CAC вверх и почему часть каналов перестала окупаться.",
+      challenge:
+        "Snapshot разложил экономику по каналам и подсветил главный рычаг: смещение фокуса в платёжеспособный сегмент и выравнивание среднего чека.",
+      outcomeTitle: "Пересобран канал роста без перегрева бюджета",
+      numbers: [
+        { label: "CAC", value: "$91 → $63", delta: -31 },
+        { label: "AOV", value: "$148 → $196", delta: 32 },
+        { label: "ROMI", value: "+18 п.п.", delta: 18 },
+      ],
+      bars: [
+        { label: "Qualified leads", fact: 32, target: 45 },
+        { label: "Deals", fact: 9, target: 14 },
+      ],
+    },
+    {
+      stage: "Growth",
+      niche: ["SaaS", "B2B", "EdTech"],
+      intro:
+        "На этапе роста продукт уже доказал ценность, но дальнейшее масштабирование упиралось в разрыв между продажами, повторными покупками и операционной нагрузкой.",
+      challenge:
+        "Snapshot показал, что узкое место — не лидогенерация, а связка позиционирования, сегментации и загрузки команды на длинных сделках.",
+      outcomeTitle: "Выделен самый прибыльный сегмент и рычаг масштаба",
+      numbers: [
+        { label: "MRR", value: "$42k → $57k", delta: 36 },
+        { label: "Gross profit", value: "+$9.4k", delta: 28 },
+        { label: "Load", value: "−17%", delta: 17 },
+      ],
+      bars: [
+        { label: "SQL → Proposal", fact: 17, target: 24 },
+        { label: "Proposal → Deal", fact: 6, target: 9 },
+      ],
+    },
+    {
+      stage: "Expansion",
+      niche: ["B2B", "HealthTech", "E-com"],
+      intro:
+        "Бизнес выходил в новые направления, но не видел, какой сценарий масштабирования съедает маржу и где экономика начинает ломаться раньше роста.",
+      challenge:
+        "Snapshot собрал карту сегментов и показал, в каких продуктах расширение усиливает доход, а где оно создаёт только видимость роста.",
+      outcomeTitle: "Убраны убыточные сценарии расширения",
+      numbers: [
+        { label: "Маржа", value: "24% → 31%", delta: 29 },
+        { label: "Opex", value: "−12%", delta: 12 },
+        { label: "Net revenue", value: "+$18k", delta: 22 },
+      ],
+      bars: [
+        { label: "Новые сегменты", fact: 2, target: 3 },
+        { label: "Окупаемые гипотезы", fact: 4, target: 6 },
+      ],
+    },
+  ];
+
+  const [active, setActive] = useState(2);
+  const startX = useRef<number | null>(null);
+
+  const goTo = (next: number) => {
+    const total = items.length;
+    setActive((next + total) % total);
+  };
+
+  return (
+    <div className="cases-shell">
+      <div className="cases-topline">
+        <div className="cases-industry-filter">
+          {Array.from(new Set(items.flatMap((item) => item.niche))).map((tag) => (
+            <span key={tag} className={items[active].niche.includes(tag) ? "industry-pill is-active" : "industry-pill"}>
+              {tag}
+            </span>
+          ))}
+        </div>
+
+        <div className="case-controls">
+          <button className="case-arrow" onClick={() => goTo(active - 1)} aria-label="Предыдущий кейс">
+            ←
+          </button>
+          <button className="case-arrow" onClick={() => goTo(active + 1)} aria-label="Следующий кейс">
+            →
+          </button>
+        </div>
+      </div>
+
+      <div
+        className="cases-carousel"
+        onTouchStart={(e) => {
+          startX.current = e.touches[0].clientX;
+        }}
+        onTouchEnd={(e) => {
+          if (startX.current === null) return;
+          const delta = e.changedTouches[0].clientX - startX.current;
+          if (delta > 40) goTo(active - 1);
+          if (delta < -40) goTo(active + 1);
+          startX.current = null;
+        }}
+      >
+        {items.map((item, index) => {
+          const offset = index - active;
+          const abs = Math.abs(offset);
+          const translateX = offset * 68;
+          const scale = index === active ? 1 : 0.88 - abs * 0.05;
+          const opacity = index === active ? 1 : 0.36;
+          const zIndex = items.length - abs;
+          return (
+            <button
+              type="button"
+              key={item.stage}
+              className="cases-card-button"
+              style={{ zIndex }}
+              onClick={() => setActive(index)}
+            >
+              <div
+                className="cases-card-transform"
+                style={{
+                  transform: `translateX(${translateX}%) scale(${scale})`,
+                  opacity,
+                }}
+              >
+                <CaseStageCard item={item} isActive={index === active} />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="case-dots">
+        {items.map((item, index) => (
+          <button
+            key={item.stage}
+            aria-label={item.stage}
+            className={index === active ? "case-dot is-active" : "case-dot"}
+            onClick={() => setActive(index)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function SnapshotMap() {
+  const blocks = [
+    { label: "Позиционирование", span: "wide", note: "27%" },
+    { label: "Структура", span: "wide", note: "27%" },
+    { label: "Экономика", span: "medium", note: "18%" },
+    { label: "Клиенты", span: "small", note: "14%" },
+    { label: "Продукт", span: "small", note: "14%" },
+  ];
+
+  return (
+    <div className="snapshot-map-card">
+      <h3 className="analysis-left-title">Из чего собирается гипотеза Snapshot</h3>
+      <p className="snapshot-builder-copy">
+        Мы не собираем ответы ради красивого отчёта. Каждый блок влияет на то,
+        какие ограничения будут найдены, какие рычаги роста подсвечены и что
+        именно попадёт в платную версию как план усиления.
+      </p>
+
+      <div className="snapshot-map-grid">
+        {blocks.map((block) => (
+          <div key={block.label} className={`snapshot-map-item ${block.span}`}>
+            <span className="snapshot-map-note">{block.note}</span>
+            <strong>{block.label}</strong>
+            <small>
+              {block.label === "Позиционирование" && "Что обещаете рынку и почему вам должны верить."}
+              {block.label === "Структура" && "Как устроен бизнес, где возникает трение и кто влияет на деньги."}
+              {block.label === "Экономика" && "Маржа, стоимость продаж, операционная нагрузка и денежные потоки."}
+              {block.label === "Клиенты" && "Кто приносит выручку, возвращается и окупает усилия команды."}
+              {block.label === "Продукт" && "Что именно продаётся, где скрыт рост и где ломается ценность."}
+            </small>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function OfferCard({ title, icon, price, href, caption }: { title: string; icon: string; price: string; href: string; caption: string }) {
+  return (
+    <div className="offer-card tilt-card">
+      <div className="offer-card-inner tilt-inner">
+        <div className="offer-top">
+          <img src={icon} alt="" className="offer-icon" />
+          <div>
+            <div className="offer-title">{title}</div>
+            <div className="offer-caption">{caption}</div>
+          </div>
+        </div>
+        <div className="offer-bottom">
+          <div className="offer-price">{price}</div>
+          <a href={href} className="tg-gradient-btn">
+            Перейти
+          </a>
         </div>
       </div>
     </div>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="site-footer">
+      <div className="site-footer-inner">
+        <div className="footer-brand">Revenue Snapshot</div>
+        <div className="footer-links">
+          <a href="/terms-of-use">Terms of Use</a>
+          <a href="/privacy-policy">Privacy Policy</a>
+          <a href="https://t.me/growth_avenue_company">Telegram</a>
+        </div>
+      </div>
+    </footer>
   );
 }
 
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
-
-  const clientsBase = parseNumeric(clientsInput, 0);
-  const checkBase = parseNumeric(checkInput, 0);
-
   const [sales, setSales] = useState(0);
   const [retention, setRetention] = useState(0);
   const [upsell, setUpsell] = useState(0);
   const [opexEff, setOpexEff] = useState(0);
-
-  const [history, setHistory] = useState<
-    Array<{
-      clientsInput: string;
-      checkInput: string;
-      sales: number;
-      retention: number;
-      upsell: number;
-      opexEff: number;
-    }>
-  >([]);
-
-  const [cursor, setCursor] = useState({ x: -200, y: -200 });
+  const [activeId, setActiveId] = useState("hero");
+  const [cursor, setCursor] = useState({ x: -240, y: -240 });
   const frameRef = useRef<number | null>(null);
 
-  const payUrl = "#";
-  const tgContactUrl = "https://t.me/growth_avenue_company";
-  const waContactUrl = "https://wa.me/995555163833";
+  const clientsBase = parseNumeric(clientsInput, 0);
+  const checkBase = parseNumeric(checkInput, 0);
+
+  useEffect(() => {
+    const sections = ["hero", "preview", "goals", "cases", "analysis", "try"];
+    const observers = sections
+      .map((id) => document.getElementById(id))
+      .filter(Boolean) as HTMLElement[];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) setActiveId(entry.target.id);
+        });
+      },
+      { rootMargin: "-30% 0px -55% 0px", threshold: 0.05 }
+    );
+
+    observers.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -860,7 +528,6 @@ export default function Home() {
     };
 
     window.addEventListener("mousemove", onMove, { passive: true });
-
     return () => {
       window.removeEventListener("mousemove", onMove);
       if (frameRef.current) cancelAnimationFrame(frameRef.current);
@@ -868,10 +535,7 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const tiltCards = Array.from(
-      document.querySelectorAll<HTMLElement>(".tilt-card")
-    );
-
+    const tiltCards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
     const cleanups: Array<() => void> = [];
 
     tiltCards.forEach((card) => {
@@ -880,105 +544,27 @@ export default function Home() {
 
       const handleMove = (e: MouseEvent) => {
         const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-
-        const px = x / rect.width;
-        const py = y / rect.height;
-
-        const rotateY = (px - 0.5) * 9;
-        const rotateX = (0.5 - py) * 9;
-
-        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
+        const px = (e.clientX - rect.left) / rect.width;
+        const py = (e.clientY - rect.top) / rect.height;
+        const rotateY = (px - 0.5) * 8;
+        const rotateX = (0.5 - py) * 8;
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
       };
 
       const handleLeave = () => {
-        inner.style.transform =
-          "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+        inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px)";
       };
 
       card.addEventListener("mousemove", handleMove);
       card.addEventListener("mouseleave", handleLeave);
-
       cleanups.push(() => {
         card.removeEventListener("mousemove", handleMove);
         card.removeEventListener("mouseleave", handleLeave);
       });
     });
 
-    return () => {
-      cleanups.forEach((fn) => fn());
-    };
+    return () => cleanups.forEach((fn) => fn());
   }, []);
-
-  const pushHistory = () => {
-    setHistory((prev) => [
-      ...prev,
-      {
-        clientsInput,
-        checkInput,
-        sales,
-        retention,
-        upsell,
-        opexEff,
-      },
-    ]);
-  };
-
-  const handleUndo = () => {
-    setHistory((prev) => {
-      if (!prev.length) return prev;
-
-      const last = prev[prev.length - 1];
-
-      setClientsInput(last.clientsInput);
-      setCheckInput(last.checkInput);
-      setSales(last.sales);
-      setRetention(last.retention);
-      setUpsell(last.upsell);
-      setOpexEff(last.opexEff);
-
-      return prev.slice(0, -1);
-    });
-  };
-
-  const handleReset = () => {
-    pushHistory();
-    setClientsInput("20");
-    setCheckInput("2000");
-    setSales(0);
-    setRetention(0);
-    setUpsell(0);
-    setOpexEff(0);
-  };
-
-  const data = useMemo(() => {
-    const safeClients = Math.max(0, clientsBase);
-    const safeCheck = Math.max(0, checkBase);
-
-    const newClients = safeClients * (1 + sales * 0.6);
-    const retainedRevenueLift = 1 + retention * 0.35;
-    const avgCheck = safeCheck * (1 + upsell * 0.7);
-
-    const revenue = newClients * avgCheck * retainedRevenueLift;
-    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
-    const support = revenue * 0.06 * (1 + retention * 0.25);
-    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
-
-    const costs = salesCost + support + opex;
-    const profit = revenue - costs;
-
-    return {
-      clients: newClients,
-      avgCheck,
-      revenue,
-      salesCost,
-      support,
-      opex,
-      costs,
-      profit,
-    };
-  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
 
   const base = useMemo(() => {
     const revenue = clientsBase * checkBase;
@@ -988,3595 +574,935 @@ export default function Home() {
     const costs = salesCost + support + opex;
     const profit = revenue - costs;
 
-    return {
-      clients: clientsBase,
-      avgCheck: checkBase,
-      revenue,
-      salesCost,
-      support,
-      opex,
-      costs,
-      profit,
-    };
+    return { revenue, salesCost, support, opex, costs, profit };
   }, [clientsBase, checkBase]);
 
+  const data = useMemo(() => {
+    const safeClients = Math.max(0, clientsBase);
+    const safeCheck = Math.max(0, checkBase);
+    const newClients = safeClients * (1 + sales * 0.6);
+    const retainedRevenueLift = 1 + retention * 0.35;
+    const avgCheck = safeCheck * (1 + upsell * 0.7);
+    const revenue = newClients * avgCheck * retainedRevenueLift;
+    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
+    const support = revenue * 0.06 * (1 + retention * 0.25);
+    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
+    const costs = salesCost + support + opex;
+    const profit = revenue - costs;
+
+    return { clients: newClients, avgCheck, revenue, salesCost, support, opex, costs, profit };
+  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
+
   const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
-
-  const revDelta = safeDiv(data.revenue - base.revenue, base.revenue);
-  const costDelta = safeDiv(data.costs - base.costs, base.costs);
-  const profitDelta = safeDiv(data.profit - base.profit, base.profit);
-
-  const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
-  const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(
-    data.salesCost - base.salesCost,
-    base.salesCost
-  );
-  const opexSupportDelta = safeDiv(
-    data.opex + data.support - (base.opex + base.support),
-    base.opex + base.support
-  );
-
-  const strongestLever = useMemo(() => {
-    const levers = [
-      { name: "Эффективность продаж", value: Math.abs(sales * 0.6) },
-      { name: "Повторные продажи", value: Math.abs(retention * 0.5) },
-      { name: "Средний чек", value: Math.abs(upsell * 0.7) },
-      { name: "Загрузка команды", value: Math.abs(opexEff * 0.8) },
-    ];
-
-    levers.sort((a, b) => b.value - a.value);
-    return levers[0];
-  }, [sales, retention, upsell, opexEff]);
-
-  const hasInteraction =
-    Math.abs(sales) > 0.001 ||
-    Math.abs(retention) > 0.001 ||
-    Math.abs(upsell) > 0.001 ||
-    Math.abs(opexEff) > 0.001;
-
-  const estimatedGap = Math.max(
-    0,
-    Math.round(
-      (data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45
-    )
-  );
+  const deltas = {
+    revenue: safeDiv(data.revenue - base.revenue, base.revenue),
+    costs: safeDiv(data.costs - base.costs, base.costs),
+    profit: safeDiv(data.profit - base.profit, base.profit),
+  };
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#041027] text-[#fefefe]">
+    <main className="landing-shell">
+      <Header activeId={activeId} />
+
       <div
         className="cursor-glow"
-        style={{
-          transform: `translate(${cursor.x - 90}px, ${cursor.y - 90}px)`,
-        }}
+        style={{ transform: `translate3d(${cursor.x - 120}px, ${cursor.y - 120}px, 0)` }}
       />
+      <div className="aurora aurora-a" />
+      <div className="aurora aurora-b" />
+      <div className="aurora aurora-c" />
+      <div className="line-grid" />
+      <div className="vignette" />
 
-      <div className="pointer-events-none absolute inset-0">
-        <div className="aurora aurora-1" />
-        <div className="aurora aurora-2" />
-        <div className="aurora aurora-3" />
-        <div className="aurora aurora-4" />
-        <div className="line-grid" />
-        <div className="vignette" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-7xl px-4 py-5 md:px-8 md:py-10">
-        <header className="sticky-header mb-7 md:mb-10">
-          <div className="header-row">
-            <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
-
-            <div className="header-actions">
-              <a
-                href={tgContactUrl}
-                className="contact-btn contact-btn-invert"
-                target="_blank"
-                rel="noreferrer"
-              >
-                TG
+      <div className="page-wrap">
+        <section id="hero" className="hero-shell">
+          <div className="hero-copy">
+            <div className="section-kicker">Revenue Snapshot</div>
+            <h1 className="hero-title">
+              Показываем бесплатный слой так, чтобы стало интересно,
+              <span> что именно скрыто в полной версии.</span>
+            </h1>
+            <p className="hero-text">
+              Landing page не должна пересказывать всю услугу. Она должна дать
+              почувствовать логику Snapshot, подсветить глубину анализа и оставить
+              ощущение, что основная ценность начинается сразу после оплаты.
+            </p>
+            <div className="hero-tags">
+              <span className="hero-tag is-active">Экономика</span>
+              <span className="hero-tag">Рычаги роста</span>
+              <span className="hero-tag">Гипотеза</span>
+            </div>
+            <div className="hero-actions">
+              <a href="#preview" className="tg-gradient-btn">
+                Смотреть превью
               </a>
-
-              <a
-                href={waContactUrl}
-                className="contact-btn contact-btn-invert"
-                target="_blank"
-                rel="noreferrer"
-              >
-                WA
-              </a>
-
-              <a
-                href="#how-it-works"
-                className="ghost-link hidden md:inline-flex"
-              >
-                Как это работает
-              </a>
-
-              <a
-                href="#try"
-                className="tg-gradient-btn tg-gradient-btn-header inline-flex"
-              >
-                Попробовать Snapshot
+              <a href="#try" className="hero-secondary-btn">
+                Полная версия
               </a>
             </div>
           </div>
-        </header>
 
-        <section className="hero-section mb-16">
-          <div className="hero-grid hero-grid-frame">
-            <div className="hero-left">
-              <h1 className="hero-main-title">Revenue Snapshot</h1>
+          <div className="glass-card hero-panel">
+            <div className="hero-panel-topline">
+              <span>Preview Layer</span>
+              <span>Interactive</span>
+            </div>
+            <div className="hero-panel-grid">
+              <div className="hero-stat-card">
+                <small>Revenue</small>
+                <strong>{fmtMoney(data.revenue)}</strong>
+                <span>{pct(deltas.revenue)}</span>
+              </div>
+              <div className="hero-stat-card">
+                <small>Costs</small>
+                <strong>{fmtMoney(data.costs)}</strong>
+                <span>{pct(deltas.costs)}</span>
+              </div>
+              <div className="hero-stat-card wide">
+                <small>Что видно бесплатно</small>
+                <strong>Сдвиг метрик и главный контраст</strong>
+                <span>Но без полной декомпозиции приоритетов и плана.</span>
+              </div>
+            </div>
+          </div>
+        </section>
 
-              <div className="hero-main-subtitle">
-                стратегическая диагностика
-                <br />
-                экономики вашего бизнеса
+        <section id="preview" className="content-section">
+          <SectionHead
+            kicker="Интерактивное превью"
+            title="Бесплатный слой показывает контраст. Платный — объясняет, почему он появляется."
+            copy="Пользователь видит, как меняются деньги и где появляется потенциал. Но выводы, логика ограничений и решение остаются за пределами превью."
+          />
+
+          <div className="preview-grid">
+            <div className="preview-main">
+              <div className="preview-inputs-row">
+                <label className="glass-card input-card">
+                  <span>Клиентов / месяц</span>
+                  <input
+                    value={clientsInput}
+                    onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+                    inputMode="numeric"
+                  />
+                </label>
+                <label className="glass-card input-card">
+                  <span>Средний чек</span>
+                  <input
+                    value={checkInput}
+                    onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+                    inputMode="numeric"
+                  />
+                </label>
               </div>
 
-              <p className="hero-main-copy">
-                Узнайте, какое изменение в модели способно дать наиболее сильный
-                эффект на выручку, и где сейчас скрываются главные точки потери
-                денег.
+              <div className="preview-metrics-grid">
+                <PreviewMetric title="Выручка" value={fmtMoney(data.revenue)} delta={deltas.revenue} />
+                <PreviewMetric title="Прибыль" value={fmtMoney(data.profit)} delta={deltas.profit} />
+                <PreviewMetric title="Расходы" value={fmtMoney(data.costs)} delta={deltas.costs} invert />
+              </div>
+
+              <div className="sliders-grid">
+                <SliderCard title="Эффективность продаж" hint="Влияет на объём клиентов и на sales cost." value={sales} onChange={setSales} />
+                <SliderCard title="Повторные продажи" hint="Повышает выручку за счёт возвратов и retention." value={retention} onChange={setRetention} />
+                <SliderCard title="Средний чек" hint="Показывает эффект монетизации и upsell." value={upsell} onChange={setUpsell} />
+                <SliderCard title="Загрузка команды" hint="Отражает влияние на opex и операционную эффективность." value={opexEff} onChange={setOpexEff} />
+              </div>
+            </div>
+
+            <aside className="glass-card preview-aside">
+              <div className="preview-aside-kicker">Что человек видит сейчас</div>
+              <div className="preview-aside-title">Оценочный резерв</div>
+              <div className="preview-aside-money">
+                {fmtMoney(Math.max(0, Math.round((data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45)))}
+              </div>
+              <div className="preview-rows">
+                <div>
+                  <span>Выручка</span>
+                  <strong>{pct(deltas.revenue)}</strong>
+                </div>
+                <div>
+                  <span>Расходы</span>
+                  <strong>{pct(deltas.costs)}</strong>
+                </div>
+                <div>
+                  <span>Прибыль</span>
+                  <strong>{pct(deltas.profit)}</strong>
+                </div>
+              </div>
+              <p className="preview-aside-copy">
+                В платной версии на этом месте появляется объяснение: какой именно
+                блок бизнеса создаёт резерв, почему он возник и что нужно менять в
+                первую очередь.
               </p>
-
-              <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
-                <div className="hero-highlight-chip">MVP</div>
-                <div className="hero-highlight-chip">CashCow</div>
-                <div className="hero-highlight-chip">Scaling</div>
-              </div>
-
-              <div className="hero-actions">
-                <a href="#try" className="tg-gradient-btn inline-flex">
-                  Попробовать Snapshot
-                </a>
-                <a
-                  href="#preview"
-                  className="ghost-link ghost-link-large ghost-link-dark inline-flex"
-                >
-                  Побаловаться
-                </a>
-              </div>
-            </div>
-
-            <HeroEconomyChart />
-          </div>
-        </section>
-
-        <section id="how-it-works" className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Как это работает</div>
-            <h2 className="section-title">
-              Путь от простых ответов к комплексному результату
-            </h2>
-            <p className="section-copy">
-              От базовых параметров — к полной картине экономики бизнеса:
-              ограничения, точки роста и сценарии развития.
-            </p>
-          </div>
-
-          <div className="journey-compact">
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">1</div>
-                <div className="journey-compact-arrow" />
-              </div>
-              <div className="journey-compact-title">
-                Фиксация параметров бизнеса
-              </div>
-              <div className="journey-compact-text">
-                Определяются ключевые показатели текущей модели: экономика,
-                структура продаж, ресурсы и ограничения. Это формирует основу для
-                дальнейшего анализа.
-              </div>
-            </div>
-
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">2</div>
-                <div className="journey-compact-arrow" />
-              </div>
-              <div className="journey-compact-title">
-                Сборка аналитической модели
-              </div>
-              <div className="journey-compact-text">
-                Инструмент структурирует данные и формирует целостную картину
-                бизнеса: выявляет ограничения, точки роста и взаимосвязи между
-                показателями.
-              </div>
-            </div>
-
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">3</div>
-              </div>
-              <div className="journey-compact-title">Результат Snapshot</div>
-              <div className="journey-compact-text">
-                Вы получаете аналитический срез бизнеса с ключевыми выводами:
-                приоритетной точкой роста, оценкой экономического эффекта
-                изменений и пониманием устойчивости текущей модели.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section id="preview" className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Интерактивное превью</div>
-            <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
-            <p className="section-copy">
-              Здесь пользователь меняет ключевые параметры и видит
-              предварительные сигналы. Полный разбор открывается после оплаты.
-              Модель на этой странице не передает и не запоминает введенные вами
-              данные, поэтому сценарий безопасен для быстрого теста.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div>
-              <div className="input-grid mb-6 gap-3">
-                <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">
-                    Клиентов / месяц
-                  </span>
-
-                  <div className="input-wrap input-wrap-primary">
-                    <span className="input-badge">ввод</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={clientsInput}
-                      onFocus={pushHistory}
-                      onChange={(e) =>
-                        setClientsInput(normalizeDigits(e.target.value))
-                      }
-                      className="glass-input glass-input-primary"
-                      placeholder="Например, 20"
-                    />
-                  </div>
-                </label>
-
-                <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">
-                    Средний чек
-                  </span>
-
-                  <div className="input-wrap input-wrap-primary">
-                    <span className="input-badge">ввод</span>
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={checkInput}
-                      onFocus={pushHistory}
-                      onChange={(e) =>
-                        setCheckInput(normalizeDigits(e.target.value))
-                      }
-                      className="glass-input glass-input-primary"
-                      placeholder="Например, 2000"
-                    />
-                  </div>
-                </label>
-              </div>
-
-              <section className="dashboard-grid">
-                <TopMetricCard
-                  title="Выручка"
-                  value={fmtMoney(data.revenue)}
-                  delta={revDelta}
-                  type="revenue"
-                />
-                <TopMetricCard
-                  title="Прибыль"
-                  value={fmtMoney(data.profit)}
-                  delta={profitDelta}
-                  type="profit"
-                />
-                <TopMetricCard
-                  title="Расходы"
-                  value={fmtMoney(data.costs)}
-                  delta={costDelta}
-                  type="costs"
-                  invert
-                />
-              </section>
-
-              <div className="mt-5">
-                <div className="mb-3 text-sm text-white/58">
-                  Формирование экономики
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <ModelCard
-                    title="Клиенты"
-                    value={Math.round(data.clients)}
-                    delta={clientsDelta}
-                  />
-                  <ModelCard
-                    title="Средний чек"
-                    value={fmtMoney(data.avgCheck)}
-                    delta={avgCheckDelta}
-                  />
-                  <ModelCard
-                    title="Sales cost"
-                    value={fmtMoney(data.salesCost)}
-                    delta={salesCostDelta}
-                  />
-                  <ModelCard
-                    title="Opex + Support"
-                    value={fmtMoney(data.opex + data.support)}
-                    delta={opexSupportDelta}
-                    invert
-                  />
-                </div>
-              </div>
-
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-                <div className="text-sm text-white/58">Рычаги управления</div>
-
-                <div className="preview-actions-inline">
-                  <button
-                    type="button"
-                    onClick={handleUndo}
-                    className="reset-link"
-                    disabled={!history.length}
-                  >
-                    Отменить действие
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="reset-link"
-                  >
-                    Сбросить
-                  </button>
-                </div>
-              </div>
-
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Slider
-                  title="Эффективность продаж"
-                  subtitle="Влияние на конверсию и поток клиентов."
-                  value={sales}
-                  set={setSales}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Повторные продажи"
-                  subtitle="Влияние на устойчивость выручки."
-                  value={retention}
-                  set={setRetention}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Средний чек"
-                  subtitle="Рост денег без роста трафика."
-                  value={upsell}
-                  set={setUpsell}
-                  onStart={pushHistory}
-                />
-                <Slider
-                  title="Загрузка команды"
-                  subtitle="Влияние на расходы и маржу."
-                  value={opexEff}
-                  set={setOpexEff}
-                  onStart={pushHistory}
-                />
-              </div>
-            </div>
-
-            <aside className="glass-card glare-card h-fit lg:sticky lg:top-24">
-              <div className="reserve-kicker">Оценочный резерв</div>
-
-              <div className="hero-preview-box mt-4 glare-card-lite">
-                <div className="reserve-amount">
-                  ≈ {fmtMoney(estimatedGap)} / мес
-                </div>
-                <p className="mt-4 text-sm leading-7 text-white/65">
-                  Это только механика. Полный разбор раскрывает реальные
-                  возможности при текущей ситуации вашего бизнеса.
-                </p>
-              </div>
-
-              <div className="side-note-card mt-4 glare-card-lite">
-                {hasInteraction ? (
-                  <>
-                    <div className="text-xs uppercase tracking-[0.14em] text-white/42">
-                      Наиболее заметный рычаг
-                    </div>
-                    <div className="mt-2 text-base font-semibold text-white/92">
-                      {strongestLever.name}
-                    </div>
-                    <div className="mt-3 text-sm leading-relaxed text-white/68">
-                      Сейчас именно этот параметр заметнее всего влияет на общую
-                      динамику модели.
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-sm leading-relaxed text-white/68">
-                    Подвигайте ползунки ниже, чтобы увидеть, какой рычаг заметнее
-                    всего влияет на экономику модели.
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <Row label="Выручка" delta={revDelta} />
-                <Row label="Расходы" delta={costDelta} invert />
-                <Row label="Прибыль" delta={profitDelta} />
-              </div>
-
-              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">
-                Попробовать Snapshot
+              <a href="#try" className="tg-gradient-btn preview-aside-btn">
+                Перейти к полной версии
               </a>
             </aside>
           </div>
         </section>
 
-        <section className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Что вы получите</div>
-            <h2 className="section-title">Цели Revenue Snapshot</h2>
-            <p className="section-copy">
-              Понять, каким должен быть первый{" "}
-              <span className="accent-word">верный</span> шаг к построению новой
-              стратегии для новых рубежей.
-            </p>
-          </div>
+        <section id="goals" className="content-section">
+          <SectionHead
+            kicker="Цели Revenue Snapshot"
+            title="Человек должен увидеть не просто красивые карточки, а почувствовать разницу между демонстрацией и настоящей стратегической глубиной."
+            copy="Тексты и логика карточек сохранены, но сам блок стал чище, собраннее и ближе к продуктовой подаче, где интрига строится через недосказанность, а не через перегруз."
+          />
 
-          <div className="results-grid-2x2">
-            <ResultDocCard
-              tab="ECONOMIC RATE"
+          <div className="goals-grid">
+            <GoalCard
+              tab="EXECUTIVE SUMMARY"
               title="Executive Summary"
-              text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент."
+              text="Краткая сборка ключевой ситуации бизнеса, чтобы сразу было видно, на чём держится текущая выручка и где прячется ограничение роста."
             />
-
-            <ResultDocCard
+            <GoalCard
               tab="GROWTH LIMIT"
               title="Key Conclusions"
               text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели."
             />
-
-            <ResultDocCard
+            <GoalCard
               tab="SOLUTION"
               title="Strategy&Practice"
               text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода."
             />
-
-<ResultDocCard
-  tab="JTBD"
-  title="RoadMap"
-  text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
-  bottomGlow
-/>
+            <GoalCard
+              tab="JTBD"
+              title="RoadMap"
+              text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP."
+              bottomGlow
+            />
           </div>
-
-<div className="results-bottom-row">
-  <div className="results-roadmap-note">
-    После получения и изучения результатов у Вас есть возможность
-    назначить <span>30-минутную встречу</span> с нашими C-level
-    специалистами в сфере Маркетинга и Продаж{" "}
-    <span>для декомпозиции результатов</span>.
-  </div>
-
-  <a href={payUrl} className="result-doc-start-btn results-start-btn">
-    Начать
-  </a>
-</div>
         </section>
 
-        <section className="mb-16 stage-hover-map">
-          <div className="section-head">
-            <div className="section-kicker">Для кого этот инструмент</div>
-            <h2 className="section-title">
-              Где Revenue Snapshot показал результат
-            </h2>
-          </div>
-
-          <StageCarousel />
+        <section id="cases" className="content-section cases-section">
+          <SectionHead
+            kicker="Где Revenue Snapshot показал результат"
+            title="Карусель теперь показывает не просто стадию, а законченный срез кейса: вводные сверху, измеримый результат снизу, а ниши остаются привязанными к фронтовой карточке."
+            copy="Логика блока стала ближе к product showcase: фронтовая карточка продаёт глубину кейса, соседние создают интригу, но не спорят с главным фокусом."
+          />
+          <CasesCarousel />
         </section>
 
-        <section className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title">
-              После оплаты пользователь переходит в Telegram
-            </h2>
-            <p className="section-copy">
-              Telegram используется как удобный интерфейс сбора данных. Ответы
-              анализируются автоматически и превращаются в структурированный
-              результат.
-            </p>
-          </div>
+        <section id="analysis" className="content-section analysis-section">
+          <SectionHead
+            kicker="Как строится Snapshot"
+            title="Не анкета, а карта сигналов, из которых собирается гипотеза роста."
+            copy="Размер блоков здесь не декоративный. Он показывает, где для нас больше веса при построении гипотезы, где находятся деньги и какие ответы сильнее всего влияют на платную версию результата."
+          />
 
-          <div className="analysis-grid">
-            <SnapshotStructure />
-
-            <div className="analysis-right-card analysis-right-card-plain">
-              <div className="start-cards-row">
-                <StartCard
+          <div className="analysis-grid-v2">
+            <SnapshotMap />
+            <div className="analysis-right-card">
+              <div className="start-cards-row-v2">
+                <OfferCard
                   title="Страт сессия"
                   icon="/stratsession.svg"
                   price="$770"
-                  href={tgContactUrl}
+                  href="https://t.me/growth_avenue_company"
+                  caption="Разбор ситуации с командой и приоритизация гипотез."
                 />
-
-                <StartCard
-                  title="Snapshot"
+                <OfferCard
+                  title="Playground"
                   icon="/snapshot.svg"
                   price="$114"
-                  href={payUrl}
+                  href="#"
+                  caption="Самостоятельное прохождение Snapshot и доступ к полной версии."
                 />
               </div>
             </div>
           </div>
         </section>
 
-        <section id="try" className="pb-8">
-          <div className="glass-card glare-card cta-card">
+        <section id="try" className="content-section cta-section">
+          <div className="glass-card cta-card-v2">
             <div>
-              <div className="section-kicker">CTA</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
-                Откройте полный Revenue Snapshot
+              <div className="section-kicker">Полная версия</div>
+              <h2 className="section-title small-top">
+                Бесплатно вы видите контур. После оплаты открывается логика
+                решения.
               </h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
-                После оплаты пользователь переходит в Telegram, проходит
-                диагностику и получает структурированный результат с финансовой
-                логикой, проблемными зонами и главным направлением усиления.
+              <p className="section-copy limited">
+                Полная версия показывает не только сдвиг метрик, но и приоритеты,
+                управленческие выводы, структуру ограничений и рабочий план на
+                следующий шаг.
               </p>
             </div>
-
-            <div className="cta-box glare-card-lite">
-              <div className="text-sm text-white/55">Следующий шаг</div>
-              <div className="mt-2 text-2xl font-semibold text-white">
-                Попробовать Snapshot
-              </div>
-              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">
-                Получить Revenue Snapshot
+            <div className="cta-card-box">
+              <div className="cta-card-label">Следующий шаг</div>
+              <div className="cta-card-title">Получить Revenue Snapshot</div>
+              <a href="#" className="tg-gradient-btn">
+                Оплатить и открыть полную версию
               </a>
-              <div className="mt-3 text-xs text-white/45">
-                Здесь можно поставить ссылку на оплату
-              </div>
             </div>
           </div>
         </section>
       </div>
 
+      <Footer />
+
       <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
+        :root {
+          --bg: #041027;
+          --bg-2: #0b1d3a;
+          --fg: rgba(255, 255, 255, 0.96);
+          --muted: rgba(255, 255, 255, 0.68);
+          --line: rgba(255, 255, 255, 0.1);
+          --line-2: rgba(255, 255, 255, 0.14);
+          --glass: linear-gradient(180deg, rgba(224, 225, 227, 0.11) 0%, rgba(224, 225, 227, 0.06) 100%);
+          --yellow: #f7d237;
+          --yellow-soft: rgba(247, 210, 55, 0.22);
         }
 
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body {
-          background: #041027;
+          margin: 0;
+          background: var(--bg);
+          color: var(--fg);
+          font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+        a { color: inherit; text-decoration: none; }
+        button, input { font: inherit; }
+        img { display: block; max-width: 100%; }
+
+        .landing-shell {
+          position: relative;
+          overflow: clip;
+          min-height: 100vh;
+          background: var(--bg);
         }
 
-        img {
-          max-width: 100%;
+        .page-wrap {
+          width: min(1260px, calc(100vw - 32px));
+          margin: 0 auto;
+          padding: 104px 0 48px;
+          position: relative;
+          z-index: 2;
+        }
+
+        .content-section { margin-top: 104px; }
+        .section-head { max-width: 960px; margin-bottom: 26px; }
+        .section-kicker {
+          display: inline-flex;
+          align-items: center;
+          min-height: 32px;
+          padding: 0 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(247, 210, 55, 0.24);
+          background: rgba(247, 210, 55, 0.08);
+          color: var(--yellow);
+          font-size: 12px;
+          letter-spacing: 0.14em;
+          text-transform: uppercase;
+        }
+        .section-title {
+          margin: 14px 0 0;
+          font-size: clamp(32px, 5vw, 60px);
+          line-height: 0.98;
+          letter-spacing: -0.06em;
+          font-weight: 700;
+        }
+        .section-title.small-top { margin-top: 16px; }
+        .section-copy {
+          margin: 18px 0 0;
+          max-width: 760px;
+          font-size: 16px;
+          line-height: 1.72;
+          color: var(--muted);
+        }
+        .section-copy.limited { max-width: 620px; }
+
+        .site-header {
+          position: sticky;
+          top: 0;
+          z-index: 40;
+          padding: 12px 16px 0;
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+        }
+        .site-header-inner {
+          width: min(1260px, calc(100vw - 32px));
+          margin: 0 auto;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 18px;
+          min-height: 72px;
+          padding: 10px 14px;
+          border: 1px solid var(--line-2);
+          border-radius: 24px;
+          background: rgba(4, 16, 39, 0.68);
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+        }
+        .brand-mark {
+          display: inline-flex;
+          width: 112px;
+          opacity: 0.96;
+        }
+        .site-nav {
+          display: flex;
+          justify-content: center;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .nav-link {
+          padding: 10px 14px;
+          border-radius: 999px;
+          color: rgba(255,255,255,0.58);
+          transition: 0.25s ease;
+        }
+        .nav-link:hover,
+        .nav-link.is-active {
+          color: #fff;
+          background: rgba(255,255,255,0.06);
+        }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .header-chip,
+        .header-cta,
+        .hero-secondary-btn,
+        .case-arrow,
+        .case-dot {
+          transition: 0.22s ease;
+        }
+        .header-chip {
+          padding: 10px 12px;
+          border-radius: 999px;
+          border: 1px solid var(--line-2);
+          color: rgba(255,255,255,0.84);
+        }
+        .header-cta,
+        .hero-secondary-btn {
+          padding: 12px 16px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,0.14);
+          background: rgba(255,255,255,0.04);
+          color: #fff;
+        }
+        .header-cta:hover,
+        .hero-secondary-btn:hover,
+        .header-chip:hover,
+        .case-arrow:hover,
+        .case-dot:hover {
+          transform: translateY(-1px);
+          border-color: rgba(255,255,255,0.22);
         }
 
         .cursor-glow {
           position: fixed;
-          left: 0;
-          top: 0;
-          width: 180px;
-          height: 180px;
-          border-radius: 9999px;
+          inset: 0 auto auto 0;
+          width: 240px;
+          height: 240px;
+          border-radius: 50%;
           pointer-events: none;
           z-index: 1;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.11) 0%,
-            rgba(247, 210, 55, 0.06) 34%,
-            rgba(247, 210, 55, 0.015) 60%,
-            transparent 78%
-          );
+          background: radial-gradient(circle, rgba(247,210,55,0.16) 0%, rgba(247,210,55,0.08) 40%, transparent 72%);
           filter: blur(24px);
-          opacity: 0.4;
           mix-blend-mode: screen;
-          transition: transform 0.08s linear;
+        }
+        .aurora,
+        .line-grid,
+        .vignette {
+          pointer-events: none;
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+        }
+        .aurora {
+          filter: blur(70px);
+          opacity: 0.34;
+          animation: drift 18s ease-in-out infinite;
+        }
+        .aurora-a { background: radial-gradient(circle at 18% 24%, rgba(91, 168, 255, 0.22), transparent 32%); }
+        .aurora-b { background: radial-gradient(circle at 82% 18%, rgba(247, 210, 55, 0.18), transparent 30%); animation-duration: 22s; }
+        .aurora-c { background: radial-gradient(circle at 58% 78%, rgba(156, 109, 255, 0.16), transparent 36%); animation-duration: 26s; }
+        .line-grid {
+          background-image: linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+          background-size: 56px 56px;
+          mask-image: linear-gradient(180deg, rgba(0,0,0,0.8), transparent 82%);
+        }
+        .vignette {
+          background: radial-gradient(circle at center, transparent 46%, rgba(4,16,39,0.72) 100%);
         }
 
         .glass-card {
           position: relative;
-          border-radius: 24px;
-          padding: 22px;
           overflow: hidden;
-          isolation: isolate;
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.12) 0%,
-            rgba(224, 225, 227, 0.08) 100%
-          );
-border: 1px solid rgba(200, 200, 200, 0.15);
-box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 18px 44px rgba(0, 0, 0, 0.16);
-          backdrop-filter: blur(18px) saturate(135%);
-          -webkit-backdrop-filter: blur(18px) saturate(135%);
+          border-radius: 28px;
+          background: var(--glass);
+          border: 1px solid rgba(255,255,255,0.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 20px 54px rgba(0,0,0,0.18);
+          backdrop-filter: blur(20px) saturate(140%);
+          -webkit-backdrop-filter: blur(20px) saturate(140%);
         }
-
         .glass-card::before {
           content: "";
           position: absolute;
           inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.75;
-          background: linear-gradient(
-            115deg,
-            rgba(255, 255, 255, 0.1) 0%,
-            rgba(255, 255, 255, 0.025) 18%,
-            rgba(255, 255, 255, 0.01) 34%,
-            rgba(255, 255, 255, 0.05) 48%,
-            rgba(255, 255, 255, 0.012) 64%,
-            rgba(255, 255, 255, 0.06) 82%,
-            rgba(255, 255, 255, 0.02) 100%
-          );
-        }
-
-        .glass-card::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.12;
-          mix-blend-mode: soft-light;
-          background-image:
-            radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22) 0 0.8px, transparent 1px),
-            radial-gradient(circle at 70% 30%, rgba(255, 255, 255, 0.16) 0 0.8px, transparent 1px),
-            radial-gradient(circle at 35% 75%, rgba(255, 255, 255, 0.18) 0 0.7px, transparent 0.9px),
-            radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.12) 0 0.7px, transparent 0.9px);
-          background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
-        }
-
-        .glass-card > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .soft-glow {
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 18px 50px rgba(0, 0, 0, 0.18);
-        }
-
-        .glare-card::before,
-        .glare-card-lite::before {
-          content: "";
-          position: absolute;
-          width: 34%;
-          height: 34%;
-          border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.11) 0%,
-            rgba(255, 255, 255, 0.05) 38%,
-            transparent 76%
-          );
-          filter: blur(34px);
-          pointer-events: none;
-          z-index: 0;
-          opacity: 0.8;
-        }
-
-        .glare-card > *,
-        .glare-card-lite > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .premium-glass {
-          position: relative;
-          overflow: hidden;
-          isolation: isolate;
-        }
-
-        .premium-glass::before {
-          content: "";
-          position: absolute;
-          inset: -20%;
-          z-index: 0;
-          pointer-events: none;
-          opacity: 0.18;
-          filter: blur(18px);
-          background: repeating-linear-gradient(
-            105deg,
-            rgba(255, 255, 255, 0.05) 0px,
-            rgba(255, 255, 255, 0.05) 2px,
-            transparent 12px,
-            transparent 42px
-          );
-          animation: premiumGlassShift 14s linear infinite;
-        }
-
-        .premium-glass::after {
-          content: "";
-          position: absolute;
-          inset: auto -10% -18% -10%;
-          height: 42%;
-          z-index: 0;
-          pointer-events: none;
-          filter: blur(42px);
-          opacity: 0.95;
-          mix-blend-mode: screen;
-          background:
-            radial-gradient(circle at 30% 40%, rgba(125, 255, 220, 0.34) 0%, transparent 42%),
-            radial-gradient(circle at 68% 50%, rgba(130, 120, 255, 0.32) 0%, transparent 44%),
-            radial-gradient(circle at 48% 44%, rgba(255, 255, 255, 0.12) 0%, transparent 36%);
-        }
-
-        .journey-compact-card:nth-child(1)::before,
-        .result-doc-card:nth-child(1) .result-doc-card-inner::before,
-        .metric-card:nth-child(1)::before,
-        .model-card:nth-child(1)::before,
-        .slider-card:nth-child(1)::before,
-        .hero-chart-box::before,
-        .snapshot-structure-card::before,
-        .cta-card::before {
-          left: 14%;
-          top: 10%;
-        }
-
-        .journey-compact-card:nth-child(2)::before,
-        .result-doc-card:nth-child(2) .result-doc-card-inner::before,
-        .metric-card:nth-child(2)::before,
-        .model-card:nth-child(2)::before,
-        .slider-card:nth-child(2)::before {
-          left: 58%;
-          top: 16%;
-        }
-
-        .journey-compact-card:nth-child(3)::before,
-        .result-doc-card:nth-child(3) .result-doc-card-inner::before,
-        .metric-card:nth-child(3)::before,
-        .model-card:nth-child(3)::before,
-        .slider-card:nth-child(3)::before {
-          left: 66%;
-          top: 42%;
-        }
-
-        .result-doc-card:nth-child(4) .result-doc-card-inner::before,
-        .slider-card:nth-child(4)::before,
-        .hero-preview-box::before,
-        .side-note-card::before,
-        .cta-box::before {
-          left: 22%;
-          top: 52%;
-        }
-
-        .sticky-header {
-          position: sticky;
-          top: 0;
-          z-index: 50;
-          margin: 0 -16px 18px;
-          padding: 12px 16px 10px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          background: linear-gradient(
-            180deg,
-            rgba(4, 16, 39, 0.94),
-            rgba(4, 16, 39, 0.7)
-          );
-          border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        .header-row {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .header-actions {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          flex-shrink: 0;
-          flex-wrap: wrap;
-          justify-content: flex-end;
-        }
-
-        .logo-main {
-          width: 216px;
-          height: 54px;
-          object-fit: contain;
-          object-position: left center;
-          display: block;
-          flex-shrink: 0;
-        }
-
-        .hero-section {
-          position: relative;
-          border-radius: 36px;
-          overflow: hidden;
-          padding: 34px 28px 30px;
-          min-height: 860px;
-        }
-
-        .hero-section::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background-image: url("/hero.svg");
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          opacity: 1;
-          z-index: 0;
-        }
-
-        .hero-section::after {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            90deg,
-            rgba(4, 16, 39, 0.24) 0%,
-            rgba(4, 16, 39, 0.1) 38%,
-            rgba(4, 16, 39, 0.04) 62%,
-            rgba(4, 16, 39, 0.08) 100%
-          );
-          z-index: 1;
-        }
-
-        .hero-grid {
-          display: grid;
-          gap: 22px;
-        }
-
-        .hero-grid-frame {
-          grid-template-columns: minmax(0, 1fr) minmax(520px, 0.92fr);
-          align-items: start;
-          position: relative;
-          z-index: 2;
-        }
-
-        .hero-left {
-          display: flex;
-          flex-direction: column;
-          min-height: 100%;
-          padding: 4px 6px 8px;
-        }
-
-        .hero-main-title {
-          margin: 0;
-          font-size: clamp(62px, 6.4vw, 110px);
-          line-height: 0.9;
-          letter-spacing: -0.07em;
-          font-weight: 700;
-          color: #ffffff;
-          max-width: 860px;
-        }
-
-        .hero-main-subtitle {
-          margin-top: 18px;
-          font-size: clamp(32px, 3vw, 56px);
-          line-height: 1.04;
-          letter-spacing: -0.04em;
-          font-weight: 700;
-          color: #ffffff;
-          max-width: 900px;
-        }
-
-        .hero-main-copy {
-          margin-top: 30px;
-          max-width: 760px;
-          font-size: 22px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.76);
-        }
-
-        .hero-highlights-row {
-          margin-top: 34px;
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 0;
-          border-radius: 22px;
-          overflow: hidden;
-          position: relative;
-          max-width: 760px;
-        }
-
-        .hero-highlights-row-unified {
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.1) 0%,
-            rgba(224, 225, 227, 0.07) 50%,
-            rgba(224, 225, 227, 0.05) 100%
-          );
-          backdrop-filter: blur(24px) saturate(135%);
-          -webkit-backdrop-filter: blur(24px) saturate(135%);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            0 18px 40px rgba(0, 0, 0, 0.18);
-        }
-
-        .hero-highlight-chip {
-          padding: 20px 18px;
-          color: white;
-          font-size: 22px;
-          font-weight: 700;
-          text-align: center;
-          white-space: nowrap;
-          line-height: 1.2;
-          position: relative;
-          background: transparent;
-        }
-
-        .hero-highlight-chip:not(:last-child)::after {
-          content: "";
-          position: absolute;
-          top: 14px;
-          right: 0;
-          width: 1px;
-          height: calc(100% - 28px);
-          background: rgba(255, 255, 255, 0.09);
-        }
-
-        .hero-actions {
-          margin-top: auto;
-          padding-top: 34px;
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          align-items: center;
-        }
-
-        .hero-visual-shell {
-          position: relative;
-          min-height: 100%;
-          display: flex;
-          align-items: flex-start;
-          justify-content: flex-end;
-          min-width: 0;
-        }
-
-        .hero-chart-float {
-          position: relative;
-          width: min(760px, 100%);
-          margin-left: auto;
-          padding-top: 8px;
-          min-width: 0;
-        }
-
-        .hero-chart-float-title {
-          font-size: 32px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          margin-bottom: 14px;
-          text-align: right;
-          padding-right: 8px;
-        }
-
-        .hero-levers-inline {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          width: 100%;
-          padding-bottom: 4px;
-        }
-
-        .hero-levers-inline-float {
-          margin-bottom: 12px;
-          justify-content: flex-end;
-        }
-
-        .hero-tag {
-          position: relative;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: auto;
-          min-width: fit-content;
-          min-height: 48px;
-          padding: 10px 22px;
-          border-radius: 999px;
-          white-space: nowrap;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.1) 0%,
-            rgba(224, 225, 227, 0.065) 48%,
-            rgba(224, 225, 227, 0.05) 100%
-          );
-          backdrop-filter: blur(24px) saturate(145%);
-          -webkit-backdrop-filter: blur(24px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.2),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.04),
-            0 12px 24px rgba(0, 0, 0, 0.18);
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 14px;
-          font-weight: 700;
-          line-height: 1;
-          text-align: center;
-          transition: 0.25s ease;
-        }
-
-        .hero-tag::before {
-          content: "";
-          position: absolute;
-          width: 34%;
-          height: 60%;
-          left: 12%;
-          top: 10%;
-          border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.1) 0%,
-            rgba(255, 255, 255, 0.04) 38%,
-            transparent 76%
-          );
-          filter: blur(18px);
+          background: linear-gradient(120deg, rgba(255,255,255,0.1), transparent 24%, rgba(255,255,255,0.04) 55%, transparent 78%);
+          opacity: 0.55;
           pointer-events: none;
         }
 
-        .hero-tag-active {
-          color: #0b1d3a;
-          background: linear-gradient(
-            135deg,
-            rgba(247, 210, 55, 0.96) 0%,
-            rgba(247, 210, 55, 0.9) 100%
-          );
-          border-color: rgba(247, 210, 55, 0.55);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.18),
-            0 12px 28px rgba(247, 210, 55, 0.2);
-        }
-
-        .hero-tag-active::before {
-          content: "";
-          position: absolute;
-          width: 34%;
-          height: 60%;
-          left: 12%;
-          top: 10%;
-          border-radius: 999px;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.18) 0%,
-            rgba(255, 255, 255, 0.07) 38%,
-            transparent 76%
-          );
-          filter: blur(18px);
-          pointer-events: none;
-        }
-
-        .hero-chart-box {
-          position: relative;
-          overflow: hidden;
-          border-radius: 28px;
-          padding: 14px;
-          display: flex;
-          flex-direction: column;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.09) 0%,
-            rgba(224, 225, 227, 0.06) 45%,
-            rgba(224, 225, 227, 0.04) 100%
-          );
-          backdrop-filter: blur(26px) saturate(145%);
-          -webkit-backdrop-filter: blur(26px) saturate(145%);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.18),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.05),
-            0 18px 50px rgba(0, 0, 0, 0.24);
-          min-width: 0;
-        }
-
-        .hero-chart-metrics-row {
+        .hero-shell {
+          min-height: calc(100vh - 140px);
           display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 8px;
-          margin-bottom: 12px;
-        }
-
-        .hero-metric-square {
-          position: relative;
-          min-height: 86px;
-          border-radius: 18px;
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.07) 0%,
-            rgba(255, 255, 255, 0.045) 100%
-          );
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
-
-        .hero-metric-square span {
-          display: block;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.58);
-        }
-
-        .hero-metric-square strong {
-          display: block;
-          margin-top: 10px;
-          font-size: 22px;
-          line-height: 1.1;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
-
-        .bar-chart-wrap {
-          position: relative;
-          margin-top: 4px;
-          border-radius: 24px;
-          padding: 52px 18px 18px;
-          overflow: hidden;
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(255, 255, 255, 0.03) 100%
-          );
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 12px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .bar-chart-scale {
-          position: absolute;
-          top: 16px;
-          left: 18px;
-          right: 18px;
-          z-index: 3;
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          pointer-events: none;
-        }
-
-        .bar-chart-scale span {
-          font-size: 11px;
-          line-height: 1;
-          color: rgba(255, 255, 255, 0.42);
-        }
-
-        .bar-chart-scale span:first-child {
-          text-align: left;
-        }
-
-        .bar-chart-scale span:not(:first-child):not(:last-child) {
-          text-align: center;
-        }
-
-        .bar-chart-scale span:last-child {
-          text-align: right;
-        }
-
-        .bar-chart-grid {
-          position: absolute;
-          inset: 0;
-          background-image: linear-gradient(
-            to right,
-            rgba(255, 255, 255, 0.06) 1px,
-            transparent 1px
-          );
-          background-size: 25% 100%;
-          background-position: left top;
-          pointer-events: none;
-          opacity: 0.65;
-        }
-
-        .bar-chart-columns {
-          position: relative;
-          z-index: 2;
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-        }
-
-        .bar-chart-columns-horizontal {
-          width: 100%;
-        }
-
-        .bar-chart-row {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 0;
-        }
-
-        .bar-chart-row-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 16px;
-          min-width: 0;
-        }
-
-        .bar-chart-label {
-          font-size: 14px;
-          font-weight: 700;
-          color: rgba(255, 255, 255, 0.82);
-          text-align: left;
-          line-height: 1.35;
-          min-width: 0;
-        }
-
-        .bar-chart-value {
-          font-size: 14px;
-          line-height: 1.3;
-          color: rgba(255, 255, 255, 0.76);
-          text-align: right;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        .bar-chart-bar-shell-horizontal {
-          width: 100%;
-          height: 30px;
-          border-radius: 999px;
-          background: rgba(255, 255, 255, 0.04);
-          border: 1px solid rgba(255, 255, 255, 0.06);
-          display: flex;
-          align-items: center;
-          overflow: hidden;
-        }
-
-        .bar-chart-bar {
-          display: block;
-          height: 100%;
-          min-width: 8px;
-          box-shadow:
-            0 10px 24px rgba(0, 0, 0, 0.14),
-            0 0 18px rgba(255, 255, 255, 0.04);
-        }
-
-        .bar-chart-bar-horizontal {
-          height: 100%;
-          border-radius: 999px;
-          transition: width 0.8s ease, transform 0.8s ease;
-        }
-
-        .bar-revenue {
-          transform: scaleY(1.04);
-          transform-origin: left center;
-        }
-
-.bar-good {
-  background: linear-gradient(
-    90deg,
-    #c4a8ff 0%,
-    #8b5cf6 50%,
-    #4c1d95 100%
-  );
-}
-        .bar-bad {
-          background: linear-gradient(
-            90deg,
-            rgba(124, 132, 255, 0.9) 0%,
-            rgba(93, 167, 255, 0.95) 55%,
-            rgba(95, 179, 179, 0.95) 100%
-          );
-        }
-
-        .hero-chart-bottom {
-          margin-top: 14px;
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-        }
-
-        .hero-money-card-clean {
-          border: 0;
-          background: transparent;
-          padding: 0;
-        }
-
-        .hero-money-card span {
-          display: block;
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.5);
-        }
-
-        .hero-money-card strong {
-          display: block;
-          margin-top: 8px;
-          font-size: 22px;
-          font-weight: 700;
-          color: white;
-          white-space: nowrap;
-        }
-
-        .hero-money-card small {
-          display: block;
-          margin-top: 5px;
-          font-size: 12px;
-          color: rgba(255, 255, 255, 0.58);
-        }
-
-        .hero-active-note {
-          margin-top: 12px;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          border-radius: 999px;
-          padding: 10px 14px;
-          color: rgba(255, 255, 255, 0.78);
-          font-size: 14px;
-          line-height: 1.45;
-          overflow: hidden;
-          background: rgba(255, 255, 255, 0.055);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            0 10px 24px rgba(0, 0, 0, 0.12);
-        }
-
-        .hero-active-note b {
-          color: #f7d237;
-        }
-
-        .hero-active-note-dot {
-          width: 8px;
-          height: 8px;
-          border-radius: 999px;
-          background: #f7d237;
-          box-shadow: 0 0 10px rgba(247, 210, 55, 0.35);
-          animation: pulseTinyYellow 1.8s ease-in-out infinite;
-          flex-shrink: 0;
-        }
-
-        .section-head {
-          max-width: 1080px;
-          margin-bottom: 18px;
-        }
-
-        .section-kicker {
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.18em;
-          text-transform: uppercase;
-          color: #f7d237;
-        }
-
-        .section-title {
-          margin-top: 12px;
-          font-size: clamp(36px, 4vw, 62px);
-          line-height: 1.04;
-          font-weight: 700;
-          color: white;
-        }
-
-        .section-copy {
-          margin-top: 14px;
-          font-size: 22px;
-          line-height: 1.7;
-          color: rgba(255, 255, 255, 0.68);
-          max-width: 1160px;
-        }
-
-        .contact-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 9999px;
-          padding: 9px 12px;
-          font-size: 12px;
-          font-weight: 700;
-          transition: 0.2s ease;
-          border: 1px solid transparent;
-        }
-
-        .contact-btn-invert {
-          background: rgba(255, 255, 255, 0.92);
-          color: #0b1d3a;
-          border-color: rgba(255, 255, 255, 0.95);
-          box-shadow:
-            0 8px 24px rgba(0, 0, 0, 0.12),
-            inset 0 1px 0 rgba(255, 255, 255, 0.7);
-        }
-
-        .contact-btn-invert:hover {
-          background: #ffffff;
-        }
-
-        .ghost-link {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 9999px;
-          padding: 11px 16px;
-          font-size: 13px;
-          font-weight: 600;
-          color: rgba(255, 255, 255, 0.9);
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          transition: 0.2s ease;
-        }
-
-        .ghost-link-dark {
-          background: rgba(15, 24, 48, 0.78);
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.12),
-            0 12px 24px rgba(0, 0, 0, 0.18);
-        }
-
-        .ghost-link:hover {
-          background: rgba(22, 33, 60, 0.9);
-          color: white;
-        }
-
-        .ghost-link-large {
-          padding: 14px 20px;
-          font-size: 15px;
-        }
-
-        .tg-gradient-btn {
-          position: relative;
-          overflow: hidden;
-          border-radius: 9999px;
-          padding: 16px 22px;
-          color: white;
-          font-size: 16px;
-          font-weight: 600;
-          letter-spacing: 0.01em;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-        }
-
-        .tg-gradient-btn::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.22) 25%,
-            transparent 50%
-          );
-          transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
-        }
-
-        .tg-gradient-btn > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .tg-gradient-btn:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.03);
-        }
-
-        .tg-gradient-btn-header {
-          padding: 11px 16px;
-          font-size: 13px;
-          white-space: nowrap;
-        }
-
-        .journey-compact {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 16px;
-        }
-
-        .journey-compact-card {
-          isolation: isolate;
-          position: relative;
-          overflow: hidden;
-          border-radius: 26px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.08) 0%,
-            rgba(224, 225, 227, 0.055) 100%
-          );
-          backdrop-filter: blur(22px);
-          -webkit-backdrop-filter: blur(22px);
-          padding: 20px;
-          min-height: 230px;
-          box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.16),
-            0 18px 32px rgba(0, 0, 0, 0.16);
-        }
-
-        .journey-compact-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-        }
-
-        .journey-compact-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: 40px;
-          height: 40px;
-          border-radius: 14px;
-          background: #f7d237;
-          color: #0b1d3a;
-          font-size: 18px;
-          font-weight: 700;
-        }
-
-        .journey-compact-arrow {
-          width: 52px;
-          height: 2px;
-          border-radius: 999px;
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.18),
-            rgba(247, 210, 55, 0.95)
-          );
-          position: relative;
-        }
-
-        .journey-compact-arrow::after {
-          content: "";
-          position: absolute;
-          right: -1px;
-          top: 50%;
-          width: 8px;
-          height: 8px;
-          border-top: 2px solid #f7d237;
-          border-right: 2px solid #f7d237;
-          transform: translateY(-50%) rotate(45deg);
-        }
-
-        .journey-compact-title {
-          margin-top: 16px;
-          font-size: 24px;
-          line-height: 1.15;
-          font-weight: 600;
-          color: white;
-        }
-
-        .journey-compact-text {
-          margin-top: 12px;
-          font-size: 16px;
-          line-height: 1.75;
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        .input-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-        }
-
-        .input-shell {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-          min-width: 0;
-        }
-
-        .input-shell-highlight {
-          position: relative;
-        }
-
-        .input-label {
-          font-size: 12px;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.52);
-          padding-left: 4px;
-        }
-
-        .input-label-strong {
-          color: rgba(255, 255, 255, 0.82);
-          font-weight: 700;
-          letter-spacing: 0.06em;
-        }
-
-        .input-wrap {
-          position: relative;
-        }
-
-        .input-wrap-primary::before {
-          content: "";
-          position: absolute;
-          inset: -2px;
-          border-radius: 20px;
-          background: linear-gradient(
-            135deg,
-            rgba(247, 210, 55, 0.42),
-            rgba(120, 132, 255, 0.14),
-            rgba(255, 255, 255, 0.08)
-          );
-          opacity: 0.95;
-          z-index: 0;
-        }
-
-        .input-badge {
-          position: absolute;
-          top: 10px;
-          right: 12px;
-          z-index: 3;
-          border-radius: 9999px;
-          padding: 4px 8px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #0b1d3a;
-          background: rgba(247, 210, 55, 0.95);
-          box-shadow:
-            0 4px 14px rgba(247, 210, 55, 0.24),
-            inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        }
-
-        .glass-input {
-          background: linear-gradient(
-            180deg,
-            rgba(17, 29, 58, 0.9),
-            rgba(24, 39, 72, 0.78)
-          );
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          padding: 14px 16px;
-          border-radius: 18px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-          color: white;
-          font-size: 20px;
-          font-weight: 500;
-          width: 100%;
-          transition: 0.25s ease;
-        }
-
-        .glass-input-primary {
-          position: relative;
-          z-index: 1;
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.18),
-            0 12px 34px rgba(0, 0, 0, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.06);
-        }
-
-        .glass-input::placeholder {
-          color: rgba(255, 255, 255, 0.35);
-        }
-
-        .glass-input:focus {
-          outline: none;
-          border-color: rgba(247, 210, 55, 0.75);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.22),
-            0 0 30px rgba(247, 210, 55, 0.12),
-            0 10px 30px rgba(0, 0, 0, 0.12);
-        }
-
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 12px;
-        }
-
-        .metric-card {
-          min-height: 116px;
-        }
-
-        .metric-head,
-        .model-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 10px;
-        }
-
-        .metric-title-wrap {
-          min-width: 0;
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-        }
-
-        .metric-label,
-        .model-label {
-          font-size: 16px;
-          color: rgba(255, 255, 255, 0.6);
-          line-height: 1.2;
-          padding-top: 2px;
-        }
-
-        .metric-flag {
-          margin-top: 8px;
-          flex-shrink: 0;
-          border-radius: 9999px;
-          padding: 6px 10px;
-          font-size: 11px;
-          font-weight: 700;
-          letter-spacing: 0.01em;
-          border: 1px solid transparent;
-          line-height: 1;
-          max-width: 100%;
-        }
-
-        .metric-delta-top,
-        .model-delta-top {
-          font-size: 18px;
-          font-weight: 700;
-          line-height: 1;
-          white-space: nowrap;
-          padding-top: 2px;
-          flex-shrink: 0;
-        }
-
-        .metric-main-value {
-          margin-top: 20px;
-          font-size: clamp(2rem, 2.8vw, 3.2rem);
-          line-height: 1.02;
-          font-weight: 700;
-          white-space: nowrap;
-          letter-spacing: -0.03em;
-        }
-
-        .model-main-value {
-          margin-top: 14px;
-          font-size: clamp(1.2rem, 1.6vw, 1.8rem);
-          line-height: 1.05;
-          font-weight: 600;
-          white-space: nowrap;
-          letter-spacing: -0.01em;
-        }
-
-        .flag-good {
-          background: rgba(74, 222, 128, 0.12);
-          color: rgb(167, 243, 208);
-          border-color: rgba(74, 222, 128, 0.2);
-        }
-
-        .flag-bad {
-          background: rgba(251, 113, 133, 0.12);
-          color: rgb(253, 164, 175);
-          border-color: rgba(251, 113, 133, 0.2);
-        }
-
-        .flag-neutral {
-          background: rgba(255, 255, 255, 0.08);
-          color: rgba(255, 255, 255, 0.72);
-          border-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .model-card {
-          min-height: 96px;
-          padding: 14px;
-        }
-
-        .slider-card {
-          min-height: 148px;
-          display: flex;
-          flex-direction: column;
-          padding: 14px;
-        }
-
-        .reset-link {
-          background: transparent;
-          border: 0;
-          padding: 0;
-          color: rgba(255, 255, 255, 0.72);
-          font-size: 14px;
-          font-weight: 600;
-          transition: 0.2s ease;
-        }
-
-        .reset-link:hover {
-          color: #ffffff;
-        }
-
-        .reset-link:disabled {
-          opacity: 0.35;
-          cursor: not-allowed;
-        }
-
-        .preview-actions-inline {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
-
-        .range-input {
-          cursor: pointer;
-        }
-
-        .reserve-kicker {
-          font-size: 14px;
-          font-weight: 700;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          color: #f7d237;
-        }
-
-        .hero-preview-box,
-        .side-note-card {
-          position: relative;
-          overflow: hidden;
-          border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.065) 0%,
-            rgba(255, 255, 255, 0.035) 100%
-          );
-          padding: 18px;
-          backdrop-filter: blur(18px);
-          -webkit-backdrop-filter: blur(18px);
-        }
-
-        .reserve-amount {
-          font-size: 3rem;
-          line-height: 1.02;
-          font-weight: 700;
-          color: #f7d237;
-          text-shadow: 0 0 24px rgba(247, 210, 55, 0.14);
-          overflow-wrap: anywhere;
-        }
-
-        .accent-word {
-          color: #f7d237;
-          font-weight: 700;
-        }
-
-        .results-grid-2x2 {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 22px;
-          margin-top: 24px;
-        }
-
-        .tilt-card {
-          perspective: 1400px;
-        }
-
-        .tilt-inner {
-          transform-style: preserve-3d;
-          transition: transform 0.18s ease-out;
-          will-change: transform;
-        }
-
-        .result-doc-card {
-          min-height: 320px;
-        }
-
-.result-doc-card-inner {
-  isolation: isolate;
-  position: relative;
-  min-height: 320px;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background: linear-gradient(
-    135deg,
-    rgba(224, 225, 227, 0.09) 0%,
-    rgba(224, 225, 227, 0.06) 100%
-  );
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-  padding: 26px;
-  overflow: hidden;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    0 20px 44px rgba(0, 0, 0, 0.16);
-  display: flex;
-  flex-direction: column;
-}
-
-.result-doc-top {
-  position: relative;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
-}
-.result-doc-card-inner-roadmap {
-  padding-bottom: 42px;
-}
-
-.result-doc-bottom-glow {
-  position: absolute;
-  left: -2%;
-  right: -2%;
-  bottom: 18px;
-  height: 96px;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.result-doc-bottom-glow-core {
-  position: absolute;
-  inset: auto 0 0 0;
-  height: 22px;
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 18% 50%, rgba(255, 233, 120, 0.95) 0%, rgba(255, 233, 120, 0.52) 20%, rgba(255, 233, 120, 0) 48%),
-    radial-gradient(circle at 42% 50%, rgba(247, 210, 55, 0.9) 0%, rgba(247, 210, 55, 0.45) 18%, rgba(247, 210, 55, 0) 44%),
-    radial-gradient(circle at 68% 50%, rgba(255, 220, 98, 0.85) 0%, rgba(255, 220, 98, 0.4) 18%, rgba(255, 220, 98, 0) 44%),
-    linear-gradient(
-      90deg,
-      rgba(247, 210, 55, 0.2) 0%,
-      rgba(247, 210, 55, 0.95) 22%,
-      rgba(255, 235, 150, 1) 48%,
-      rgba(247, 210, 55, 0.92) 74%,
-      rgba(247, 210, 55, 0.18) 100%
-    );
-  filter: blur(10px);
-  opacity: 0.95;
-  transform: translateY(16px) skewX(-18deg);
-}
-
-.result-doc-bottom-glow-shine {
-  position: absolute;
-  top: 8px;
-  bottom: 0;
-  left: -34%;
-  width: 34%;
-  border-radius: 999px;
-  background: linear-gradient(
-    90deg,
-    rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.08) 18%,
-    rgba(255, 255, 255, 0.78) 50%,
-    rgba(255, 255, 255, 0.08) 82%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  filter: blur(12px);
-  transform: skewX(-22deg);
-  animation: roadmapShine 3.2s ease-in-out infinite;
-}
-
-.results-bottom-row {
-  margin-top: 30px;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: end;
-  gap: 24px;
-}
-
-.results-start-btn {
-  min-width: 136px;
-  min-height: 54px;
-  padding: 0 26px;
-  font-size: 15px;
-  margin-bottom: 8px;
-}
-
-@keyframes roadmapShine {
-  0% {
-    left: -38%;
-    opacity: 0;
-  }
-
-  12% {
-    opacity: 1;
-  }
-
-  55% {
-    left: 104%;
-    opacity: 0.95;
-  }
-
-  100% {
-    left: 104%;
-    opacity: 0;
-  }
-}
-        .result-doc-start-btn {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-width: 110px;
-          padding: 11px 16px;
-          border-radius: 999px;
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #7c84ff 55%,
-            #c25cf3 100%
-          );
-          color: #fff;
-          font-weight: 700;
-          font-size: 14px;
-          box-shadow:
-            0 10px 24px rgba(85, 104, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.16);
-        }
-
-        .result-doc-tab {
-          position: relative;
-          z-index: 2;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
-          padding: 8px 14px;
-          font-size: 11px;
-          font-weight: 800;
-          letter-spacing: 0.04em;
-          text-transform: uppercase;
-          color: #0b1d3a;
-          background: #f7d237;
-        }
-
-        .result-doc-title {
-          position: relative;
-          z-index: 2;
-          margin-top: 26px;
-          font-size: clamp(34px, 3vw, 56px);
-          line-height: 1.04;
-          font-weight: 600;
-          color: white;
-          letter-spacing: -0.04em;
-        }
-
-        .result-doc-text {
-          position: relative;
-          z-index: 2;
-          margin-top: 20px;
-          font-size: 17px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.72);
-        }
-
-        .results-roadmap-note {
-          margin-top: 18px;
-          font-size: 18px;
-          line-height: 1.9;
-          color: rgba(255, 255, 255, 0.72);
-          max-width: 980px;
-        }
-
-        .results-roadmap-note span {
-          color: #f7d237;
-          font-weight: 700;
-        }
-
-        .industries-pills {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 14px;
-          margin-top: 18px;
-          margin-bottom: 6px;
-        }
-
-        .industry-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 56px;
-          padding: 0 24px;
-          border-radius: 999px;
-          background: #f7d237;
-          color: #0b1d3a;
-          font-size: 18px;
-          font-weight: 800;
-          line-height: 1;
-          border: 1px solid rgba(247, 210, 55, 0.45);
-          box-shadow:
-            0 10px 24px rgba(247, 210, 55, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.36);
-          transition:
-            opacity 0.28s ease,
-            transform 0.28s ease,
-            filter 0.28s ease,
-            box-shadow 0.28s ease;
-        }
-
-        .stage-carousel-wrap {
-          margin-top: 24px;
-        }
-
-        .industries-pills-carousel {
-          justify-content: center;
-          margin-bottom: 22px;
-        }
-
-        .industry-pill-dim {
-          opacity: 0.22;
-          filter: saturate(0.7);
-          transform: scale(0.985);
-        }
-
-        .industry-pill-active {
-          opacity: 1;
-          filter: saturate(1);
-          transform: scale(1);
-          box-shadow:
-            0 0 0 1px rgba(247, 210, 55, 0.2),
-            0 12px 28px rgba(247, 210, 55, 0.18),
-            0 0 24px rgba(247, 210, 55, 0.14);
-        }
-
-        .stage-carousel-scene {
-          position: relative;
-          perspective: 2200px;
-          min-height: 560px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          touch-action: pan-y;
-          user-select: none;
-          -webkit-user-select: none;
-          cursor: grab;
-          overflow: hidden;
-        }
-
-        .stage-carousel-scene.is-dragging {
-          cursor: grabbing;
-        }
-
-        .stage-carousel-drum {
-          position: relative;
-          width: 100%;
-          height: 460px;
-          transform-style: preserve-3d;
-        }
-
-        .stage-carousel-item-free {
-          position: absolute;
-          top: 18px;
-          left: 50%;
-          width: min(760px, 62vw);
-          transform-style: preserve-3d;
-          transition:
-            transform 0.04s linear,
-            opacity 0.04s linear,
-            filter 0.04s linear;
-          will-change: transform, opacity, filter;
-        }
-
-        .stage-carousel-hint {
-          margin-top: 18px;
-          text-align: center;
-          font-size: 12px;
-          line-height: 1.4;
-          letter-spacing: 0.08em;
-          text-transform: uppercase;
-          color: rgba(255, 255, 255, 0.42);
-        }
-
-        .stage-card-analytics {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          min-height: 460px;
-          border-radius: 34px;
-          overflow: hidden;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.11) 0%,
-            rgba(224, 225, 227, 0.07) 100%
-          );
-          box-shadow:
-            0 24px 54px rgba(0, 0, 0, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.1);
-        }
-
-        .stage-card-top-panel {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) auto;
-          gap: 24px;
-          padding: 28px 28px 24px;
-          min-height: 248px;
-          background: linear-gradient(
-            135deg,
-            rgba(224, 225, 227, 0.18) 0%,
-            rgba(224, 225, 227, 0.09) 100%
-          );
-        }
-
-        .stage-card-copy {
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          gap: 22px;
-          min-width: 0;
-        }
-
-        .stage-copy-block h4 {
-          margin: 0;
-          font-size: 26px;
-          line-height: 1.06;
-          font-weight: 500;
-          color: rgba(255, 255, 255, 0.96);
-          letter-spacing: -0.03em;
-        }
-
-        .stage-copy-block p {
-          margin: 10px 0 0;
-          max-width: 560px;
-          font-size: 17px;
-          line-height: 1.55;
-          color: rgba(255, 255, 255, 0.86);
-        }
-
-        .stage-card-heading {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-end;
-          justify-content: flex-start;
-          text-align: right;
-          min-width: 180px;
-        }
-
-        .stage-card-heading span {
-          font-size: 15px;
-          line-height: 1;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(255, 255, 255, 0.88);
-        }
-
-        .stage-card-heading strong {
-          margin-top: 8px;
-          font-size: clamp(54px, 6vw, 92px);
-          line-height: 0.9;
-          font-weight: 700;
-          letter-spacing: -0.07em;
-          color: #ffffff;
-        }
-
-        .stage-card-bottom-panel {
-          position: relative;
-          flex: 1;
-          overflow: hidden;
-          padding: 22px 26px 24px;
-          background:
-            radial-gradient(circle at 18% 84%, rgba(71, 182, 246, 0.18) 0%, transparent 28%),
-            radial-gradient(circle at 36% 88%, rgba(124, 132, 255, 0.2) 0%, transparent 24%),
-            radial-gradient(circle at 72% 56%, rgba(194, 92, 243, 0.22) 0%, transparent 34%),
-            radial-gradient(circle at 56% 24%, rgba(255, 178, 122, 0.18) 0%, transparent 28%),
-            linear-gradient(
-              135deg,
-              #081a63 0%,
-              #09185a 18%,
-              #151a74 34%,
-              #2a1584 52%,
-              #3a1c79 66%,
-              #4b1a74 82%,
-              #301346 100%
-            );
-        }
-
-        .stage-card-bottom-inner {
-          position: relative;
-          z-index: 2;
-          display: grid;
-          grid-template-columns: 1.05fr 1.25fr;
+          grid-template-columns: 1.08fr 0.92fr;
           align-items: end;
           gap: 28px;
-          min-height: 190px;
+          padding-top: 26px;
         }
-
-        .stage-rings-grid {
+        .hero-title {
+          margin: 18px 0 0;
+          max-width: 820px;
+          font-size: clamp(40px, 7vw, 92px);
+          line-height: 0.94;
+          letter-spacing: -0.075em;
+          font-weight: 700;
+        }
+        .hero-title span { color: rgba(255,255,255,0.72); }
+        .hero-text {
+          max-width: 640px;
+          margin: 24px 0 0;
+          color: var(--muted);
+          font-size: 17px;
+          line-height: 1.75;
+        }
+        .hero-tags,
+        .hero-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 12px;
+          margin-top: 26px;
+        }
+        .hero-tag {
+          padding: 12px 16px;
+          border-radius: 999px;
+          border: 1px solid var(--line-2);
+          color: rgba(255,255,255,0.72);
+          background: rgba(255,255,255,0.04);
+        }
+        .hero-tag.is-active {
+          color: var(--bg-2);
+          background: linear-gradient(135deg, rgba(247,210,55,0.96), rgba(247,210,55,0.84));
+          border-color: rgba(247,210,55,0.45);
+        }
+        .hero-panel { padding: 18px; min-height: 420px; display: flex; flex-direction: column; justify-content: space-between; }
+        .hero-panel-topline {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          color: rgba(255,255,255,0.56);
+          font-size: 13px;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+        }
+        .hero-panel-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px 22px;
-          align-self: start;
-        }
-
-        .stage-ring-metric {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-
-        .stage-ring-label {
-          font-size: 15px;
-          line-height: 1.2;
-          color: rgba(255, 255, 255, 0.96);
-        }
-
-        .stage-ring {
-          position: relative;
-          width: 74px;
-          height: 74px;
-        }
-
-        .stage-ring-outer,
-        .stage-ring-inner {
-          position: absolute;
-          inset: 0;
-          border-radius: 999px;
-        }
-
-        .stage-ring-outer {
-          border: 12px solid rgba(255, 178, 64, 0.88);
-          border-right-color: transparent;
-          transform: rotate(-12deg);
-        }
-
-        .stage-ring-inner {
-          inset: 14px;
-          border: 8px solid rgba(247, 210, 55, 0.98);
-          border-right-color: transparent;
-          transform: rotate(18deg);
-        }
-
-        .stage-ring-center {
-          position: absolute;
-          inset: 0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 14px;
-          font-weight: 500;
-          color: #ffffff;
-        }
-
-        .stage-bars-area {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          min-height: 190px;
-        }
-
-        .stage-bars-title {
-          align-self: flex-end;
-          font-size: clamp(34px, 4vw, 56px);
-          line-height: 0.95;
-          font-weight: 700;
-          letter-spacing: -0.06em;
-          color: rgba(255, 255, 255, 0.96);
-        }
-
-        .stage-bars-wrap {
+          gap: 14px;
           margin-top: auto;
-          padding-top: 10px;
         }
-
-        .stage-bar-group {
-          width: 100%;
-          max-width: 420px;
-        }
-
-        .stage-bar-label {
-          margin-bottom: 14px;
-          font-size: 15px;
-          line-height: 1.2;
-          color: rgba(255, 255, 255, 0.95);
-        }
-
-        .stage-bar-row {
+        .hero-stat-card {
+          border-radius: 24px;
+          background: rgba(255,255,255,0.045);
+          border: 1px solid rgba(255,255,255,0.08);
+          padding: 18px;
           display: flex;
-          align-items: center;
+          flex-direction: column;
+          gap: 10px;
+          min-height: 138px;
         }
+        .hero-stat-card.wide { grid-column: span 2; min-height: 176px; }
+        .hero-stat-card small { color: rgba(255,255,255,0.54); font-size: 13px; }
+        .hero-stat-card strong { font-size: clamp(24px, 3vw, 36px); line-height: 1; }
+        .hero-stat-card span { color: rgba(255,255,255,0.68); line-height: 1.6; }
 
-        .stage-bar-row-top {
-          gap: 18px;
-        }
-
-        .stage-bar-row-bottom {
-          margin-top: 14px;
-        }
-
-        .stage-bar {
-          height: 30px;
-          background: linear-gradient(
-            90deg,
-            rgba(247, 210, 55, 0.95) 0%,
-            rgba(244, 221, 114, 0.98) 100%
-          );
-          box-shadow:
-            0 8px 18px rgba(247, 210, 55, 0.16),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        }
-
-        .stage-bar-short {
-          width: 168px;
-        }
-
-        .stage-bar-long {
-          width: 310px;
-        }
-
-        .stage-bar-marker {
-          width: 0;
-          height: 0;
-          border-left: 12px solid transparent;
-          border-right: 12px solid transparent;
-          border-bottom: 22px solid rgba(255, 255, 255, 0.94);
-        }
-
-        .stage-card-watermark-icon {
-          position: absolute;
-          left: 24px;
-          top: 22px;
-          width: 28px;
-          height: 28px;
-          opacity: 0.12;
-          object-fit: contain;
-          pointer-events: none;
-        }
-
-        .analysis-grid {
+        .preview-grid {
           display: grid;
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr) 340px;
           gap: 18px;
           align-items: start;
         }
-
-.snapshot-structure-card {
-  min-height: auto;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-}
-
-.analysis-left-title {
-  margin: 0;
-  font-size: 22px;
-  line-height: 1.2;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.snapshot-builder-copy {
-  margin-top: 14px;
-  max-width: 780px;
-  font-size: 16px;
-  line-height: 1.75;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.snapshot-builder.snapshot-builder-editorial {
-  margin-top: 28px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.builder-middle-grid {
-  display: grid;
-  grid-template-columns: 27fr 18fr;
-  gap: 18px;
-}
-
-/* База карточек */
-.builder-block {
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 24px 28px;
-  color: #f4f5f7;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  background:
-    radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 28%, rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(18, 34, 74, 0.68) 0%, rgba(11, 29, 58, 0.88) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 14px 34px rgba(0, 0, 0, 0.16);
-  transition:
-    transform 0.35s ease,
-    box-shadow 0.35s ease,
-    border-color 0.35s ease;
-}
-
-.builder-block::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    linear-gradient(
-      115deg,
-      rgba(255, 255, 255, 0) 0%,
-      rgba(255, 255, 255, 0.015) 26%,
-      rgba(255, 255, 255, 0.08) 50%,
-      rgba(255, 255, 255, 0.02) 74%,
-      rgba(255, 255, 255, 0) 100%
-    );
-  transform: translateX(-120%);
-  animation: snapshotCardSweep 7.5s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.builder-block::after {
-  content: "";
-  position: absolute;
-  inset: 1px;
-  border-radius: inherit;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 82% 18%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0) 32%),
-    radial-gradient(circle at 14% 85%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0) 36%);
-  opacity: 0.9;
-}
-
-.builder-block:hover {
-  transform: translateY(-3px);
-  border-color: rgba(255, 255, 255, 0.16);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 18px 42px rgba(0, 0, 0, 0.22);
-}
-
-.builder-label {
-  position: relative;
-  z-index: 2;
-  display: block;
-  width: 100%;
-  max-width: 100%;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  text-wrap: balance;
-  white-space: normal;
-}
-
-/* Пропорции и формы */
-.builder-block-structure {
-  min-height: 154px;
-  border-radius: 34px 34px 56px 34px;
-}
-
-.builder-block-structure .builder-label {
-  font-size: clamp(28px, 2.4vw, 44px);
-  font-weight: 500;
-}
-
-.builder-block-positioning {
-  min-height: 258px;
-  border-radius: 30px 44px 30px 52px;
-}
-
-.builder-block-positioning .builder-label {
-  font-size: clamp(24px, 2vw, 36px);
-  font-weight: 500;
-}
-
-.builder-block-economics {
-  min-height: 258px;
-  border-radius: 34px 30px 46px 30px;
-  border-color: rgba(247, 210, 55, 0.18);
-  background:
-    radial-gradient(circle at 20% 18%, rgba(255, 239, 168, 0.11) 0%, rgba(255, 255, 255, 0.025) 26%, rgba(255, 255, 255, 0) 54%),
-    linear-gradient(135deg, rgba(20, 35, 72, 0.72) 0%, rgba(12, 30, 61, 0.92) 100%);
-}
-
-.builder-block-economics .builder-label {
-  font-size: clamp(22px, 1.9vw, 34px);
-  font-weight: 500;
-}
-
-.builder-block-clients {
-  min-height: 104px;
-  justify-content: flex-start;
-  padding-left: 72px;
-  border-radius: 999px 34px 34px 999px;
-}
-
-.builder-block-clients .builder-label {
-  font-size: clamp(22px, 1.7vw, 30px);
-  font-weight: 500;
-  text-align: left;
-}
-
-.builder-block-product {
-  min-height: 108px;
-  border-radius: 34px 999px 34px 34px;
-}
-
-.builder-block-product .builder-label {
-  font-size: clamp(22px, 1.7vw, 30px);
-  font-weight: 500;
-}
-
-/* Лёгкий акцент в духе референса */
-.builder-block-structure {
-  background:
-    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.09) 0%, rgba(255, 255, 255, 0.025) 30%, rgba(255, 255, 255, 0) 58%),
-    linear-gradient(135deg, rgba(23, 43, 88, 0.74) 0%, rgba(12, 31, 63, 0.92) 100%);
-}
-
-.builder-block-positioning {
-  background:
-    radial-gradient(circle at 24% 22%, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.022) 26%, rgba(255, 255, 255, 0) 56%),
-    linear-gradient(135deg, rgba(24, 43, 84, 0.72) 0%, rgba(13, 31, 59, 0.92) 100%);
-}
-
-.builder-block-clients {
-  background:
-    radial-gradient(circle at 18% 50%, rgba(247, 210, 55, 0.08) 0%, rgba(247, 210, 55, 0.02) 24%, rgba(247, 210, 55, 0) 48%),
-    linear-gradient(135deg, rgba(24, 42, 82, 0.72) 0%, rgba(12, 30, 59, 0.9) 100%);
-}
-
-.builder-block-product {
-  background:
-    radial-gradient(circle at 72% 24%, rgba(122, 132, 255, 0.08) 0%, rgba(122, 132, 255, 0.02) 28%, rgba(122, 132, 255, 0) 52%),
-    linear-gradient(135deg, rgba(23, 41, 80, 0.72) 0%, rgba(12, 30, 58, 0.9) 100%);
-}
-
-@keyframes snapshotCardSweep {
-  0% {
-    transform: translateX(-120%);
-    opacity: 0;
-  }
-
-  12% {
-    opacity: 0.45;
-  }
-
-  46% {
-    transform: translateX(120%);
-    opacity: 0.85;
-  }
-
-  100% {
-    transform: translateX(120%);
-    opacity: 0;
-  }
-}
-        .analysis-right-card-plain {
+        .preview-main { display: grid; gap: 18px; }
+        .preview-inputs-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .input-card { padding: 20px; display: grid; gap: 14px; }
+        .input-card span { color: rgba(255,255,255,0.58); font-size: 13px; }
+        .input-card input {
           background: transparent;
-          backdrop-filter: none;
           border: 0;
-          box-shadow: none;
-          padding: 0;
-        }
-
-        .start-cards-row {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 18px;
-          margin-top: 0;
-        }
-
-        .start-card-inner {
-          position: relative;
-          border-radius: 0;
-          overflow: visible;
-          box-shadow: none;
-          background: transparent;
-          min-height: auto;
-        }
-
-        .start-card-inner-plain {
-          border-radius: 0;
-          background: transparent;
-          box-shadow: none;
-        }
-
-        .start-card-frame {
-          position: relative;
-          width: 100%;
-          height: auto;
-          display: block;
-          object-fit: contain;
-          object-position: center;
-        }
-
-        .start-card-overlay {
-          position: absolute;
-          inset: 0;
-          z-index: 2;
-          pointer-events: none;
-        }
-
-        .start-card-overlay-plain {
-          background: none;
-        }
-
-        .start-card-price-float {
-          position: absolute;
-          top: 18.33%;
-          right: 6.02%;
-          font-size: 42px;
-          line-height: 1;
-          font-weight: 700;
-          color: #ffffff;
-          text-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
-          white-space: nowrap;
-        }
-
-        .start-card-btn-row {
-          position: absolute;
-          left: 4.54%;
-          bottom: 23.06%;
-        }
-
-        .start-card-btn {
-          position: relative;
-          overflow: hidden;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 999px;
+          outline: none;
           color: #fff;
-          font-weight: 700;
-          text-decoration: none;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          transition: transform 0.2s ease, filter 0.2s ease;
-          pointer-events: auto;
+          font-size: clamp(28px, 5vw, 44px);
+          letter-spacing: -0.05em;
+          width: 100%;
         }
-
-        .start-card-btn::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(
-            120deg,
-            transparent 0%,
-            rgba(255, 255, 255, 0.22) 25%,
-            transparent 50%
-          );
-          transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
-        }
-
-        .start-card-btn > * {
-          position: relative;
-          z-index: 1;
-        }
-
-        .start-card-btn:hover {
-          transform: translateY(-1px);
-          filter: brightness(1.03);
-        }
-
-        .start-card-btn-floating {
-          min-width: 0;
-          padding: 12px 20px;
-          font-size: 14px;
-          line-height: 1;
-        }
-
-        .cta-card {
+        .preview-metrics-grid {
           display: grid;
-          grid-template-columns: 1fr auto;
-          gap: 24px;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+        }
+        .preview-metric { padding: 18px; display: grid; gap: 18px; }
+        .preview-metric-top { display: flex; justify-content: space-between; gap: 12px; align-items: center; }
+        .preview-metric-top span:first-child { color: rgba(255,255,255,0.6); }
+        .preview-metric strong { font-size: clamp(28px, 4vw, 44px); line-height: 0.95; }
+        .metric-pill {
+          padding: 8px 10px;
+          border-radius: 999px;
+          font-size: 12px;
+          border: 1px solid transparent;
+        }
+        .metric-pill.good { color: #b2f2cf; background: rgba(26, 127, 72, 0.16); border-color: rgba(167,243,208,0.16); }
+        .metric-pill.bad { color: #ffc4cf; background: rgba(177, 29, 62, 0.16); border-color: rgba(253,164,175,0.18); }
+        .metric-pill.neutral { color: rgba(255,255,255,0.64); background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.06); }
+
+        .sliders-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+        .slider-card-v2 { padding: 18px; display: grid; gap: 14px; min-height: 190px; }
+        .slider-title { font-weight: 600; }
+        .slider-hint { margin-top: 8px; color: rgba(255,255,255,0.54); line-height: 1.6; font-size: 14px; }
+        .range-input {
+          width: 100%; appearance: none; background: transparent; cursor: pointer;
+        }
+        .range-input::-webkit-slider-runnable-track {
+          height: 6px; border-radius: 999px; background: linear-gradient(90deg, rgba(255,255,255,0.12), rgba(247,210,55,0.54));
+        }
+        .range-input::-webkit-slider-thumb {
+          -webkit-appearance: none; width: 20px; height: 20px; margin-top: -7px; border-radius: 50%; background: #f7d237; border: 0; box-shadow: 0 0 0 6px rgba(247,210,55,0.16);
+        }
+        .slider-value { color: rgba(255,255,255,0.62); font-size: 13px; }
+        .preview-aside {
+          position: sticky; top: 96px; padding: 22px; display: grid; gap: 14px;
+        }
+        .preview-aside-kicker { color: rgba(255,255,255,0.54); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
+        .preview-aside-title { font-size: 18px; color: rgba(255,255,255,0.78); }
+        .preview-aside-money { font-size: clamp(34px, 4vw, 52px); line-height: 0.92; letter-spacing: -0.06em; font-weight: 700; }
+        .preview-rows { display: grid; gap: 12px; }
+        .preview-rows div { display: flex; justify-content: space-between; gap: 12px; color: rgba(255,255,255,0.64); }
+        .preview-rows strong { color: #fff; }
+        .preview-aside-copy { color: rgba(255,255,255,0.64); line-height: 1.7; margin: 0; }
+        .preview-aside-btn { margin-top: 6px; justify-content: center; }
+
+        .goals-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px;
+        }
+        .goal-card { perspective: 1400px; }
+        .goal-card-inner { padding: 22px; min-height: 250px; transition: transform 0.18s ease-out; transform-style: preserve-3d; }
+        .goal-tab {
+          display: inline-flex;
+          min-height: 28px;
           align-items: center;
+          padding: 0 10px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.05);
+          color: rgba(255,255,255,0.52);
+          font-size: 11px;
+          letter-spacing: 0.12em;
+        }
+        .goal-title { margin-top: 18px; font-size: 28px; line-height: 1.02; letter-spacing: -0.05em; font-weight: 600; }
+        .goal-text { margin-top: 14px; color: rgba(255,255,255,0.68); line-height: 1.75; max-width: 92%; }
+        .goal-card-inner.has-bottom-glow { padding-bottom: 54px; }
+        .goal-bottom-glow {
+          position: absolute; left: 20px; right: 20px; bottom: 18px; height: 22px; pointer-events: none;
+        }
+        .goal-bottom-glow-core {
+          position: absolute; left: 0; right: 0; top: 9px; height: 3px; border-radius: 999px;
+          background: linear-gradient(90deg, rgba(247,210,55,0.4), rgba(247,210,55,1), rgba(255,226,122,0.9));
+          box-shadow: 0 0 18px rgba(247,210,55,0.3);
+        }
+        .goal-bottom-glow-shine {
+          position: absolute; top: 2px; width: 34%; height: 18px; border-radius: 999px;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.88), transparent);
+          filter: blur(5px);
+          animation: roadmapShine 5.6s ease-in-out infinite;
         }
 
-        .cta-box {
-          min-width: 280px;
-          max-width: 320px;
+        .cases-shell { display: grid; gap: 18px; }
+        .cases-topline { display: flex; justify-content: space-between; gap: 16px; align-items: center; }
+        .cases-industry-filter { display: flex; gap: 10px; flex-wrap: wrap; }
+        .industry-pill {
+          padding: 10px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.48); background: rgba(255,255,255,0.04);
+        }
+        .industry-pill.is-active { color: var(--bg-2); background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(255,226,122,0.92)); border-color: rgba(247,210,55,0.32); }
+        .case-controls { display: flex; gap: 10px; }
+        .case-arrow {
+          width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); color: #fff;
+        }
+        .cases-carousel {
+          position: relative; min-height: 620px; perspective: 1400px; overflow: hidden;
+        }
+        .cases-card-button {
+          position: absolute; inset: 0; background: transparent; border: 0; padding: 0; cursor: pointer;
+        }
+        .cases-card-transform {
+          width: min(100%, 860px); height: 100%; margin: 0 auto; transition: transform 0.45s ease, opacity 0.35s ease;
+        }
+        .case-stage-card {
+          height: 100%; border-radius: 34px; padding: 22px; background: linear-gradient(180deg, rgba(224,225,227,0.11), rgba(224,225,227,0.05)); border: 1px solid rgba(255,255,255,0.12); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 30px 70px rgba(0,0,0,0.22); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); display: grid; grid-template-rows: auto auto 1fr; gap: 20px;
+        }
+        .case-stage-card.is-active { border-color: rgba(247,210,55,0.22); }
+        .case-stage-card-top {
+          display: flex; justify-content: space-between; gap: 16px; align-items: start;
+        }
+        .case-stage-label { color: rgba(255,255,255,0.48); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
+        .case-stage-name { margin-top: 10px; font-size: clamp(38px, 6vw, 74px); line-height: 0.92; letter-spacing: -0.08em; font-weight: 700; }
+        .case-niches { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; max-width: 42%; }
+        .case-niche-pill {
+          padding: 8px 12px; border-radius: 999px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.82); border: 1px solid rgba(255,255,255,0.08);
+        }
+        .case-stage-card-copy {
+          display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px;
+        }
+        .case-stage-card-copy > div,
+        .case-stage-card-bottom {
+          border-radius: 24px; padding: 18px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+        }
+        .case-copy-title,
+        .case-outcome-head span { color: rgba(255,255,255,0.5); font-size: 12px; text-transform: uppercase; letter-spacing: 0.12em; }
+        .case-stage-card-copy p { margin: 12px 0 0; color: rgba(255,255,255,0.72); line-height: 1.72; }
+        .case-stage-card-bottom { display: grid; gap: 18px; }
+        .case-outcome-head { display: flex; justify-content: space-between; gap: 12px; align-items: end; }
+        .case-outcome-head strong { font-size: clamp(22px, 3vw, 30px); line-height: 1.08; max-width: 70%; }
+        .case-numbers-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+        .case-number-card { border-radius: 18px; padding: 14px; background: rgba(4,16,39,0.34); border: 1px solid rgba(255,255,255,0.06); }
+        .case-number-card span { color: rgba(255,255,255,0.5); font-size: 12px; }
+        .case-number-card strong { display: block; margin-top: 8px; font-size: 24px; line-height: 1.02; }
+        .case-number-card small { display: block; margin-top: 10px; }
+        .case-number-card .good { color: #b2f2cf; }
+        .case-number-card .bad { color: #ffc4cf; }
+        .case-bars-wrap { display: grid; gap: 12px; }
+        .case-bar-group { display: grid; gap: 8px; }
+        .case-bar-meta { display: flex; justify-content: space-between; gap: 12px; color: rgba(255,255,255,0.62); font-size: 13px; }
+        .case-bar-track { height: 14px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+        .case-bar-track-top { margin-bottom: 4px; }
+        .case-bar-fill { height: 100%; border-radius: inherit; transition: width 0.7s ease; }
+        .case-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,0.94), rgba(255,226,122,0.98)); }
+        .case-bar-fill-target { background: linear-gradient(90deg, rgba(93,167,255,0.88), rgba(156,109,255,0.8)); }
+        .case-dots { display: flex; justify-content: center; gap: 10px; }
+        .case-dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.2); border: 0; }
+        .case-dot.is-active { width: 28px; border-radius: 999px; background: linear-gradient(90deg, rgba(247,210,55,0.98), rgba(255,226,122,0.92)); }
+
+        .analysis-grid-v2 {
+          display: grid;
+          grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+          gap: 18px;
+          align-items: stretch;
+        }
+        .snapshot-map-card {
+          border-radius: 30px;
+          padding: 24px;
+          background: linear-gradient(180deg, rgba(224,225,227,0.08), rgba(224,225,227,0.04));
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.12), 0 20px 54px rgba(0,0,0,0.16);
+        }
+        .analysis-left-title { margin: 0; font-size: 24px; line-height: 1.15; }
+        .snapshot-builder-copy { margin: 16px 0 0; color: rgba(255,255,255,0.68); line-height: 1.75; }
+        .snapshot-map-grid {
+          margin-top: 24px;
+          display: grid;
+          grid-template-columns: 27fr 27fr 18fr;
+          grid-template-rows: repeat(2, minmax(158px, 1fr));
+          gap: 16px;
+        }
+        .snapshot-map-item {
           position: relative;
           overflow: hidden;
           border-radius: 24px;
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          background: linear-gradient(
-            135deg,
-            rgba(255, 255, 255, 0.06) 0%,
-            rgba(255, 255, 255, 0.035) 100%
-          );
-          padding: 22px;
+          padding: 18px;
+          background: rgba(255,255,255,0.04);
+          border: 1px solid rgba(255,255,255,0.08);
         }
-
-        .line-grid {
+        .snapshot-map-item::after {
+          content: "";
           position: absolute;
           inset: 0;
-          background-image: linear-gradient(
-            rgba(255, 255, 255, 0.04) 1px,
-            transparent 1px
-          );
-          background-size: 100% 76px;
-          opacity: 0.16;
-          pointer-events: none;
+          background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,0.12) 50%, transparent 70%);
+          transform: translateX(-120%);
+          animation: snapshotCardSweep 8.2s ease-in-out infinite;
+          opacity: 0.55;
         }
+        .snapshot-map-item.wide:nth-of-type(1) { grid-column: 1; grid-row: 1; }
+        .snapshot-map-item.wide:nth-of-type(2) { grid-column: 2; grid-row: 1; }
+        .snapshot-map-item.medium { grid-column: 3; grid-row: 1 / span 2; }
+        .snapshot-map-item.small:nth-of-type(4) { grid-column: 1 / span 1; grid-row: 2; }
+        .snapshot-map-item.small:nth-of-type(5) { grid-column: 2 / span 1; grid-row: 2; }
+        .snapshot-map-note { color: var(--yellow); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; }
+        .snapshot-map-item strong { display: block; margin-top: 18px; font-size: clamp(20px, 2.4vw, 28px); line-height: 1.02; letter-spacing: -0.04em; }
+        .snapshot-map-item small { display: block; margin-top: 14px; color: rgba(255,255,255,0.66); line-height: 1.7; }
+        .analysis-right-card { min-height: 100%; }
+        .start-cards-row-v2 {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px;
+          height: 100%;
+        }
+        .offer-card { perspective: 1400px; }
+        .offer-card-inner {
+          height: 100%; min-height: 338px; border-radius: 30px; padding: 18px; background: linear-gradient(180deg, rgba(224,225,227,0.11), rgba(224,225,227,0.06)); border: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; justify-content: space-between; transition: transform 0.18s ease-out; transform-style: preserve-3d;
+        }
+        .offer-top { display: grid; gap: 18px; }
+        .offer-icon { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; border-radius: 24px; background: rgba(255,255,255,0.03); }
+        .offer-title { font-size: 28px; letter-spacing: -0.05em; line-height: 1; font-weight: 600; }
+        .offer-caption { margin-top: 10px; color: rgba(255,255,255,0.68); line-height: 1.7; }
+        .offer-bottom { display: flex; justify-content: space-between; gap: 14px; align-items: center; margin-top: 18px; }
+        .offer-price { font-size: 34px; line-height: 0.95; letter-spacing: -0.05em; font-weight: 700; }
 
-        .aurora {
+        .cta-card-v2 {
+          padding: 24px;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 320px;
+          gap: 18px;
+          align-items: end;
+        }
+        .cta-card-box {
+          border-radius: 24px;
+          padding: 18px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.08);
+          display: grid;
+          gap: 12px;
+        }
+        .cta-card-label { color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; }
+        .cta-card-title { font-size: 28px; line-height: 1.02; letter-spacing: -0.05em; }
+
+        .tg-gradient-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 48px;
+          padding: 0 18px;
+          border-radius: 999px;
+          color: #fff;
+          background: linear-gradient(120deg, #47b6f6, #5da7ff, #7c84ff, #9c6dff, #c25cf3);
+          background-size: 220% 220%;
+          animation: tgGradientFlow 9s linear infinite;
+          box-shadow: 0 12px 28px rgba(93,167,255,0.24);
+          position: relative;
+          overflow: hidden;
+          border: 0;
+        }
+        .tg-gradient-btn::after {
+          content: "";
           position: absolute;
-          border-radius: 9999px;
-          filter: blur(120px);
-          opacity: 0.44;
-          animation-timing-function: ease-in-out;
-          animation-iteration-count: infinite;
-          animation-direction: alternate;
-          will-change: transform, opacity;
+          top: -24%; left: -130%; width: 38%; height: 150%;
+          transform: skewX(-22deg);
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.75), transparent);
+          animation: tgShine 4.8s ease-in-out infinite;
         }
 
-        .aurora-1 {
-          width: 34vw;
-          height: 34vw;
-          min-width: 320px;
-          min-height: 320px;
-          left: -6vw;
-          top: -8vh;
-          background: radial-gradient(
-            circle,
-            rgba(106, 160, 255, 0.16),
-            rgba(106, 160, 255, 0.06) 42%,
-            transparent 72%
-          );
-          animation: driftOne 16s infinite alternate ease-in-out;
+        .site-footer {
+          position: relative;
+          z-index: 2;
+          padding: 0 16px 20px;
         }
-
-        .aurora-2 {
-          width: 30vw;
-          height: 30vw;
-          min-width: 280px;
-          min-height: 280px;
-          right: 4vw;
-          top: 6vh;
-          background: radial-gradient(
-            circle,
-            rgba(247, 210, 55, 0.11),
-            rgba(247, 210, 55, 0.035) 42%,
-            transparent 72%
-          );
-          animation: driftTwo 18s infinite alternate ease-in-out;
+        .site-footer-inner {
+          width: min(1260px, calc(100vw - 32px));
+          margin: 0 auto;
+          border-top: 1px solid rgba(255,255,255,0.08);
+          padding-top: 22px;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          color: rgba(255,255,255,0.5);
         }
-
-        .aurora-3 {
-          width: 38vw;
-          height: 38vw;
-          min-width: 360px;
-          min-height: 360px;
-          left: 18vw;
-          bottom: -10vh;
-          background: radial-gradient(
-            circle,
-            rgba(124, 132, 255, 0.12),
-            rgba(124, 132, 255, 0.04) 44%,
-            transparent 74%
-          );
-          animation: driftThree 20s infinite alternate ease-in-out;
-        }
-
-        .aurora-4 {
-          width: 24vw;
-          height: 24vw;
-          min-width: 220px;
-          min-height: 220px;
-          right: 18vw;
-          bottom: 12vh;
-          background: radial-gradient(
-            circle,
-            rgba(255, 255, 255, 0.06),
-            rgba(255, 255, 255, 0.02) 38%,
-            transparent 72%
-          );
-          animation: driftFour 15s infinite alternate ease-in-out;
-        }
-
-        .vignette {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-            ellipse at center,
-            transparent 48%,
-            rgba(0, 0, 0, 0.22) 100%
-          );
-        }
-
-        @keyframes premiumGlassShift {
-          0% {
-            transform: translate3d(-12px, 0, 0);
-          }
-          50% {
-            transform: translate3d(14px, -6px, 0);
-          }
-          100% {
-            transform: translate3d(-12px, 0, 0);
-          }
-        }
-
-        @keyframes pulseTinyYellow {
-          0% {
-            transform: scale(1);
-            opacity: 1;
-          }
-          50% {
-            transform: scale(1.22);
-            opacity: 0.72;
-          }
-          100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-        }
+        .footer-brand { color: rgba(255,255,255,0.74); }
+        .footer-links { display: flex; gap: 18px; flex-wrap: wrap; }
 
         @keyframes tgGradientFlow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
         }
-
         @keyframes tgShine {
-          0% {
-            transform: translateX(-130%);
-          }
-          55% {
-            transform: translateX(130%);
-          }
-          100% {
-            transform: translateX(130%);
-          }
+          0% { transform: translateX(-130%) skewX(-22deg); }
+          52%, 100% { transform: translateX(330%) skewX(-22deg); }
+        }
+        @keyframes roadmapShine {
+          0% { left: -38%; opacity: 0; }
+          12% { opacity: 1; }
+          55% { left: 104%; opacity: 0.95; }
+          100% { left: 104%; opacity: 0; }
+        }
+        @keyframes snapshotCardSweep {
+          0% { transform: translateX(-120%); opacity: 0; }
+          12% { opacity: 0.35; }
+          48% { transform: translateX(120%); opacity: 0.7; }
+          100% { transform: translateX(120%); opacity: 0; }
+        }
+        @keyframes drift {
+          0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+          50% { transform: translate3d(18px, -20px, 0) scale(1.08); }
         }
 
-        @keyframes driftOne {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(90px, 60px, 0) scale(1.15);
-          }
-        }
-
-        @keyframes driftTwo {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(-80px, 70px, 0) scale(1.12);
-          }
-        }
-
-        @keyframes driftThree {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(50px, -30px, 0) scale(1.08);
-          }
-        }
-
-        @keyframes driftFour {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-          }
-          100% {
-            transform: translate3d(-50px, 42px, 0) scale(1.1);
-          }
-        }
-
-        @media (max-width: 1280px) {
-          .hero-section {
-            min-height: 680px;
-          }
-
-          .hero-main-title {
-            font-size: clamp(48px, 5.5vw, 78px);
-          }
-
-          .hero-main-copy,
-          .section-copy {
-            font-size: 20px;
-          }
-        }
-
-        @media (max-width: 1180px) {
-          .journey-compact {
+        @media (max-width: 1160px) {
+          .hero-shell,
+          .preview-grid,
+          .analysis-grid-v2,
+          .cta-card-v2 {
             grid-template-columns: 1fr;
           }
-
-          .journey-compact-arrow {
-            display: none;
-          }
-
-          .analysis-grid,
-          .results-grid-2x2 {
-            grid-template-columns: 1fr;
-          }
+          .preview-aside { position: relative; top: 0; }
+          .hero-panel { min-height: auto; }
         }
 
-        @media (max-width: 1023px) {
-          .hero-section {
-            min-height: auto;
-            padding: 26px 18px 24px;
+        @media (max-width: 960px) {
+          .page-wrap { width: min(100vw - 24px, 100%); padding-top: 96px; }
+          .site-header-inner {
+            grid-template-columns: 1fr auto;
+            grid-template-areas: "brand actions" "nav nav";
+            gap: 10px;
           }
-
-          .hero-grid-frame,
-          .cta-card {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-chart-float {
-            width: 100%;
-          }
-
-          .hero-actions {
-            padding-top: 24px;
-          }
-
-          .hero-chart-metrics-row,
-          .dashboard-grid {
+          .brand-mark { grid-area: brand; }
+          .header-actions { grid-area: actions; justify-content: flex-end; }
+          .site-nav { grid-area: nav; justify-content: flex-start; overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+          .goals-grid,
+          .preview-inputs-row,
+          .preview-metrics-grid,
+          .sliders-grid,
+          .case-stage-card-copy,
+          .case-numbers-grid,
+          .start-cards-row-v2,
+          .cta-card-v2 { grid-template-columns: 1fr; }
+          .snapshot-map-grid {
             grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto;
           }
-
-          .snapshot-builder.snapshot-builder-mosaic {
-  grid-template-columns: 1fr;
-  grid-template-rows: auto;
-  grid-template-areas:
-    "company"
-    "positioning"
-    "economics"
-    "clients"
-    "product";
-  min-height: auto;
-}
-
-.builder-block-company,
-.builder-block-positioning,
-.builder-block-economics,
-.builder-block-clients,
-.builder-block-product {
-  min-height: 120px;
-  padding-left: 24px;
-  padding-right: 24px;
-  justify-content: center;
-  border-radius: 28px;
-}
-
-          .start-cards-row {
-            grid-template-columns: 1fr;
+          .snapshot-map-item,
+          .snapshot-map-item.wide:nth-of-type(1),
+          .snapshot-map-item.wide:nth-of-type(2),
+          .snapshot-map-item.medium,
+          .snapshot-map-item.small:nth-of-type(4),
+          .snapshot-map-item.small:nth-of-type(5) {
+            grid-column: auto;
+            grid-row: auto;
+            min-height: 168px;
           }
-
-          .stage-carousel-scene {
-            min-height: 500px;
-            perspective: 1800px;
-          }
-
-          .stage-carousel-drum {
-            height: 420px;
-          }
-
-          .stage-carousel-item-free {
-            width: min(700px, 78vw);
-          }
-
-          .stage-card-analytics {
-            min-height: 400px;
-            border-radius: 28px;
-          }
-
-          .stage-card-top-panel {
-            padding: 22px 22px 18px;
-            min-height: 210px;
-            gap: 18px;
-          }
-
-          .stage-copy-block h4 {
-            font-size: 22px;
-          }
-
-          .stage-copy-block p {
-            font-size: 15px;
-            line-height: 1.5;
-          }
-
-          .stage-card-heading strong {
-            font-size: 62px;
-          }
-
-          .stage-card-bottom-panel {
-            padding: 18px 20px 20px;
-          }
-
-          .stage-card-bottom-inner {
-            grid-template-columns: 1fr 1.1fr;
-            gap: 20px;
-          }
-
-          .stage-bars-title {
-            font-size: 42px;
-          }
-
-          .stage-bar-short {
-            width: 132px;
-          }
-
-          .stage-bar-long {
-            width: 240px;
-          }
+          .cases-carousel { min-height: 760px; }
+          .cases-card-transform { width: 100%; }
+          .case-stage-name { font-size: clamp(34px, 12vw, 64px); }
+          .case-niches { max-width: none; justify-content: flex-start; }
+          .case-stage-card-top,
+          .case-outcome-head,
+          .site-footer-inner { flex-direction: column; align-items: flex-start; }
         }
 
-        @media (max-width: 767px) {
-          .cursor-glow {
-            display: none;
-          }
-
-          .sticky-header {
-            top: 0;
-            margin: 0 -16px 18px;
-            padding: 10px 16px 8px;
-          }
-
-          .header-row {
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .header-actions {
-            width: 100%;
-            justify-content: space-between;
-          }
-
-          .logo-main {
-            width: 150px;
-            height: 42px;
-          }
-
-          .contact-btn {
-            min-width: 44px;
-            height: 40px;
-            padding: 0 12px;
-            font-size: 12px;
-          }
-
-          .ghost-link {
-            display: none;
-          }
-
-          .tg-gradient-btn {
-            padding: 13px 16px;
-            font-size: 15px;
-          }
-
-          .tg-gradient-btn-header {
-            padding: 10px 14px;
-            font-size: 12px;
-            margin-left: auto;
-          }
-
-          .hero-main-title {
-            font-size: 52px;
-          }
-
-          .hero-main-subtitle {
-            font-size: 28px;
-          }
-
-          .hero-main-copy,
-          .section-copy {
-            font-size: 17px;
-            line-height: 1.65;
-          }
-
-          .section-title {
-            font-size: 34px;
-          }
-
-          .hero-highlights-row {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-highlight-chip {
-            white-space: normal;
-            font-size: 18px;
-          }
-
-          .hero-highlight-chip:not(:last-child)::after {
-            display: none;
-          }
-
-          .hero-chart-metrics-row,
-          .input-grid,
-          .dashboard-grid,
-          .results-grid-2x2 {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-levers-inline-float {
-            justify-content: flex-start;
-          }
-
-          .hero-chart-float-title {
-            text-align: left;
-            font-size: 24px;
-            padding-right: 0;
-          }
-
-          .hero-tag {
-            font-size: 11px;
-            min-height: 42px;
-            padding: 10px 16px;
-          }
-
-          .bar-chart-wrap {
-            padding: 48px 14px 14px;
-          }
-
-          .bar-chart-columns {
-            gap: 10px;
-          }
-
-          .bar-chart-row-top {
-            gap: 8px;
-            align-items: flex-start;
-            flex-direction: column;
-          }
-
-          .metric-head {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 8px;
-          }
-
-          .glass-card {
-            border-radius: 22px;
-            padding: 16px;
-          }
-
-          .reserve-amount {
-            font-size: 2.2rem;
-          }
-.results-bottom-row {
-  grid-template-columns: 1fr;
-  align-items: stretch;
-}
-
-.results-start-btn {
-  width: fit-content;
-  margin-bottom: 0;
-}
-
-.result-doc-bottom-glow {
-  height: 74px;
-}
-          .metric-main-value {
-            font-size: 1.85rem;
-            white-space: normal;
-          }
-
-          .model-main-value {
-            font-size: 1.2rem;
-            white-space: normal;
-          }
-
-          .preview-actions-inline {
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: flex-start;
-          }
-
-          .industry-pill {
-            min-height: 44px;
-            padding: 0 14px;
-            font-size: 14px;
-          }
-
-          .industries-pills-carousel {
-            justify-content: flex-start;
-          }
-
-          .stage-carousel-scene {
-            min-height: 420px;
-            perspective: 1600px;
-          }
-
-          .stage-carousel-drum {
-            height: 320px;
-          }
-
-          .stage-carousel-item-free {
-            width: min(420px, 88vw);
-            top: 8px;
-          }
-
-          .stage-card-analytics {
-            min-height: 320px;
-            border-radius: 22px;
-          }
-
-          .stage-card-top-panel {
-            grid-template-columns: 1fr;
-            gap: 14px;
-            padding: 16px 16px 14px;
-            min-height: auto;
-          }
-
-          .stage-card-copy {
-            gap: 14px;
-          }
-
-          .stage-copy-block h4 {
-            font-size: 16px;
-          }
-
-          .stage-copy-block p {
-            margin-top: 6px;
-            font-size: 12px;
-            line-height: 1.45;
-            max-width: none;
-          }
-
-          .stage-card-heading {
-            align-items: flex-start;
-            text-align: left;
-            min-width: 0;
-          }
-
-          .stage-card-heading span {
-            font-size: 10px;
-          }
-
-          .stage-card-heading strong {
-            margin-top: 4px;
-            font-size: 42px;
-          }
-
-          .stage-card-bottom-panel {
-            padding: 14px 14px 16px;
-          }
-
-          .stage-card-bottom-inner {
-            grid-template-columns: 1fr;
-            gap: 16px;
-            min-height: auto;
-          }
-
-          .stage-rings-grid {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px 16px;
-          }
-
-          .stage-ring-label {
-            font-size: 11px;
-          }
-
-          .stage-ring {
-            width: 56px;
-            height: 56px;
-          }
-
-          .stage-ring-outer {
-            border-width: 9px;
-          }
-
-          .stage-ring-inner {
-            inset: 10px;
-            border-width: 6px;
-          }
-
-          .stage-ring-center {
-            font-size: 11px;
-          }
-
-          .stage-bars-title {
-            align-self: flex-start;
-            font-size: 28px;
-          }
-
-          .stage-bar-group {
-            max-width: none;
-          }
-
-          .stage-bar-label {
-            margin-bottom: 10px;
-            font-size: 11px;
-          }
-
-          .stage-bar {
-            height: 20px;
-          }
-
-          .stage-bar-short {
-            width: 96px;
-          }
-
-          .stage-bar-long {
-            width: 180px;
-          }
-
-          .stage-bar-marker {
-            border-left-width: 8px;
-            border-right-width: 8px;
-            border-bottom-width: 15px;
-          }
-
-          .stage-card-watermark-icon {
-            width: 20px;
-            height: 20px;
-            left: 14px;
-            top: 14px;
-          }
-
-.snapshot-builder.snapshot-builder-mosaic {
-  gap: 12px;
-}
-
-.builder-block-company,
-.builder-block-positioning,
-.builder-block-economics,
-.builder-block-clients,
-.builder-block-product {
-  min-height: 84px;
-  border-radius: 24px;
-}
-
-.builder-block-company .builder-label,
-.builder-block-clients .builder-label,
-.builder-block-product .builder-label {
-  font-size: 22px;
-}
-
-.builder-block-positioning .builder-label,
-.builder-block-economics .builder-label {
-  font-size: 28px;
-}
-
-          .start-card-inner,
-          .start-card-overlay {
-            min-height: 190px;
-          }
-
-          .start-card-price-float {
-            font-size: 30px;
-          }
-
-          .result-doc-card,
-          .result-doc-card-inner {
-            min-height: auto;
-          }
-
-          .result-doc-title {
-            font-size: 32px;
-          }
-
-          .result-doc-text {
-            font-size: 16px;
-            line-height: 1.75;
-          }
-
-          .result-doc-start-btn {
-            min-width: 92px;
-            padding: 10px 14px;
-            font-size: 13px;
-          }
-
-          .cta-box {
-            min-width: 0;
-            max-width: none;
-            width: 100%;
-          }
-
-          .hero-chart-bottom {
-            grid-template-columns: 1fr;
-          }
-
-          .hero-money-card strong {
-            white-space: normal;
-          }
-
-          .hero-active-note {
-            border-radius: 18px;
-            display: flex;
-            align-items: flex-start;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .hero-section {
-            padding: 18px 14px 18px;
-            border-radius: 28px;
-          }
-
-          .hero-main-title {
-            font-size: 42px;
-            line-height: 0.92;
-          }
-
-          .hero-main-subtitle {
-            margin-top: 14px;
-            font-size: 22px;
-          }
-
-          .hero-main-copy {
-            margin-top: 18px;
-            font-size: 15px;
-          }
-
-          .hero-actions {
-            gap: 10px;
-          }
-
-          .section-title {
-            font-size: 28px;
-          }
-
-          .section-copy {
-            font-size: 15px;
-          }
-
-          .journey-compact-title {
-            font-size: 20px;
-          }
-
-          .journey-compact-text {
-            font-size: 14px;
-            line-height: 1.65;
-          }
-
-          .glass-input {
-            font-size: 18px;
-            padding: 13px 14px;
-          }
-
-          .metric-delta-top,
-          .model-delta-top {
-            font-size: 16px;
-          }
-
-          .metric-label,
-          .model-label {
-            font-size: 14px;
-          }
-
-          .metric-flag {
-            font-size: 10px;
-            padding: 5px 8px;
-          }
-
-          .reserve-amount {
-            font-size: 1.9rem;
-          }
-
-          .results-roadmap-note {
-            font-size: 15px;
-            line-height: 1.7;
-          }
-
-          .analysis-left-title {
-            font-size: 18px;
-          }
-
-          .snapshot-builder-copy {
-            font-size: 14px;
-            line-height: 1.6;
-          }
-
-          .start-card-price-float {
-            font-size: 24px;
-          }
-
-          .start-card-btn-floating {
-            padding: 10px 16px;
-            font-size: 13px;
-          }
+        @media (max-width: 720px) {
+          .page-wrap { padding-top: 88px; }
+          .content-section { margin-top: 76px; }
+          .hero-shell { min-height: auto; }
+          .hero-title { font-size: clamp(36px, 13vw, 58px); }
+          .section-title { font-size: clamp(30px, 11vw, 44px); }
+          .site-header { padding: 10px 12px 0; }
+          .site-header-inner { width: calc(100vw - 24px); border-radius: 20px; }
+          .header-cta { display: none; }
+          .hero-actions { align-items: stretch; }
+          .hero-actions a,
+          .preview-aside-btn,
+          .tg-gradient-btn,
+          .hero-secondary-btn { width: 100%; }
+          .hero-panel-grid { grid-template-columns: 1fr; }
+          .hero-stat-card.wide { grid-column: span 1; }
+          .cases-carousel { min-height: 640px; }
+          .cases-card-transform { transform: none !important; opacity: 1 !important; }
         }
       `}</style>
     </main>
