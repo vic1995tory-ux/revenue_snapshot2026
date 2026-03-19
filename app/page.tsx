@@ -1812,15 +1812,15 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.12);
           backdrop-filter: blur(18px) saturate(130%);
         }
-        .journey-compact-top { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 14px; }
+        .journey-compact-top { display: grid; grid-template-columns: 54px minmax(0,1fr); align-items: flex-start; column-gap: 14px; margin-bottom: 14px; }
         .journey-compact-badge {
           width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0;
           background: transparent; color: #f7d237; font-size: 13px; font-weight: 700;
           border: 1px solid rgba(247,210,55,.34);
         }
         .journey-compact-arrow { display: none; }
-        .journey-compact-title { padding-top: 4px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
-        .journey-compact-text { margin-top: 0; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
+        .journey-compact-title { padding-top: 2px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
+        .journey-compact-text { margin-top: 0; padding-left: 68px; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
         .input-shell {
@@ -1951,9 +1951,9 @@ export default function Home() {
         }
         .stage-card-analytics {
           position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.5) 0%, rgba(11,20,38,.36) 100%);
-          backdrop-filter: blur(44px) saturate(145%);
-          -webkit-backdrop-filter: blur(44px) saturate(145%);
+          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.36) 0%, rgba(11,20,38,.22) 100%);
+          backdrop-filter: blur(68px) saturate(155%);
+          -webkit-backdrop-filter: blur(68px) saturate(155%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
         }
         .stage-card-analytics::after { display: none; }
@@ -2131,35 +2131,31 @@ export default function Home() {
         .start-cards-row {
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 22px;
           height: 100%;
+          justify-content: space-between;
         }
         .start-card { flex: 1 1 0; }
         .start-card-inner,.start-card-overlay { min-height: 0; height: 100%; }
         .start-card-inner {
-          position: relative; border-radius: 28px; overflow: hidden; border: 1px solid rgba(255,255,255,.12);
-          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.06)); transform-style: preserve-3d; transition: transform .18s ease-out;
-          box-shadow: 0 22px 54px rgba(0,0,0,.22);
+          position: relative; aspect-ratio: 3 / 2; border-radius: 32px; overflow: hidden; border: none;
+          background: transparent; transform-style: preserve-3d; transition: transform .18s ease-out;
+          box-shadow: none;
         }
-        .start-card-frame { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 1; }
+        .start-card-frame { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 1; border-radius: inherit; display: block; }
         .start-card-overlay {
-          position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 22px;
-          background: linear-gradient(180deg, rgba(4,16,39,.04), rgba(4,16,39,.1) 32%, rgba(4,16,39,.34) 62%, rgba(4,16,39,.66) 100%);
+          position: absolute; inset: 0; display: block; padding: 0;
+          background: none;
         }
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          justify-content: flex-end;
-          gap: 16px;
-          margin-top: auto;
-          height: 100%;
-          padding-bottom: 6px;
+          position: absolute;
+          inset: 0;
+          display: block;
         }
-        .start-card-price-float { font-size: clamp(66px, 4.8vw, 96px); line-height: .92; letter-spacing: -.06em; font-weight: 700; margin-top: auto; }
+        .start-card-price-float { position: absolute; top: 19.72%; right: 6.67%; font-size: clamp(66px, 5vw, 108px); line-height: .92; letter-spacing: -.06em; font-weight: 700; text-shadow: 0 10px 28px rgba(0,0,0,.22); }
         .start-card-btn {
-          display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
+          position: absolute; left: 4.35%; bottom: 23.06%; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
           color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
@@ -2300,3 +2296,11 @@ export default function Home() {
     </main>
   );
 }
+        @media (max-width: 900px) {
+          .journey-compact-text { padding-left: 0; }
+          .journey-compact-top { grid-template-columns: 44px minmax(0,1fr); column-gap: 12px; }
+          .start-card-inner { aspect-ratio: 3 / 2; }
+          .start-card-price-float { top: 19.72%; right: 6.67%; font-size: clamp(52px, 12vw, 88px); }
+          .start-card-btn { left: 4.35%; bottom: 23.06%; }
+        }
+
