@@ -2296,11 +2296,3 @@ export default function Home() {
     </main>
   );
 }
-        @media (max-width: 900px) {
-          .journey-compact-text { padding-left: 0; }
-          .journey-compact-top { grid-template-columns: 44px minmax(0,1fr); column-gap: 12px; }
-          .start-card-inner { aspect-ratio: 3 / 2; }
-          .start-card-price-float { top: 19.72%; right: 6.67%; font-size: clamp(52px, 12vw, 88px); }
-          .start-card-btn { left: 4.35%; bottom: 23.06%; }
-        }
-
