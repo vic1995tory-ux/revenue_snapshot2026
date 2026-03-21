@@ -37,56 +37,10 @@ const BRAND = {
   yellow: "#f7d237",
 };
 
-const KPI_TAGS = [
-  "Выручка",
-  "Маржа",
-  "ROMI",
-  "CAC",
-  "LTV",
-  "Средний чек",
-  "Конверсия в продажу",
-  "Retention",
-  "NPS",
-  "Скорость сделки",
-  "Загрузка команды",
-  "Cash Flow",
-];
-
-const FLOW_TAGS = [
-  "Instagram",
-  "Meta Ads",
-  "Google Ads",
-  "SEO",
-  "Рефералы",
-  "Партнёрства",
-  "Холодный outreach",
-  "Telegram",
-  "YouTube",
-  "Marketplace",
-];
-
-const RETENTION_TAGS = [
-  "Повторные продажи",
-  "Подписка",
-  "Комьюнити",
-  "Email nurturing",
-  "Личный менеджер",
-  "Апсейлы",
-  "Пакеты услуг",
-  "Реферальная программа",
-];
-
-const ANALYTICS_TAGS = [
-  "Рынок",
-  "Ниша",
-  "Сегменты",
-  "Каналы",
-  "Продажи",
-  "Юнит-экономика",
-  "Retention",
-  "Команда",
-];
-
+const KPI_TAGS = ["Выручка", "Маржа", "ROMI", "CAC", "LTV", "Средний чек", "Конверсия в продажу", "Retention", "NPS", "Скорость сделки", "Загрузка команды", "Cash Flow"];
+const FLOW_TAGS = ["Instagram", "Meta Ads", "Google Ads", "SEO", "Рефералы", "Партнёрства", "Холодный outreach", "Telegram", "YouTube", "Marketplace"];
+const RETENTION_TAGS = ["Повторные продажи", "Подписка", "Комьюнити", "Email nurturing", "Личный менеджер", "Апсейлы", "Пакеты услуг", "Реферальная программа"];
+const ANALYTICS_TAGS = ["Рынок", "Ниша", "Сегменты", "Каналы", "Продажи", "Юнит-экономика", "Retention", "Команда"];
 const MONTHS = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
 const CJM_STAGES = ["Лид", "Контакт", "Сделка", "Положительный опыт"];
 const STRESS_ZONES = ["Маркетинг", "Продажи", "Операционка", "Управление"];
@@ -186,45 +140,30 @@ const initialAnswers: Answers = {
   salesCount: "",
   revenue: "",
   kpis: [],
-
   clientProfile: "",
   demandCapacity: { demand: 0, capacity: 0 },
   acquisitionChannels: [],
   channelEfficiency: { value: 0, note: "" },
-
   topProducts: [
     { name: "", value: 0 },
     { name: "", value: 0 },
     { name: "", value: 0 },
   ],
   retention: [],
-  cjm: {
-    stages: CJM_STAGES.map((stage) => ({ stage, duration: "" })),
-    note: "",
-  },
-  seasonality: {
-    peak: [],
-    low: [],
-    goodReason: "",
-    badReason: "",
-  },
-
+  cjm: { stages: CJM_STAGES.map((stage) => ({ stage, duration: "" })), note: "" },
+  seasonality: { peak: [], low: [], goodReason: "", badReason: "" },
   positionText: "",
   geo: { physical: "", sales: "" },
-
   team: "",
   interaction: "",
   decisions: "",
   stress: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
   lossZones: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-
   analytics: { hasAnalytics: null, tags: [], note: "" },
   changesNeeded: "",
   implemented: "",
-
   goal: { profitTarget: 0, mode: "", costChange: "" },
   horizons: "",
-
   contacts: { reportEmail: "", meetingContact: "" },
 };
 
@@ -238,24 +177,7 @@ function isFilled(value: any): boolean {
 }
 
 function getQuestionProgress(question: Question, answers: Answers): number {
-  const value = answers[question.id];
-  return isFilled(value) ? 100 : 0;
-}
-
-function DebugProgress({ answers, activeChapter }: { answers: Answers; activeChapter: Chapter }) {
-  const chapterProgress = getChapterProgress(activeChapter, answers);
-  return (
-    <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-3 text-xs text-emerald-100">
-      <div>DEBUG — active chapter: {activeChapter.id}</div>
-      <div>DEBUG — chapter progress: {chapterProgress}%</div>
-      <div>DEBUG — answers snapshot updates live while you type.</div>
-    </div>
-  );
-}
-
-function getQuestionProgress(question: Question, answers: Answers): number {
-  const value = answers[question.id];
-  return isFilled(value) ? 100 : 0;
+  return isFilled(answers[question.id]) ? 100 : 0;
 }
 
 function getChapterProgress(chapter: Chapter, answers: Answers): number {
@@ -324,189 +246,22 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
   );
 }
 
-export default function DiagnosticIntakePage() {
-  const [active, setActive] = useState<Chapter | null>(null);
-  const [answers, setAnswers] = useState<Answers>(initialAnswers);
-
-  const sectionProgress = useMemo(() => {
-    return Object.fromEntries(chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)]));
-  }, [answers]);
-
-  const total = useMemo(() => {
-    const values = Object.values(sectionProgress) as number[];
-    return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
-  }, [sectionProgress]);
-
-  const previewChapter = active ?? chapters[0];
-  const previewProgress = Number(sectionProgress[previewChapter.id] || 0);
-  const completedSections = useMemo(() => Object.values(sectionProgress).filter((v) => Number(v) >= 100).length, [sectionProgress]);
-
-  function setAnswer(key: string, value: any) {
-    setAnswers((prev) => ({ ...prev, [key]: value }));
-  }
-
+function RangeBlock({ title, value, min, max, onChange }: { title: string; value: number; min: number; max: number; onChange: (val: number) => void }) {
   return (
-    <div
-      className="min-h-screen text-white"
-      style={{
-        background: "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
-      }}
-    >
-      <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
-        <GlassCard className="mb-8 p-5 md:p-7">
-          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
-            <div>
-              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
-                <span className="text-[#f7d237]">●</span>
-                Revenue Snapshot — Diagnostic Intake
-              </div>
-              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
-                Структурированная диагностическая анкета бизнеса
-              </h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.
-              </p>
-
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center justify-between text-sm text-white/70">
-                  <span>Общий прогресс заполнения</span>
-                  <span className="font-medium text-white">{Math.round(total)}%</span>
-                </div>
-                <SectionProgress value={total} />
-                <div className="flex flex-wrap gap-3 pt-2 text-xs text-white/45">
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Глав: {chapters.length}</span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Полностью завершено: {completedSections}</span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Формат: card → half-screen modal</span>
-                </div>
-              </div>
-            </div>
-
-            <GlassCard className="p-5 md:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.26em] text-white/40">Current focus</div>
-                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{previewChapter.title}</div>
-                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{previewChapter.subtitle}</div>
-                </div>
-                <Ring progress={previewProgress} size={92} />
-              </div>
-              <DebugProgress answers={answers} activeChapter={previewChapter} />
-              <div className="mt-6 grid gap-3 text-sm text-white/70">
-                {previewChapter.questions.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
-                    <span className="pr-4 text-white/72">{i + 1}. {q.label}</span>
-                    <span className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-white/55">{getQuestionProgress(q, answers)}%</span>
-                  </div>
-                ))}
-              </div>
-              {previewProgress === 100 && (
-                <button className="mt-5 w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:brightness-105">
-                  Готово
-                </button>
-              )}
-            </GlassCard>
-          </div>
-        </GlassCard>
-
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {chapters.map((chapter) => {
-            const progress = Number(sectionProgress[chapter.id]);
-            return (
-              <button
-                key={chapter.id}
-                onClick={() => setActive(chapter)}
-                className="translate-y-0 text-left transition duration-300 hover:-translate-y-1.5"
-              >
-                <GlassCard className="h-full p-5 md:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237]">
-                      {chapter.icon}
-                    </div>
-                    <Ring progress={progress} size={82} />
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{chapter.subtitle}</div>
-                  </div>
-
-                  <div className="mt-6 space-y-2.5">
-                    {chapter.questions.slice(0, 3).map((question, i) => (
-                      <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">{i + 1}</span>
-                        <span className="line-clamp-2">{question.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm">
-                    <span className="text-white/55">Открыть блок</span>
-                    <div className="flex items-center gap-2 text-[#f7d237]">
-                      <span>{progress}%</span>
-                      <span>→</span>
-                    </div>
-                  </div>
-                </GlassCard>
-              </button>
-            );
-          })}
-        </div>
+    <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+      <div className="mb-3 flex items-center justify-between text-sm text-white/60">
+        <span>{title}</span>
+        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">{value}</span>
       </div>
-
-      {active && (
-        <>
-          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setActive(null)} />
-
-          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[920px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
-            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">diagnostic chapter</div>
-                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
-                  <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Ring progress={Number(sectionProgress[active.id])} size={84} />
-                  <button onClick={() => setActive(null)} className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white">
-                    Закрыть
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
-              {active.questions.map((question, index) => (
-                <GlassCard key={question.id} className="p-5 md:p-6">
-                  <div className="mb-4 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">Question {index + 1}</div>
-                      <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">{question.label}</h3>
-                    </div>
-                    <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-2 text-sm text-[#f7d237]">
-                      {getQuestionProgress(question, answers)}%
-                    </div>
-                  </div>
-                  {renderInput(question, answers, setAnswer)}
-                </GlassCard>
-              ))}
-
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
-                <div className="text-sm text-white/55">Прогресс этого блока: {Number(sectionProgress[active.id])}%</div>
-                <button className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105">
-                  Сохранить блок
-                  <span>✓</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#f7d237]" />
     </div>
   );
 }
 
+const inputClass = "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
+const textareaClass = "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
+
 function renderInput(question: Question, answers: Answers, setAnswer: (key: string, value: any) => void) {
-  console.log("renderInput", question.id, answers[question.id]);
   switch (question.type) {
     case "rangePercent": {
       const value = answers[question.id]?.value ?? 0;
@@ -518,35 +273,14 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
             <span className="rounded-full border border-white/10 px-3 py-1 text-[#f7d237]">{value}%</span>
             <span>100%</span>
           </div>
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={value}
-            onChange={(e) => setAnswer(question.id, { value: Number(e.target.value), note })}
-            className="w-full accent-[#f7d237]"
-          />
-          <textarea
-            placeholder="Комментарий или контекст…"
-            className={textareaClass}
-            rows={4}
-            value={note}
-            onChange={(e) => setAnswer(question.id, { value, note: e.target.value })}
-          />
+          <input type="range" min={0} max={100} value={value} onChange={(e) => setAnswer(question.id, { value: Number(e.target.value), note })} className="w-full accent-[#f7d237]" />
+          <textarea placeholder="Комментарий или контекст…" className={textareaClass} rows={4} value={note} onChange={(e) => setAnswer(question.id, { value, note: e.target.value })} />
         </div>
       );
     }
 
     case "text":
-      return (
-        <textarea
-          placeholder="Введите ответ…"
-          className={textareaClass}
-          rows={5}
-          value={answers[question.id] ?? ""}
-          onChange={(e) => setAnswer(question.id, e.target.value)}
-        />
-      );
+      return <textarea placeholder="Введите ответ…" className={textareaClass} rows={5} value={answers[question.id] ?? ""} onChange={(e) => setAnswer(question.id, e.target.value)} />;
 
     case "tags": {
       const source = question.id === "kpis" ? KPI_TAGS : question.id === "acquisitionChannels" ? FLOW_TAGS : question.id === "retention" ? RETENTION_TAGS : ANALYTICS_TAGS;
@@ -560,12 +294,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
                 <button
                   type="button"
                   key={tag}
-                  onClick={() => {
-                    setAnswer(
-                      question.id,
-                      active ? selected.filter((t) => t !== tag) : [...selected, tag]
-                    );
-                  }}
+                  onClick={() => setAnswer(question.id, active ? selected.filter((t) => t !== tag) : [...selected, tag])}
                   className={`rounded-full border px-3.5 py-2 text-sm transition ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"}`}
                 >
                   {tag}
@@ -581,30 +310,14 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
       const current = answers[question.id] ?? { demand: 0, capacity: 0 };
       return (
         <div className="grid gap-5 md:grid-cols-2">
-          <RangeBlock
-            title="Обращения / заявки"
-            value={current.demand}
-            min={0}
-            max={500}
-            onChange={(val) => setAnswer(question.id, { ...current, demand: val })}
-          />
-          <RangeBlock
-            title="Реальная capacity"
-            value={current.capacity}
-            min={0}
-            max={500}
-            onChange={(val) => setAnswer(question.id, { ...current, capacity: val })}
-          />
+          <RangeBlock title="Обращения / заявки" value={current.demand} min={0} max={500} onChange={(val) => setAnswer(question.id, { ...current, demand: val })} />
+          <RangeBlock title="Реальная capacity" value={current.capacity} min={0} max={500} onChange={(val) => setAnswer(question.id, { ...current, capacity: val })} />
         </div>
       );
     }
 
     case "tripleMargin": {
-      const products = answers[question.id] ?? [
-        { name: "", value: 0 },
-        { name: "", value: 0 },
-        { name: "", value: 0 },
-      ];
+      const products = answers[question.id] ?? [{ name: "", value: 0 }, { name: "", value: 0 }, { name: "", value: 0 }];
       return (
         <div className="space-y-4">
           {products.map((item: any, i: number) => (
@@ -620,9 +333,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
                     setAnswer(question.id, next);
                   }}
                 />
-                <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">
-                  {item.value}%
-                </div>
+                <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">{item.value}%</div>
               </div>
               <input
                 type="range"
@@ -664,13 +375,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
               </div>
             ))}
           </div>
-          <textarea
-            placeholder="Опишите этапы подробнее…"
-            className={textareaClass}
-            rows={4}
-            value={current.note}
-            onChange={(e) => setAnswer(question.id, { ...current, note: e.target.value })}
-          />
+          <textarea placeholder="Опишите этапы подробнее…" className={textareaClass} rows={4} value={current.note} onChange={(e) => setAnswer(question.id, { ...current, note: e.target.value })} />
         </div>
       );
     }
@@ -685,12 +390,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
               {MONTHS.map((month) => {
                 const active = current.peak.includes(month);
                 return (
-                  <button
-                    type="button"
-                    key={`peak-${month}`}
-                    onClick={() => setAnswer(question.id, { ...current, peak: active ? current.peak.filter((m: string) => m !== month) : [...current.peak, month] })}
-                    className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}
-                  >
+                  <button type="button" key={`peak-${month}`} onClick={() => setAnswer(question.id, { ...current, peak: active ? current.peak.filter((m: string) => m !== month) : [...current.peak, month] })} className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
                     {month}
                   </button>
                 );
@@ -703,12 +403,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
               {MONTHS.map((month) => {
                 const active = current.low.includes(month);
                 return (
-                  <button
-                    type="button"
-                    key={`low-${month}`}
-                    onClick={() => setAnswer(question.id, { ...current, low: active ? current.low.filter((m: string) => m !== month) : [...current.low, month] })}
-                    className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-rose-400/20 bg-rose-400/10 text-rose-200" : "border-white/10 bg-white/[0.03] text-white/70"}`}
-                  >
+                  <button type="button" key={`low-${month}`} onClick={() => setAnswer(question.id, { ...current, low: active ? current.low.filter((m: string) => m !== month) : [...current.low, month] })} className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-rose-400/20 bg-rose-400/10 text-rose-200" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
                     {month}
                   </button>
                 );
@@ -716,20 +411,8 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <textarea
-              placeholder="Почему хорошо?"
-              className={textareaClass}
-              rows={4}
-              value={current.goodReason}
-              onChange={(e) => setAnswer(question.id, { ...current, goodReason: e.target.value })}
-            />
-            <textarea
-              placeholder="Почему плохо?"
-              className={textareaClass}
-              rows={4}
-              value={current.badReason}
-              onChange={(e) => setAnswer(question.id, { ...current, badReason: e.target.value })}
-            />
+            <textarea placeholder="Почему хорошо?" className={textareaClass} rows={4} value={current.goodReason} onChange={(e) => setAnswer(question.id, { ...current, goodReason: e.target.value })} />
+            <textarea placeholder="Почему плохо?" className={textareaClass} rows={4} value={current.badReason} onChange={(e) => setAnswer(question.id, { ...current, badReason: e.target.value })} />
           </div>
         </div>
       );
@@ -772,14 +455,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
                 <span className={current[zone] >= 7 ? "text-rose-200" : "text-[#fff3b2]"}>{current[zone]}</span>
                 <span>10</span>
               </div>
-              <input
-                type="range"
-                min={-10}
-                max={10}
-                value={current[zone]}
-                onChange={(e) => setAnswer(question.id, { ...current, [zone]: Number(e.target.value) })}
-                className="w-full accent-[#f7d237]"
-              />
+              <input type="range" min={-10} max={10} value={current[zone]} onChange={(e) => setAnswer(question.id, { ...current, [zone]: Number(e.target.value) })} className="w-full accent-[#f7d237]" />
             </div>
           ))}
         </div>
@@ -791,12 +467,8 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
       return (
         <div className="space-y-4">
           <div className="flex gap-3">
-            <button type="button" onClick={() => setAnswer(question.id, { ...current, hasAnalytics: true })} className={`rounded-2xl border px-4 py-2.5 text-sm ${current.hasAnalytics === true ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
-              Да
-            </button>
-            <button type="button" onClick={() => setAnswer(question.id, { ...current, hasAnalytics: false })} className={`rounded-2xl border px-4 py-2.5 text-sm ${current.hasAnalytics === false ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
-              Нет
-            </button>
+            <button type="button" onClick={() => setAnswer(question.id, { ...current, hasAnalytics: true })} className={`rounded-2xl border px-4 py-2.5 text-sm ${current.hasAnalytics === true ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>Да</button>
+            <button type="button" onClick={() => setAnswer(question.id, { ...current, hasAnalytics: false })} className={`rounded-2xl border px-4 py-2.5 text-sm ${current.hasAnalytics === false ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>Нет</button>
           </div>
           {current.hasAnalytics === true && (
             <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
@@ -805,24 +477,11 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
                 {ANALYTICS_TAGS.map((tag) => {
                   const active = current.tags.includes(tag);
                   return (
-                    <button
-                      type="button"
-                      key={tag}
-                      onClick={() => setAnswer(question.id, { ...current, tags: active ? current.tags.filter((t: string) => t !== tag) : [...current.tags, tag] })}
-                      className={`rounded-full border px-3.5 py-2 text-sm ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}
-                    >
-                      {tag}
-                    </button>
+                    <button type="button" key={tag} onClick={() => setAnswer(question.id, { ...current, tags: active ? current.tags.filter((t: string) => t !== tag) : [...current.tags, tag] })} className={`rounded-full border px-3.5 py-2 text-sm ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>{tag}</button>
                   );
                 })}
               </div>
-              <textarea
-                placeholder="Опишите, как именно аналитика участвует в принятии решений…"
-                className={textareaClass}
-                rows={4}
-                value={current.note}
-                onChange={(e) => setAnswer(question.id, { ...current, note: e.target.value })}
-              />
+              <textarea placeholder="Опишите, как именно аналитика участвует в принятии решений…" className={textareaClass} rows={4} value={current.note} onChange={(e) => setAnswer(question.id, { ...current, note: e.target.value })} />
             </div>
           )}
         </div>
@@ -843,9 +502,7 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
           </div>
           <div className="grid gap-3 md:grid-cols-3">
             {modes.map((option) => (
-              <button type="button" key={option} onClick={() => setAnswer(question.id, { ...current, mode: option })} className={`rounded-2xl border px-4 py-4 text-sm ${current.mode === option ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
-                {option}
-              </button>
+              <button type="button" key={option} onClick={() => setAnswer(question.id, { ...current, mode: option })} className={`rounded-2xl border px-4 py-4 text-sm ${current.mode === option ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>{option}</button>
             ))}
           </div>
           <input className={inputClass} placeholder="Если применимо — укажите процент изменения расходов" value={current.costChange} onChange={(e) => setAnswer(question.id, { ...current, costChange: e.target.value })} />
@@ -860,14 +517,8 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
           <input className={inputClass} placeholder="Email получателя отчёта" value={current.reportEmail} onChange={(e) => setAnswer(question.id, { ...current, reportEmail: e.target.value })} />
           <input className={inputClass} placeholder="Email / имя участника онлайн-встречи" value={current.meetingContact} onChange={(e) => setAnswer(question.id, { ...current, meetingContact: e.target.value })} />
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">✉</span> Отправка отчёта</div>
-              Автоматически после завершения диагностики.
-            </div>
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">◷</span> Приглашение на встречу</div>
-              Можно связать со слотами и защитой от повторного входа.
-            </div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60"><div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">✉</span> Отправка отчёта</div>Автоматически после завершения диагностики.</div>
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60"><div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">◷</span> Приглашение на встречу</div>Можно связать со слотами и защитой от повторного входа.</div>
           </div>
         </div>
       );
@@ -878,17 +529,134 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
   }
 }
 
-function RangeBlock({ title, value, min, max, onChange }: { title: string; value: number; min: number; max: number; onChange: (val: number) => void }) {
+export default function DiagnosticIntakePage() {
+  const [active, setActive] = useState<Chapter | null>(null);
+  const [answers, setAnswers] = useState<Answers>(initialAnswers);
+
+  const sectionProgress = useMemo(() => Object.fromEntries(chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)])), [answers]);
+  const total = useMemo(() => {
+    const values = Object.values(sectionProgress) as number[];
+    return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
+  }, [sectionProgress]);
+
+  const previewChapter = active ?? chapters[0];
+  const previewProgress = Number(sectionProgress[previewChapter.id] || 0);
+  const completedSections = useMemo(() => Object.values(sectionProgress).filter((v) => Number(v) >= 100).length, [sectionProgress]);
+
+  function setAnswer(key: string, value: any) {
+    setAnswers((prev) => ({ ...prev, [key]: value }));
+  }
+
   return (
-    <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-      <div className="mb-3 flex items-center justify-between text-sm text-white/60">
-        <span>{title}</span>
-        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">{value}</span>
+    <div className="min-h-screen text-white" style={{ background: "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)" }}>
+      <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
+        <GlassCard className="mb-8 p-5 md:p-7">
+          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
+            <div>
+              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45"><span className="text-[#f7d237]">●</span>Revenue Snapshot — Diagnostic Intake</div>
+              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">Структурированная диагностическая анкета бизнеса</h1>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.</p>
+              <div className="mt-8 space-y-3">
+                <div className="flex items-center justify-between text-sm text-white/70"><span>Общий прогресс заполнения</span><span className="font-medium text-white">{Math.round(total)}%</span></div>
+                <SectionProgress value={total} />
+                <div className="flex flex-wrap gap-3 pt-2 text-xs text-white/45">
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">Глав: {chapters.length}</span>
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">Полностью завершено: {completedSections}</span>
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">Формат: card → half-screen modal</span>
+                </div>
+              </div>
+            </div>
+
+            <GlassCard className="p-5 md:p-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.26em] text-white/40">Current focus</div>
+                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{previewChapter.title}</div>
+                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{previewChapter.subtitle}</div>
+                </div>
+                <Ring progress={previewProgress} size={92} />
+              </div>
+              <div className="mt-6 grid gap-3 text-sm text-white/70">
+                {previewChapter.questions.map((q, i) => (
+                  <div key={q.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <span className="pr-4 text-white/72">{i + 1}. {q.label}</span>
+                    <span className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-white/55">{getQuestionProgress(q, answers)}%</span>
+                  </div>
+                ))}
+              </div>
+              {previewProgress === 100 && <button className="mt-5 w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:brightness-105">Готово</button>}
+            </GlassCard>
+          </div>
+        </GlassCard>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {chapters.map((chapter) => {
+            const progress = Number(sectionProgress[chapter.id]);
+            return (
+              <button key={chapter.id} onClick={() => setActive(chapter)} className="translate-y-0 text-left transition duration-300 hover:-translate-y-1.5">
+                <GlassCard className="h-full p-5 md:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237]">{chapter.icon}</div>
+                    <Ring progress={progress} size={82} />
+                  </div>
+                  <div className="mt-6">
+                    <div className="text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
+                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{chapter.subtitle}</div>
+                  </div>
+                  <div className="mt-6 space-y-2.5">
+                    {chapter.questions.slice(0, 3).map((question, i) => (
+                      <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">{i + 1}</span>
+                        <span className="line-clamp-2">{question.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm"><span className="text-white/55">Открыть блок</span><div className="flex items-center gap-2 text-[#f7d237]"><span>{progress}%</span><span>→</span></div></div>
+                </GlassCard>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <input type="range" min={min} max={max} value={value} onChange={(e) => onChange(Number(e.target.value))} className="w-full accent-[#f7d237]" />
+
+      {active && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setActive(null)} />
+          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[920px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
+            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">diagnostic chapter</div>
+                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
+                  <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Ring progress={Number(sectionProgress[active.id])} size={84} />
+                  <button onClick={() => setActive(null)} className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white">Закрыть</button>
+                </div>
+              </div>
+            </div>
+            <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
+              {active.questions.map((question, index) => (
+                <GlassCard key={question.id} className="p-5 md:p-6">
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">Question {index + 1}</div>
+                      <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">{question.label}</h3>
+                    </div>
+                    <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-2 text-sm text-[#f7d237]">{getQuestionProgress(question, answers)}%</div>
+                  </div>
+                  {renderInput(question, answers, setAnswer)}
+                </GlassCard>
+              ))}
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
+                <div className="text-sm text-white/55">Прогресс этого блока: {Number(sectionProgress[active.id])}%</div>
+                <button className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105">Сохранить блок<span>✓</span></button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
-
-const inputClass = "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
-const textareaClass = "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
