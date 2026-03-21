@@ -199,7 +199,7 @@ function VerticalLoad({
           {value}%
         </div>
       </div>
-      <div className="text-center text-sm text-white/8૨">{label}</div>
+      <div className="text-center text-sm text-white/82">{label}</div>
     </div>
   );
 }
@@ -266,7 +266,7 @@ function DonutChart({
   title?: string;
   centerValue: string;
   centerLabel: string;
-  segments: { value: number; color: string; label: string }[];
+  segments: ReadonlyArray<{ value: number; color: string; label: string }>;
 }) {
   const size = 240;
   const stroke = 22;
@@ -277,9 +277,7 @@ function DonutChart({
 
   return (
     <div className="flex flex-col items-center">
-      {title ? (
-        <div className="mb-5 text-sm text-white/55">{title}</div>
-      ) : null}
+      {title ? <div className="mb-5 text-sm text-white/55">{title}</div> : null}
 
       <div className="relative h-[240px] w-[240px]">
         <svg viewBox={`0 0 ${size} ${size}`} className="h-full w-full -rotate-90">
@@ -343,7 +341,7 @@ function DonutChart({
 function ImpactBars({
   items,
 }: {
-  items: Array<{ label: string; value: number; note?: string }>;
+  items: ReadonlyArray<{ label: string; value: number; note?: string }>;
 }) {
   return (
     <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
@@ -384,7 +382,7 @@ function TimelinePhase({
   phase: string;
   period: string;
   title: string;
-  actions: string[];
+  actions: ReadonlyArray<string>;
 }) {
   return (
     <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 md:p-6">
@@ -409,8 +407,10 @@ function TimelinePhase({
   );
 }
 
+type HorizonKey = "3m" | "6m" | "12m";
+
 export default function ResultsPage() {
-  const [horizon, setHorizon] = useState<"3m" | "6m" | "12m">("6m");
+  const [horizon, setHorizon] = useState<HorizonKey>("6m");
 
   const horizonData = useMemo(() => {
     const map = {
@@ -457,6 +457,7 @@ export default function ResultsPage() {
         ],
       },
     } as const;
+
     return map[horizon];
   }, [horizon]);
 
@@ -943,7 +944,7 @@ export default function ResultsPage() {
                       <button
                         key={tab.key}
                         type="button"
-                        onClick={() => setHorizon(tab.key as "3m" | "6m" | "12m")}
+                        onClick={() => setHorizon(tab.key as HorizonKey)}
                         className={cn(
                           "rounded-full border px-4 py-2 text-sm transition",
                           active
