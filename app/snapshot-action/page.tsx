@@ -1,33 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ArrowRight,
-  Check,
-  ChevronRight,
-  CircleDot,
-  MapPinned,
-  Target,
-  Users,
-  Wallet,
-  BarChart3,
-  Workflow,
-  Lightbulb,
-  Mail,
-  CalendarRange,
-  Gauge,
-} from "lucide-react";
-
-const BRAND = {
-  bg: "#0b1d3a",
-  bgSoft: "#10244a",
-  line: "rgba(255,255,255,0.08)",
-  text: "#fefefe",
-  textSoft: "#a5aeb2",
-  heading: "#e0e1e3",
-  yellow: "#f7d237",
-};
 
 type InputType =
   | "rangePercent"
@@ -54,8 +27,18 @@ type Chapter = {
   id: string;
   title: string;
   subtitle: string;
-  icon: React.ComponentType<any>;
+  icon: string;
   questions: Question[];
+};
+
+const BRAND = {
+  bg: "#0b1d3a",
+  bgSoft: "#10244a",
+  line: "rgba(255,255,255,0.08)",
+  text: "#fefefe",
+  textSoft: "#a5aeb2",
+  heading: "#e0e1e3",
+  yellow: "#f7d237",
 };
 
 const KPI_TAGS = [
@@ -113,7 +96,7 @@ const chapters: Chapter[] = [
     id: "economics",
     title: "Экономика",
     subtitle: "Маржа, выручка, объём, KPI",
-    icon: Wallet,
+    icon: "◔",
     questions: [
       { id: "margin", label: "Какая часть выручки остаётся после всех расходов?", type: "rangePercent" },
       { id: "salesCount", label: "Сколько клиентов или продаж у вас было за прошлый месяц?", type: "text" },
@@ -125,7 +108,7 @@ const chapters: Chapter[] = [
     id: "flow",
     title: "Клиенты и поток",
     subtitle: "Сегмент, спрос, capacity, каналы",
-    icon: Users,
+    icon: "◎",
     questions: [
       { id: "clientProfile", label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?", type: "text" },
       { id: "demandCapacity", label: "Сколько обращений вы получаете и сколько реально можете обработать?", type: "dualRange" },
@@ -137,7 +120,7 @@ const chapters: Chapter[] = [
     id: "product",
     title: "Продукт и продажи",
     subtitle: "Маржинальные продукты, retention, CJM",
-    icon: Target,
+    icon: "◈",
     questions: [
       { id: "topProducts", label: "Какие 1–3 продукта или услуги самые маржинальные?", type: "tripleMargin" },
       { id: "retention", label: "Какими механиками вы удерживаете клиентов?", type: "tags" },
@@ -149,7 +132,7 @@ const chapters: Chapter[] = [
     id: "positioning",
     title: "Позиционирование",
     subtitle: "Описание бизнеса и география",
-    icon: MapPinned,
+    icon: "◌",
     questions: [
       { id: "positionText", label: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.", type: "text" },
       { id: "geo", label: "В каком регионе вы продаёте и где физически находится ваш бизнес?", type: "map" },
@@ -159,7 +142,7 @@ const chapters: Chapter[] = [
     id: "structure",
     title: "Структура и процессы",
     subtitle: "Команда, нагрузка, потери эффективности",
-    icon: Workflow,
+    icon: "▣",
     questions: [
       { id: "team", label: "Как устроена команда: роли, зоны ответственности, перегруз?", type: "text" },
       { id: "interaction", label: "Как выстроено взаимодействие между ролями и что изменилось за год?", type: "text" },
@@ -172,7 +155,7 @@ const chapters: Chapter[] = [
     id: "analytics",
     title: "Аналитика и управление",
     subtitle: "Решения, изменения, data maturity",
-    icon: BarChart3,
+    icon: "▤",
     questions: [
       { id: "analytics", label: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?", type: "analyticsBranch" },
       { id: "changesNeeded", label: "Что сейчас больше всего требует изменений или улучшений в бизнесе?", type: "text" },
@@ -183,7 +166,7 @@ const chapters: Chapter[] = [
     id: "strategy",
     title: "Стратегия",
     subtitle: "Цели, расходы, горизонты 3/6/12",
-    icon: Lightbulb,
+    icon: "✦",
     questions: [
       { id: "goal", label: "Какого результата бизнес должен достичь к концу года?", type: "strategyGoal" },
       { id: "horizons", label: "Вокруг чего вы строите планы на 3, 6 и 12 месяцев?", type: "text" },
@@ -193,7 +176,7 @@ const chapters: Chapter[] = [
     id: "contact",
     title: "Контактный блок",
     subtitle: "Кому отправить отчёт и встречу",
-    icon: Mail,
+    icon: "✉",
     questions: [{ id: "contacts", label: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?", type: "contact" }],
   },
 ];
@@ -208,14 +191,7 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
-        <circle
-          cx="44"
-          cy="44"
-          r={normalizedRadius}
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth={stroke}
-          fill="transparent"
-        />
+        <circle cx="44" cy="44" r={normalizedRadius} stroke="rgba(255,255,255,0.08)" strokeWidth={stroke} fill="transparent" />
         <circle
           cx="44"
           cy="44"
@@ -226,8 +202,7 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
           strokeLinecap="round"
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={strokeDashoffset}
-          className="transition-all duration-500"
-          style={{ filter: "drop-shadow(0 0 10px rgba(247,210,55,0.45))" }}
+          style={{ filter: "drop-shadow(0 0 10px rgba(247,210,55,0.45))", transition: "all 0.5s ease" }}
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -242,12 +217,12 @@ function SectionProgress({ value }: { value: number }) {
   return (
     <div className="h-2 w-full overflow-hidden rounded-full bg-white/8">
       <div
-        className="h-full rounded-full transition-all duration-500"
+        className="h-full rounded-full"
         style={{
           width: `${value}%`,
-          background:
-            "linear-gradient(90deg, rgba(247,210,55,0.95), rgba(255,231,122,0.95))",
+          background: "linear-gradient(90deg, rgba(247,210,55,0.95), rgba(255,231,122,0.95))",
           boxShadow: "0 0 20px rgba(247,210,55,0.35)",
+          transition: "width 0.5s ease",
         }}
       />
     </div>
@@ -261,13 +236,13 @@ function GlassCard({ children, className = "" }: { children: React.ReactNode; cl
       style={{ boxShadow: "0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)" }}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_26%)]" />
-      {children}
+      <div className="relative">{children}</div>
     </div>
   );
 }
 
 export default function DiagnosticIntakePage() {
-  const [active, setActive] = useState<Chapter | null>(chapters[0]);
+  const [active, setActive] = useState<Chapter | null>(null);
 
   const sectionProgress = useMemo(
     () =>
@@ -281,21 +256,18 @@ export default function DiagnosticIntakePage() {
   );
 
   const total = useMemo(() => {
-    const values = Object.values(sectionProgress);
+    const values = Object.values(sectionProgress) as number[];
     return values.reduce((acc, v) => acc + v, 0) / values.length;
   }, [sectionProgress]);
 
-  const completedSections = useMemo(
-    () => Object.values(sectionProgress).filter((v) => v >= 95).length,
-    [sectionProgress]
-  );
+  const previewChapter = active ?? chapters[0];
+  const completedSections = useMemo(() => Object.values(sectionProgress).filter((v) => Number(v) >= 95).length, [sectionProgress]);
 
   return (
     <div
       className="min-h-screen text-white"
       style={{
-        background:
-          "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
+        background: "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
       }}
     >
       <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
@@ -303,15 +275,14 @@ export default function DiagnosticIntakePage() {
           <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
             <div>
               <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
-                <CircleDot className="h-3.5 w-3.5 text-[#f7d237]" />
+                <span className="text-[#f7d237]">●</span>
                 Revenue Snapshot — Diagnostic Intake
               </div>
               <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
                 Структурированная диагностическая анкета бизнеса
               </h1>
               <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной
-                заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.
+                Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.
               </p>
 
               <div className="mt-8 space-y-3">
@@ -332,16 +303,16 @@ export default function DiagnosticIntakePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="text-xs uppercase tracking-[0.26em] text-white/40">Current focus</div>
-                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{active?.title}</div>
-                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{active?.subtitle}</div>
+                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{previewChapter.title}</div>
+                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{previewChapter.subtitle}</div>
                 </div>
-                <Ring progress={active ? sectionProgress[active.id] : 0} size={92} />
+                <Ring progress={Number(sectionProgress[previewChapter.id])} size={92} />
               </div>
               <div className="mt-6 grid gap-3 text-sm text-white/70">
-                {(active?.questions ?? []).map((q, i) => (
+                {previewChapter.questions.map((q, i) => (
                   <div key={q.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
                     <span className="pr-4 text-white/72">{i + 1}. {q.label}</span>
-                    <ChevronRight className="h-4 w-4 shrink-0 text-white/35" />
+                    <span className="h-4 w-4 shrink-0 text-center text-white/35">›</span>
                   </div>
                 ))}
               </div>
@@ -351,20 +322,17 @@ export default function DiagnosticIntakePage() {
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {chapters.map((chapter) => {
-            const Icon = chapter.icon;
-            const progress = sectionProgress[chapter.id];
+            const progress = Number(sectionProgress[chapter.id]);
             return (
-              <motion.button
+              <button
                 key={chapter.id}
-                whileHover={{ y: -6 }}
-                whileTap={{ scale: 0.99 }}
                 onClick={() => setActive(chapter)}
-                className="text-left"
+                className="translate-y-0 text-left transition duration-300 hover:-translate-y-1.5"
               >
                 <GlassCard className="h-full p-5 md:p-6">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06]">
-                      <Icon className="h-5 w-5 text-[#f7d237]" />
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237]">
+                      {chapter.icon}
                     </div>
                     <Ring progress={progress} size={82} />
                   </div>
@@ -377,9 +345,7 @@ export default function DiagnosticIntakePage() {
                   <div className="mt-6 space-y-2.5">
                     {chapter.questions.slice(0, 3).map((question, i) => (
                       <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">
-                          {i + 1}
-                        </span>
+                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">{i + 1}</span>
                         <span className="line-clamp-2">{question.label}</span>
                       </div>
                     ))}
@@ -389,81 +355,64 @@ export default function DiagnosticIntakePage() {
                     <span className="text-white/55">Открыть блок</span>
                     <div className="flex items-center gap-2 text-[#f7d237]">
                       <span>Подробнее</span>
-                      <ArrowRight className="h-4 w-4" />
+                      <span>→</span>
                     </div>
                   </div>
                 </GlassCard>
-              </motion.button>
+              </button>
             );
           })}
         </div>
       </div>
 
-      <AnimatePresence>
-        {active && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-              onClick={() => setActive(null)}
-            />
+      {active && (
+        <>
+          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setActive(null)} />
 
-            <motion.div
-              initial={{ opacity: 0, x: 80 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 80 }}
-              transition={{ type: "spring", damping: 24, stiffness: 220 }}
-              className="fixed right-0 top-0 z-50 h-screen w-full max-w-[920px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
-            >
-              <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">diagnostic chapter</div>
-                    <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
-                    <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Ring progress={sectionProgress[active.id]} size={84} />
-                    <button
-                      onClick={() => setActive(null)}
-                      className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
-                    >
-                      Закрыть
-                    </button>
-                  </div>
+          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[920px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
+            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">diagnostic chapter</div>
+                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
+                  <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
                 </div>
-              </div>
-
-              <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
-                {active.questions.map((question, index) => (
-                  <GlassCard key={question.id} className="p-5 md:p-6">
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">Question {index + 1}</div>
-                        <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">{question.label}</h3>
-                      </div>
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm text-[#f7d237]">
-                        {index + 1}
-                      </div>
-                    </div>
-                    {renderInput(question)}
-                  </GlassCard>
-                ))}
-
-                <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
-                  <div className="text-sm text-white/55">Ниже заложена логика для постепенного сохранения и валидации ответов.</div>
-                  <button className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105">
-                    Сохранить блок
-                    <Check className="h-4 w-4" />
+                <div className="flex items-center gap-3">
+                  <Ring progress={Number(sectionProgress[active.id])} size={84} />
+                  <button onClick={() => setActive(null)} className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white">
+                    Закрыть
                   </button>
                 </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+            </div>
+
+            <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
+              {active.questions.map((question, index) => (
+                <GlassCard key={question.id} className="p-5 md:p-6">
+                  <div className="mb-4 flex items-start justify-between gap-4">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">Question {index + 1}</div>
+                      <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">{question.label}</h3>
+                    </div>
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-sm text-[#f7d237]">
+                      {index + 1}
+                    </div>
+                  </div>
+                  {renderInput(question)}
+                </GlassCard>
+              ))}
+
+              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
+                <div className="text-sm text-white/55">Ниже заложена логика для постепенного сохранения и валидации ответов.</div>
+                <button className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105">
+                  Сохранить блок
+                  <span>✓</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -487,14 +436,7 @@ function renderInput(question: Question) {
       return <textarea placeholder="Введите ответ…" className={textareaClass} rows={5} />;
 
     case "tags": {
-      const source =
-        question.id === "kpis"
-          ? KPI_TAGS
-          : question.id === "acquisitionChannels"
-            ? FLOW_TAGS
-            : question.id === "retention"
-              ? RETENTION_TAGS
-              : ANALYTICS_TAGS;
+      const source = question.id === "kpis" ? KPI_TAGS : question.id === "acquisitionChannels" ? FLOW_TAGS : question.id === "retention" ? RETENTION_TAGS : ANALYTICS_TAGS;
 
       return (
         <div className="space-y-4">
@@ -502,11 +444,7 @@ function renderInput(question: Question) {
             {source.map((tag, i) => (
               <button
                 key={tag}
-                className={`rounded-full border px-3.5 py-2 text-sm transition ${
-                  i < 4
-                    ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                    : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"
-                }`}
+                className={`rounded-full border px-3.5 py-2 text-sm transition ${i < 4 ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"}`}
               >
                 {tag}
               </button>
@@ -546,12 +484,7 @@ function renderInput(question: Question) {
       return (
         <div className="space-y-4">
           <div className="grid gap-3 md:grid-cols-4">
-            {[
-              "Лид",
-              "Контакт",
-              "Сделка",
-              "Положительный опыт",
-            ].map((step, i) => (
+            {["Лид", "Контакт", "Сделка", "Положительный опыт"].map((step, i) => (
               <div key={step} className="rounded-2xl border border-white/8 bg-white/[0.04] p-4">
                 <div className="text-xs uppercase tracking-[0.2em] text-white/35">Stage {i + 1}</div>
                 <div className="mt-2 text-sm font-medium text-white">{step}</div>
@@ -567,29 +500,10 @@ function renderInput(question: Question) {
       return (
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
-            {[
-              "Янв",
-              "Фев",
-              "Мар",
-              "Апр",
-              "Май",
-              "Июн",
-              "Июл",
-              "Авг",
-              "Сен",
-              "Окт",
-              "Ноя",
-              "Дек",
-            ].map((month, i) => (
+            {["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"].map((month, i) => (
               <button
                 key={month}
-                className={`rounded-2xl border px-3 py-3 text-sm ${
-                  i === 5 || i === 11
-                    ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                    : i === 1 || i === 8
-                      ? "border-rose-400/20 bg-rose-400/10 text-rose-200"
-                      : "border-white/10 bg-white/[0.03] text-white/70"
-                }`}
+                className={`rounded-2xl border px-3 py-3 text-sm ${i === 5 || i === 11 ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : i === 1 || i === 8 ? "border-rose-400/20 bg-rose-400/10 text-rose-200" : "border-white/10 bg-white/[0.03] text-white/70"}`}
               >
                 {month}
               </button>
@@ -628,17 +542,12 @@ function renderInput(question: Question) {
     case "stressRange":
       return (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {[
-            "Маркетинг",
-            "Продажи",
-            "Операционка",
-            "Управление",
-          ].map((zone, i) => (
+          {["Маркетинг", "Продажи", "Операционка", "Управление"].map((zone, i) => (
             <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
               <div className="mb-3 text-sm font-medium text-white">{zone}</div>
               <div className="mb-3 flex items-center justify-between text-xs text-white/45">
                 <span>-10</span>
-                <span className={`${i === 2 ? "text-rose-200" : "text-[#fff3b2]"}`}>{[2, 5, 8, 4][i]}</span>
+                <span className={i === 2 ? "text-rose-200" : "text-[#fff3b2]"}>{[2, 5, 8, 4][i]}</span>
                 <span>10</span>
               </div>
               <input type="range" min={-10} max={10} defaultValue={[2, 5, 8, 4][i]} className="w-full accent-[#f7d237]" />
@@ -679,11 +588,7 @@ function renderInput(question: Question) {
             <input type="range" min={0} max={100} defaultValue={35} className="w-full accent-[#f7d237]" />
           </div>
           <div className="grid gap-3 md:grid-cols-3">
-            {[
-              "On hold",
-              "Не превысить лимит",
-              "Сократить расходы",
-            ].map((option, i) => (
+            {["On hold", "Не превысить лимит", "Сократить расходы"].map((option, i) => (
               <button key={option} className={`rounded-2xl border px-4 py-4 text-sm ${i === 1 ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
                 {option}
               </button>
@@ -700,11 +605,11 @@ function renderInput(question: Question) {
           <input className={inputClass} placeholder="Email / имя участника онлайн-встречи" />
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80"><Mail className="h-4 w-4 text-[#f7d237]" /> Отправка отчёта</div>
+              <div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">✉</span> Отправка отчёта</div>
               Автоматически после завершения диагностики.
             </div>
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80"><CalendarRange className="h-4 w-4 text-[#f7d237]" /> Приглашение на встречу</div>
+              <div className="mb-2 flex items-center gap-2 text-white/80"><span className="text-[#f7d237]">◷</span> Приглашение на встречу</div>
               Можно связать со слотами и защитой от повторного входа.
             </div>
           </div>
@@ -728,8 +633,5 @@ function RangeBlock({ title, value }: { title: string; value: string }) {
   );
 }
 
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
-
-const textareaClass =
-  "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
+const inputClass = "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
+const textareaClass = "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
