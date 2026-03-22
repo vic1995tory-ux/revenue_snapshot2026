@@ -530,6 +530,7 @@ function StartCard({
         <img src={icon} alt={title} className="start-card-frame" />
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
+            <div className="start-card-title-chip">{title}</div>
             <div className="start-card-price-float">{price}</div>
             <a href={href} className="start-card-btn start-card-btn-floating">
               Попробовать Snapshot
@@ -818,8 +819,14 @@ function StageCarousel() {
             );
           })}
         </div>
+      </div>
 
-        
+      <div className="stage-carousel-mobile-rail">
+        {items.map((item) => (
+          <div key={`${item.stage}-mobile`} className="stage-carousel-mobile-slide">
+            <StageCard item={item} isFront />
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -1112,6 +1119,15 @@ export default function Home() {
 
           <div className="preview-grid">
             <div>
+              <div className="preview-input-intro">Введите ваши данные или попробуйте пример ниже</div>
+              <div className="preview-example-row">
+                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("20"); setCheckInput("2000"); }}>
+                  Пример: 20 клиентов / $2000
+                </button>
+                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("45"); setCheckInput("1500"); }}>
+                  Пример: 45 клиентов / $1500
+                </button>
+              </div>
               <div className="input-grid mb-6 gap-3">
                 <label className="input-shell input-shell-highlight">
                   <span className="input-label input-label-strong">Клиентов / месяц</span>
@@ -1594,6 +1610,7 @@ export default function Home() {
           background-position: center;
           background-repeat: no-repeat;
           z-index: 0;
+          transform-origin: center;
         }
         .hero-section::after {
           content: "";
@@ -1823,6 +1840,10 @@ export default function Home() {
         .journey-compact-title { padding-top: 2px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
         .journey-compact-text { margin-top: 0; padding-left: 68px; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
+        .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
+        .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+        .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+        .preview-example-chip:hover { transform: translateY(-1px); border-color: rgba(247,210,55,.28); background: rgba(247,210,55,.08); }
         .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
         .input-shell {
           display: flex; flex-direction: column; gap: 8px;
@@ -1944,6 +1965,7 @@ export default function Home() {
           position: relative; perspective: 2200px; min-height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center;
           touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
         }
+        .stage-carousel-mobile-rail { display: none; }
         .stage-carousel-scene.is-dragging { cursor: grabbing; }
         .stage-carousel-drum { position: relative; width: 100%; height: 456px; transform-style: preserve-3d; }
         .stage-carousel-item-free {
@@ -2154,6 +2176,7 @@ export default function Home() {
           inset: 0;
           display: block;
         }
+        .start-card-title-chip { position: absolute; left: 4.35%; top: 9.8%; display: inline-flex; align-items: center; min-height: 34px; padding: 0 14px; border-radius: 999px; background: rgba(11,29,58,.42); border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); color: rgba(255,255,255,.88); font-size: 12px; font-weight: 700; }
         .start-card-price-float { position: absolute; top: 19.72%; right: 6.67%; font-size: clamp(66px, 5vw, 108px); line-height: .92; letter-spacing: -.06em; font-weight: 700; text-shadow: 0 10px 28px rgba(0,0,0,.22); }
         .start-card-btn {
           position: absolute; left: 4.35%; bottom: 23.06%; display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 18px; border-radius: 999px; text-decoration: none;
@@ -2275,26 +2298,170 @@ export default function Home() {
             width: 100%;
             justify-content: center;
           }
-          .hero-main-title { font-size: clamp(48px, 16vw, 78px); }
-          .hero-main-subtitle { font-size: 24px; }
-          .hero-main-copy { font-size: 17px; }
+          .section-head { margin-bottom: 18px; }
+          .section-title { font-size: clamp(30px, 10vw, 42px); }
+          .section-copy { font-size: 15px; line-height: 1.5; }
+          .hero-section {
+            min-height: auto;
+            padding: 18px 14px 18px;
+            border-radius: 28px;
+            overflow: hidden;
+          }
+          .hero-section::before {
+            inset: -18% -52% -18% -52%;
+            background-size: auto 100%;
+            background-position: center;
+            transform: rotate(90deg) scale(1.06);
+          }
+          .hero-section::after {
+            background: linear-gradient(180deg, rgba(4,16,39,0.2) 0%, rgba(4,16,39,0.08) 32%, rgba(4,16,39,0.16) 100%);
+          }
+          .hero-main-title { font-size: clamp(46px, 15vw, 72px); }
+          .hero-main-subtitle { margin-top: 14px; font-size: 22px; }
+          .hero-main-copy { margin-top: 16px; font-size: 16px; line-height: 1.45; max-width: 100%; }
+          .hero-highlights-row { margin-top: 18px; gap: 8px; }
+          .hero-highlight-chip { min-height: 30px; padding: 0 12px; font-size: 11px; }
+          .hero-actions-row { margin-top: 18px; gap: 10px; }
+          .hero-chart-float-title { margin-bottom: 10px; font-size: 11px; }
+          .hero-levers-inline {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+          }
+          .hero-tag { width: 100%; min-height: 38px; padding: 0 10px; font-size: 12px; }
+          .hero-chart-box { padding: 12px; border-radius: 22px; }
+          .hero-chart-metrics-row { display: none; }
+          .bar-chart-scale span:nth-child(2),
+          .bar-chart-scale span:nth-child(4) { display: none; }
+          .bar-chart-scale { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+          .bar-chart-scale span { font-size: 11px; }
+          .bar-chart-grid { inset: 38px 14px 14px; background-size: 50% 100%; }
+          .hero-chart-bottom { grid-template-columns: 1fr; gap: 8px; }
+          .hero-money-card { padding: 12px; }
+          .journey-compact { grid-template-columns: 1fr; gap: 12px; }
+          .journey-compact-card { min-height: unset; padding: 18px 16px 16px; border-radius: 22px; }
+          .journey-compact-top { grid-template-columns: 42px minmax(0,1fr); column-gap: 10px; margin-bottom: 10px; }
+          .journey-compact-title { max-width: none; font-size: 18px; }
+          .journey-compact-text { padding-left: 52px; font-size: 13px; line-height: 1.48; }
+          .preview-grid { grid-template-columns: 1fr; gap: 14px; }
+          .preview-input-intro { font-size: 14px; }
+          .preview-example-row { gap: 8px; }
+          .preview-example-chip { width: 100%; justify-content: center; min-height: 38px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
-          .start-cards-row { grid-template-columns: 1fr; }
-          .metric-main-value,.model-main-value,.reserve-amount { font-size: 24px; }
-          .stage-carousel-scene { min-height: 470px; }
-          .stage-carousel-drum { height: 390px; }
-          .stage-carousel-item-free { width: min(420px, 90vw); top: 8px; }
-          .stage-card-analytics { min-height: 332px; border-radius: 24px; }
-          .stage-card-top-panel { padding: 16px; min-height: auto; gap: 14px; }
+          .input-shell { padding: 12px; border-radius: 18px; }
+          .glass-input { height: 46px; }
+          .dashboard-grid { gap: 10px; }
+          .metric-card,.model-card,.slider-card { min-height: auto; padding: 14px; border-radius: 20px; }
+          .metric-main-value,.model-main-value,.reserve-amount { font-size: 22px; }
+          .preview-side { position: static; padding: 16px; border-radius: 22px; }
+          .preview-actions-inline { gap: 12px; }
+          .preview-grid .mt-5 .grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+          .preview-grid .mt-6 + .mt-3 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px;
+          }
+          .results-grid-2x2 { grid-template-columns: 1fr; gap: 12px; }
+          .result-doc-card, .result-doc-card-inner { min-height: unset; }
+          .result-doc-card-inner { padding: 18px; border-radius: 22px; }
+          .result-doc-title { font-size: 22px; }
+          .result-doc-text { max-width: 100%; font-size: 14px; }
+          .industries-pills-carousel { gap: 12px; }
+          .industries-pills-left {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 8px;
+          }
+          .industry-pill { min-height: 32px; padding: 0 8px; font-size: 11px; }
+          .stage-rotate-cue,
+          .stage-carousel-scene { display: none; }
+          .stage-carousel-mobile-rail {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 86%;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 2px 2px 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+          }
+          .stage-carousel-mobile-rail::-webkit-scrollbar { display: none; }
+          .stage-carousel-mobile-slide { scroll-snap-align: start; }
+          .stage-card-analytics { min-height: auto; border-radius: 22px; }
+          .stage-card-top-panel { padding: 16px; min-height: auto; gap: 12px; }
           .stage-copy-block h4 { font-size: 16px; }
           .stage-copy-block p { font-size: 12px; line-height: 1.45; }
-          .stage-card-heading strong { font-size: 40px; }
+          .stage-card-heading { min-width: 0; }
+          .stage-card-heading strong { font-size: 34px; }
           .stage-card-bottom-panel { padding: 14px; }
-          .stage-inline-metric-value { font-size: 22px; }
-          .stage-bars-title { font-size: 24px; }
-          .signal-board { grid-template-columns: 1fr; }
-          .signal-card { min-height: 178px; border-radius: 22px; }
-          .signal-card-title { font-size: 24px; }
+          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 14px; }
+          .stage-inline-metric { padding: 10px; border-radius: 16px; }
+          .stage-inline-metric-value { font-size: 20px; }
+          .stage-bars-title { font-size: 20px; }
+          .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
+          .signal-board {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
+            grid-template-areas: none;
+            height: auto;
+            gap: 12px;
+          }
+          .signal-card,
+          .signal-card-layout-1,
+          .signal-card-layout-2,
+          .signal-card-layout-3,
+          .signal-card-layout-4,
+          .signal-card-layout-5 {
+            grid-area: auto;
+          }
+          .signal-card {
+            min-height: unset;
+            height: auto;
+            padding: 16px;
+            border-radius: 22px;
+          }
+          .signal-card-title { font-size: 22px; max-width: 100%; }
+          .signal-card-points { gap: 8px; }
+          .signal-card-point { font-size: 13px; }
+          .analysis-right-card-plain { height: auto; }
+          .start-cards-row { gap: 14px; }
+          .start-card { flex: none; }
+          .start-card-inner {
+            aspect-ratio: auto;
+            min-height: 220px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,.12);
+            background:
+              radial-gradient(circle at 20% 18%, rgba(255,255,255,.16), transparent 24%),
+              linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 42%, rgba(11,29,58,.28) 100%),
+              linear-gradient(180deg, #17315b 0%, #244f8b 38%, #5567ff 72%, #b35eff 100%);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.22);
+          }
+          .start-card-frame { display: none; }
+          .start-card-overlay {
+            background:
+              linear-gradient(180deg, rgba(4,16,39,.08) 0%, rgba(4,16,39,.1) 36%, rgba(4,16,39,.24) 100%);
+          }
+          .start-card-title-chip { left: 14px; top: 14px; font-size: 11px; min-height: 30px; padding: 0 12px; }
+          .start-card-price-float {
+            top: auto;
+            right: auto;
+            left: 14px;
+            bottom: 86px;
+            font-size: clamp(44px, 14vw, 64px);
+          }
+          .start-card-btn {
+            left: 14px;
+            right: 14px;
+            bottom: 14px;
+            min-height: 40px;
+            width: auto;
+            padding: 0 16px;
+            font-size: 13px;
+          }
+          .cta-card { grid-template-columns: 1fr; gap: 14px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
