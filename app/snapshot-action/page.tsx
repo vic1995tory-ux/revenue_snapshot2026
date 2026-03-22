@@ -38,7 +38,7 @@ const BRAND = {
 };
 
 const KPI_TAGS = ["Выручка", "Маржа", "ROMI", "CAC", "LTV", "Средний чек", "Конверсия в продажу", "Retention", "NPS", "Скорость сделки", "Загрузка команды", "Cash Flow"];
-const FLOW_TAGS = ["Instagram", "Meta Ads", "Google Ads", "SEO", "Рефералы", "Партнёрства", "Холодный outreach", "Telegram", "YouTube", "Marketplace"];
+const FLOW_TAGS = ["Instagram", "Meta Ads", "Google Ads", "SEO", "Рекомендации", "Партнёрства", "Холодный outreach", "Публикация в группах/пабликах", "YouTube", "Merchants"];
 const RETENTION_TAGS = ["Повторные продажи", "Подписка", "Комьюнити", "Email nurturing", "Личный менеджер", "Апсейлы", "Пакеты услуг", "Реферальная программа"];
 const ANALYTICS_TAGS = ["Рынок", "Ниша", "Сегменты", "Каналы", "Продажи", "Юнит-экономика", "Retention", "Команда"];
 const MONTHS = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
