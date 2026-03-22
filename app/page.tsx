@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 function fmtMoney(n: number) {
@@ -1281,8 +1282,8 @@ export default function Home() {
         <footer className="page-footer">
           <div>Growth Avenue</div>
           <div className="page-footer-links">
-            <a href="/terms-of-use">Terms of Use</a>
-            <a href="/privacy-policy">Privacy Policy</a>
+            <Link href="/terms-of-use">Terms of Use</Link>
+            <Link href="/privacy-policy">Privacy Policy</Link>
           </div>
         </footer>
       </div>
@@ -2167,9 +2168,13 @@ export default function Home() {
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
         .page-footer {
+          position: relative;
+          z-index: 12;
           margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08);
           display: flex; align-items: center; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.52); font-size: 13px;
         }
+        .page-footer-links { position: relative; z-index: 13; }
+        .page-footer-links a { pointer-events: auto; }
         .accent-word { color: #f7d237; }
         .text-emerald-300 { color: #a7f3d0; }
         .text-rose-300 { color: #fda4af; }
