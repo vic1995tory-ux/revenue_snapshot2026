@@ -217,34 +217,36 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
     </div>
   );
 }
-function MultiChapterDonut({
-  items,
-  size = 320,
+function HeroProgressDonut({
+  progress,
+  size = 340,
 }: {
-  items: { label: string; progress: number; color: string }[];
+  progress: number;
   size?: number;
 }) {
-  const strokeWidth = 18;
   const radius = 54;
+  const strokeWidth = 16;
   const normalizedRadius = radius - strokeWidth / 2;
   const circumference = 2 * Math.PI * normalizedRadius;
-  const gap = 8;
-
-  let currentOffset = 0;
-
-  const totalAverage =
-    items.length > 0
-      ? Math.round(items.reduce((acc, item) => acc + item.progress, 0) / items.length)
-      : 0;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div className="relative flex items-center justify-center">
+      <div className="absolute h-[78%] w-[78%] rounded-full bg-[radial-gradient(circle,rgba(247,210,55,0.10),transparent_62%)] blur-3xl" />
       <svg
         width={size}
         height={size}
         viewBox="0 0 120 120"
-        className="-rotate-90 drop-shadow-[0_0_30px_rgba(255,255,255,0.08)]"
+        className="-rotate-90 drop-shadow-[0_0_26px_rgba(247,210,55,0.12)]"
       >
+        <defs>
+          <linearGradient id="heroDonutGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#fff4b8" />
+            <stop offset="45%" stopColor="#f7d237" />
+            <stop offset="100%" stopColor="#d7dde8" />
+          </linearGradient>
+        </defs>
+
         <circle
           cx="60"
           cy="60"
@@ -254,40 +256,26 @@ function MultiChapterDonut({
           strokeWidth={strokeWidth}
         />
 
-        {items.map((item, index) => {
-          const segmentLength = circumference / items.length;
-          const visibleLength = segmentLength - gap;
-          const filledLength = (visibleLength * item.progress) / 100;
-          const dashArray = `${filledLength} ${circumference}`;
-          const dashOffset = -currentOffset;
-
-          const element = (
-            <circle
-              key={item.label}
-              cx="60"
-              cy="60"
-              r={normalizedRadius}
-              fill="transparent"
-              stroke={item.color}
-              strokeWidth={strokeWidth}
-              strokeLinecap="round"
-              strokeDasharray={dashArray}
-              strokeDashoffset={dashOffset}
-              style={{
-                transition: "all 0.45s ease",
-                filter: `drop-shadow(0 0 8px ${item.color}55)`,
-              }}
-            />
-          );
-
-          currentOffset += segmentLength;
-          return element;
-        })}
+        <circle
+          cx="60"
+          cy="60"
+          r={normalizedRadius}
+          fill="transparent"
+          stroke="url(#heroDonutGradient)"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={strokeDashoffset}
+          style={{
+            transition: "all 0.45s ease",
+            filter: "drop-shadow(0 0 14px rgba(247,210,55,0.16))",
+          }}
+        />
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-4xl font-semibold text-white">{totalAverage}%</div>
-        <div className="mt-1 text-[11px] uppercase tracking-[0.34em] text-white/40">
+        <div className="text-5xl font-semibold text-white">{Math.round(progress)}%</div>
+        <div className="mt-2 text-[11px] uppercase tracking-[0.34em] text-white/38">
           total filled
         </div>
       </div>
@@ -621,24 +609,7 @@ export default function DiagnosticIntakePage() {
   const completedSections = useMemo(() => Object.values(sectionProgress).filter((v) => Number(v) >= 100).length, [sectionProgress]);
 const questionCount = chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0);
 
-const chapterDonutData = chapters.map((chapter, index) => {
-  const palette = [
-    "#f7d237",
-    "#ffe27a",
-    "#d8dde7",
-    "#aeb8c7",
-    "#8fa2bf",
-    "#93c5fd",
-    "#c4b5fd",
-    "#f9a8d4",
-  ];
 
-  return {
-    label: chapter.title,
-    progress: Number(sectionProgress[chapter.id] || 0),
-    color: palette[index % palette.length],
-  };
-});
   function setAnswer(key: string, value: any) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   }
@@ -692,27 +663,11 @@ const chapterDonutData = chapters.map((chapter, index) => {
       </div>
     </div>
 
-    <div className="flex flex-col items-center justify-center">
-      <div className="relative w-full max-w-[420px]">
-        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(247,210,55,0.10),transparent_55%)] blur-3xl" />
-        <div className="relative flex justify-center">
-          <MultiChapterDonut items={chapterDonutData} size={340} />
-        </div>
-      </div>
-
-      <div className="mt-6 grid w-full max-w-[420px] grid-cols-2 gap-x-5 gap-y-3">
-        {chapterDonutData.map((item) => (
-          <div key={item.label} className="flex items-center gap-3 text-sm text-white/68">
-            <span
-              className="h-2.5 w-2.5 shrink-0 rounded-full"
-              style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}66` }}
-            />
-            <span className="truncate">{item.label}</span>
-            <span className="ml-auto text-white/45">{item.progress}%</span>
-          </div>
-        ))}
-      </div>
-    </div>
+<div className="flex items-center justify-center">
+  <div className="relative flex w-full max-w-[420px] justify-center">
+    <HeroProgressDonut progress={total} size={340} />
+  </div>
+</div>
   </div>
 
   <style jsx>{`
