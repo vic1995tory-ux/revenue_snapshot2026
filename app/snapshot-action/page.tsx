@@ -176,7 +176,10 @@ cjm: {
     problems: "",
   })),
 },
-  seasonality: { peak: [], low: [], goodReason: "", badReason: "" },
+seasonality: {
+  peakRanges: [],
+  lowRanges: [],
+},
   positionText: "",
   geo: { physical: "", sales: "" },
   team: "",
@@ -350,7 +353,300 @@ function RangeBlock({ title, value, min, max, onChange }: { title: string; value
 
 const inputClass = "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
 const textareaClass = "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
+type SeasonalityRange = {
+  id: string;
+  start: number;
+  end: number;
+  reason: string;
+};
 
+function normalizeRange(start: number, end: number) {
+  return {
+    start: Math.min(start, end),
+    end: Math.max(start, end),
+  };
+}
+
+function createRange(start: number, end: number): SeasonalityRange {
+  const normalized = normalizeRange(start, end);
+  return {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    start: normalized.start,
+    end: normalized.end,
+    reason: "",
+  };
+}
+
+function rangeLabel(start: number, end: number) {
+  const normalized = normalizeRange(start, end);
+  if (normalized.start === normalized.end) return MONTHS[normalized.start];
+  return `${MONTHS[normalized.start]} — ${MONTHS[normalized.end]}`;
+}
+
+function monthIsInsideRanges(monthIndex: number, ranges: SeasonalityRange[]) {
+  return ranges.some((range) => monthIndex >= range.start && monthIndex <= range.end);
+}
+
+function removeOverlappingRanges(
+  ranges: SeasonalityRange[],
+  start: number,
+  end: number
+) {
+  const normalized = normalizeRange(start, end);
+  return ranges.filter(
+    (range) => range.end < normalized.start || range.start > normalized.end
+  );
+}
+
+function SeasonalityCalendar({
+  value,
+  onChange,
+}: {
+  value: {
+    peakRanges: SeasonalityRange[];
+    lowRanges: SeasonalityRange[];
+  };
+  onChange: (next: { peakRanges: SeasonalityRange[]; lowRanges: SeasonalityRange[] }) => void;
+}) {
+  const [activeMode, setActiveMode] = useState<"peak" | "low">("peak");
+  const [dragging, setDragging] = useState(false);
+  const [dragStart, setDragStart] = useState<number | null>(null);
+  const [dragCurrent, setDragCurrent] = useState<number | null>(null);
+
+  const peakRanges = value?.peakRanges ?? [];
+  const lowRanges = value?.lowRanges ?? [];
+
+  function finishSelection(endIndex: number) {
+    if (dragStart === null) return;
+
+    const nextRange = createRange(dragStart, endIndex);
+
+    if (activeMode === "peak") {
+      const cleanedPeak = removeOverlappingRanges(peakRanges, nextRange.start, nextRange.end);
+      const cleanedLow = removeOverlappingRanges(lowRanges, nextRange.start, nextRange.end);
+
+      onChange({
+        peakRanges: [...cleanedPeak, nextRange].sort((a, b) => a.start - b.start),
+        lowRanges: cleanedLow.sort((a, b) => a.start - b.start),
+      });
+    } else {
+      const cleanedPeak = removeOverlappingRanges(peakRanges, nextRange.start, nextRange.end);
+      const cleanedLow = removeOverlappingRanges(lowRanges, nextRange.start, nextRange.end);
+
+      onChange({
+        peakRanges: cleanedPeak.sort((a, b) => a.start - b.start),
+        lowRanges: [...cleanedLow, nextRange].sort((a, b) => a.start - b.start),
+      });
+    }
+
+    setDragging(false);
+    setDragStart(null);
+    setDragCurrent(null);
+  }
+
+  function monthIsPreviewed(index: number) {
+    if (!dragging || dragStart === null || dragCurrent === null) return false;
+    const normalized = normalizeRange(dragStart, dragCurrent);
+    return index >= normalized.start && index <= normalized.end;
+  }
+
+  function monthClass(index: number) {
+    const inPeak = monthIsInsideRanges(index, peakRanges);
+    const inLow = monthIsInsideRanges(index, lowRanges);
+    const preview = monthIsPreviewed(index);
+
+    if (preview && activeMode === "peak") {
+      return "border-emerald-300/40 bg-emerald-400/18 text-emerald-100 shadow-[0_0_22px_rgba(74,222,128,0.28)]";
+    }
+
+    if (preview && activeMode === "low") {
+      return "border-[#f7d237]/40 bg-[#f7d237]/16 text-[#fff3b2] shadow-[0_0_22px_rgba(247,210,55,0.24)]";
+    }
+
+    if (inPeak) {
+      return "border-emerald-300/35 bg-emerald-400/14 text-emerald-100 shadow-[0_0_18px_rgba(74,222,128,0.18)]";
+    }
+
+    if (inLow) {
+      return "border-[#f7d237]/35 bg-[#f7d237]/14 text-[#fff3b2] shadow-[0_0_18px_rgba(247,210,55,0.16)]";
+    }
+
+    return "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]";
+  }
+
+  function updateReason(
+    type: "peak" | "low",
+    id: string,
+    reason: string
+  ) {
+    if (type === "peak") {
+      onChange({
+        ...value,
+        peakRanges: peakRanges.map((range) =>
+          range.id === id ? { ...range, reason } : range
+        ),
+      });
+    } else {
+      onChange({
+        ...value,
+        lowRanges: lowRanges.map((range) =>
+          range.id === id ? { ...range, reason } : range
+        ),
+      });
+    }
+  }
+
+  function removeRange(type: "peak" | "low", id: string) {
+    if (type === "peak") {
+      onChange({
+        ...value,
+        peakRanges: peakRanges.filter((range) => range.id !== id),
+      });
+    } else {
+      onChange({
+        ...value,
+        lowRanges: lowRanges.filter((range) => range.id !== id),
+      });
+    }
+  }
+
+  return (
+    <div
+      className="space-y-5"
+      onMouseUp={() => {
+        if (dragging && dragCurrent !== null) finishSelection(dragCurrent);
+      }}
+      onMouseLeave={() => {
+        if (dragging && dragCurrent !== null) finishSelection(dragCurrent);
+      }}
+    >
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setActiveMode("peak")}
+          className={`rounded-2xl border px-4 py-2.5 text-sm transition ${
+            activeMode === "peak"
+              ? "border-emerald-300/35 bg-emerald-400/14 text-emerald-100 shadow-[0_0_18px_rgba(74,222,128,0.18)]"
+              : "border-white/10 bg-white/[0.03] text-white/70"
+          }`}
+        >
+          Пики — неоново-зелёный
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveMode("low")}
+          className={`rounded-2xl border px-4 py-2.5 text-sm transition ${
+            activeMode === "low"
+              ? "border-[#f7d237]/35 bg-[#f7d237]/14 text-[#fff3b2] shadow-[0_0_18px_rgba(247,210,55,0.16)]"
+              : "border-white/10 bg-white/[0.03] text-white/70"
+          }`}
+        >
+          Спады — неоново-жёлтый
+        </button>
+
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2.5 text-sm text-white/55">
+          Зажмите левую кнопку мыши и проведите по месяцам
+        </div>
+      </div>
+
+      <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
+        {MONTHS.map((month, index) => (
+          <button
+            key={month}
+            type="button"
+            onMouseDown={() => {
+              setDragging(true);
+              setDragStart(index);
+              setDragCurrent(index);
+            }}
+            onMouseEnter={() => {
+              if (dragging) setDragCurrent(index);
+            }}
+            onMouseUp={() => finishSelection(index)}
+            className={`rounded-2xl border px-3 py-4 text-sm transition select-none ${monthClass(
+              index
+            )}`}
+          >
+            {month}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="space-y-3">
+          <div className="text-sm font-medium text-emerald-100">Выделенные пики</div>
+
+          {peakRanges.length === 0 ? (
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/45">
+              Пока не выбрано ни одного периода.
+            </div>
+          ) : (
+            peakRanges.map((range) => (
+              <div key={range.id} className="rounded-[24px] border border-emerald-300/20 bg-emerald-400/8 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="rounded-full border border-emerald-300/25 bg-emerald-400/12 px-3 py-1 text-sm text-emerald-100">
+                    {rangeLabel(range.start, range.end)}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeRange("peak", range.id)}
+                    className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 transition hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Удалить
+                  </button>
+                </div>
+
+                <textarea
+                  placeholder="Почему хорошо?"
+                  className={textareaClass}
+                  rows={4}
+                  value={range.reason}
+                  onChange={(e) => updateReason("peak", range.id, e.target.value)}
+                />
+              </div>
+            ))
+          )}
+        </div>
+
+        <div className="space-y-3">
+          <div className="text-sm font-medium text-[#fff3b2]">Выделенные спады</div>
+
+          {lowRanges.length === 0 ? (
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/45">
+              Пока не выбрано ни одного периода.
+            </div>
+          ) : (
+            lowRanges.map((range) => (
+              <div key={range.id} className="rounded-[24px] border border-[#f7d237]/20 bg-[#f7d237]/8 p-4">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/12 px-3 py-1 text-sm text-[#fff3b2]">
+                    {rangeLabel(range.start, range.end)}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeRange("low", range.id)}
+                    className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 transition hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Удалить
+                  </button>
+                </div>
+
+                <textarea
+                  placeholder="Почему плохо?"
+                  className={textareaClass}
+                  rows={4}
+                  value={range.reason}
+                  onChange={(e) => updateReason("low", range.id, e.target.value)}
+                />
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 function renderInput(question: Question, answers: Answers, setAnswer: (key: string, value: any) => void) {
   switch (question.type) {
     case "rangePercent": {
@@ -549,43 +845,19 @@ case "cjm": {
     </div>
   );
 }
-    case "seasonality": {
-      const current = answers[question.id] ?? { peak: [], low: [], goodReason: "", badReason: "" };
-      return (
-        <div className="space-y-4">
-          <div>
-            <div className="mb-2 text-sm text-white/55">Месяцы пиков</div>
-            <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
-              {MONTHS.map((month) => {
-                const active = current.peak.includes(month);
-                return (
-                  <button type="button" key={`peak-${month}`} onClick={() => setAnswer(question.id, { ...current, peak: active ? current.peak.filter((m: string) => m !== month) : [...current.peak, month] })} className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
-                    {month}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div>
-            <div className="mb-2 text-sm text-white/55">Месяцы спадов</div>
-            <div className="grid grid-cols-3 gap-2 md:grid-cols-6">
-              {MONTHS.map((month) => {
-                const active = current.low.includes(month);
-                return (
-                  <button type="button" key={`low-${month}`} onClick={() => setAnswer(question.id, { ...current, low: active ? current.low.filter((m: string) => m !== month) : [...current.low, month] })} className={`rounded-2xl border px-3 py-3 text-sm ${active ? "border-rose-400/20 bg-rose-400/10 text-rose-200" : "border-white/10 bg-white/[0.03] text-white/70"}`}>
-                    {month}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2">
-            <textarea placeholder="Почему хорошо?" className={textareaClass} rows={4} value={current.goodReason} onChange={(e) => setAnswer(question.id, { ...current, goodReason: e.target.value })} />
-            <textarea placeholder="Почему плохо?" className={textareaClass} rows={4} value={current.badReason} onChange={(e) => setAnswer(question.id, { ...current, badReason: e.target.value })} />
-          </div>
-        </div>
-      );
-    }
+case "seasonality": {
+  const current = answers[question.id] ?? {
+    peakRanges: [],
+    lowRanges: [],
+  };
+
+  return (
+    <SeasonalityCalendar
+      value={current}
+      onChange={(next) => setAnswer(question.id, next)}
+    />
+  );
+}
 
     case "map": {
       const current = answers[question.id] ?? { physical: "", sales: "" };
