@@ -217,6 +217,83 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
     </div>
   );
 }
+function MultiChapterDonut({
+  items,
+  size = 320,
+}: {
+  items: { label: string; progress: number; color: string }[];
+  size?: number;
+}) {
+  const strokeWidth = 18;
+  const radius = 54;
+  const normalizedRadius = radius - strokeWidth / 2;
+  const circumference = 2 * Math.PI * normalizedRadius;
+  const gap = 8;
+
+  let currentOffset = 0;
+
+  const totalAverage =
+    items.length > 0
+      ? Math.round(items.reduce((acc, item) => acc + item.progress, 0) / items.length)
+      : 0;
+
+  return (
+    <div className="relative flex items-center justify-center">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 120 120"
+        className="-rotate-90 drop-shadow-[0_0_30px_rgba(255,255,255,0.08)]"
+      >
+        <circle
+          cx="60"
+          cy="60"
+          r={normalizedRadius}
+          fill="transparent"
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth={strokeWidth}
+        />
+
+        {items.map((item, index) => {
+          const segmentLength = circumference / items.length;
+          const visibleLength = segmentLength - gap;
+          const filledLength = (visibleLength * item.progress) / 100;
+          const dashArray = `${filledLength} ${circumference}`;
+          const dashOffset = -currentOffset;
+
+          const element = (
+            <circle
+              key={item.label}
+              cx="60"
+              cy="60"
+              r={normalizedRadius}
+              fill="transparent"
+              stroke={item.color}
+              strokeWidth={strokeWidth}
+              strokeLinecap="round"
+              strokeDasharray={dashArray}
+              strokeDashoffset={dashOffset}
+              style={{
+                transition: "all 0.45s ease",
+                filter: `drop-shadow(0 0 8px ${item.color}55)`,
+              }}
+            />
+          );
+
+          currentOffset += segmentLength;
+          return element;
+        })}
+      </svg>
+
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="text-4xl font-semibold text-white">{totalAverage}%</div>
+        <div className="mt-1 text-[11px] uppercase tracking-[0.34em] text-white/40">
+          total filled
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function SectionProgress({ value }: { value: number }) {
   return (
@@ -542,7 +619,26 @@ export default function DiagnosticIntakePage() {
   const previewChapter = active ?? chapters[0];
   const previewProgress = Number(sectionProgress[previewChapter.id] || 0);
   const completedSections = useMemo(() => Object.values(sectionProgress).filter((v) => Number(v) >= 100).length, [sectionProgress]);
+const questionCount = chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0);
 
+const chapterDonutData = chapters.map((chapter, index) => {
+  const palette = [
+    "#f7d237",
+    "#ffe27a",
+    "#d8dde7",
+    "#aeb8c7",
+    "#8fa2bf",
+    "#93c5fd",
+    "#c4b5fd",
+    "#f9a8d4",
+  ];
+
+  return {
+    label: chapter.title,
+    progress: Number(sectionProgress[chapter.id] || 0),
+    color: palette[index % palette.length],
+  };
+});
   function setAnswer(key: string, value: any) {
     setAnswers((prev) => ({ ...prev, [key]: value }));
   }
@@ -550,44 +646,89 @@ export default function DiagnosticIntakePage() {
   return (
     <div className="min-h-screen text-white" style={{ background: "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)" }}>
       <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
-        <GlassCard className="mb-8 p-5 md:p-7">
-          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
-            <div>
-              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45"><span className="text-[#f7d237]">●</span>Revenue Snapshot — Diagnostic Intake</div>
-              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">Структурированная диагностическая анкета бизнеса</h1>
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.</p>
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center justify-between text-sm text-white/70"><span>Общий прогресс заполнения</span><span className="font-medium text-white">{Math.round(total)}%</span></div>
-                <SectionProgress value={total} />
-                <div className="flex flex-wrap gap-3 pt-2 text-xs text-white/45">
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Глав: {chapters.length}</span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Полностью завершено: {completedSections}</span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Формат: card → half-screen modal</span>
-                </div>
-              </div>
-            </div>
+<GlassCard className="mb-8 overflow-hidden p-6 md:p-8 xl:p-10">
+  <div className="grid gap-10 xl:grid-cols-[1.2fr_0.8fr] xl:items-center">
+    <div>
+      <div className="mb-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.34em] text-white/45">
+        <span className="h-2 w-2 rounded-full bg-[#f7d237]" />
+        Revenue Snapshot — Diagnostic Intake
+      </div>
 
-            <GlassCard className="p-5 md:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.26em] text-white/40">Current focus</div>
-                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{previewChapter.title}</div>
-                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{previewChapter.subtitle}</div>
-                </div>
-                <Ring progress={previewProgress} size={92} />
-              </div>
-              <div className="mt-6 grid gap-3 text-sm text-white/70">
-                {previewChapter.questions.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
-                    <span className="pr-4 text-white/72">{i + 1}. {q.label}</span>
-                    <span className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-white/55">{getQuestionProgress(q, answers)}%</span>
-                  </div>
-                ))}
-              </div>
-              {previewProgress === 100 && <button className="mt-5 w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:brightness-105">Готово</button>}
-            </GlassCard>
+      <h1 className="max-w-5xl text-4xl font-semibold leading-[0.98] text-[#fefefe] md:text-6xl xl:text-[78px]">
+        Структурированная
+        <br />
+        диагностическая анкета бизнеса
+      </h1>
+
+      <p className="mt-6 max-w-3xl text-base leading-8 text-[#b7c0cf] md:text-lg">
+        Внутри вас ждут 8 диагностических глав: экономика, поток клиентов, продукт,
+        позиционирование, структура, аналитика, стратегия и контактный блок. Ответы
+        помогают выявить ограничения роста, потери эффективности и основу для
+        дальнейшей бизнес-диагностики.
+      </p>
+
+      <div className="mt-8 flex flex-wrap gap-3">
+        {[
+          "8 parts",
+          `${questionCount} questions`,
+          "approx time - 32 min",
+        ].map((tag) => (
+          <span
+            key={tag}
+            className="relative overflow-hidden rounded-full border border-white/15 px-4 py-2 text-sm text-white/88"
+            style={{
+              background:
+                "linear-gradient(120deg, rgba(255,255,255,0.20) 0%, rgba(224,225,227,0.14) 22%, rgba(255,255,255,0.28) 50%, rgba(180,188,201,0.16) 74%, rgba(255,255,255,0.20) 100%)",
+              backgroundSize: "200% 200%",
+              animation: "silverFlow 8s ease-in-out infinite",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.22), 0 10px 30px rgba(255,255,255,0.04)",
+              backdropFilter: "blur(14px)",
+            }}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+
+    <div className="flex flex-col items-center justify-center">
+      <div className="relative w-full max-w-[420px]">
+        <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle,rgba(247,210,55,0.10),transparent_55%)] blur-3xl" />
+        <div className="relative flex justify-center">
+          <MultiChapterDonut items={chapterDonutData} size={340} />
+        </div>
+      </div>
+
+      <div className="mt-6 grid w-full max-w-[420px] grid-cols-2 gap-x-5 gap-y-3">
+        {chapterDonutData.map((item) => (
+          <div key={item.label} className="flex items-center gap-3 text-sm text-white/68">
+            <span
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: item.color, boxShadow: `0 0 10px ${item.color}66` }}
+            />
+            <span className="truncate">{item.label}</span>
+            <span className="ml-auto text-white/45">{item.progress}%</span>
           </div>
-        </GlassCard>
+        ))}
+      </div>
+    </div>
+  </div>
+
+  <style jsx>{`
+    @keyframes silverFlow {
+      0% {
+        background-position: 0% 50%;
+      }
+      50% {
+        background-position: 100% 50%;
+      }
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+  `}</style>
+</GlassCard>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
           {chapters.map((chapter) => {
