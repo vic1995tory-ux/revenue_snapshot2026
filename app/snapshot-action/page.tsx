@@ -11,6 +11,8 @@ type InputType =
   | "cjm"
   | "seasonality"
   | "map"
+  | "teamRoles"
+  | "departmentRelations"
   | "stressRange"
   | "analyticsBranch"
   | "strategyGoal"
@@ -41,6 +43,27 @@ type SeasonalityRange = {
   reason: string;
 };
 
+type TeamMember = {
+  id: string;
+  position: string;
+  responsibility: string;
+  isDecisionMaker: "" | "ЛПР" | "Не ЛПР";
+  participatesIn: string[];
+};
+
+type DepartmentItem = {
+  id: string;
+  name: string;
+  isDefault: boolean;
+};
+
+type DepartmentRelation = {
+  id: string;
+  fromId: string;
+  toId: string;
+  status: "" | "red" | "yellow" | "green";
+};
+
 const BRAND = {
   yellow: "#f7d237",
 };
@@ -59,6 +82,7 @@ const KPI_TAGS = [
   "Загрузка команды",
   "Cash Flow",
 ];
+
 const FLOW_TAGS = [
   "Instagram",
   "Meta Ads",
@@ -71,6 +95,7 @@ const FLOW_TAGS = [
   "YouTube",
   "Marketplace",
 ];
+
 const RETENTION_TAGS = [
   "Повторные продажи",
   "Подписка",
@@ -81,6 +106,7 @@ const RETENTION_TAGS = [
   "Пакеты услуг",
   "Реферальная программа",
 ];
+
 const ANALYTICS_TAGS = [
   "Рынок",
   "Ниша",
@@ -91,6 +117,20 @@ const ANALYTICS_TAGS = [
   "Retention",
   "Команда",
 ];
+
+const TEAM_PARTICIPATION_TAGS = [
+  "Маркетинг",
+  "Продажи",
+  "Операционка",
+  "Разработка стратегии",
+  "Финансы",
+  "Кадры",
+  "Продукт",
+  "Сервис",
+  "Партнёрства",
+  "Аналитика",
+];
+
 const MONTHS = [
   "Янв",
   "Фев",
@@ -105,6 +145,7 @@ const MONTHS = [
   "Ноя",
   "Дек",
 ];
+
 const CJM_STAGES = [
   "Acquisition",
   "Activation",
@@ -112,6 +153,7 @@ const CJM_STAGES = [
   "Conversion",
   "Retention",
 ] as const;
+
 const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
   Acquisition: "Первый контакт клиента с вами",
   Activation: "Момент, когда клиент начинает взаимодействовать (первое действие)",
@@ -119,6 +161,7 @@ const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
   Conversion: "Этап оплаты или принятия решения о покупке",
   Retention: "Повторное взаимодействие или продолжение работы с вами",
 };
+
 const STRESS_ZONES = ["Маркетинг", "Продажи", "Операционка", "Управление"];
 
 const chapters: Chapter[] = [
@@ -214,7 +257,8 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "positionText",
-        label: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+        label:
+          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
         type: "text",
       },
       {
@@ -233,16 +277,17 @@ const chapters: Chapter[] = [
       {
         id: "team",
         label: "Как устроена команда: роли, зоны ответственности, перегруз?",
-        type: "text",
+        type: "teamRoles",
       },
       {
         id: "interaction",
         label: "Как выстроено взаимодействие между ролями и что изменилось за год?",
-        type: "text",
+        type: "departmentRelations",
       },
       {
         id: "decisions",
-        label: "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+        label:
+          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
         type: "text",
       },
       {
@@ -265,7 +310,8 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "analytics",
-        label: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+        label:
+          "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
         type: "analyticsBranch",
       },
       {
@@ -313,6 +359,60 @@ const chapters: Chapter[] = [
   },
 ];
 
+function makeId(prefix = "id") {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+}
+
+function createEmptyTeamMember(): TeamMember {
+  return {
+    id: makeId("member"),
+    position: "",
+    responsibility: "",
+    isDecisionMaker: "",
+    participatesIn: [],
+  };
+}
+
+function createDefaultDepartments(): DepartmentItem[] {
+  return [
+    { id: makeId("dept"), name: "Продажи", isDefault: true },
+    { id: makeId("dept"), name: "Маркетинг", isDefault: true },
+    { id: makeId("dept"), name: "Разработка", isDefault: true },
+  ];
+}
+
+function normalizeDepartmentRelations(
+  departments: DepartmentItem[],
+  currentRelations: DepartmentRelation[]
+): DepartmentRelation[] {
+  const next: DepartmentRelation[] = [];
+  const currentMap = new Map<string, DepartmentRelation>();
+
+  currentRelations.forEach((rel) => {
+    currentMap.set(rel.id, rel);
+  });
+
+  for (let i = 0; i < departments.length; i += 1) {
+    for (let j = i + 1; j < departments.length; j += 1) {
+      const fromId = departments[i].id;
+      const toId = departments[j].id;
+      const id = `${fromId}__${toId}`;
+      next.push(
+        currentMap.get(id) ?? {
+          id,
+          fromId,
+          toId,
+          status: "",
+        }
+      );
+    }
+  }
+
+  return next;
+}
+
+const initialDepartments = createDefaultDepartments();
+
 const initialAnswers: Answers = {
   margin: { value: 0, note: "" },
   salesCount: "",
@@ -345,8 +445,12 @@ const initialAnswers: Answers = {
   },
   positionText: "",
   geo: { physical: "", sales: "" },
-  team: "",
-  interaction: "",
+  team: [createEmptyTeamMember()],
+  interaction: {
+    departments: initialDepartments,
+    relations: normalizeDepartmentRelations(initialDepartments, []),
+    note: "",
+  },
   decisions: "",
   stress: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
   lossZones: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
@@ -411,6 +515,15 @@ function isFilled(value: any): boolean {
       return (value.peakRanges?.length ?? 0) > 0 || (value.lowRanges?.length ?? 0) > 0;
     }
 
+    if ("departments" in value && "relations" in value && "note" in value) {
+      const hasCustomDept = (value.departments ?? []).some(
+        (d: DepartmentItem) => !d.isDefault && String(d.name ?? "").trim().length > 0
+      );
+      const hasRelation = (value.relations ?? []).some((r: DepartmentRelation) => r.status !== "");
+      const hasNote = String(value.note ?? "").trim().length > 0;
+      return hasCustomDept || hasRelation || hasNote;
+    }
+
     if ("stages" in value && Array.isArray(value.stages)) {
       return value.stages.some((stage: any) =>
         String(stage.whatHappens ?? "").trim().length > 0 ||
@@ -432,11 +545,9 @@ function normalizeChannelDistribution(
   currentDistribution: Record<string, number>
 ) {
   const next: Record<string, number> = {};
-
   selectedChannels.forEach((channel) => {
     next[channel] = Number(currentDistribution?.[channel] ?? 0);
   });
-
   return next;
 }
 
@@ -515,7 +626,8 @@ function SectionProgress({ value }: { value: number }) {
         className="h-full rounded-full"
         style={{
           width: `${value}%`,
-          background: "linear-gradient(90deg, rgba(247,210,55,0.95), rgba(255,231,122,0.95))",
+          background:
+            "linear-gradient(90deg, rgba(247,210,55,0.95), rgba(255,231,122,0.95))",
           boxShadow: "0 0 20px rgba(247,210,55,0.35)",
           transition: "width 0.35s ease",
         }}
@@ -524,7 +636,13 @@ function SectionProgress({ value }: { value: number }) {
   );
 }
 
-function GlassCard({ children, className = "" }: { children: React.ReactNode; className?: string }) {
+function GlassCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   return (
     <div
       className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.05] backdrop-blur-2xl ${className}`}
@@ -783,7 +901,10 @@ function SeasonalityCalendar({
             </div>
           ) : (
             peakRanges.map((range) => (
-              <div key={range.id} className="rounded-[24px] border border-emerald-300/20 bg-emerald-400/8 p-4">
+              <div
+                key={range.id}
+                className="rounded-[24px] border border-emerald-300/20 bg-emerald-400/8 p-4"
+              >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div className="rounded-full border border-emerald-300/25 bg-emerald-400/12 px-3 py-1 text-sm text-emerald-100">
                     {rangeLabel(range.start, range.end)}
@@ -818,7 +939,10 @@ function SeasonalityCalendar({
             </div>
           ) : (
             lowRanges.map((range) => (
-              <div key={range.id} className="rounded-[24px] border border-[#f7d237]/20 bg-[#f7d237]/8 p-4">
+              <div
+                key={range.id}
+                className="rounded-[24px] border border-[#f7d237]/20 bg-[#f7d237]/8 p-4"
+              >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/12 px-3 py-1 text-sm text-[#fff3b2]">
                     {rangeLabel(range.start, range.end)}
@@ -842,6 +966,429 @@ function SeasonalityCalendar({
               </div>
             ))
           )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
+  const text = value.toLowerCase();
+
+  const presets = [
+    { keys: ["тбилиси", "груз", "georgia", "tbilisi"], point: { x: 605, y: 150 } },
+    { keys: ["кипр", "cyprus"], point: { x: 575, y: 185 } },
+    { keys: ["герман", "berlin", "germany"], point: { x: 520, y: 125 } },
+    { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 120 } },
+    { keys: ["эстон", "tallinn", "estonia"], point: { x: 555, y: 92 } },
+    { keys: ["латв", "riga", "latvia"], point: { x: 550, y: 105 } },
+    { keys: ["литв", "vilnius", "lithuania"], point: { x: 548, y: 112 } },
+    { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
+    { keys: ["португал", "lisbon", "portugal"], point: { x: 430, y: 175 } },
+    { keys: ["нидерл", "amsterdam", "netherlands"], point: { x: 500, y: 120 } },
+    { keys: ["финля", "helsinki", "finland"], point: { x: 565, y: 82 } },
+    { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
+    { keys: ["венгр", "budapest", "hungary"], point: { x: 550, y: 135 } },
+    { keys: ["лондон", "uk", "united kingdom", "england"], point: { x: 470, y: 112 } },
+    { keys: ["нью", "usa", "united states", "america"], point: { x: 230, y: 145 } },
+    { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
+    { keys: ["браз", "brazil"], point: { x: 315, y: 280 } },
+    { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
+    { keys: ["инд", "india", "delhi"], point: { x: 735, y: 190 } },
+    { keys: ["сингап", "singapore"], point: { x: 815, y: 275 } },
+    { keys: ["австра", "sydney", "australia"], point: { x: 930, y: 320 } },
+    { keys: ["япон", "tokyo", "japan"], point: { x: 900, y: 160 } },
+  ];
+
+  for (const preset of presets) {
+    if (preset.keys.some((key) => text.includes(key))) return preset.point;
+  }
+
+  return fallback;
+}
+
+function GeoMapPreview({
+  physical,
+  sales,
+}: {
+  physical: string;
+  sales: string;
+}) {
+  const physicalPoint = geoPointFromText(physical, { x: 580, y: 170 });
+  const salesIsWorld =
+    sales.toLowerCase().includes("весь мир") ||
+    sales.toLowerCase().includes("world") ||
+    sales.toLowerCase().includes("global");
+
+  const salesPoint = geoPointFromText(sales, physicalPoint);
+
+  const radius = salesIsWorld ? 260 : 85;
+
+  return (
+    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
+      <svg
+        viewBox="0 0 1100 420"
+        className="relative h-[320px] w-full rounded-[24px] bg-[#001233]"
+        fill="none"
+      >
+        <g opacity="0.38" stroke="rgba(255,255,255,0.18)" strokeWidth="2">
+          <path d="M118 120C157 95 197 88 232 94C268 101 289 110 313 128C336 145 354 172 346 194C335 220 297 232 273 254C248 277 242 309 227 328" />
+          <path d="M430 92C465 77 511 79 553 84C596 89 637 105 657 126C676 147 678 172 662 192C645 212 611 221 579 219C547 217 521 206 490 201C459 196 422 196 407 179C391 161 396 121 430 92Z" />
+          <path d="M515 229C535 225 558 231 576 245C595 259 606 281 601 301C595 321 574 339 548 345C523 351 492 344 478 326C464 308 468 279 481 258C494 238 494 234 515 229Z" />
+          <path d="M716 109C752 98 798 100 845 109C892 117 939 132 961 157C983 181 980 214 961 237C942 260 907 274 870 271C834 268 795 247 772 232C749 217 742 206 718 204C695 202 654 210 634 198C614 185 614 152 638 131C661 111 680 120 716 109Z" />
+          <path d="M849 294C871 279 902 275 928 282C954 289 974 307 977 326C980 345 967 365 945 375C923 384 893 383 870 374C847 365 830 347 829 328C828 310 827 309 849 294Z" />
+          <path d="M688 246C707 241 729 245 745 256C760 268 767 288 761 305C755 321 736 333 716 335C696 337 674 330 663 316C652 301 652 280 659 266C666 252 669 251 688 246Z" />
+        </g>
+
+        <g opacity="0.18" stroke="rgba(255,255,255,0.08)">
+          <line x1="80" y1="70" x2="1020" y2="70" />
+          <line x1="80" y1="140" x2="1020" y2="140" />
+          <line x1="80" y1="210" x2="1020" y2="210" />
+          <line x1="80" y1="280" x2="1020" y2="280" />
+          <line x1="80" y1="350" x2="1020" y2="350" />
+        </g>
+
+        <circle
+          cx={salesPoint.x}
+          cy={salesPoint.y}
+          r={radius}
+          stroke={salesIsWorld ? "rgba(111,211,255,0.45)" : "rgba(111,211,255,0.34)"}
+          strokeWidth="2"
+          strokeDasharray="7 9"
+          fill={salesIsWorld ? "rgba(111,211,255,0.06)" : "rgba(111,211,255,0.08)"}
+        />
+
+        <circle
+          cx={physicalPoint.x}
+          cy={physicalPoint.y}
+          r="9"
+          fill="#f7d237"
+          style={{ filter: "drop-shadow(0 0 16px rgba(247,210,55,0.75))" }}
+        />
+        <circle cx={physicalPoint.x} cy={physicalPoint.y} r="18" fill="rgba(247,210,55,0.12)" />
+
+        <g transform={`translate(${Math.max(physicalPoint.x - 72, 100)}, ${physicalPoint.y - 54})`}>
+          <rect
+            width="160"
+            height="44"
+            rx="22"
+            fill="rgba(247,210,55,0.12)"
+            stroke="rgba(247,210,55,0.35)"
+          />
+          <text x="80" y="28" textAnchor="middle" fill="#fff3b2" fontSize="14">
+            Физическая локация
+          </text>
+        </g>
+
+        <g transform={`translate(${Math.max(salesPoint.x + 14, 90)}, ${salesPoint.y - 12})`}>
+          <rect
+            width={salesIsWorld ? "120" : "150"}
+            height="44"
+            rx="22"
+            fill="rgba(77,194,255,0.12)"
+            stroke="rgba(77,194,255,0.32)"
+          />
+          <text x={salesIsWorld ? "60" : "75"} y="28" textAnchor="middle" fill="#c8f3ff" fontSize="14">
+            {salesIsWorld ? "Весь мир" : "Радиус продаж"}
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+function TeamMembersBuilder({
+  value,
+  onChange,
+}: {
+  value: TeamMember[];
+  onChange: (next: TeamMember[]) => void;
+}) {
+  const members = value ?? [createEmptyTeamMember()];
+
+  function updateMember(id: string, patch: Partial<TeamMember>) {
+    onChange(members.map((member) => (member.id === id ? { ...member, ...patch } : member)));
+  }
+
+  function addMember() {
+    onChange([...members, createEmptyTeamMember()]);
+  }
+
+  function removeMember(id: string) {
+    if (members.length === 1) return;
+    onChange(members.filter((member) => member.id !== id));
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[1fr_90px]">
+        <div className="space-y-4">
+          {members.map((member, index) => (
+            <div
+              key={member.id}
+              className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5"
+            >
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div className="text-sm uppercase tracking-[0.22em] text-white/35">
+                  Карточка участника {index + 1}
+                </div>
+                {members.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => removeMember(member.id)}
+                    className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 transition hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Удалить
+                  </button>
+                )}
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <div className="mb-2 text-sm text-white/55">Должность</div>
+                  <input
+                    className={inputClass}
+                    placeholder="Например: COO / Head of Sales"
+                    value={member.position}
+                    onChange={(e) => updateMember(member.id, { position: e.target.value })}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-2 text-sm text-white/55">Главная зона ответственности</div>
+                  <input
+                    className={inputClass}
+                    placeholder="Например: рост продаж / операционка"
+                    value={member.responsibility}
+                    onChange={(e) => updateMember(member.id, { responsibility: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="mb-2 text-sm text-white/55">ЛПР / не ЛПР</div>
+                <div className="flex flex-wrap gap-2.5">
+                  {["ЛПР", "Не ЛПР"].map((option) => {
+                    const active = member.isDecisionMaker === option;
+                    return (
+                      <button
+                        key={option}
+                        type="button"
+                        onClick={() =>
+                          updateMember(member.id, {
+                            isDecisionMaker: option as TeamMember["isDecisionMaker"],
+                          })
+                        }
+                        className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                          active
+                            ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                            : "border-white/10 bg-white/[0.03] text-white/70"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <div className="mb-2 text-sm text-white/55">Где принимает участие</div>
+                <div className="flex flex-wrap gap-2.5">
+                  {TEAM_PARTICIPATION_TAGS.map((tag) => {
+                    const active = member.participatesIn.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() =>
+                          updateMember(member.id, {
+                            participatesIn: active
+                              ? member.participatesIn.filter((t) => t !== tag)
+                              : [...member.participatesIn, tag],
+                          })
+                        }
+                        className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                          active
+                            ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                            : "border-white/10 bg-white/[0.03] text-white/70"
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <button
+          type="button"
+          onClick={addMember}
+          className="flex min-h-[120px] items-center justify-center rounded-[24px] border border-dashed border-white/16 bg-white/[0.03] text-4xl text-white/55 transition hover:border-[#f7d237]/30 hover:bg-[#f7d237]/6 hover:text-[#fff3b2] xl:sticky xl:top-0"
+          aria-label="Добавить карточку"
+        >
+          +
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function DepartmentRelationsBuilder({
+  value,
+  onChange,
+}: {
+  value: {
+    departments: DepartmentItem[];
+    relations: DepartmentRelation[];
+    note: string;
+  };
+  onChange: (next: {
+    departments: DepartmentItem[];
+    relations: DepartmentRelation[];
+    note: string;
+  }) => void;
+}) {
+  const departments: DepartmentItem[] = value?.departments ?? createDefaultDepartments();
+  const relations: DepartmentRelation[] = normalizeDepartmentRelations(
+    departments,
+    value?.relations ?? []
+  );
+  const note = value?.note ?? "";
+
+  function commit(nextDepartments: DepartmentItem[], nextRelations: DepartmentRelation[], nextNote = note) {
+    onChange({
+      departments: nextDepartments,
+      relations: normalizeDepartmentRelations(nextDepartments, nextRelations),
+      note: nextNote,
+    });
+  }
+
+  function addDepartment() {
+    const nextDepartments = [...departments, { id: makeId("dept"), name: "", isDefault: false }];
+    commit(nextDepartments, relations);
+  }
+
+  function updateDepartment(id: string, name: string) {
+    const nextDepartments = departments.map((dept) => (dept.id === id ? { ...dept, name } : dept));
+    commit(nextDepartments, relations);
+  }
+
+  function removeDepartment(id: string) {
+    if (departments.length <= 3) return;
+    const nextDepartments = departments.filter((dept) => dept.id !== id);
+    const nextRelations = relations.filter((rel) => rel.fromId !== id && rel.toId !== id);
+    commit(nextDepartments, nextRelations);
+  }
+
+  function setRelationStatus(id: string, status: DepartmentRelation["status"]) {
+    const nextRelations = relations.map((rel) => (rel.id === id ? { ...rel, status } : rel));
+    commit(departments, nextRelations);
+  }
+
+  function getDeptName(id: string) {
+    return departments.find((dept) => dept.id === id)?.name || "Без названия";
+  }
+
+  const relationColors = {
+    red: "bg-rose-400 shadow-[0_0_14px_rgba(251,113,133,0.45)]",
+    yellow: "bg-[#f7d237] shadow-[0_0_14px_rgba(247,210,55,0.45)]",
+    green: "bg-emerald-400 shadow-[0_0_14px_rgba(74,222,128,0.45)]",
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="grid gap-4 xl:grid-cols-[1fr_90px]">
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5">
+          <div className="mb-3 text-sm uppercase tracking-[0.22em] text-white/35">Отделы</div>
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {departments.map((dept) => (
+              <div
+                key={dept.id}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-3"
+              >
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div className="text-xs text-white/45">
+                    {dept.isDefault ? "Дефолтный отдел" : "Пользовательский отдел"}
+                  </div>
+                  {!dept.isDefault && (
+                    <button
+                      type="button"
+                      onClick={() => removeDepartment(dept.id)}
+                      className="rounded-full border border-white/10 px-2.5 py-1 text-[11px] text-white/60"
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+                <input
+                  className={inputClass}
+                  placeholder="Название отдела"
+                  value={dept.name}
+                  onChange={(e) => updateDepartment(dept.id, e.target.value)}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={addDepartment}
+          className="flex min-h-[120px] items-center justify-center rounded-[24px] border border-dashed border-white/16 bg-white/[0.03] text-4xl text-white/55 transition hover:border-[#f7d237]/30 hover:bg-[#f7d237]/6 hover:text-[#fff3b2]"
+          aria-label="Добавить отдел"
+        >
+          +
+        </button>
+      </div>
+
+      <div className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5">
+        <div className="mb-3 text-sm uppercase tracking-[0.22em] text-white/35">
+          Взаимосвязи между отделами
+        </div>
+
+        <div className="space-y-3">
+          {relations.map((relation) => (
+            <div
+              key={relation.id}
+              className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4 md:flex-row md:items-center md:justify-between"
+            >
+              <div className="text-sm text-white">
+                {getDeptName(relation.fromId)} ↔ {getDeptName(relation.toId)}
+              </div>
+
+              <div className="flex items-center gap-2.5">
+                {(["red", "yellow", "green"] as const).map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setRelationStatus(relation.id, status)}
+                    className={`h-6 w-6 rounded-full border ${
+                      relation.status === status
+                        ? "border-white/70"
+                        : "border-white/15"
+                    } ${relationColors[status]}`}
+                    aria-label={status}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-4">
+          <div className="mb-2 text-sm text-white/55">Комментарий</div>
+          <textarea
+            className={textareaClass}
+            rows={5}
+            placeholder="Опишите, как именно выстроено взаимодействие между отделами и что изменилось за год"
+            value={note}
+            onChange={(e) => commit(departments, relations, e.target.value)}
+          />
         </div>
       </div>
     </div>
@@ -905,6 +1452,7 @@ function renderInput(
             : question.id === "retention"
               ? RETENTION_TAGS
               : ANALYTICS_TAGS;
+
       const selected: string[] = answers[question.id] ?? [];
 
       return (
@@ -984,7 +1532,10 @@ function renderInput(
             {selectedChannels.map((channel) => {
               const value = distribution[channel] ?? 0;
               return (
-                <div key={channel} className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+                <div
+                  key={channel}
+                  className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4"
+                >
                   <div className="mb-3 flex items-center justify-between gap-3">
                     <div className="text-sm font-medium text-white">{channel}</div>
                     <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
@@ -1054,6 +1605,7 @@ function renderInput(
         { name: "", value: 0 },
         { name: "", value: 0 },
       ];
+
       return (
         <div className="space-y-4">
           {products.map((item: any, i: number) => (
@@ -1106,16 +1658,21 @@ function renderInput(
         };
 
       return (
-        <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {current.stages.map((step: any, i: number) => (
-            <div key={step.stage} className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5">
-              <div className="mb-4 flex flex-col gap-1">
+            <div
+              key={step.stage}
+              className={`rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5 ${
+                i === current.stages.length - 1 ? "md:col-span-2" : ""
+              }`}
+            >
+              <div className="mb-4">
                 <div className="text-xs uppercase tracking-[0.24em] text-white/35">Stage {i + 1}</div>
-                <div className="text-base font-medium text-white">{step.stage}</div>
-                <div className="text-sm text-white/50">{step.description}</div>
+                <div className="mt-1 text-2xl font-semibold text-white">{step.stage}</div>
+                <div className="mt-1 text-sm text-white/50">{step.description}</div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-4">
                 <div>
                   <div className="mb-2 text-sm text-white/55">Что происходит</div>
                   <textarea
@@ -1150,7 +1707,7 @@ function renderInput(
                   <textarea
                     placeholder="Ценность для клиента на этом этапе"
                     className={textareaClass}
-                    rows={4}
+                    rows={3}
                     value={step.clientGets}
                     onChange={(e) => {
                       const nextStages = [...current.stages];
@@ -1165,7 +1722,7 @@ function renderInput(
                   <textarea
                     placeholder="Какой результат получает бизнес"
                     className={textareaClass}
-                    rows={4}
+                    rows={3}
                     value={step.companyGets}
                     onChange={(e) => {
                       const nextStages = [...current.stages];
@@ -1174,21 +1731,21 @@ function renderInput(
                     }}
                   />
                 </div>
-              </div>
 
-              <div className="mt-4">
-                <div className="mb-2 text-sm text-white/45">Проблемы (опционально)</div>
-                <textarea
-                  placeholder="Где здесь возникают потери, трение или замедление"
-                  className={textareaClass}
-                  rows={3}
-                  value={step.problems}
-                  onChange={(e) => {
-                    const nextStages = [...current.stages];
-                    nextStages[i] = { ...nextStages[i], problems: e.target.value };
-                    setAnswer(question.id, { ...current, stages: nextStages });
-                  }}
-                />
+                <div>
+                  <div className="mb-2 text-sm text-white/45">Проблемы (опционально)</div>
+                  <textarea
+                    placeholder="Где здесь возникают потери, трение или замедление"
+                    className={textareaClass}
+                    rows={3}
+                    value={step.problems}
+                    onChange={(e) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = { ...nextStages[i], problems: e.target.value };
+                      setAnswer(question.id, { ...current, stages: nextStages });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ))}
@@ -1207,30 +1764,10 @@ function renderInput(
 
     case "map": {
       const current = answers[question.id] ?? { physical: "", sales: "" };
+
       return (
         <div className="space-y-4">
-          <div className="relative overflow-hidden rounded-[26px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))] p-5">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(247,210,55,0.14),transparent_25%),radial-gradient(circle_at_70%_65%,rgba(87,179,179,0.10),transparent_22%)]" />
-            <div className="relative h-[260px] rounded-[20px] border border-white/10 bg-[#091224]">
-              <svg className="absolute inset-0 h-full w-full" viewBox="0 0 600 260" fill="none">
-                <path
-                  d="M60 170C145 132 145 90 230 98C318 106 336 182 430 158C499 140 530 80 568 70"
-                  stroke="rgba(247,210,55,0.95)"
-                  strokeWidth="2.2"
-                  strokeDasharray="5 7"
-                />
-                <circle cx="230" cy="98" r="5" fill="#f7d237" />
-                <circle cx="430" cy="158" r="5" fill="#f7d237" />
-                <circle cx="568" cy="70" r="5" fill="#f7d237" />
-              </svg>
-              <div className="absolute left-[35%] top-[34%] rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10 px-3 py-1.5 text-xs text-[#fff3b2]">
-                Физическая локация
-              </div>
-              <div className="absolute left-[67%] top-[58%] rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs text-cyan-100">
-                Регион продаж
-              </div>
-            </div>
-          </div>
+          <GeoMapPreview physical={current.physical} sales={current.sales} />
           <div className="grid gap-3 md:grid-cols-2">
             <input
               className={inputClass}
@@ -1240,7 +1777,7 @@ function renderInput(
             />
             <input
               className={inputClass}
-              placeholder="В каком регионе продаёте"
+              placeholder="В каком регионе продаёте / например: Европа / весь мир"
               value={current.sales}
               onChange={(e) => setAnswer(question.id, { ...current, sales: e.target.value })}
             />
@@ -1249,6 +1786,28 @@ function renderInput(
       );
     }
 
+    case "teamRoles":
+      return (
+        <TeamMembersBuilder
+          value={answers[question.id] ?? [createEmptyTeamMember()]}
+          onChange={(next) => setAnswer(question.id, next)}
+        />
+      );
+
+    case "departmentRelations":
+      return (
+        <DepartmentRelationsBuilder
+          value={
+            answers[question.id] ?? {
+              departments: createDefaultDepartments(),
+              relations: [],
+              note: "",
+            }
+          }
+          onChange={(next) => setAnswer(question.id, next)}
+        />
+      );
+
     case "stressRange": {
       const current = answers[question.id] ?? {
         Маркетинг: 0,
@@ -1256,6 +1815,7 @@ function renderInput(
         Операционка: 0,
         Управление: 0,
       };
+
       return (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {STRESS_ZONES.map((zone) => (
@@ -1273,7 +1833,9 @@ function renderInput(
                 min={-10}
                 max={10}
                 value={current[zone]}
-                onChange={(e) => setAnswer(question.id, { ...current, [zone]: Number(e.target.value) })}
+                onChange={(e) =>
+                  setAnswer(question.id, { ...current, [zone]: Number(e.target.value) })
+                }
                 className="w-full accent-[#f7d237]"
               />
             </div>
@@ -1323,7 +1885,9 @@ function renderInput(
                       onClick={() =>
                         setAnswer(question.id, {
                           ...current,
-                          tags: active ? current.tags.filter((t: string) => t !== tag) : [...current.tags, tag],
+                          tags: active
+                            ? current.tags.filter((t: string) => t !== tag)
+                            : [...current.tags, tag],
                         })
                       }
                       className={`rounded-full border px-3.5 py-2 text-sm ${
@@ -1353,6 +1917,7 @@ function renderInput(
     case "strategyGoal": {
       const current = answers[question.id] ?? { profitTarget: 0, mode: "", costChange: "" };
       const modes = ["On hold", "Не превысить лимит", "Сократить расходы"];
+
       return (
         <div className="space-y-5">
           <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
@@ -1367,7 +1932,9 @@ function renderInput(
               min={0}
               max={100}
               value={current.profitTarget}
-              onChange={(e) => setAnswer(question.id, { ...current, profitTarget: Number(e.target.value) })}
+              onChange={(e) =>
+                setAnswer(question.id, { ...current, profitTarget: Number(e.target.value) })
+              }
               className="w-full accent-[#f7d237]"
             />
           </div>
@@ -1441,9 +2008,13 @@ export default function DiagnosticIntakePage() {
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
 
   const sectionProgress = useMemo(
-    () => Object.fromEntries(chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)])),
+    () =>
+      Object.fromEntries(
+        chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)])
+      ),
     [answers]
   );
+
   const total = useMemo(() => {
     const values = Object.values(sectionProgress) as number[];
     return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
@@ -1490,7 +2061,9 @@ export default function DiagnosticIntakePage() {
                 </div>
                 <SectionProgress value={total} />
                 <div className="flex flex-wrap gap-3 pt-2 text-xs text-white/45">
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">Глав: {chapters.length}</span>
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">
+                    Глав: {chapters.length}
+                  </span>
                   <span className="rounded-full border border-white/10 px-3 py-1.5">
                     Полностью завершено: {completedSections}
                   </span>
@@ -1512,7 +2085,10 @@ export default function DiagnosticIntakePage() {
               </div>
               <div className="mt-6 grid gap-3 text-sm text-white/70">
                 {previewChapter.questions.map((q, i) => (
-                  <div key={q.id} className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                  <div
+                    key={q.id}
+                    className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3"
+                  >
                     <span className="pr-4 text-white/72">
                       {i + 1}. {q.label}
                     </span>
@@ -1578,11 +2154,13 @@ export default function DiagnosticIntakePage() {
       {active && (
         <>
           <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setActive(null)} />
-          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[920px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
+          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
             <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">diagnostic chapter</div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
+                    diagnostic chapter
+                  </div>
                   <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
                   <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
                 </div>
@@ -1597,6 +2175,7 @@ export default function DiagnosticIntakePage() {
                 </div>
               </div>
             </div>
+
             <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
               {active.questions.map((question, index) => (
                 <GlassCard key={question.id} className="p-5 md:p-6">
@@ -1616,6 +2195,7 @@ export default function DiagnosticIntakePage() {
                   {renderInput(question, answers, setAnswer)}
                 </GlassCard>
               ))}
+
               <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
                 <div className="text-sm text-white/55">
                   Прогресс этого блока: {Number(sectionProgress[active.id])}%
