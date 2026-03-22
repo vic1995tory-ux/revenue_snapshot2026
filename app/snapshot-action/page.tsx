@@ -15,6 +15,7 @@ type InputType =
   | "analyticsBranch"
   | "strategyGoal"
   | "contact";
+  | "channelDistribution";
 
 type Question = {
   id: string;
@@ -67,7 +68,7 @@ const chapters: Chapter[] = [
       { id: "clientProfile", label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?", type: "text" },
       { id: "demandCapacity", label: "Сколько обращений вы получаете и сколько реально можете обработать?", type: "dualRange" },
       { id: "acquisitionChannels", label: "Откуда к вам обычно приходят клиенты?", type: "tags" },
-      { id: "channelEfficiency", label: "Какие каналы сейчас дают результат, а какие вы уже пробовали?", type: "rangePercent" },
+{ id: "channelEfficiency", label: "Как распределяется поток клиентов между выбранными каналами?", type: "channelDistribution" },
     ],
   },
   {
@@ -143,7 +144,7 @@ const initialAnswers: Answers = {
   clientProfile: "",
   demandCapacity: { demand: 0, capacity: 0 },
   acquisitionChannels: [],
-  channelEfficiency: { value: 0, note: "" },
+channelEfficiency: {},
   topProducts: [
     { name: "", value: 0 },
     { name: "", value: 0 },
@@ -177,6 +178,16 @@ function isFilled(value: any): boolean {
 }
 
 function getQuestionProgress(question: Question, answers: Answers): number {
+  if (question.id === "channelEfficiency") {
+    const distribution = answers.channelEfficiency ?? {};
+    const selectedChannels: string[] = answers.acquisitionChannels ?? [];
+    const normalized = normalizeChannelDistribution(selectedChannels, distribution);
+    const total = sumDistribution(normalized);
+
+    if (selectedChannels.length === 0) return 0;
+    return total === 100 ? 100 : 0;
+  }
+
   return isFilled(answers[question.id]) ? 100 : 0;
 }
 
@@ -185,7 +196,33 @@ function getChapterProgress(chapter: Chapter, answers: Answers): number {
   const filled = chapter.questions.filter((q) => getQuestionProgress(q, answers) === 100).length;
   return Math.round((filled / total) * 100);
 }
+function normalizeChannelDistribution(
+  selectedChannels: string[],
+  currentDistribution: Record<string, number>
+) {
+  const next: Record<string, number> = {};
 
+  selectedChannels.forEach((channel) => {
+    next[channel] = currentDistribution[channel] ?? 0;
+  });
+
+  return next;
+}
+
+function sumDistribution(distribution: Record<string, number>) {
+  return Object.values(distribution).reduce((acc, value) => acc + Number(value || 0), 0);
+}
+
+function updateDistributionValue(
+  distribution: Record<string, number>,
+  channel: string,
+  value: number
+) {
+  return {
+    ...distribution,
+    [channel]: value,
+  };
+}
 function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
   const radius = 44;
   const stroke = 8;
@@ -359,7 +396,19 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
                 <button
                   type="button"
                   key={tag}
-                  onClick={() => setAnswer(question.id, active ? selected.filter((t) => t !== tag) : [...selected, tag])}
+onClick={() => {
+  const nextSelected = active
+    ? selected.filter((t) => t !== tag)
+    : [...selected, tag];
+
+  setAnswer(question.id, nextSelected);
+
+  if (question.id === "acquisitionChannels") {
+    const currentDistribution = answers.channelEfficiency ?? {};
+    const nextDistribution = normalizeChannelDistribution(nextSelected, currentDistribution);
+    setAnswer("channelEfficiency", nextDistribution);
+  }
+}}
                   className={`rounded-full border px-3.5 py-2 text-sm transition ${active ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]" : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"}`}
                 >
                   {tag}
@@ -370,7 +419,88 @@ function renderInput(question: Question, answers: Answers, setAnswer: (key: stri
         </div>
       );
     }
+    case "channelDistribution": {
+      const selectedChannels: string[] = answers.acquisitionChannels ?? [];
+      const rawDistribution = answers.channelEfficiency ?? {};
+      const distribution = normalizeChannelDistribution(selectedChannels, rawDistribution);
+      const total = sumDistribution(distribution);
 
+      if (selectedChannels.length === 0) {
+        return (
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-sm text-white/60">
+            Сначала выберите каналы в предыдущем вопросе «Откуда к вам обычно приходят клиенты?».
+          </div>
+        );
+      }
+
+      return (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <div className="text-sm text-white/60">
+              Распределите долю потока клиентов между выбранными каналами
+            </div>
+            <div
+              className={`rounded-full px-3 py-1 text-sm ${
+                total === 100
+                  ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+                  : "border border-[#f7d237]/25 bg-[#f7d237]/10 text-[#fff3b2]"
+              }`}
+            >
+              {total}%
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {selectedChannels.map((channel) => {
+              const value = distribution[channel] ?? 0;
+
+              return (
+                <div
+                  key={channel}
+                  className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-medium text-white">{channel}</div>
+                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
+                      {value}%
+                    </div>
+                  </div>
+
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={value}
+                    onChange={(e) => {
+                      const nextValue = Number(e.target.value);
+                      const nextDistribution = updateDistributionValue(
+                        distribution,
+                        channel,
+                        nextValue
+                      );
+                      setAnswer("channelEfficiency", nextDistribution);
+                    }}
+                    className="w-full accent-[#f7d237]"
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              total === 100
+                ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
+                : "border-white/10 bg-white/[0.03] text-white/55"
+            }`}
+          >
+            {total === 100
+              ? "Распределение заполнено корректно."
+              : `Сейчас сумма составляет ${total}%. Нужно довести до 100%.`}
+          </div>
+        </div>
+      );
+    }
     case "dualRange": {
       const current = answers[question.id] ?? { demand: 0, capacity: 0 };
       return (
