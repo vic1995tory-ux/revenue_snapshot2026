@@ -529,7 +529,7 @@ function StartCard({
   return (
     <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
-        <picture>
+        <picture className="start-card-picture">
           <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
           <img src={icon} alt={title} className="start-card-frame" />
         </picture>
@@ -1292,14 +1292,14 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
-                  mobileIcon="/on-rec_mobile.svg"
+                  mobileIcon="/on-res_mobile.svg"
                   price="$770"
                   href={tgContactUrl}
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
-                  mobileIcon="/online-playground_mobile.svg"
+                  mobileIcon="/online-playground_mobile.png"
                   price="$114"
                   href={payUrl}
                 />
@@ -2194,11 +2194,12 @@ export default function Home() {
         .start-card { flex: 1 1 0; }
         .start-card-inner,.start-card-overlay { min-height: 0; height: 100%; }
         .start-card-inner {
-          position: relative; aspect-ratio: 3 / 2; border-radius: 32px; overflow: hidden; border: none;
+          position: relative; aspect-ratio: auto; border-radius: 32px; overflow: visible; border: none;
           background: transparent; transform-style: preserve-3d; transition: transform .18s ease-out;
           box-shadow: none;
         }
-        .start-card-frame { width: 100%; height: 100%; object-fit: cover; object-position: center; opacity: 1; border-radius: inherit; display: block; }
+        .start-card-picture { display: block; width: 100%; line-height: 0; }
+        .start-card-frame { width: 100%; height: auto; object-fit: contain; object-position: center; opacity: 1; border-radius: inherit; display: block; }
         .start-card-overlay {
           position: absolute; inset: 0; display: block; padding: 0;
           background: none;
@@ -2525,19 +2526,16 @@ export default function Home() {
           .start-card { flex: none; }
           .start-card-inner {
             aspect-ratio: auto;
-            min-height: 220px;
+            min-height: 0;
             border-radius: 24px;
-            border: 1px solid rgba(255,255,255,.12);
-            background:
-              radial-gradient(circle at 20% 18%, rgba(255,255,255,.16), transparent 24%),
-              linear-gradient(180deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.03) 42%, rgba(11,29,58,.28) 100%),
-              linear-gradient(180deg, #17315b 0%, #244f8b 38%, #5567ff 72%, #b35eff 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.22);
+            border: none;
+            background: transparent;
+            box-shadow: none;
           }
-          .start-card-frame { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+          .start-card-picture { display: block; width: 100%; line-height: 0; }
+          .start-card-frame { display: block; width: 100%; height: auto; object-fit: contain; object-position: center top; }
           .start-card-overlay {
-            background:
-              linear-gradient(180deg, rgba(4,16,39,.08) 0%, rgba(4,16,39,.1) 36%, rgba(4,16,39,.24) 100%);
+            background: none;
           }
           .start-card-title-chip { display: none; }
           .start-card-price-float {
@@ -2622,12 +2620,12 @@ export default function Home() {
           }
           .stage-ring-label { font-size: 10px; }
           .start-card-inner {
-            min-height: 188px;
+            min-height: 0;
             border-radius: 22px;
-            background: #101f3f;
+            background: transparent;
           }
           .start-card-overlay {
-            background: linear-gradient(180deg, rgba(4,16,39,.02) 0%, rgba(4,16,39,.12) 42%, rgba(4,16,39,.58) 100%);
+            background: none;
           }
           .analysis-grid,
           .preview-grid,
