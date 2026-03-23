@@ -885,8 +885,7 @@ export default function Home() {
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
-  const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
+  const payUrl = "#";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
@@ -1292,9 +1291,9 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
-                  mobileIcon="/on-rec_mobile.svg"
+                  mobileIcon="/on-res_mobile.svg"
                   price="$770"
-                  href={onRecUrl}
+                  href={tgContactUrl}
                 />
                 <StartCard
                   title="Online-playground"
@@ -1875,8 +1874,8 @@ export default function Home() {
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
         .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-        .preview-example-chip { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 1px solid rgba(247,210,55,.52); background: linear-gradient(135deg, rgba(247,210,55,1), rgba(255,229,122,.98)); color: #0b1d3a; font-size: 14px; font-weight: 800; cursor: pointer; box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 24px rgba(247,210,55,.18); transition: transform .2s ease, box-shadow .2s ease, filter .2s ease; }
-        .preview-example-chip:hover { transform: translateY(-1px); box-shadow: inset 0 1px 0 rgba(255,255,255,.34), 0 16px 30px rgba(247,210,55,.22); filter: brightness(1.02); }
+        .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+        .preview-example-chip:hover { transform: translateY(-1px); border-color: rgba(247,210,55,.28); background: rgba(247,210,55,.08); }
         .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
         .input-shell {
           display: flex; flex-direction: column; gap: 8px;
@@ -1995,57 +1994,26 @@ export default function Home() {
         }
         .industry-pill-active { color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88)); border-color: rgba(247,210,55,.28); }
         .stage-carousel-scene {
-          position: relative;
-          perspective: 1800px;
-          min-height: 500px;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          touch-action: pan-y;
-          user-select: none;
-          -webkit-user-select: none;
-          cursor: grab;
-          overflow: hidden;
-          isolation: isolate;
+          position: relative; perspective: 2200px; min-height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
         }
         .stage-carousel-mobile-rail { display: none; }
         .stage-carousel-scene.is-dragging { cursor: grabbing; }
-        .stage-carousel-drum {
-          position: relative;
-          width: 100%;
-          height: 420px;
-          transform-style: preserve-3d;
-          isolation: isolate;
-        }
+        .stage-carousel-drum { position: relative; width: 100%; height: 456px; transform-style: preserve-3d; }
         .stage-carousel-item-free {
-          position: absolute;
-          top: 24px;
-          left: 50%;
-          width: min(520px, 40vw);
-          transform-style: preserve-3d;
-          transition: transform .08s linear, opacity .08s linear, filter .08s linear;
-          will-change: transform, opacity, filter;
-          backface-visibility: hidden;
+          position: absolute; top: 18px; left: 50%; width: min(580px, 50vw); transform-style: preserve-3d;
+          transition: transform .04s linear, opacity .04s linear, filter .04s linear; will-change: transform, opacity, filter;
         }
         .stage-card-analytics {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          min-height: 336px;
-          border-radius: 30px;
-          overflow: hidden;
-          border: 1px solid rgba(255,255,255,.11);
-          background: linear-gradient(180deg, rgba(16,27,49,.72) 0%, rgba(11,20,38,.64) 100%);
-          backdrop-filter: blur(24px) saturate(120%);
-          -webkit-backdrop-filter: blur(24px) saturate(120%);
+          position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.36) 0%, rgba(11,20,38,.22) 100%);
+          backdrop-filter: blur(68px) saturate(155%);
+          -webkit-backdrop-filter: blur(68px) saturate(155%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
-          isolation: isolate;
-          contain: paint;
         }
         .stage-card-analytics::after { display: none; }
         .stage-card-top-panel {
-          display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; padding: 20px 20px 16px; min-height: 170px;
+          display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; padding: 20px 20px 16px; min-height: 184px;
           background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.025) 100%);
         }
         .stage-card-copy { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -2078,7 +2046,7 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.18fr) minmax(320px, .82fr);
+          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
           gap: 28px;
           align-items: stretch;
         }
@@ -2211,92 +2179,87 @@ export default function Home() {
         }
         .analysis-right-card-plain {
           min-height: 100%;
-          height: 100%;
+          height: 790px;
           overflow: visible;
           max-width: none;
         }
         .start-cards-row {
-          display: grid;
-          grid-template-rows: repeat(2, minmax(0, 1fr));
-          gap: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
           height: 100%;
-          align-content: stretch;
+          justify-content: space-between;
         }
-        .start-card {
-          flex: 1 1 0;
-          min-width: 0;
-          overflow: hidden;
-        }
-        .start-card-inner,.start-card-overlay { min-height: 0; height: 100%; }
+        .start-card { flex: 1 1 0; }
         .start-card-inner {
           position: relative;
-          aspect-ratio: 1.62 / 1;
           border-radius: 32px;
-          overflow: hidden;
-          border: 1px solid rgba(255,255,255,.08);
-          background: linear-gradient(180deg, rgba(8,18,38,.88) 0%, rgba(8,18,38,.72) 100%);
+          overflow: visible;
+          border: none;
+          background: transparent;
           transform-style: preserve-3d;
           transition: transform .18s ease-out;
-          box-shadow: 0 22px 48px rgba(0,0,0,.18);
+          box-shadow: none;
+          min-height: 0;
+          height: auto;
         }
         .start-card-inner picture {
           display: block;
           width: 100%;
-          height: 100%;
         }
         .start-card-frame {
           width: 100%;
-          height: 100%;
+          height: auto;
           object-fit: contain;
           object-position: center;
           opacity: 1;
-          border-radius: inherit;
+          border-radius: 32px;
           display: block;
-          background: linear-gradient(180deg, rgba(8,18,38,.94) 0%, rgba(8,18,38,.7) 100%);
         }
         .start-card-overlay {
-          position: absolute; inset: 0; display: block; padding: 0;
-          background: linear-gradient(180deg, rgba(4,16,39,.04) 0%, rgba(4,16,39,.08) 48%, rgba(4,16,39,.2) 100%);
+          position: absolute;
+          inset: 0;
+          display: block;
+          padding: 0;
+          background: none;
+          pointer-events: none;
         }
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
           position: absolute;
           inset: 0;
           display: block;
-          z-index: 2;
         }
-        .start-card-title-chip { display: none !important; }
+        .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 16%;
-          right: 5.4%;
-          font-size: clamp(48px, 4.2vw, 82px);
+          top: 7.8%;
+          right: 5.6%;
+          font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
           letter-spacing: -.06em;
           font-weight: 700;
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
-          z-index: 3;
         }
         .start-card-btn {
           position: absolute;
           left: 4.35%;
-          bottom: 15.5%;
+          bottom: 11.2%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          min-height: 46px;
-          padding: 0 24px;
+          min-height: 42px;
+          padding: 0 18px;
           border-radius: 999px;
           text-decoration: none;
           color: #ffffff;
           font-weight: 700;
-          font-size: 14px;
           border: 1px solid rgba(255,255,255,.16);
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
           animation: tgGradientFlow 6s ease-in-out infinite;
-          z-index: 3;
+          pointer-events: auto;
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
@@ -2391,9 +2354,9 @@ export default function Home() {
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
           .start-cards-row { grid-template-columns: 1fr; }
-          .stage-carousel-scene { min-height: 500px; }
-          .stage-carousel-drum { height: 420px; }
-          .stage-carousel-item-free { width: min(560px, 76vw); }
+          .stage-carousel-scene { min-height: 520px; }
+          .stage-carousel-drum { height: 440px; }
+          .stage-carousel-item-free { width: min(700px, 82vw); }
           .stage-card-top-panel,.stage-card-bottom-inner { grid-template-columns: 1fr; }
           .stage-card-heading { align-items: flex-start; }
         }
@@ -2545,15 +2508,15 @@ export default function Home() {
             max-width: 100%;
             overflow-x: auto;
             overflow-y: hidden;
-            padding: 2px 10px 10px 0;
+            padding: 2px 0 10px;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
           }
           .stage-carousel-mobile-rail::-webkit-scrollbar { display: none; }
           .stage-carousel-mobile-slide {
-            flex: 0 0 80%;
-            min-width: 80%;
-            width: 80%;
+            flex: 0 0 84%;
+            min-width: 84%;
+            width: 84%;
             scroll-snap-align: start;
           }
           .stage-card-analytics { min-height: auto; border-radius: 22px; width: 100%; }
@@ -2604,37 +2567,36 @@ export default function Home() {
           .start-cards-row { gap: 14px; }
           .start-card { flex: none; }
           .start-card-inner {
-            aspect-ratio: 1.55 / 1;
             min-height: 0;
             border-radius: 24px;
-            border: 1px solid rgba(255,255,255,.12);
-            background: linear-gradient(180deg, rgba(8,18,38,.92) 0%, rgba(8,18,38,.72) 100%);
-            box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.22);
+            border: none;
+            background: transparent;
+            box-shadow: none;
           }
           .start-card-frame {
             display: block;
             width: 100%;
-            height: 100%;
+            height: auto;
             object-fit: contain;
             object-position: center;
-            background: linear-gradient(180deg, rgba(8,18,38,.94) 0%, rgba(8,18,38,.76) 100%);
+            border-radius: 24px;
           }
           .start-card-overlay {
-            background: linear-gradient(180deg, rgba(4,16,39,.02) 0%, rgba(4,16,39,.08) 36%, rgba(4,16,39,.18) 100%);
+            background: none;
           }
-          .start-card-title-chip { display: none !important; }
+          .start-card-title-chip { display: none; }
           .start-card-price-float {
-            top: 14px;
+            top: 9%;
             right: 14px;
             left: auto;
             bottom: auto;
-            font-size: clamp(30px, 10vw, 42px);
+            font-size: clamp(28px, 10vw, 40px);
           }
           .start-card-btn {
             left: 14px;
             right: 14px;
-            bottom: 14px;
-            min-height: 40px;
+            bottom: 10%;
+            min-height: 38px;
             width: auto;
             padding: 0 14px;
             font-size: 12px;
@@ -2704,7 +2666,17 @@ export default function Home() {
             gap: 8px;
           }
           .stage-ring-label { font-size: 10px; }
-          
+          .start-card-inner {
+            min-height: 0;
+            border-radius: 22px;
+            background: transparent;
+          }
+          .start-card-frame {
+            border-radius: 22px;
+          }
+          .start-card-overlay {
+            background: none;
+          }
           .analysis-grid,
           .preview-grid,
           .results-grid-2x2,
