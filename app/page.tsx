@@ -1250,7 +1250,7 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
-                  mobileIcon="/OnRec Mobile.png"
+                  mobileIcon="/on-res_mobile.svg"
                   price="$770"
                   href={tgContactUrl}
 
@@ -1258,7 +1258,7 @@ export default function Home() {
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
-                  mobileIcon="/Online Playground Mobile.png"
+                  mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
 
