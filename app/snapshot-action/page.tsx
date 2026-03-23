@@ -156,7 +156,7 @@ const CJM_STAGES = [
 
 const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
   Acquisition: "Первый контакт клиента с вами",
-  Activation: "Момент, когда клиент начинает взаимодействовать (первое действие)",
+  Activation: "Момент, когда клиент начинает взаимодействие (первое действие)",
   "Value Realization": "Когда клиент понимает ценность вашего продукта",
   Conversion: "Этап оплаты или принятия решения о покупке",
   Retention: "Повторное взаимодействие или продолжение работы с вами",
@@ -525,12 +525,13 @@ function isFilled(value: any): boolean {
     }
 
     if ("stages" in value && Array.isArray(value.stages)) {
-      return value.stages.some((stage: any) =>
-        String(stage.whatHappens ?? "").trim().length > 0 ||
-        String(stage.duration ?? "").trim().length > 0 ||
-        String(stage.clientGets ?? "").trim().length > 0 ||
-        String(stage.companyGets ?? "").trim().length > 0 ||
-        String(stage.problems ?? "").trim().length > 0
+      return value.stages.some(
+        (stage: any) =>
+          String(stage.whatHappens ?? "").trim().length > 0 ||
+          String(stage.duration ?? "").trim().length > 0 ||
+          String(stage.clientGets ?? "").trim().length > 0 ||
+          String(stage.companyGets ?? "").trim().length > 0 ||
+          String(stage.problems ?? "").trim().length > 0
       );
     }
 
@@ -607,7 +608,7 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
           strokeDashoffset={strokeDashoffset}
           style={{
             filter: "drop-shadow(0 0 10px rgba(247,210,55,0.45))",
-            transition: "all 0.35s ease",
+            transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         />
       </svg>
@@ -615,23 +616,6 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
         <div className="text-lg font-semibold text-white">{Math.round(progress)}%</div>
         <div className="text-[10px] uppercase tracking-[0.24em] text-white/45">filled</div>
       </div>
-    </div>
-  );
-}
-
-function SectionProgress({ value }: { value: number }) {
-  return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-white/8">
-      <div
-        className="h-full rounded-full"
-        style={{
-          width: `${value}%`,
-          background:
-            "linear-gradient(90deg, rgba(247,210,55,0.95), rgba(255,231,122,0.95))",
-          boxShadow: "0 0 20px rgba(247,210,55,0.35)",
-          transition: "width 0.35s ease",
-        }}
-      />
     </div>
   );
 }
@@ -653,6 +637,56 @@ function GlassCard({
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_26%)]" />
       <div className="relative">{children}</div>
     </div>
+  );
+}
+
+function TiltCardButton({
+  children,
+  onClick,
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
+  const [style, setStyle] = useState({
+    transform:
+      "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
+  });
+
+  function handleMove(e: React.MouseEvent<HTMLButtonElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+
+    const rotateY = (px - 0.5) * 8;
+    const rotateX = (0.5 - py) * 8;
+
+    setStyle({
+      transform: `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.006)`,
+    });
+  }
+
+  function reset() {
+    setStyle({
+      transform:
+        "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
+    });
+  }
+
+  return (
+    <button
+      onClick={onClick}
+      onMouseMove={handleMove}
+      onMouseLeave={reset}
+      onBlur={reset}
+      className="group block w-full text-left"
+      style={{
+        transformStyle: "preserve-3d",
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+        ...style,
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -1482,7 +1516,7 @@ function renderInput(
                   }}
                   className={`rounded-full border px-3.5 py-2 text-sm transition ${
                     active
-                      ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                      ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2] shadow-[0_0_20px_rgba(247,210,55,0.18)]"
                       : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"
                   }`}
                 >
@@ -2020,11 +2054,14 @@ export default function DiagnosticIntakePage() {
     return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
   }, [sectionProgress]);
 
-  const previewChapter = active ?? chapters[0];
-  const previewProgress = Number(sectionProgress[previewChapter.id] || 0);
   const completedSections = useMemo(
     () => Object.values(sectionProgress).filter((v) => Number(v) >= 100).length,
     [sectionProgress]
+  );
+
+  const totalQuestions = useMemo(
+    () => chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0),
+    []
   );
 
   function setAnswer(key: string, value: any) {
@@ -2039,94 +2076,139 @@ export default function DiagnosticIntakePage() {
           "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
       }}
     >
+      <style jsx global>{`
+        @keyframes rs-overlay-in {
+          from {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+          }
+          to {
+            opacity: 1;
+            backdrop-filter: blur(4px);
+          }
+        }
+
+        @keyframes rs-panel-in {
+          from {
+            opacity: 0;
+            transform: translateX(42px) scale(0.985);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes rs-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
       <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
         <GlassCard className="mb-8 p-5 md:p-7">
-          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr] lg:items-center">
+          <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
             <div>
               <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
                 <span className="text-[#f7d237]">●</span>
                 Revenue Snapshot — Diagnostic Intake
               </div>
+
               <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
                 Структурированная диагностическая анкета бизнеса
               </h1>
+
               <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с локальной
-                заполненностью, внутри — pop-up на половину экрана с соответствующим типом ввода.
+                Экран построен под вашу структуру вопросов: каждая глава — отдельная карточка с
+                локальной заполненностью, внутри — half-screen modal с адаптивным типом ввода под
+                конкретный вопрос.
               </p>
-              <div className="mt-8 space-y-3">
-                <div className="flex items-center justify-between text-sm text-white/70">
-                  <span>Общий прогресс заполнения</span>
-                  <span className="font-medium text-white">{Math.round(total)}%</span>
-                </div>
-                <SectionProgress value={total} />
-                <div className="flex flex-wrap gap-3 pt-2 text-xs text-white/45">
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">
-                    Глав: {chapters.length}
-                  </span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">
-                    Полностью завершено: {completedSections}
-                  </span>
-                  <span className="rounded-full border border-white/10 px-3 py-1.5">
-                    Формат: card → half-screen modal
-                  </span>
-                </div>
+
+              <div className="mt-8 flex flex-wrap gap-3 pt-1 text-xs text-white/45">
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Блоков: {chapters.length}
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Вопросов: {totalQuestions}
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Полностью завершено: {completedSections}
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Формат: card → half-screen modal
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Логика: adaptive input flow
+                </span>
               </div>
             </div>
 
-            <GlassCard className="p-5 md:p-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.26em] text-white/40">Current focus</div>
-                  <div className="mt-2 text-2xl font-semibold text-[#e0e1e3]">{previewChapter.title}</div>
-                  <div className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">{previewChapter.subtitle}</div>
+            <GlassCard className="p-6 md:p-7">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">
+                  Overall completion
                 </div>
-                <Ring progress={previewProgress} size={92} />
-              </div>
-              <div className="mt-6 grid gap-3 text-sm text-white/70">
-                {previewChapter.questions.map((q, i) => (
-                  <div
-                    key={q.id}
-                    className="flex items-center justify-between rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3"
-                  >
-                    <span className="pr-4 text-white/72">
-                      {i + 1}. {q.label}
-                    </span>
-                    <span className="rounded-full border border-white/10 px-2 py-0.5 text-[11px] text-white/55">
-                      {getQuestionProgress(q, answers)}%
-                    </span>
+
+                <div className="mt-6">
+                  <Ring progress={total} size={172} />
+                </div>
+
+                <div className="mt-5 text-2xl font-semibold text-[#fefefe]">
+                  Общая заполненность анкеты
+                </div>
+
+                <p className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">
+                  Диаграмма отражает совокупный прогресс по всем разделам анкеты и обновляется по
+                  мере заполнения блоков.
+                </p>
+
+                <div className="mt-5 grid w-full grid-cols-2 gap-3 text-left">
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                      Sections done
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-white">{completedSections}</div>
                   </div>
-                ))}
+                  <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                      Total blocks
+                    </div>
+                    <div className="mt-1 text-lg font-semibold text-white">{chapters.length}</div>
+                  </div>
+                </div>
               </div>
-              {previewProgress === 100 && (
-                <button className="mt-5 w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:brightness-105">
-                  Готово
-                </button>
-              )}
             </GlassCard>
           </div>
         </GlassCard>
 
         <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {chapters.map((chapter) => {
+          {chapters.map((chapter, index) => {
             const progress = Number(sectionProgress[chapter.id]);
+
             return (
-              <button
-                key={chapter.id}
-                onClick={() => setActive(chapter)}
-                className="translate-y-0 text-left transition duration-300 hover:-translate-y-1.5"
-              >
+              <TiltCardButton key={chapter.id} onClick={() => setActive(chapter)}>
                 <GlassCard className="h-full p-5 md:p-6">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
                       {chapter.icon}
                     </div>
                     <Ring progress={progress} size={82} />
                   </div>
+
                   <div className="mt-6">
-                    <div className="text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
+                      Block {index + 1}
+                    </div>
+                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
                     <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{chapter.subtitle}</div>
                   </div>
+
                   <div className="mt-6 space-y-2.5">
                     {chapter.questions.slice(0, 3).map((question, i) => (
                       <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
@@ -2137,7 +2219,8 @@ export default function DiagnosticIntakePage() {
                       </div>
                     ))}
                   </div>
-                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm">
+
+                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
                     <span className="text-white/55">Открыть блок</span>
                     <div className="flex items-center gap-2 text-[#f7d237]">
                       <span>{progress}%</span>
@@ -2145,7 +2228,7 @@ export default function DiagnosticIntakePage() {
                     </div>
                   </div>
                 </GlassCard>
-              </button>
+              </TiltCardButton>
             );
           })}
         </div>
@@ -2153,8 +2236,19 @@ export default function DiagnosticIntakePage() {
 
       {active && (
         <>
-          <div className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" onClick={() => setActive(null)} />
-          <div className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl">
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            style={{
+              animation: "rs-overlay-in 280ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+            onClick={() => setActive(null)}
+          />
+          <div
+            className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
+            style={{
+              animation: "rs-panel-in 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
             <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
               <div className="flex items-center justify-between gap-4">
                 <div>
@@ -2178,25 +2272,41 @@ export default function DiagnosticIntakePage() {
 
             <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
               {active.questions.map((question, index) => (
-                <GlassCard key={question.id} className="p-5 md:p-6">
-                  <div className="mb-4 flex items-start justify-between gap-4">
-                    <div>
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">
-                        Question {index + 1}
+                <div
+                  key={question.id}
+                  style={{
+                    animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
+                      40 + index * 40
+                    }ms both`,
+                  }}
+                >
+                  <GlassCard className="p-5 md:p-6">
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">
+                          Question {index + 1}
+                        </div>
+                        <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">
+                          {question.label}
+                        </h3>
                       </div>
-                      <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">
-                        {question.label}
-                      </h3>
+                      <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-2 text-sm text-[#f7d237]">
+                        {getQuestionProgress(question, answers)}%
+                      </div>
                     </div>
-                    <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-2 text-sm text-[#f7d237]">
-                      {getQuestionProgress(question, answers)}%
-                    </div>
-                  </div>
-                  {renderInput(question, answers, setAnswer)}
-                </GlassCard>
+                    {renderInput(question, answers, setAnswer)}
+                  </GlassCard>
+                </div>
               ))}
 
-              <div className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4">
+              <div
+                className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4"
+                style={{
+                  animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
+                    80 + active.questions.length * 40
+                  }ms both`,
+                }}
+              >
                 <div className="text-sm text-white/55">
                   Прогресс этого блока: {Number(sectionProgress[active.id])}%
                 </div>
