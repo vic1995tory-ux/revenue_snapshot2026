@@ -764,7 +764,8 @@ function StageCarousel() {
     if (!rail) return;
 
     const handleScroll = () => {
-      const slideWidth = rail.clientWidth * 0.86 + 12;
+      const firstSlide = rail.querySelector<HTMLElement>(".stage-carousel-mobile-slide");
+      const slideWidth = (firstSlide?.offsetWidth ?? rail.clientWidth * 0.84) + 10;
       const index = Math.round(rail.scrollLeft / Math.max(slideWidth, 1));
       setMobileActiveIndex(Math.max(0, Math.min(items.length - 1, index)));
     };
@@ -2387,14 +2388,12 @@ export default function Home() {
             position: absolute;
             inset: 0;
             background-image:
-              linear-gradient(180deg, rgba(4,16,39,.14) 0%, rgba(4,16,39,.18) 38%, rgba(4,16,39,.58) 100%),
-              url("/hero.svg");
+              linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
+              url("/Hero Mobile.png");
             background-repeat: no-repeat;
             background-size: cover, contain;
-            background-position: center, center bottom;
-            transform: rotate(90deg) scale(.98);
-            transform-origin: center;
-            opacity: .9;
+            background-position: center, center left;
+            opacity: .92;
             z-index: 0;
           }
           .hero-left > * { position: relative; z-index: 1; }
@@ -2429,7 +2428,7 @@ export default function Home() {
           .preview-grid { grid-template-columns: 1fr; gap: 14px; }
           .preview-input-intro { font-size: 14px; }
           .preview-example-row { gap: 8px; }
-          .preview-example-chip { width: 100%; justify-content: center; min-height: 44px; padding: 0 16px; border: 1px solid rgba(247,210,55,.28); background: linear-gradient(135deg, rgba(247,210,55,.18), rgba(255,255,255,.07)); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 24px rgba(247,210,55,.12); }
+          .preview-example-chip { width: 100%; justify-content: center; min-height: 46px; padding: 0 16px; border: 1px solid rgba(247,210,55,.52); color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,1), rgba(255,229,122,.98)); box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 24px rgba(247,210,55,.22); font-weight: 800; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
           .input-shell { padding: 12px; border-radius: 18px; }
           .glass-input { height: 46px; }
@@ -2460,10 +2459,8 @@ export default function Home() {
           .stage-rotate-cue,
           .stage-carousel-scene { display: none; }
           .stage-carousel-mobile-rail {
-            display: grid;
-            grid-auto-flow: column;
-            grid-auto-columns: minmax(0, 92%);
-            gap: 12px;
+            display: flex;
+            gap: 10px;
             width: 100%;
             max-width: 100%;
             overflow-x: auto;
@@ -2473,18 +2470,31 @@ export default function Home() {
             -webkit-overflow-scrolling: touch;
           }
           .stage-carousel-mobile-rail::-webkit-scrollbar { display: none; }
-          .stage-carousel-mobile-slide { scroll-snap-align: start; }
-          .stage-card-analytics { min-height: auto; border-radius: 22px; }
-          .stage-card-top-panel { padding: 16px; min-height: auto; gap: 12px; }
-          .stage-copy-block h4 { font-size: 16px; }
-          .stage-copy-block p { font-size: 12px; line-height: 1.45; }
-          .stage-card-heading { min-width: 0; }
-          .stage-card-heading strong { font-size: 34px; }
-          .stage-card-bottom-panel { padding: 14px; }
-          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 12px; }
-          .stage-inline-metric { padding: 8px 10px; border-radius: 16px; min-height: 0; }
-          .stage-inline-metric-value { margin-top: 4px; font-size: 17px; }
-          .stage-bars-title { font-size: 20px; }
+          .stage-carousel-mobile-slide {
+            flex: 0 0 84%;
+            min-width: 84%;
+            width: 84%;
+            scroll-snap-align: start;
+          }
+          .stage-card-analytics { min-height: auto; border-radius: 22px; width: 100%; }
+          .stage-card-top-panel { padding: 14px; min-height: auto; gap: 10px; }
+          .stage-copy-block { display: grid; gap: 6px; }
+          .stage-copy-block h4 { font-size: 14px; }
+          .stage-copy-block p { font-size: 11px; line-height: 1.4; }
+          .stage-card-heading { min-width: 0; align-items: flex-start; }
+          .stage-card-heading span { font-size: 10px; }
+          .stage-card-heading strong { font-size: 28px; }
+          .stage-card-bottom-panel { padding: 12px; }
+          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 10px; }
+          .compact-metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+          .stage-inline-metric { padding: 7px 8px; border-radius: 14px; min-height: 0; }
+          .stage-ring-label { font-size: 9px; letter-spacing: .08em; }
+          .stage-inline-metric-value { margin-top: 4px; font-size: 14px; }
+          .stage-bars-title { font-size: 16px; }
+          .stage-bars-wrap { margin-top: 10px; gap: 10px; }
+          .stage-bar-label { margin-bottom: 6px; font-size: 10px; }
+          .stage-bar-track { height: 12px; }
+          .stage-bar-track-thin { height: 8px; }
           .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
           .signal-board {
             grid-template-columns: 1fr;
