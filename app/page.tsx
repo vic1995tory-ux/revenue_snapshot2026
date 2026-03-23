@@ -515,11 +515,13 @@ function ResultDocCard({
 function StartCard({
   title,
   icon,
+  mobileIcon,
   price,
   href,
 }: {
   title: string;
   icon: string;
+  mobileIcon?: string;
   price: string;
   href: string;
   stats?: Array<{ label: string; value: string }>;
@@ -527,7 +529,10 @@ function StartCard({
   return (
     <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
-        <img src={icon} alt={title} className="start-card-frame" />
+        <picture>
+          <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
+          <img src={icon} alt={title} className="start-card-frame" />
+        </picture>
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-title-chip">{title}</div>
@@ -706,9 +711,11 @@ function StageCarousel() {
 
   const [rotation, setRotation] = useState(0);
   const [isDraggingState, setIsDraggingState] = useState(false);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
   const dragStartX = useRef<number | null>(null);
   const dragStartRotation = useRef(0);
   const isDragging = useRef(false);
+  const mobileRailRef = useRef<HTMLDivElement | null>(null);
 
   const itemAngle = 360 / items.length;
   const radius = 300;
@@ -728,7 +735,8 @@ function StageCarousel() {
     return frontIndex;
   }, [rotation, itemAngle]);
 
-  const activeIndustries = new Set(items[activeIndex].industries);
+  const responsiveActiveIndex = typeof window !== "undefined" && window.innerWidth <= 767 ? mobileActiveIndex : activeIndex;
+  const activeIndustries = new Set(items[responsiveActiveIndex].industries);
 
   const startDrag = (clientX: number) => {
     isDragging.current = true;
@@ -749,6 +757,26 @@ function StageCarousel() {
     setIsDraggingState(false);
     dragStartX.current = null;
   };
+
+
+  useEffect(() => {
+    const rail = mobileRailRef.current;
+    if (!rail) return;
+
+    const handleScroll = () => {
+      const slideWidth = rail.clientWidth * 0.86 + 12;
+      const index = Math.round(rail.scrollLeft / Math.max(slideWidth, 1));
+      setMobileActiveIndex(Math.max(0, Math.min(items.length - 1, index)));
+    };
+
+    handleScroll();
+    rail.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      rail.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [items.length]);
 
   return (
     <div className="stage-carousel-wrap">
@@ -821,7 +849,7 @@ function StageCarousel() {
         </div>
       </div>
 
-      <div className="stage-carousel-mobile-rail">
+      <div className="stage-carousel-mobile-rail" ref={mobileRailRef}>
         {items.map((item) => (
           <div key={`${item.stage}-mobile`} className="stage-carousel-mobile-slide">
             <StageCard item={item} isFront />
@@ -885,6 +913,8 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
+
     const tiltCards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
     const cleanups: Array<() => void> = [];
 
@@ -1261,16 +1291,16 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
+                  mobileIcon="/OnRec Mobile.png"
                   price="$770"
                   href={tgContactUrl}
-
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
+                  mobileIcon="/Online Playground Mobile.png"
                   price="$114"
                   href={payUrl}
-
                 />
               </div>
             </div>
@@ -1336,9 +1366,11 @@ export default function Home() {
           position: relative;
           z-index: 2;
           max-width: 1440px;
+          width: 100%;
           margin: 0 auto;
           padding: 108px 20px 40px;
         }
+        .content-wrap > *, .hero-grid > *, .preview-grid > *, .analysis-grid > *, .cta-card > *, .stage-card-bottom-inner > *, .journey-compact > * { min-width: 0; }
         .header-fixed {
           position: fixed;
           inset: 0 0 auto 0;
@@ -2285,15 +2317,47 @@ export default function Home() {
           .stage-card-heading { align-items: flex-start; }
         }
         @media (max-width: 767px) {
-          .cursor-glow { display: none; }
-          .content-wrap { padding: 162px 14px 32px; }
-          .logo-main { width: 210px; height: 52px; }
+          .cursor-glow,
+          .page-background,
+          .glass-card::before,
+          .glass-card::after,
+          .glare-card::before,
+          .glare-card-lite::before,
+          .premium-glass::before,
+          .premium-glass::after { display: none !important; }
+          .content-wrap {
+            width: 100%;
+            max-width: 100%;
+            padding: 138px 14px 28px;
+          }
+          .header-fixed {
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: rgba(4,16,39,.94);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+          }
+          .header-inner {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px 14px;
+            border-radius: 0;
+          }
+          .logo-link { min-width: 0; }
+          .logo-main { width: 168px; height: auto; }
+          .header-nav,
+          .header-actions {
+            width: 100%;
+            max-width: 100%;
+          }
           .header-link { font-size: 14px; }
           .header-actions {
             gap: 10px;
-            padding-top: 4px;
+            padding-top: 8px;
             justify-content: flex-start;
           }
+          .header-pill { min-width: 52px; }
           .header-cta {
             width: 100%;
             justify-content: center;
@@ -2303,19 +2367,37 @@ export default function Home() {
           .section-copy { font-size: 15px; line-height: 1.5; }
           .hero-section {
             min-height: auto;
-            padding: 18px 14px 18px;
+            padding: 14px;
             border-radius: 28px;
             overflow: hidden;
           }
-          .hero-section::before {
-            inset: -18% -52% -18% -52%;
-            background-size: auto 100%;
-            background-position: center;
-            transform: rotate(90deg) scale(1.06);
+          .hero-section::before,
+          .hero-section::after { display: none; }
+          .hero-grid { gap: 14px; }
+          .hero-left {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            padding: 18px 14px 18px;
+            background: linear-gradient(180deg, rgba(11,29,58,.84) 0%, rgba(11,29,58,.58) 100%);
+            border: 1px solid rgba(255,255,255,.08);
           }
-          .hero-section::after {
-            background: linear-gradient(180deg, rgba(4,16,39,0.2) 0%, rgba(4,16,39,0.08) 32%, rgba(4,16,39,0.16) 100%);
+          .hero-left::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+              linear-gradient(180deg, rgba(4,16,39,.14) 0%, rgba(4,16,39,.18) 38%, rgba(4,16,39,.58) 100%),
+              url("/hero.svg");
+            background-repeat: no-repeat;
+            background-size: cover, contain;
+            background-position: center, center bottom;
+            transform: rotate(90deg) scale(.98);
+            transform-origin: center;
+            opacity: .9;
+            z-index: 0;
           }
+          .hero-left > * { position: relative; z-index: 1; }
           .hero-main-title { font-size: clamp(46px, 15vw, 72px); }
           .hero-main-subtitle { margin-top: 14px; font-size: 22px; }
           .hero-main-copy { margin-top: 16px; font-size: 16px; line-height: 1.45; max-width: 100%; }
@@ -2347,7 +2429,7 @@ export default function Home() {
           .preview-grid { grid-template-columns: 1fr; gap: 14px; }
           .preview-input-intro { font-size: 14px; }
           .preview-example-row { gap: 8px; }
-          .preview-example-chip { width: 100%; justify-content: center; min-height: 38px; }
+          .preview-example-chip { width: 100%; justify-content: center; min-height: 44px; padding: 0 16px; border: 1px solid rgba(247,210,55,.28); background: linear-gradient(135deg, rgba(247,210,55,.18), rgba(255,255,255,.07)); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 10px 24px rgba(247,210,55,.12); }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
           .input-shell { padding: 12px; border-radius: 18px; }
           .glass-input { height: 46px; }
@@ -2380,10 +2462,13 @@ export default function Home() {
           .stage-carousel-mobile-rail {
             display: grid;
             grid-auto-flow: column;
-            grid-auto-columns: 86%;
+            grid-auto-columns: minmax(0, 92%);
             gap: 12px;
+            width: 100%;
+            max-width: 100%;
             overflow-x: auto;
-            padding: 2px 2px 10px;
+            overflow-y: hidden;
+            padding: 2px 0 10px;
             scroll-snap-type: x mandatory;
             -webkit-overflow-scrolling: touch;
           }
@@ -2396,9 +2481,9 @@ export default function Home() {
           .stage-card-heading { min-width: 0; }
           .stage-card-heading strong { font-size: 34px; }
           .stage-card-bottom-panel { padding: 14px; }
-          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 14px; }
-          .stage-inline-metric { padding: 10px; border-radius: 16px; }
-          .stage-inline-metric-value { font-size: 20px; }
+          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 12px; }
+          .stage-inline-metric { padding: 8px 10px; border-radius: 16px; min-height: 0; }
+          .stage-inline-metric-value { margin-top: 4px; font-size: 17px; }
           .stage-bars-title { font-size: 20px; }
           .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
           .signal-board {
@@ -2439,28 +2524,108 @@ export default function Home() {
               linear-gradient(180deg, #17315b 0%, #244f8b 38%, #5567ff 72%, #b35eff 100%);
             box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 40px rgba(0,0,0,.22);
           }
-          .start-card-frame { display: none; }
+          .start-card-frame { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
           .start-card-overlay {
             background:
               linear-gradient(180deg, rgba(4,16,39,.08) 0%, rgba(4,16,39,.1) 36%, rgba(4,16,39,.24) 100%);
           }
-          .start-card-title-chip { left: 14px; top: 14px; font-size: 11px; min-height: 30px; padding: 0 12px; }
+          .start-card-title-chip { display: none; }
           .start-card-price-float {
             top: auto;
-            right: auto;
-            left: 14px;
-            bottom: 86px;
-            font-size: clamp(44px, 14vw, 64px);
+            right: 14px;
+            left: auto;
+            bottom: 72px;
+            font-size: clamp(28px, 10vw, 40px);
           }
           .start-card-btn {
             left: 14px;
             right: 14px;
             bottom: 14px;
-            min-height: 40px;
+            min-height: 38px;
             width: auto;
-            padding: 0 16px;
-            font-size: 13px;
+            padding: 0 14px;
+            font-size: 12px;
           }
+          .hero-chart-float { max-width: 100%; }
+          .hero-chart-box,
+          .hero-metric-square,
+          .bar-chart-wrap,
+          .hero-money-card,
+          .hero-active-note,
+          .journey-compact-card,
+          .input-shell,
+          .metric-card,
+          .model-card,
+          .slider-card,
+          .preview-side,
+          .stage-card-analytics,
+          .signal-card,
+          .result-doc-card-inner,
+          .start-card-inner,
+          .cta-card,
+          .cta-box {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: 0 10px 28px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.06);
+          }
+          .bar-chart-bar-horizontal,
+          .hero-active-note,
+          .hero-tag,
+          .tg-gradient-btn,
+          .ghost-link,
+          .preview-example-chip { will-change: auto; }
+          .range-input {
+            height: 24px;
+            accent-color: #f7d237;
+          }
+          .range-input::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+          }
+          .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            margin-top: -8px;
+            border-radius: 999px;
+            background: #f7d237;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 18px rgba(247,210,55,.28);
+          }
+          .range-input::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+          }
+          .range-input::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: #f7d237;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 18px rgba(247,210,55,.28);
+          }
+          .stage-rings-grid.compact-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 8px;
+          }
+          .stage-ring-label { font-size: 10px; }
+          .start-card-inner {
+            min-height: 188px;
+            border-radius: 22px;
+            background: #101f3f;
+          }
+          .start-card-overlay {
+            background: linear-gradient(180deg, rgba(4,16,39,.02) 0%, rgba(4,16,39,.12) 42%, rgba(4,16,39,.58) 100%);
+          }
+          .analysis-grid,
+          .preview-grid,
+          .results-grid-2x2,
+          .journey-compact,
+          .dashboard-grid,
+          .input-grid,
+          .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
