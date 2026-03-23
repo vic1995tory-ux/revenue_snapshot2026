@@ -1292,14 +1292,14 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
-                  mobileIcon="/OnRec Mobile.png"
+                  mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={tgContactUrl}
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
-                  mobileIcon="/Online Playground Mobile.png"
+                  mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
                 />
@@ -2389,7 +2389,7 @@ export default function Home() {
             inset: 0;
             background-image:
               linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
-              url("/Hero Mobile.png");
+              url("/hero_mobile.svg");
             background-repeat: no-repeat;
             background-size: cover, contain;
             background-position: center, center left;
