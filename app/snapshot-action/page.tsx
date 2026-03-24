@@ -2586,7 +2586,15 @@ export default function DiagnosticIntakePage() {
   );
 
   const allComplete = Math.round(total) === 100;
+function getTagValues(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return [...(value.selected ?? []), ...(value.custom ?? [])].filter(Boolean);
+}
 
+function buildPreparedAnswers(answers: any) {
+  // 👉 вставляешь ВЕСЬ тот большой код отсюда
+}
   function setAnswer(key: string, value: any) {
     setAnswers((prev) => {
       const next = { ...prev, [key]: value };
@@ -2606,37 +2614,232 @@ export default function DiagnosticIntakePage() {
     });
   }
 
-  async function handleSubmit() {
-    if (!allComplete || isSubmitting) return;
+function getTagValues(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return [...(value.selected ?? []), ...(value.custom ?? [])].filter(Boolean);
+}
 
-    try {
-      setIsSubmitting(true);
+function buildPreparedAnswers(answers: any) {
+  const prepared = [
+    {
+      question: "Какая часть выручки остаётся после всех расходов?",
+      answer: [
+        typeof answers.margin?.value === "number" ? `${answers.margin.value}%` : "",
+        answers.margin?.note?.trim() ? `Комментарий: ${answers.margin.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+      answer: String(answers.salesCount ?? "").trim(),
+    },
+    {
+      question: "Какая выручка была у вас за прошлый месяц?",
+      answer: String(answers.revenue ?? "").trim(),
+    },
+    {
+      question: "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+      answer: getTagValues(answers.kpis).join(", "),
+    },
+    {
+      question: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+      answer: String(answers.clientProfile ?? "").trim(),
+    },
+    {
+      question: "Сколько обращений вы получаете и сколько реально можете обработать?",
+      answer: [
+        `Обращения: ${answers.demandCapacity?.demand ?? 0}`,
+        `Capacity: ${answers.demandCapacity?.capacity ?? 0}`,
+      ].join("\n"),
+    },
+    {
+      question: "Откуда к вам обычно приходят клиенты?",
+      answer: getTagValues(answers.acquisitionChannels).join(", "),
+    },
+    {
+      question: "Как распределяется входящий поток клиентов между выбранными каналами?",
+      answer: getTagValues(answers.acquisitionChannels)
+        .map((channel) => `${channel} — ${answers.channelEfficiency?.values?.[channel] ?? 0}%`)
+        .join("\n"),
+    },
+    {
+      question: "Какие 1–3 продукта или услуги самые маржинальные?",
+      answer: (answers.topProducts ?? [])
+        .filter((item: any) => String(item?.name ?? "").trim())
+        .map((item: any, index: number) => `Продукт ${index + 1}: ${item.name} — ${item.value ?? 0}%`)
+        .join("\n"),
+    },
+    {
+      question: "Какими механиками вы удерживаете клиентов?",
+      answer: getTagValues(answers.retention).join(", "),
+    },
+    {
+      question: "Как проходит путь клиента от первого обращения до положительного опыта?",
+      answer: (answers.cjm?.stages ?? [])
+        .map(
+          (stage: any) =>
+            `${stage.stage}
+Что происходит: ${stage.whatHappens || "-"}
+Длительность: ${stage.duration || "-"}
+Что получает клиент: ${stage.clientGets || "-"}
+Что получает компания: ${stage.companyGets || "-"}
+Проблемы: ${stage.problems || "-"}`
+        )
+        .join("\n\n"),
+    },
+    {
+      question: "Есть ли пики и спады продаж и чем они объясняются?",
+      answer: [
+        (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
+          ? `Пики: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value >= 25)
+              .map((p: any) => p.month)
+              .join(", ")}`
+          : "",
+        answers.seasonality?.peaksReason?.trim()
+          ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
+          : "",
+        (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
+          ? `Спады: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value <= -25)
+              .map((p: any) => p.month)
+              .join(", ")}`
+          : "",
+        answers.seasonality?.lowsReason?.trim()
+          ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+      answer: [
+        [...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].length
+          ? `Стадия бизнеса: ${[...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].join(", ")}`
+          : "",
+        answers.positionText?.text?.trim() ? `Описание: ${answers.positionText.text.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+      answer: [
+        `Физическая локация: ${answers.geo?.physical ?? ""}`,
+        `География продаж: ${answers.geo?.sales ?? ""}`,
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Как устроена команда: роли, зоны ответственности, перегруз?",
+      answer: (answers.team ?? [])
+        .map(
+          (member: any, index: number) =>
+            `Участник ${index + 1}
+Должность: ${member.position || "-"}
+Ответственность: ${member.responsibility || "-"}
+ЛПР: ${member.isDecisionMaker || "-"}
+Участвует в: ${(member.participatesIn ?? []).join(", ") || "-"}`
+        )
+        .join("\n\n"),
+    },
+    {
+      question: "Как выстроено взаимодействие между ролями и что изменилось за год?",
+      answer: [
+        ...(answers.interaction?.links ?? []).map(
+          (link: any) =>
+            `${link.fromRole} ↔ ${link.toRole}
+Скорость: ${link.metrics?.speed ?? 0}/5
+Коммуникация: ${link.metrics?.communication ?? 0}/5
+Качество информации: ${link.metrics?.infoQuality ?? 0}/5`
+        ),
+        answers.interaction?.note?.trim() ? `Комментарий: ${answers.interaction.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+    },
+    {
+      question: "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+      answer: String(answers.decisions ?? "").trim(),
+    },
+    {
+      question: "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
+      answer: Object.entries(answers.stress?.values ?? {})
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n"),
+    },
+    {
+      question: "В каких зонах бизнеса теряется эффективность?",
+      answer: Object.entries(answers.lossZones?.values ?? {})
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n"),
+    },
+    {
+      question: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+      answer:
+        answers.analytics?.hasAnalytics === false
+          ? "Нет"
+          : answers.analytics?.hasAnalytics === true
+            ? [
+                "Да",
+                getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).length
+                  ? `Используем: ${getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).join(", ")}`
+                  : "",
+                answers.analytics?.note?.trim() ? `Комментарий: ${answers.analytics.note.trim()}` : "",
+              ]
+                .filter(Boolean)
+                .join("\n")
+            : "",
+    },
+    {
+      question: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+      answer: String(answers.changesNeeded ?? "").trim(),
+    },
+    {
+      question: "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+      answer: String(answers.implemented ?? "").trim(),
+    },
+    {
+      question: "Какого результата бизнес должен достичь к концу года?",
+      answer: [
+        `Цель по чистой прибыли: +${answers.goal?.profitTarget ?? 0}%`,
+        answers.goal?.mode ? `Статус расходов: ${answers.goal.mode}` : "",
+        answers.goal?.costChange?.trim() ? `Изменение расходов: ${answers.goal.costChange.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Вокруг чего вы строите планы на 3, 6 и 12 месяцев?",
+      answer: [
+        `3 месяца: ${answers.horizons?.plan3 ?? ""}`,
+        `6 месяцев: ${answers.horizons?.plan6 ?? ""}`,
+        `12 месяцев: ${answers.horizons?.plan12 ?? ""}`,
+      ]
+        .filter((line) => !line.endsWith(": "))
+        .join("\n"),
+    },
+    {
+      question: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
+      answer: [
+        answers.contacts?.reportEmail?.trim()
+          ? `Email для отчёта: ${answers.contacts.reportEmail.trim()}`
+          : "",
+        answers.contacts?.meetingContact?.trim()
+          ? `Контакт для встречи: ${answers.contacts.meetingContact.trim()}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+  ];
 
-      await fetch("/api/generate-results", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "snapshot-action",
-          createdAt: new Date().toISOString(),
-          progress: {
-            total,
-            totalQuestions,
-            sectionProgress,
-          },
-          answers,
-        }),
-      });
-    } catch {
-      // intentionally silent for current stage
-    } finally {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 1600);
-    }
-  }
-
+  return prepared.filter((item) => item.answer.trim().length > 0);
+}
   return (
     <div
       className="min-h-screen text-white"
