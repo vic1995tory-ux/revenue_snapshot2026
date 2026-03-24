@@ -1282,7 +1282,7 @@ export default function Home() {
           <StageCarousel />
         </section>
 
-        <section id="analysis" className="mb-16">
+        <section id="analysis" className="mb-16 analysis-section-extended">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
@@ -1314,7 +1314,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="try" className="pb-8">
+        <section id="try" className="pb-8 cta-section-extended">
           <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
@@ -1375,7 +1375,7 @@ export default function Home() {
           max-width: 1440px;
           width: 100%;
           margin: 0 auto;
-          padding: 108px 20px 40px;
+          padding: 108px 20px 140px;
         }
         .content-wrap > *, .hero-grid > *, .preview-grid > *, .analysis-grid > *, .cta-card > *, .stage-card-bottom-inner > *, .journey-compact > * { min-width: 0; }
         .header-fixed {
@@ -2057,6 +2057,14 @@ export default function Home() {
           gap: 28px;
           align-items: stretch;
         }
+        .analysis-section-extended {
+          position: relative;
+          padding-bottom: 180px;
+        }
+        .cta-section-extended {
+          position: relative;
+          margin-top: 40px;
+        }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
         .signal-board {
@@ -2190,6 +2198,7 @@ export default function Home() {
           overflow: visible;
           max-width: none;
           margin-top: 4px;
+          padding-bottom: 16px;
         }
         .start-cards-row {
           display: grid;
@@ -2410,7 +2419,7 @@ export default function Home() {
           .content-wrap {
             width: 100%;
             max-width: 100%;
-            padding: 138px 14px 28px;
+            padding: 138px 14px 120px;
           }
           .header-fixed {
             left: 0;
@@ -2577,6 +2586,12 @@ export default function Home() {
           .stage-bar-track { height: 12px; }
           .stage-bar-track-thin { height: 8px; }
           .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
+          .analysis-section-extended {
+            padding-bottom: 132px;
+          }
+          .cta-section-extended {
+            margin-top: 24px;
+          }
           .signal-board {
             grid-template-columns: 1fr;
             grid-template-rows: auto;
