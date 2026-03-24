@@ -542,7 +542,7 @@ function StartCard({
             </div>
           </div>
         </div>
-        <a href={href} className="start-card-play start-card-play-desktop" aria-label={`Открыть ${title}`}>
+        <a href={href} className="start-card-play start-card-play-desktop tilt-sync" aria-label={`Открыть ${title}`}>
           <span className="start-card-play-triangle" />
         </a>
       </div>
@@ -928,6 +928,7 @@ export default function Home() {
     tiltCards.forEach((card) => {
       const inner = card.querySelector<HTMLElement>(".tilt-inner");
       if (!inner) return;
+      const synced = Array.from(card.querySelectorAll<HTMLElement>(".tilt-sync"));
 
       const handleMove = (e: MouseEvent) => {
         const rect = card.getBoundingClientRect();
@@ -937,11 +938,19 @@ export default function Home() {
         const py = y / rect.height;
         const rotateY = (px - 0.5) * 8;
         const rotateX = (0.5 - py) * 8;
-        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
+        const mediaTransform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.012)`;
+        const playTransform = `rotateX(${rotateX * 0.7}deg) rotateY(${rotateY * 0.7}deg) translateY(-4px) scale(1.02)`;
+        inner.style.transform = mediaTransform;
+        synced.forEach((el) => {
+          el.style.transform = playTransform;
+        });
       };
 
       const handleLeave = () => {
         inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+        synced.forEach((el) => {
+          el.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+        });
       };
 
       card.addEventListener("mousemove", handleMove);
@@ -2189,47 +2198,40 @@ export default function Home() {
           height: auto;
           overflow: visible;
           max-width: none;
-          margin-top: 6px;
+          margin-top: 4px;
         }
         .start-cards-row {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          justify-content: center;
           gap: 18px;
           width: 100%;
           align-items: start;
         }
-        .start-card {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          width: 100%;
-          max-width: none;
-        }
+        .start-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
         .start-card-media-wrap {
           display: grid;
           grid-template-columns: minmax(0,1fr) 84px;
-          align-items: stretch;
-          gap: 12px;
+          align-items: center;
+          gap: 16px;
           width: 100%;
+          min-width: 0;
         }
         .start-card-inner {
           position: relative;
-          border-radius: 30px;
+          border-radius: 28px;
           overflow: hidden;
           border: none;
           background: transparent;
           transform-style: preserve-3d;
-          transition: transform .24s ease-out;
+          transition: transform .26s ease-out;
           box-shadow: none;
           min-height: 0;
           height: auto;
-          aspect-ratio: 1.72 / 1;
         }
         .start-card-inner picture {
           display: block;
           width: 100%;
-          height: 100%;
+          aspect-ratio: 1.72 / 1;
         }
         .start-card-frame {
           width: 100%;
@@ -2237,7 +2239,7 @@ export default function Home() {
           object-fit: cover;
           object-position: center;
           opacity: 1;
-          border-radius: 30px;
+          border-radius: 28px;
           display: block;
         }
         .start-card-overlay {
@@ -2263,14 +2265,14 @@ export default function Home() {
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
         .start-card-onrec .start-card-price-float {
-          right: 5.6%;
-          bottom: 12.2%;
-          font-size: clamp(36px, 2.8vw, 64px);
+          right: 5.2%;
+          bottom: 11.2%;
+          font-size: clamp(42px, 3.4vw, 74px);
         }
         .start-card-playground .start-card-price-float {
-          right: 5.8%;
-          top: 18.8%;
-          font-size: clamp(36px, 2.8vw, 64px);
+          right: 5.6%;
+          top: 18.2%;
+          font-size: clamp(42px, 3.4vw, 74px);
         }
         .start-card-play {
           position: relative;
@@ -2281,14 +2283,32 @@ export default function Home() {
           overflow: hidden;
           background: linear-gradient(180deg, #8a78d9 0%, #b7896d 24%, #d69a3a 56%, #f1d56b 78%, #1a1a6f 100%);
           background-size: 180% 180%;
-          animation: cardPlayFlow 9s ease-in-out infinite;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 12px 30px rgba(0,0,0,.22);
+          animation: cardPlayFlow 7s ease-in-out infinite;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 16px 32px rgba(0,0,0,.24);
           border: 1px solid rgba(255,255,255,.08);
+          transition: transform .26s ease-out, box-shadow .26s ease-out, filter .26s ease-out;
+          transform-style: preserve-3d;
+          filter: saturate(1.08);
+        }
+        .start-card-play::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background:
+            radial-gradient(circle at 50% 78%, rgba(255,235,143,.34), transparent 42%),
+            linear-gradient(180deg, rgba(255,255,255,.18), transparent 30%);
+          pointer-events: none;
+          mix-blend-mode: screen;
         }
         .start-card-play-desktop {
           width: 84px;
           min-width: 84px;
-          border-radius: 24px;
+          border-radius: 26px;
+          min-height: 150px;
+        }
+        .start-card:hover .start-card-play-desktop {
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 22px 44px rgba(12,20,50,.30);
+          filter: saturate(1.16) brightness(1.02);
         }
         .start-card-play-mobile {
           display: none;
@@ -2296,9 +2316,9 @@ export default function Home() {
         .start-card-play-triangle {
           width: 0;
           height: 0;
-          border-left: 28px solid #0b1d3a;
-          border-top: 18px solid transparent;
-          border-bottom: 18px solid transparent;
+          border-left: 26px solid #0b1d3a;
+          border-top: 17px solid transparent;
+          border-bottom: 17px solid transparent;
           margin-left: 6px;
           filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
         }
@@ -2399,11 +2419,8 @@ export default function Home() {
           .stage-rotate-cue-right { margin-left: 0; }
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
-          .start-cards-row {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-          }
-          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 86px; gap: 12px; }
+          .start-cards-row { grid-template-columns: 1fr; }
+          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 88px; gap: 12px; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2628,11 +2645,14 @@ export default function Home() {
             box-shadow: none;
             overflow: hidden;
           }
+          .start-card-inner picture {
+            aspect-ratio: 1.26 / 1;
+          }
           .start-card-frame {
             display: block;
             width: 100%;
-            height: auto;
-            object-fit: contain;
+            height: 100%;
+            object-fit: cover;
             object-position: center;
             border-radius: 24px;
           }
@@ -2641,29 +2661,29 @@ export default function Home() {
           }
           .start-card-title-chip { display: none; }
           .start-card-onrec .start-card-price-float {
-            right: 4.6%;
-            bottom: 10.2%;
+            right: 4.8%;
+            bottom: 10.4%;
             top: auto;
-            font-size: clamp(32px, 10.4vw, 58px);
+            font-size: clamp(30px, 9.8vw, 54px);
           }
           .start-card-playground .start-card-price-float {
             right: 5%;
-            top: 20%;
+            top: 18.6%;
             bottom: auto;
-            font-size: clamp(32px, 10.4vw, 58px);
+            font-size: clamp(30px, 9.8vw, 54px);
           }
           .start-card-play-desktop { display: none; }
           .start-card-play-mobile {
             display: flex;
             width: 100%;
-            min-height: 104px;
-            border-radius: 24px;
+            min-height: 88px;
+            border-radius: 22px;
           }
           .start-card-play-triangle {
-            border-left-width: 28px;
-            border-top-width: 18px;
-            border-bottom-width: 18px;
-            margin-left: 6px;
+            border-left-width: 24px;
+            border-top-width: 15px;
+            border-bottom-width: 15px;
+            margin-left: 4px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,
