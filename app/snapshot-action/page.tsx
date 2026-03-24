@@ -455,7 +455,7 @@ const initialAnswers: Answers = {
     peaksReason: "",
     lowsReason: "",
   },
-  positionText: { text: "", stages: [] },
+  positionText: { text: "", stages: [], customStages: [] },
   geo: { physical: "", sales: "" },
   team: [createEmptyTeamMember()],
   interaction: {
@@ -655,7 +655,10 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     }
 
     case "positionText":
-      return textLength(value?.text) >= 80 && (value?.stages?.length ?? 0) > 0
+      return (
+        textLength(value?.text) >= 80 &&
+        ((value?.stages?.length ?? 0) + (value?.customStages?.length ?? 0) > 0)
+      )
         ? 100
         : 0;
 
@@ -906,11 +909,13 @@ function TagField({
   value,
   baseTags,
   onChange,
+  single = false,
 }: {
   label?: string;
   value: { selected: string[]; custom: string[] };
   baseTags: string[];
   onChange: (next: { selected: string[]; custom: string[] }) => void;
+  single?: boolean;
 }) {
   const [isAdding, setIsAdding] = useState(false);
   const [customValue, setCustomValue] = useState("");
@@ -927,26 +932,31 @@ function TagField({
       return;
     }
     onChange({
-      selected,
-      custom: [...allCustom, next],
+      selected: single ? [] : selected,
+      custom: single ? [next] : [...allCustom, next],
     });
     setCustomValue("");
     setIsAdding(false);
   }
 
   function toggleBase(tag: string) {
+    const isActive = selected.includes(tag);
     onChange({
-      selected: selected.includes(tag)
-        ? selected.filter((t) => t !== tag)
-        : [...selected, tag],
-      custom: allCustom,
+      selected: single
+        ? isActive
+          ? []
+          : [tag]
+        : isActive
+          ? selected.filter((t) => t !== tag)
+          : [...selected, tag],
+      custom: single && !isActive ? [] : allCustom,
     });
   }
 
   function toggleCustom(tag: string) {
     onChange({
-      selected,
-      custom: allCustom.filter((t) => t !== tag),
+      selected: single ? [] : selected,
+      custom: single ? [] : allCustom.filter((t) => t !== tag),
     });
   }
 
@@ -1760,12 +1770,17 @@ function renderInput(
           <div className="space-y-4">
             <TagField
               label="Стадия бизнеса"
-              value={{ selected: current.stages ?? [], custom: [] }}
+              value={{
+                selected: current.stages ?? [],
+                custom: current.customStages ?? [],
+              }}
               baseTags={BUSINESS_STAGE_TAGS}
+              single
               onChange={(next) =>
                 setAnswer(question.id, {
                   ...current,
                   stages: next.selected,
+                  customStages: next.custom,
                 })
               }
             />
