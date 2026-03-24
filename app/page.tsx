@@ -2189,12 +2189,12 @@ export default function Home() {
           height: auto;
           overflow: visible;
           max-width: none;
-          margin-top: 18px;
+          margin-top: 28px;
         }
         .start-cards-row {
           display: grid;
           grid-template-columns: 1fr;
-          gap: 28px;
+          gap: 24px;
           width: 100%;
           align-items: start;
         }
@@ -2206,9 +2206,9 @@ export default function Home() {
         }
         .start-card-media-wrap {
           display: grid;
-          grid-template-columns: minmax(0,1fr) 164px;
+          grid-template-columns: minmax(0,1fr) 124px;
           align-items: stretch;
-          gap: 22px;
+          gap: 18px;
           width: 100%;
         }
         .start-card-inner {
@@ -2220,17 +2220,19 @@ export default function Home() {
           transform-style: preserve-3d;
           transition: transform .24s ease-out;
           box-shadow: none;
-          min-height: 0;
+          min-height: 320px;
+          aspect-ratio: 1.55 / 1;
           height: auto;
         }
         .start-card-inner picture {
           display: block;
           width: 100%;
+          height: 100%;
         }
         .start-card-frame {
           width: 100%;
-          height: auto;
-          object-fit: contain;
+          height: 100%;
+          object-fit: cover;
           object-position: center;
           opacity: 1;
           border-radius: 34px;
@@ -2259,14 +2261,14 @@ export default function Home() {
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
         .start-card-onrec .start-card-price-float {
-          right: 5.2%;
-          bottom: 10.8%;
-          font-size: clamp(50px, 4.6vw, 96px);
+          right: 5.6%;
+          bottom: 12.8%;
+          font-size: clamp(42px, 4.1vw, 82px);
         }
         .start-card-playground .start-card-price-float {
-          right: 5.4%;
-          top: 17.8%;
-          font-size: clamp(50px, 4.6vw, 96px);
+          right: 5.2%;
+          top: 14.5%;
+          font-size: clamp(42px, 4.1vw, 82px);
         }
         .start-card-play {
           position: relative;
@@ -2282,9 +2284,9 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.08);
         }
         .start-card-play-desktop {
-          width: 164px;
-          min-width: 164px;
-          border-radius: 34px;
+          width: 124px;
+          min-width: 124px;
+          border-radius: 30px;
         }
         .start-card-play-mobile {
           display: none;
@@ -2608,25 +2610,29 @@ export default function Home() {
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; margin-top: 8px; }
-          .start-cards-row { grid-template-columns: 1fr; gap: 18px; }
-          .start-card { flex: none; gap: 14px; }
+          .start-cards-row { grid-template-columns: 1fr; gap: 22px; }
+          .start-card { flex: none; gap: 12px; }
           .start-card-media-wrap {
             grid-template-columns: 1fr;
             gap: 0;
           }
           .start-card-inner {
             min-height: 0;
+            aspect-ratio: 1.18 / 1;
             border-radius: 24px;
             border: none;
             background: transparent;
             box-shadow: none;
             overflow: hidden;
           }
+          .start-card-inner picture {
+            height: 100%;
+          }
           .start-card-frame {
             display: block;
             width: 100%;
-            height: auto;
-            object-fit: contain;
+            height: 100%;
+            object-fit: cover;
             object-position: center;
             border-radius: 24px;
           }
