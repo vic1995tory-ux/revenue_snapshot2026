@@ -1,1270 +1,764 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
-type Tone = "default" | "yellow" | "blue" | "green";
+type SectionId =
+  | "economy"
+  | "clients"
+  | "product"
+  | "positioning"
+  | "structure"
+  | "analytics"
+  | "strategy"
+  | "contact";
 
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
+type MetricCard = {
+  label: string;
+  value: string;
+  note: string;
+  delta?: string;
+};
 
-function Tag({
-  children,
-  tone = "default",
-}: {
-  children: React.ReactNode;
-  tone?: Tone;
-}) {
-  const styles = {
-    default: "border-white/10 bg-white/5 text-white/78",
-    yellow: "border-[#f7d237]/25 bg-[#f7d237]/10 text-[#ffe27a]",
-    blue: "border-[#8aa2ff]/20 bg-[#8aa2ff]/10 text-[#dbe5ff]",
-    green: "border-emerald-300/20 bg-emerald-300/10 text-emerald-200",
+type BulletBlock = {
+  title: string;
+  bullets: string[];
+};
+
+type ResultSection = {
+  id: SectionId;
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  summary: string;
+  status: "stable" | "watch" | "priority";
+  quickStats: { label: string; value: string }[];
+  blocks: BulletBlock[];
+};
+
+type SolutionPanel = {
+  title: string;
+  subtitle: string;
+  lead: string;
+  primaryLever: string;
+  modelShift: string;
+  whyNow: string;
+  strategicPriorities: string[];
+  jtbd: {
+    objective: string;
+    job: string;
+    nextActions: string[];
   };
+};
 
+const topMetrics: MetricCard[] = [
+  {
+    label: "Economic rate",
+    value: "Управляемая",
+    note: "Бизнес держится на спросе, но часть выручки теряется в упаковке и обработке потока.",
+    delta: "+ потенциал",
+  },
+  {
+    label: "Main growth limit",
+    value: "Конверсия + структура",
+    note: "Ограничение роста сидит не только в маркетинге, а в связке продажи → обработка → повторное действие.",
+    delta: "узкое место",
+  },
+  {
+    label: "Priority horizon",
+    value: "6–10 недель",
+    note: "Первые сдвиги должны быть видны быстро, если собрать систему решений в один операционный контур.",
+    delta: "реалистично",
+  },
+];
+
+const solutionPanel: SolutionPanel = {
+  title: "Solution & Practice",
+  subtitle: "Решение собрано из всех блоков диагностики и показывает, куда направлять усилия в первую очередь.",
+  lead:
+    "Ключевая задача — не просто усилить спрос, а перестроить маршрут денег внутри бизнеса: от входящего интереса до повторного дохода и более управляемой маржи.",
+  primaryLever:
+    "Основной рычаг роста — связать канал привлечения, этап продажи и удержание в одну модель, где каждая заявка проходит через понятный сценарий конверсии, а не обрабатывается ситуативно.",
+  modelShift:
+    "Рекомендуемый сдвиг модели — уйти от фрагментарного управления блоками к системе, где продуктовая логика, продажи и операционка работают как единая revenue-механика.",
+  whyNow:
+    "Сейчас это особенно важно, потому что бизнес уже вкладывает время в активность и поток, но недополучает эффект из-за разрыва между спросом, упаковкой решения и последующим сопровождением клиента.",
+  strategicPriorities: [
+    "Собрать один приоритетный путь клиента и убрать ключевые точки трения на пути к положительному опыту.",
+    "Пересобрать предложение вокруг самых маржинальных услуг и сделать их центральными в продажной логике.",
+    "Зафиксировать управленческие контрольные точки: кто принимает решение, по каким данным и в какой момент.",
+  ],
+  jtbd: {
+    objective:
+      "Сделать бизнес более предсказуемым по прибыли и снять зависимость результата от ручного контроля основателя.",
+    job:
+      "Собрать рабочую систему, которая превращает спрос в выручку без потерь на передаче между ролями, хаотичном принятии решений и слабом удержании клиента.",
+    nextActions: [
+      "Определить один главный revenue-сценарий и собрать его в понятную последовательность шагов.",
+      "Сократить лишние действия в продаже и усилить точку, где клиент впервые понимает ценность продукта.",
+      "Разложить ответственность по команде так, чтобы основатель не оставался обязательным узлом в каждом решении.",
+    ],
+  },
+};
+
+const sections: ResultSection[] = [
+  {
+    id: "economy",
+    eyebrow: "01",
+    title: "Экономика",
+    subtitle: "Маржа, выручка, потери и экономическая устойчивость",
+    summary:
+      "Экономическая картина показывает, что выручка уже создаётся, но её качество не полностью контролируется. Видна возможность поднять итоговую эффективность без кратного роста нагрузки.",
+    status: "stable",
+    quickStats: [
+      { label: "Формат оценки", value: "Economic Rate" },
+      { label: "Тип потерь", value: "Структура + конверсия" },
+      { label: "Приоритет", value: "Высокий" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Экономика не выглядит критичной, но уже не даёт бизнесу легко масштабироваться на текущей конструкции.",
+          "Часть потенциала остаётся на столе из-за разницы между входящим спросом и тем, как бизнес его превращает в результат.",
+          "Рост выручки без корректировки внутренней модели может давать больше оборота, но не давать сопоставимого прироста прибыли.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Главное ограничение здесь — не отсутствие движения, а недосбор эффекта с уже существующего движения.",
+          "Рычаг находится в качестве маршрута денег, а не только в объёме усилий команды.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "clients",
+    eyebrow: "02",
+    title: "Клиенты и поток",
+    subtitle: "Спрос, capacity, источники обращений и распределение потока",
+    summary:
+      "По этому блоку ключевой вопрос не в том, есть ли интерес, а в том, насколько управляемо бизнес способен переваривать и распределять входящий поток.",
+    status: "priority",
+    quickStats: [
+      { label: "Сигнал", value: "Есть спрос" },
+      { label: "Риск", value: "Потери при обработке" },
+      { label: "Фокус", value: "Приоритизация канала" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Поток клиентов уже формируется несколькими источниками, но их реальная ценность для бизнеса неравномерна.",
+          "Нагрузка на обработку почти упирается в внутренний capacity, а значит дальше начнётся либо просадка скорости, либо просадка качества.",
+          "Не все каналы должны масштабироваться одинаково: нужен приоритет по марже, скорости сделки и повторному потенциалу.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Здесь важно не просто наливать больше трафика, а определить канал, который приносит наиболее управляемую выручку.",
+          "Если этого не сделать, рост потока будет усиливать хаос, а не результат.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "product",
+    eyebrow: "03",
+    title: "Продукт и продажи",
+    subtitle: "Маржинальные предложения, CJM, retention и сезонность",
+    summary:
+      "В этом блоке видно, где бизнес реально зарабатывает, а где просто поддерживает активность. Главное — собрать продажи вокруг тех решений, которые дают лучший денежный эффект.",
+    status: "priority",
+    quickStats: [
+      { label: "Рычаг", value: "Маржинальный фокус" },
+      { label: "Риск", value: "Размытый путь клиента" },
+      { label: "Задача", value: "Собрать ценность" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Маржинальные продукты должны определять архитектуру продаж сильнее, чем сейчас.",
+          "Путь клиента требует большей связности: ценность должна становиться очевидной раньше и последовательнее.",
+          "Механики удержания есть, но их нужно привязывать к логике повторной выручки, а не держать как дополнительную опцию.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Продажи должны быть выстроены вокруг самых сильных решений, а не вокруг всего каталога сразу.",
+          "Чем короче и яснее путь к положительному опыту, тем лучше бизнес монетизирует уже существующий интерес.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "positioning",
+    eyebrow: "04",
+    title: "Позиционирование",
+    subtitle: "Как бизнес объясняет себя рынку и где находится его фокус",
+    summary:
+      "Позиционирование здесь должно не просто описывать компанию, а сокращать путь от первого контакта до понимания, почему клиенту стоит выбрать именно это решение.",
+    status: "watch",
+    quickStats: [
+      { label: "Состояние", value: "Есть база" },
+      { label: "Пробел", value: "Не хватает резкости" },
+      { label: "Эффект", value: "Влияет на конверсию" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Бизнес считывается, но сообщение можно сделать точнее и ближе к тому, за что клиент реально готов платить.",
+          "Если позиционирование остаётся слишком широким, продажа становится длиннее и дороже.",
+          "География и контекст рынка должны усиливать доверие и понятность предложения, а не оставаться нейтральным описанием.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Позиционирование нужно собирать не вокруг общего описания компании, а вокруг ключевого результата для приоритетного сегмента.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "structure",
+    eyebrow: "05",
+    title: "Структура и процессы",
+    subtitle: "Команда, взаимодействие, напряжение и потери эффективности",
+    summary:
+      "Именно здесь часто прячется скрытый тормоз роста. Даже при хорошем спросе система буксует, если роли, решения и передача информации работают не как единый контур.",
+    status: "priority",
+    quickStats: [
+      { label: "Узкое место", value: "Передача между ролями" },
+      { label: "Риск", value: "Перегруз основателя" },
+      { label: "Эффект", value: "Скорость и качество" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Сильнее всего на рост влияет не отсутствие людей, а качество распределения ответственности.",
+          "Если основатель остаётся обязательным узлом в большом числе решений, масштаб будет упираться в его личный ресурс.",
+          "Потери эффективности обычно возникают в местах, где никто не отвечает за связку между этапами, а не только за свой кусок работы.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Основная задача — убрать скрытые разрывы между ролями и превратить процесс в более предсказуемый маршрут.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "analytics",
+    eyebrow: "06",
+    title: "Аналитика и управление",
+    subtitle: "Какие данные используются и как на их основе принимаются решения",
+    summary:
+      "Этот блок показывает управленческую зрелость: бизнес уже видит часть сигналов, но пока не все решения опираются на единую систему контроля и приоритетов.",
+    status: "watch",
+    quickStats: [
+      { label: "Сигнал", value: "Есть основа" },
+      { label: "Пробел", value: "Нет единого контура" },
+      { label: "Фокус", value: "Управленческие точки" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Часть решений может приниматься по ощущению, а не по зафиксированной логике критериев.",
+          "Даже полезные данные не дают эффекта, если они не встроены в момент принятия решений.",
+          "Важнее не количество метрик, а способность через них видеть, где именно бизнес теряет темп и деньги.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Управление станет сильнее, если зафиксировать несколько контрольных показателей и привязать к ним конкретные решения команды.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "strategy",
+    eyebrow: "07",
+    title: "Стратегия",
+    subtitle: "Цели по прибыли, расходам и горизонты 3 / 6 / 12 месяцев",
+    summary:
+      "Стратегия должна переводить желание роста в ясную последовательность фокусов по времени. Не просто цель на год, а логика движения к ней.",
+    status: "stable",
+    quickStats: [
+      { label: "Горизонт", value: "12 месяцев" },
+      { label: "Фокус", value: "Поэтапная реализация" },
+      { label: "Риск", value: "Слишком широкий план" },
+    ],
+    blocks: [
+      {
+        title: "Что видно сейчас",
+        bullets: [
+          "Цели бизнеса можно усилить, если связать их с одним главным механизмом роста, а не держать как набор параллельных желаний.",
+          "Планы на 3, 6 и 12 месяцев должны идти друг за другом, а не существовать как отдельные абстрактные горизонты.",
+          "Расходы нужно рассматривать не сами по себе, а в привязке к той модели выручки, которую бизнес собирается усиливать.",
+        ],
+      },
+      {
+        title: "Краткий вывод",
+        bullets: [
+          "Главная задача стратегии — задать порядок изменений, чтобы каждый следующий шаг усиливал предыдущий.",
+        ],
+      },
+    ],
+  },
+  {
+    id: "contact",
+    eyebrow: "08",
+    title: "Следующий шаг",
+    subtitle: "Назначение встречи и переход к разбору результатов",
+    summary:
+      "Этот блок переводит диагностику из статуса отчёта в статус практической работы. Здесь клиент выбирает следующий шаг и закрепляет коммуникацию.",
+    status: "stable",
+    quickStats: [
+      { label: "Формат", value: "30 min call" },
+      { label: "Цель", value: "Разбор и приоритеты" },
+      { label: "Статус", value: "Готово к выбору слота" },
+    ],
+    blocks: [
+      {
+        title: "Что здесь будет",
+        bullets: [
+          "Выбор удобного слота для встречи с командой Growth Avenue.",
+          "Короткое описание, что разберём на созвоне и какой результат клиент получит после разговора.",
+          "Фиксация контакта и подтверждение следующего действия без лишних касаний.",
+        ],
+      },
+      {
+        title: "Черновик текста",
+        bullets: [
+          "На встрече мы покажем, где именно бизнес недобирает эффект и какой порядок действий даст наиболее быстрый рывок в управляемости и выручке.",
+          "Вы сможете выбрать удобное время и перейти к практическому разбору без повторного заполнения данных.",
+        ],
+      },
+    ],
+  },
+];
+
+const slotOptions = [
+  { day: "Mon", date: "31 Mar", time: "14:00" },
+  { day: "Tue", date: "01 Apr", time: "15:30" },
+  { day: "Wed", date: "02 Apr", time: "13:00" },
+  { day: "Wed", date: "02 Apr", time: "16:30" },
+];
+
+function GlassCard({ className = "", children }: { className?: string; children: ReactNode }) {
   return (
-    <span
-      className={cn(
-        "inline-flex rounded-full border px-3 py-2 text-sm leading-none",
-        styles[tone]
-      )}
+    <div
+      className={`rounded-[28px] border border-white/10 bg-white/[0.045] shadow-[0_20px_80px_rgba(0,0,0,0.28)] backdrop-blur-[18px] ${className}`}
+      style={{
+        boxShadow:
+          "0 24px 90px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+      }}
     >
       {children}
+    </div>
+  );
+}
+
+function StatusPill({ status }: { status: ResultSection["status"] }) {
+  const map = {
+    stable: {
+      label: "stable",
+      className: "border-emerald-300/20 bg-emerald-300/10 text-emerald-100",
+    },
+    watch: {
+      label: "watch",
+      className: "border-white/10 bg-white/[0.05] text-white/70",
+    },
+    priority: {
+      label: "priority",
+      className: "border-[#f7d237]/25 bg-[#f7d237]/10 text-[#fff0a8]",
+    },
+  } as const;
+
+  return (
+    <span className={`rounded-full border px-3 py-1 text-[10px] uppercase tracking-[0.24em] ${map[status].className}`}>
+      {map[status].label}
     </span>
   );
 }
 
-function SectionShell({
-  id,
-  eyebrow,
-  title,
-  subtitle,
-  children,
+function ExpandableSectionCard({
+  section,
+  open,
+  onToggle,
 }: {
-  id: string;
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
+  section: ResultSection;
+  open: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <section id={id} className="space-y-8">
-      <div>
-        <div className="text-xs uppercase tracking-[0.28em] text-[#f7d237]">
-          {eyebrow}
-        </div>
-        <h2 className="mt-3 text-3xl font-semibold tracking-tight text-white md:text-5xl">
-          {title}
-        </h2>
-        <p className="mt-4 max-w-4xl text-base leading-7 text-white/66 md:text-lg">
-          {subtitle}
-        </p>
-      </div>
-      {children}
-    </section>
-  );
-}
-
-function BlockCard({
-  index,
-  title,
-  children,
-  accent = "default",
-}: {
-  index?: string;
-  title: string;
-  children: React.ReactNode;
-  accent?: "default" | "yellow" | "blue";
-}) {
-  return (
-    <div className="rounded-[30px] border border-white/10 bg-white/5 p-6 backdrop-blur-md md:p-8">
+    <GlassCard className="overflow-hidden p-5 md:p-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          {index ? (
-            <div
-              className={cn(
-                "text-xs uppercase tracking-[0.22em]",
-                accent === "yellow"
-                  ? "text-[#f7d237]"
-                  : accent === "blue"
-                  ? "text-[#cdd8ff]"
-                  : "text-white/38"
-              )}
-            >
-              {index}
+          <div className="mb-3 flex items-center gap-3">
+            <span className="rounded-full border border-white/10 px-2.5 py-1 text-[10px] uppercase tracking-[0.28em] text-white/40">
+              {section.eyebrow}
+            </span>
+            <StatusPill status={section.status} />
+          </div>
+
+          <h3 className="text-xl font-semibold text-white md:text-2xl">{section.title}</h3>
+          <p className="mt-2 max-w-xl text-sm leading-6 text-[#a5aeb2]">{section.subtitle}</p>
+        </div>
+
+        <button
+          type="button"
+          onClick={onToggle}
+          className="shrink-0 rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-xs uppercase tracking-[0.24em] text-white/75 transition hover:border-[#f7d237]/25 hover:bg-[#f7d237]/10 hover:text-[#fff3b2]"
+        >
+          {open ? "Скрыть" : "Открыть"}
+        </button>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-3">
+        {section.quickStats.map((stat) => (
+          <div key={stat.label} className="rounded-2xl border border-white/10 bg-white/[0.03] p-3.5">
+            <div className="text-[10px] uppercase tracking-[0.24em] text-white/35">{stat.label}</div>
+            <div className="mt-2 text-sm font-medium text-white">{stat.value}</div>
+          </div>
+        ))}
+      </div>
+
+      <p className="mt-5 text-sm leading-7 text-white/72">{section.summary}</p>
+
+      {open ? (
+        <div className="mt-6 space-y-4 border-t border-white/8 pt-5">
+          {section.blocks.map((block) => (
+            <div key={block.title} className="rounded-2xl border border-white/8 bg-black/10 p-4 md:p-5">
+              <div className="text-sm font-medium text-[#fff4bf]">{block.title}</div>
+              <div className="mt-3 space-y-2.5 text-sm leading-7 text-white/78">
+                {block.bullets.map((bullet) => (
+                  <div key={bullet} className="flex gap-3">
+                    <span className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
+                    <span>{bullet}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ) : null}
-          <h3 className="mt-2 text-xl font-semibold text-white md:text-2xl">
-            {title}
-          </h3>
+          ))}
         </div>
-      </div>
-      <div className="mt-6">{children}</div>
-    </div>
+      ) : null}
+    </GlassCard>
   );
 }
 
-function MetricTile({
-  label,
-  value,
-  note,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-}) {
-  return (
-    <div className="rounded-[24px] border border-white/10 bg-white/6 p-5">
-      <div className="text-sm text-white/45">{label}</div>
-      <div className="mt-2 text-2xl font-semibold tracking-tight text-white">
-        {value}
-      </div>
-      {note ? <div className="mt-2 text-sm text-white/45">{note}</div> : null}
-    </div>
-  );
-}
-
-function SummaryPanel({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="rounded-[30px] border border-[#f7d237]/20 bg-[linear-gradient(180deg,rgba(247,210,55,0.08),rgba(255,255,255,0.04))] p-6 backdrop-blur-md md:p-8">
-      <div className="text-xs uppercase tracking-[0.24em] text-[#f7d237]">
-        {title}
-      </div>
-      <div className="mt-5">{children}</div>
-    </div>
-  );
-}
-
-function ScaleBar({
-  label,
-  value,
-  leftLabel = "низкий",
-  rightLabel = "высокий",
-}: {
-  label: string;
-  value: number;
-  leftLabel?: string;
-  rightLabel?: string;
-}) {
-  return (
-    <div className="space-y-2">
-      <div className="flex items-end justify-between gap-4">
-        <div className="text-sm text-white/82">{label}</div>
-        <div className="text-sm text-white/44">{value}%</div>
-      </div>
-      <div className="relative h-4 overflow-hidden rounded-full bg-white/7">
-        <div
-          className="absolute left-0 top-0 h-full rounded-full"
-          style={{
-            width: `${value}%`,
-            background:
-              "linear-gradient(90deg, #f7d237 0%, #cfbf5d 34%, #6878b2 68%, #0b1d3a 100%)",
-          }}
-        />
-      </div>
-      <div className="flex justify-between text-xs text-white/34">
-        <span>{leftLabel}</span>
-        <span>{rightLabel}</span>
-      </div>
-    </div>
-  );
-}
-
-function VerticalLoad({
-  label,
-  value,
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <div className="flex min-w-[120px] flex-1 flex-col items-center gap-3">
-      <div className="relative flex h-64 w-full max-w-[132px] items-end overflow-hidden rounded-[26px] border border-white/10 bg-white/6 p-3">
-        <div
-          className="w-full rounded-[18px]"
-          style={{
-            height: `${value}%`,
-            background:
-              "linear-gradient(180deg, #f7d237 0%, #b9af5d 25%, #6678b3 62%, #0b1d3a 100%)",
-            boxShadow: "0 18px 40px rgba(11,29,58,0.45)",
-          }}
-        />
-        <div className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/15 px-2 py-1 text-xs text-white/64">
-          {value}%
-        </div>
-      </div>
-      <div className="text-center text-sm text-white/82">{label}</div>
-    </div>
-  );
-}
-
-function CompareBar({
-  label,
-  before,
-  after,
-  beforeLabel = "до",
-  afterLabel = "после",
-}: {
-  label: string;
-  before: number;
-  after: number;
-  beforeLabel?: string;
-  afterLabel?: string;
-}) {
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-4">
-        <div className="text-sm text-white/82">{label}</div>
-        <div className="flex gap-3 text-xs text-white/42">
-          <span>
-            {beforeLabel}: {before}%
-          </span>
-          <span>
-            {afterLabel}: {after}%
-          </span>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="h-3 overflow-hidden rounded-full bg-white/7">
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${before}%`,
-              background:
-                "linear-gradient(90deg, rgba(247,210,55,0.95) 0%, rgba(146,135,81,0.95) 45%, rgba(74,89,140,0.95) 100%)",
-            }}
-          />
-        </div>
-        <div className="h-3 overflow-hidden rounded-full bg-white/7">
-          <div
-            className="h-full rounded-full"
-            style={{
-              width: `${after}%`,
-              background:
-                "linear-gradient(90deg, rgba(255,226,122,1) 0%, rgba(157,177,255,0.95) 45%, rgba(11,29,58,1) 100%)",
-            }}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function DonutChart({
-  title,
-  centerValue,
-  centerLabel,
-  segments,
-}: {
-  title?: string;
-  centerValue: string;
-  centerLabel: string;
-  segments: ReadonlyArray<{ value: number; color: string; label: string }>;
-}) {
-  const size = 240;
-  const stroke = 22;
+function Ring({ progress, size = 166 }: { progress: number; size?: number }) {
+  const stroke = 10;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
-
-  let offset = 0;
+  const offset = circumference * (1 - progress / 100);
 
   return (
-    <div className="flex flex-col items-center">
-      {title ? <div className="mb-5 text-sm text-white/55">{title}</div> : null}
-
-      <div className="relative h-[240px] w-[240px]">
-        <svg viewBox={`0 0 ${size} ${size}`} className="h-full w-full -rotate-90">
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            fill="none"
-            stroke="rgba(255,255,255,0.08)"
-            strokeWidth={stroke}
-          />
-          {segments.map((segment, i) => {
-            const segmentLength = (segment.value / 100) * circumference;
-            const circle = (
-              <circle
-                key={i}
-                cx={size / 2}
-                cy={size / 2}
-                r={radius}
-                fill="none"
-                stroke={segment.color}
-                strokeWidth={stroke}
-                strokeLinecap="round"
-                strokeDasharray={`${segmentLength} ${circumference}`}
-                strokeDashoffset={-offset}
-              />
-            );
-            offset += segmentLength + 8;
-            return circle;
-          })}
-        </svg>
-
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <div className="text-xs uppercase tracking-[0.24em] text-white/42">
-            {centerLabel}
-          </div>
-          <div className="mt-2 text-4xl font-semibold text-white">
-            {centerValue}
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-6 flex flex-wrap justify-center gap-2">
-        {segments.map((segment) => (
-          <span
-            key={segment.label}
-            className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/74"
-          >
-            <span
-              className="mr-2 inline-block h-2.5 w-2.5 rounded-full"
-              style={{ background: segment.color }}
-            />
-            {segment.label}
-          </span>
-        ))}
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} className="-rotate-90">
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="rgba(255,255,255,0.08)"
+          strokeWidth={stroke}
+          fill="none"
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="rgba(247,210,55,0.95)"
+          strokeWidth={stroke}
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          fill="none"
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+        <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">readiness</div>
+        <div className="mt-1 text-4xl font-semibold text-white">{Math.round(progress)}%</div>
       </div>
     </div>
   );
 }
 
-function ImpactBars({
-  items,
-}: {
-  items: ReadonlyArray<{ label: string; value: number; note?: string }>;
-}) {
-  return (
-    <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-      {items.map((item) => (
-        <div
-          key={item.label}
-          className="flex min-w-[110px] flex-1 flex-col items-center gap-3"
-        >
-          <div className="relative flex h-64 w-full max-w-[124px] items-end overflow-hidden rounded-[26px] border border-white/10 bg-white/6 p-3">
-            <div
-              className="w-full rounded-[18px]"
-              style={{
-                height: `${item.value}%`,
-                background:
-                  "linear-gradient(180deg, #ffe27a 0%, #f7d237 18%, #8297db 60%, #0b1d3a 100%)",
-              }}
-            />
-            <div className="absolute right-3 top-3 rounded-full border border-white/10 bg-black/15 px-2 py-1 text-xs text-white/64">
-              {item.value}%
-            </div>
-          </div>
-          <div className="text-center text-sm text-white/82">{item.label}</div>
-          {item.note ? (
-            <div className="text-center text-xs text-white/42">{item.note}</div>
-          ) : null}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function TimelinePhase({
-  phase,
-  period,
+function SlideOver({
+  open,
   title,
-  actions,
+  children,
+  onClose,
 }: {
-  phase: string;
-  period: string;
+  open: boolean;
   title: string;
-  actions: ReadonlyArray<string>;
+  children: ReactNode;
+  onClose: () => void;
 }) {
+  if (!open) return null;
+
   return (
-    <div className="rounded-[28px] border border-white/10 bg-white/5 p-5 md:p-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="text-xs uppercase tracking-[0.22em] text-[#f7d237]">
-          {phase}
-        </div>
-        <div className="text-xs text-white/45">{period}</div>
-      </div>
-      <div className="mt-3 text-lg font-medium text-white">{title}</div>
-      <div className="mt-4 space-y-3">
-        {actions.map((action) => (
-          <div
-            key={action}
-            className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm leading-6 text-white/78"
-          >
-            {action}
+    <div className="fixed inset-0 z-50">
+      <div className="absolute inset-0 bg-[#061121]/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="absolute right-0 top-0 h-full w-full max-w-[760px] overflow-y-auto border-l border-white/10 bg-[#09182f]/92 px-5 py-6 shadow-[0_0_60px_rgba(0,0,0,0.35)] backdrop-blur-2xl md:px-7">
+        <div className="mx-auto max-w-[620px]">
+          <div className="mb-6 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-[11px] uppercase tracking-[0.28em] text-white/35">Revenue Snapshot</div>
+              <h2 className="mt-2 text-2xl font-semibold text-white md:text-3xl">{title}</h2>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs uppercase tracking-[0.24em] text-white/70 hover:border-[#f7d237]/25 hover:text-[#fff0a8]"
+            >
+              Закрыть
+            </button>
           </div>
-        ))}
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
-type HorizonKey = "3m" | "6m" | "12m";
+export default function RevenueSnapshotResultsPage() {
+  const [openSection, setOpenSection] = useState<SectionId | null>(null);
+  const [solutionOpen, setSolutionOpen] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
-export default function ResultsPage() {
-  const [horizon, setHorizon] = useState<HorizonKey>("6m");
-
-  const horizonData = useMemo(() => {
-    const map = {
-      "3m": {
-        metrics: [
-          { label: "Конверсия lead → payment", before: 8, after: 14 },
-          { label: "Обработанный спрос", before: 28, after: 46 },
-          { label: "Предсказуемость выручки", before: 22, after: 38 },
-          { label: "Повторные продажи", before: 18, after: 26 },
-        ],
-        impact: [
-          { label: "Выручка", value: 46, note: "ранний эффект" },
-          { label: "Нагрузка команды", value: 39, note: "меньше ручной перегрузки" },
-          { label: "Скорость сделки", value: 44, note: "быстрее вход" },
-          { label: "Управляемость", value: 41, note: "лучше видимость" },
-        ],
-      },
-      "6m": {
-        metrics: [
-          { label: "Конверсия lead → payment", before: 8, after: 18 },
-          { label: "Обработанный спрос", before: 28, after: 61 },
-          { label: "Предсказуемость выручки", before: 22, after: 55 },
-          { label: "Повторные продажи", before: 18, after: 37 },
-        ],
-        impact: [
-          { label: "Выручка", value: 63, note: "прямой рост" },
-          { label: "Нагрузка команды", value: 52, note: "снимается bottleneck" },
-          { label: "Скорость сделки", value: 58, note: "сильнее упаковка" },
-          { label: "Управляемость", value: 61, note: "появляется система" },
-        ],
-      },
-      "12m": {
-        metrics: [
-          { label: "Конверсия lead → payment", before: 8, after: 24 },
-          { label: "Обработанный спрос", before: 28, after: 76 },
-          { label: "Предсказуемость выручки", before: 22, after: 73 },
-          { label: "Повторные продажи", before: 18, after: 51 },
-        ],
-        impact: [
-          { label: "Выручка", value: 79, note: "накопительный эффект" },
-          { label: "Нагрузка команды", value: 66, note: "устойчивое снижение перегруза" },
-          { label: "Скорость сделки", value: 68, note: "короче путь клиента" },
-          { label: "Управляемость", value: 77, note: "модель масштабируется" },
-        ],
-      },
-    } as const;
-
-    return map[horizon];
-  }, [horizon]);
+  const readiness = useMemo(() => 84, []);
 
   return (
-    <main className="min-h-screen bg-[#07152b] text-white">
-      <div
-        className="pointer-events-none fixed inset-0 opacity-95"
-        style={{
-          background:
-            "radial-gradient(circle at 12% 18%, rgba(247,210,55,0.14), transparent 22%), radial-gradient(circle at 82% 16%, rgba(255,226,122,0.08), transparent 18%), radial-gradient(circle at 76% 80%, rgba(121,143,216,0.16), transparent 28%), linear-gradient(180deg, #0b1d3a 0%, #08162b 100%)",
-        }}
-      />
+    <div
+      className="min-h-screen text-white"
+      style={{
+        background:
+          "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
+      }}
+    >
+      <style jsx global>{`
+        @keyframes rs-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(18px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
 
-      <div className="relative mx-auto max-w-[1480px] px-6 py-8 md:px-8 lg:px-10">
-        <div className="mb-8 rounded-[34px] border border-white/10 bg-white/5 p-6 backdrop-blur-md md:p-8">
-          <div className="text-xs uppercase tracking-[0.28em] text-[#f7d237]">
-            Revenue Snapshot • Full Results
-          </div>
-          <h1 className="mt-4 text-3xl font-semibold tracking-tight md:text-6xl">
-            ECONOMIC RATE / GROWTH LIMIT / SOLUTION / JTBD
-          </h1>
-          <p className="mt-4 max-w-5xl text-base leading-7 text-white/68 md:text-lg">
-            Страница выстроена как аналитический results dashboard: сначала
-            диагностика текущего состояния, затем ключевое решение, затем
-            дорожная карта внедрения. Логика чтения — сверху вниз, от причины к
-            действию и ожидаемому эффекту.
-          </p>
+        .rs-fade-up {
+          animation: rs-fade-up 0.55s ease forwards;
+        }
+      `}</style>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            <a
-              href="#economic-rate"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/78"
-            >
-              Economic Rate
-            </a>
-            <a
-              href="#growth-limit"
-              className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/78"
-            >
-              Growth Limit
-            </a>
-            <a
-              href="#solution"
-              className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#ffe27a]"
-            >
-              Solution
-            </a>
-            <a
-              href="#jtbd"
-              className="rounded-full border border-[#8aa2ff]/20 bg-[#8aa2ff]/10 px-4 py-2 text-sm text-[#dbe5ff]"
-            >
-              JTBD
-            </a>
+      <div className="mx-auto max-w-[1520px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
+        <GlassCard className="mb-8 p-5 md:p-7">
+          <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div className="rs-fade-up">
+              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
+                <span className="text-[#f7d237]">●</span>
+                Revenue Snapshot — Diagnostic Output
+              </div>
+
+              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
+                Результат диагностики по структуре Snapshot Action
+              </h1>
+
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
+                Ниже собран предварительный вывод по ключевым блокам бизнеса.
+                Каждая карточка отражает краткое заключение по отдельному
+                направлению, а в hero-блоке вынесен общий практический вектор:
+                что менять в модели и к какому job-to-be-done вести компанию.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3 pt-1 text-xs text-white/45">
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Диагностических блоков: 8
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Формат: output → practice
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Статус: draft structure
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Delivery: results page
+                </span>
+              </div>
+            </div>
+
+            <GlassCard className="p-6 md:p-7">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">
+                  Solution & practice
+                </div>
+
+                <div className="mt-6">
+                  <Ring progress={readiness} size={172} />
+                </div>
+
+                <div className="mt-5 text-2xl font-semibold text-[#fefefe]">
+                  Общее решение по диагностике
+                </div>
+
+                <p className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">
+                  Здесь собран главный рычаг роста, практический фокус и
+                  сквозной JTBD, который связывает все блоки в одну систему.
+                </p>
+
+                <button
+                  type="button"
+                  onClick={() => setSolutionOpen(true)}
+                  className="mt-6 w-full rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-5 py-3 text-sm font-medium text-[#fff0a8] transition hover:bg-[#f7d237]/14"
+                >
+                  Открыть solution & practice
+                </button>
+              </div>
+            </GlassCard>
           </div>
+        </GlassCard>
+
+        <div className="mb-8 grid gap-4 lg:grid-cols-3">
+          {topMetrics.map((item) => (
+            <GlassCard key={item.label} className="p-5 md:p-6">
+              <div className="text-[11px] uppercase tracking-[0.28em] text-white/35">{item.label}</div>
+              <div className="mt-3 flex items-end justify-between gap-4">
+                <div className="text-2xl font-semibold text-white">{item.value}</div>
+                {item.delta ? (
+                  <div className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-[#fff0a8]">
+                    {item.delta}
+                  </div>
+                ) : null}
+              </div>
+              <p className="mt-3 text-sm leading-6 text-[#a5aeb2]">{item.note}</p>
+            </GlassCard>
+          ))}
         </div>
 
-        <div className="space-y-16">
-          <SectionShell
-            id="economic-rate"
-            eyebrow="01"
-            title="ECONOMIC RATE"
-            subtitle="Сводный анализ текущей экономической модели бизнеса с выявлением ключевых зон недополученной выручки и потенциала роста."
-          >
-            <div className="rounded-[30px] border border-white/10 bg-white/5 p-6 backdrop-blur-md md:p-8">
-              <div className="text-sm uppercase tracking-[0.22em] text-white/35">
-                Executive Summary
-              </div>
-              <div className="mt-4 max-w-5xl text-base leading-7 text-white/78">
-                Экономика с упором на продуктовую трансформацию, но с
-                недоиспользованным спросом и перегрузом системы. Текущая модель
-                сочетает консалтинг и продуктовые решения, однако бизнес теряет
-                значительный объём выручки из-за ограничения по обработке и
-                отсутствия масштабируемой системы конверсии.
-              </div>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-[1.12fr_0.88fr]">
-              <BlockCard index="1.1" title="Спрос vs обработка" accent="yellow">
-                <div className="flex flex-wrap gap-2">
-                  <Tag tone="yellow">Telegram</Tag>
-                  <Tag tone="yellow">Органика</Tag>
-                  <Tag tone="yellow">Личный бренд</Tag>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  <MetricTile
-                    label="Inbound"
-                    value="120–180 / месяц"
-                    note="входящий поток лидов"
-                  />
-                  <MetricTile
-                    label="Capacity"
-                    value="20–40 / месяц"
-                    note="обработка командой"
-                  />
-                  <MetricTile
-                    label="Demand Gap"
-                    value="3–5x"
-                    note="разрыв между спросом и capacity"
-                  />
-                </div>
-
-                <div className="mt-6 space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Входящий спрос уже сформирован и идёт из нескольких касаний,
-                    но текущая система не успевает превращать этот поток в
-                    выручку с сопоставимой скоростью.
-                  </p>
-                  <p>
-                    Основная проблема здесь не в генерации интереса, а в
-                    ограниченной способности команды пропускать через себя этот
-                    объём без потери качества и без задержек на ручных этапах.
-                  </p>
-                  <p className="text-white">
-                    Вывод: перегруз системы → теряется 60–80% потенциальной
-                    выручки.
-                  </p>
-                </div>
-              </BlockCard>
-
-              <BlockCard index="1.2" title="Конверсия" accent="yellow">
-                <DonutChart
-                  centerValue="5–10%"
-                  centerLabel="lead → оплата"
-                  segments={[
-                    { value: 8, color: "#ffe27a", label: "оплата" },
-                    { value: 52, color: "#8aa2ff", label: "сложность продукта" },
-                    { value: 40, color: "#f7d237", label: "нет быстрого входа" },
-                  ]}
-                />
-
-                <div className="mt-6 flex flex-wrap gap-2">
-                  <Tag>Сложность продукта</Tag>
-                  <Tag>Отсутствие быстрого входа</Tag>
-                  <Tag>Ручная обработка</Tag>
-                </div>
-
-                <p className="mt-6 text-base leading-7 text-white/76">
-                  Основной отвал возникает до оплаты: пользователю требуется
-                  слишком долго понять формат, ценность и следующую точку входа.
-                  Из-за этого часть спроса не доходит до транзакции, хотя
-                  интерес к продукту уже есть.
-                </p>
-
-                <p className="mt-4 text-white">
-                  Вывод: потери в конверсии происходят на этапе входа.
-                </p>
-              </BlockCard>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-2">
-              <BlockCard index="1.3" title="Структура дохода" accent="yellow">
-                <div className="space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Основной объём дохода по-прежнему завязан на консалтинг и
-                    стратегическую работу. Это даёт высокий средний чек, но
-                    делает модель тяжёлой в операционном обслуживании и почти
-                    всегда требует прямого участия фаундера.
-                  </p>
-                  <p>
-                    Новые продукты — Snapshot как low-ticket entry point и
-                    Calendar как mid-ticket уровень — уже создают зачаток
-                    продуктовой лестницы, но пока не перетягивают на себя
-                    значимую часть монетизации.
-                  </p>
-                  <p className="text-white">
-                    Вывод: структура дохода смещена в сторону высокоёмкого
-                    продукта, что ограничивает масштабирование.
-                  </p>
-                </div>
-              </BlockCard>
-
-              <BlockCard index="1.4" title="Удержание" accent="yellow">
-                <div className="space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Повторные продажи присутствуют: часть клиентов естественно
-                    переходит из стратегической диагностики во внедрение и более
-                    глубокую работу. Это подтверждает ценность основного оффера и
-                    наличие доверия к результату.
-                  </p>
-                  <p>
-                    При этом системного retention-слоя пока нет. У бизнеса не
-                    закреплена регулярная модель повторного касания через
-                    подписку, сервисную линейку, recurring-формат или
-                    стандартизированный post-purchase маршрут.
-                  </p>
-                  <p className="text-white">
-                    Вывод: основная потеря здесь — недораскрытый LTV.
-                  </p>
-                </div>
-              </BlockCard>
-            </div>
-
-            <SummaryPanel title="Итоговый вывод по блоку">
-              <div className="grid gap-6 md:grid-cols-2">
-                <div>
-                  <div className="text-sm text-white/45">Тип потерь</div>
-                  <div className="mt-2 text-lg font-medium text-white">
-                    Processing constraint + conversion gap + retention gap
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-white/45">Главное ограничение</div>
-                  <div className="mt-2 text-lg font-medium text-white">
-                    Бизнес упирается не в спрос, а в способность его обработать
-                    и конвертировать.
-                  </div>
-                </div>
-              </div>
-            </SummaryPanel>
-          </SectionShell>
-
-          <SectionShell
-            id="growth-limit"
-            eyebrow="02"
-            title="GROWTH LIMIT"
-            subtitle="Определение системных ограничений, которые сдерживают масштабирование и влияют на выручку."
-          >
-            <div className="rounded-[30px] border border-white/10 bg-white/5 p-6 backdrop-blur-md md:p-8">
-              <div className="text-sm uppercase tracking-[0.22em] text-white/35">
-                Key Conclusions
-              </div>
-              <div className="mt-4 max-w-5xl text-base leading-7 text-white/78">
-                Рост ограничен перегрузом фаундера и отсутствием масштабируемой
-                воронки. Ограничение роста находится не на уровне интереса
-                рынка, а на уровне внутренней пропускной способности системы.
-              </div>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-              <BlockCard index="2.1" title="Загрузка системы" accent="yellow">
-                <div className="space-y-7">
-                  <ScaleBar label="Demand" value={88} />
-                  <ScaleBar label="Capacity" value={26} />
-                </div>
-
-                <p className="mt-8 text-base leading-7 text-white/76">
-                  Система получает высокий уровень входящего интереса, но
-                  текущая операционная мощность остаётся заметно ниже. Из-за
-                  этого рост уже сейчас упирается в исполнение, а не в рынок.
-                </p>
-
-                <p className="mt-4 text-white">Вывод: система перегружена.</p>
-              </BlockCard>
-
-              <BlockCard
-                index="2.2"
-                title="Структура команды и зависимость от фаундера"
-                accent="yellow"
-              >
-                <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-                  <VerticalLoad label="Стратегия" value={92} />
-                  <VerticalLoad label="Продажи" value={84} />
-                  <VerticalLoad label="Продукт" value={79} />
-                </div>
-
-                <p className="mt-8 text-base leading-7 text-white/76">
-                  Основные критичные функции по-прежнему тяготеют к фаундеру.
-                  Бизнес зависит от одного центра принятия решений и от одного
-                  носителя экспертизы сразу в нескольких точках создания
-                  выручки.
-                </p>
-
-                <p className="mt-4 text-white">
-                  Вывод: узкое место системы — фаундер.
-                </p>
-              </BlockCard>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-              <BlockCard index="2.3" title="Процессы" accent="yellow">
-                <div className="flex flex-wrap gap-2">
-                  <Tag>Маркетинг</Tag>
-                  <Tag>Продажи</Tag>
-                  <Tag>Продукт</Tag>
-                  <Tag>Ручные переходы</Tag>
-                  <Tag>Нет единой логики маршрута</Tag>
-                  <Tag>Нет стандартизированной воронки</Tag>
-                </div>
-
-                <div className="mt-6 space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Связка между маркетингом, продажами и продуктом существует,
-                    но пока не собрана в одну предсказуемую систему. Каждый
-                    следующий этап требует дополнительных ручных усилий и
-                    объяснений.
-                  </p>
-                  <p className="text-white">
-                    Вывод: разрыв возникает в передаче лида в выручку.
-                  </p>
-                </div>
-              </BlockCard>
-
-              <BlockCard index="2.4" title="Каналы" accent="yellow">
-                <div>
-                  <div className="text-sm text-white/45">Основной драйвер</div>
-                  <div className="mt-2 text-2xl font-semibold text-white">
-                    Личный бренд / органика
-                  </div>
-                </div>
-
-                <div className="mt-8 grid gap-6 md:grid-cols-2">
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Возможности
-                    </div>
-                    <ul className="mt-4 space-y-3 text-sm leading-6 text-white/76">
-                      <li>Высокое доверие к экспертности</li>
-                      <li>Тёплый вход и короткий путь до интереса</li>
-                      <li>Сильная органическая конверсия в диалог</li>
-                      <li>Низкая стоимость первичного внимания</li>
-                    </ul>
-                  </div>
-
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Ограничения
-                    </div>
-                    <ul className="mt-4 space-y-3 text-sm leading-6 text-white/76">
-                      <li>Зависимость от видимости и энергии фаундера</li>
-                      <li>Слабая масштабируемость без системы дистрибуции</li>
-                      <li>Высокий риск просадки при выпадении канала</li>
-                      <li>Трудно отделить бренд от операционной нагрузки</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <p className="mt-6 text-base leading-7 text-white/76">
-                  Канал силён как источник доверия и первичного спроса, но опасен
-                  как единственная опора роста. Пока бизнес не диверсифицирует
-                  систему привлечения, масштаб будет ограничен ресурсом одного
-                  человека.
-                </p>
-              </BlockCard>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-2">
-              <BlockCard index="2.5" title="Аналитика" accent="yellow">
-                <div className="space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Управление уже частично опирается на данные, но сквозной
-                    системы, в которой в реальном времени видны unit-экономика,
-                    загрузка, конверсия по этапам и эффективность каналов, пока
-                    нет.
-                  </p>
-                  <p>
-                    Из-за этого часть решений остаётся реактивной: проблема
-                    распознаётся по напряжению внутри системы, а не по ранним
-                    количественным сигналам.
-                  </p>
-                  <p className="text-white">
-                    Вывод: решения принимаются в смешанной модели — между
-                    данными и интуицией.
-                  </p>
-                </div>
-              </BlockCard>
-
-              <SummaryPanel title="Итог блока">
-                <div className="space-y-5">
-                  <div>
-                    <div className="text-sm text-white/45">Главный bottleneck</div>
-                    <div className="mt-2 text-lg font-medium text-white">
-                      Processing capacity + founder dependency
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-white/45">Тип ограничения</div>
-                    <div className="mt-2 text-lg font-medium text-white">
-                      Операционно-управленческое
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-sm text-white/45">
-                      Где теряются деньги
-                    </div>
-                    <div className="mt-2 text-lg font-medium text-white">
-                      Между входящим спросом и возможностью его обработать.
-                    </div>
-                  </div>
-                </div>
-              </SummaryPanel>
-            </div>
-          </SectionShell>
-
-          <SectionShell
-            id="solution"
-            eyebrow="03"
-            title="SOLUTION"
-            subtitle="Определение ключевого изменения в модели бизнеса, которое способно дать максимальный эффект на выручку, прибыль и управляемость бизнеса в текущем контексте."
-          >
-            <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-              <BlockCard
-                index="3.1"
-                title="Primary Growth Lever"
-                accent="blue"
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Tag tone="yellow">Snapshot as entry point</Tag>
-                  <Tag tone="blue">standardized funnel</Tag>
-                  <Tag>automation layer</Tag>
-                </div>
-
-                <div className="mt-6 space-y-4 text-base leading-7 text-white/76">
-                  <p>
-                    Главный рычаг роста — перестройка входа в модель. Текущий
-                    спрос нужно переводить в стандартизированный продуктовый
-                    маршрут, где первый шаг понятен, быстрый и масштабируемый.
-                  </p>
-                  <p className="text-white">
-                    Приоритет: продуктизировать вход и убрать зависимость первой
-                    конверсии от ручного объяснения ценности.
-                  </p>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  <MetricTile label="Рычаг" value="Entry product" />
-                  <MetricTile label="Скорость эффекта" value="High" />
-                  <MetricTile label="Сложность запуска" value="Medium" />
-                </div>
-              </BlockCard>
-
-              <BlockCard
-                index="3.2 / 3.3"
-                title="Revenue Loss Source + Model Change Recommendation"
-                accent="blue"
-              >
-                <div className="space-y-5 text-base leading-7 text-white/76">
-                  <p>
-                    Главная точка потери денег — участок между входящим
-                    интересом и первой оплатой. Это не просто низкая конверсия,
-                    а следствие текущей логики модели: слишком много ручного
-                    сопровождения в моменте, где должен работать понятный и
-                    повторяемый путь.
-                  </p>
-                  <p>
-                    Поэтому менять нужно не отдельный симптом, а саму логику:
-                    <span className="text-white">
-                      {" "}
-                      с “консалтинг-first” на “funnel-first”.
-                    </span>
-                  </p>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm text-white/42">Сейчас</div>
-                    <div className="mt-2 text-lg font-medium text-white">
-                      Консультация как основной вход
-                    </div>
-                    <div className="mt-3 text-sm leading-6 text-white/60">
-                      Высокая нагрузка, длинный путь до оплаты, зависимость от
-                      фаундера.
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-[#f7d237]/20 bg-[#f7d237]/7 p-5">
-                    <div className="text-sm text-white/42">Нужно</div>
-                    <div className="mt-2 text-lg font-medium text-white">
-                      Snapshot → Calendar → Strategy
-                    </div>
-                    <div className="mt-3 text-sm leading-6 text-white/60">
-                      Быстрый вход, выше конверсия, предсказуемая передача
-                      клиента вверх по модели.
-                    </div>
-                  </div>
-                </div>
-              </BlockCard>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-[1.02fr_0.98fr]">
-              <BlockCard
-                index="3.4 / 3.5"
-                title="Strategic Priority + Business Impact"
-                accent="blue"
-              >
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { key: "3m", label: "3 months" },
-                    { key: "6m", label: "6 months" },
-                    { key: "12m", label: "12 months" },
-                  ].map((tab) => {
-                    const active = horizon === tab.key;
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        onClick={() => setHorizon(tab.key as HorizonKey)}
-                        className={cn(
-                          "rounded-full border px-4 py-2 text-sm transition",
-                          active
-                            ? "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#ffe27a]"
-                            : "border-white/10 bg-white/5 text-white/72 hover:bg-white/8"
-                        )}
-                      >
-                        {tab.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="mt-6 space-y-5">
-                  {horizonData.metrics.map((item) => (
-                    <CompareBar
-                      key={item.label}
-                      label={item.label}
-                      before={item.before}
-                      after={item.after}
-                    />
-                  ))}
-                </div>
-
-                <div className="mt-8 rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/72">
-                  На выбранном горизонте видно, как меняется не одна метрика, а
-                  целый набор взаимосвязанных показателей: конверсия, обработка
-                  спроса, управляемость и повторные продажи.
-                </div>
-              </BlockCard>
-
-              <BlockCard
-                index="3.5"
-                title="Business Impact"
-                accent="blue"
-              >
-                <ImpactBars items={horizonData.impact} />
-
-                <div className="mt-8 text-base leading-7 text-white/76">
-                  Предложенное изменение влияет одновременно на выручку,
-                  скорость прохождения клиента, нагрузку команды и общую
-                  управляемость бизнеса. Самый ранний эффект проявляется в
-                  конверсии и обработке спроса, более глубокий — в LTV и
-                  устойчивости всей модели.
-                </div>
-              </BlockCard>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-2">
-              <BlockCard
-                index="3.6"
-                title="Implementation Conditions"
-                accent="blue"
-              >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Что нужно подготовить
-                    </div>
-                    <div className="mt-4 space-y-3 text-sm leading-6 text-white/74">
-                      <div>Упаковка Snapshot как массового entry продукта</div>
-                      <div>Маршрут клиента между продуктами</div>
-                      <div>Логика автоматической обработки заявок</div>
-                      <div>Роли: sales / ops / strategy</div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Основные риски
-                    </div>
-                    <div className="mt-4 space-y-3 text-sm leading-6 text-white/74">
-                      <div>Рост спроса раньше, чем стабилизируется delivery</div>
-                      <div>Слабая упаковка первого продукта</div>
-                      <div>Недостаточная аналитика по этапам воронки</div>
-                      <div>Сохранение ручных bottleneck-переходов</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 text-base leading-7 text-white/76">
-                  Решение даст результат только если вход, маршрут клиента и
-                  распределение ответственности будут перестроены как единая
-                  система, а не как набор отдельных улучшений.
-                </div>
-              </BlockCard>
-
-              <SummaryPanel title="Логика блока 3">
-                <div className="space-y-4 text-base leading-7 text-white/82">
-                  <p>
-                    Где главный рычаг → где теряются деньги → какое изменение в
-                    модели нужно внести → почему именно оно приоритетно → какой
-                    эффект оно даст → что нужно, чтобы оно сработало.
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    <Tag tone="yellow">growth lever</Tag>
-                    <Tag tone="blue">model change</Tag>
-                    <Tag>business impact</Tag>
-                    <Tag>implementation conditions</Tag>
-                  </div>
-                </div>
-              </SummaryPanel>
-            </div>
-          </SectionShell>
-
-          <SectionShell
-            id="jtbd"
-            eyebrow="04"
-            title="JTBD"
-            subtitle="Структурированный план внедрения приоритетных изменений с разделением на этапы, зависимости, быстрые результаты и точки контроля."
-          >
-            <div className="grid gap-8 xl:grid-cols-[0.94fr_1.06fr]">
-              <BlockCard
-                index="4.1 / 4.2"
-                title="Strategic Objective + Core JTBD"
-                accent="blue"
-              >
-                <div className="space-y-5 text-base leading-7 text-white/76">
-                  <p>
-                    Главная цель внедрения — превратить входящий спрос в
-                    предсказуемую выручку без пропорционального роста нагрузки на
-                    фаундера и команду.
-                  </p>
-                  <p className="text-white">
-                    Core JTBD: построить такой путь клиента, в котором первая
-                    оплата, передача вверх по продуктам и контроль качества не
-                    зависят от ручного героизма.
-                  </p>
-                </div>
-
-                <div className="mt-6 grid gap-4 md:grid-cols-3">
-                  <MetricTile label="Цель" value="Scaleable revenue" />
-                  <MetricTile label="Ключевая работа" value="Systemize conversion" />
-                  <MetricTile label="Результат" value="Less manual load" />
-                </div>
-              </BlockCard>
-
-              <BlockCard
-                index="4.3 / 4.4"
-                title="Workstreams + Phase Logic"
-                accent="blue"
-              >
-                <div className="flex flex-wrap gap-2">
-                  <Tag tone="yellow">маркетинг</Tag>
-                  <Tag tone="blue">продукт</Tag>
-                  <Tag>продажи</Tag>
-                  <Tag>операционка</Tag>
-                  <Tag>аналитика</Tag>
-                  <Tag>управление</Tag>
-                </div>
-
-                <div className="mt-6 text-base leading-7 text-white/76">
-                  Внедрение нельзя запускать как один длинный список задач. Это
-                  несколько отдельных потоков работ, которые должны идти
-                  синхронно, но в правильной логике: сначала стабилизация входа,
-                  затем систематизация маршрута, затем масштабирование.
-                </div>
-              </BlockCard>
-            </div>
-
-            <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-md md:p-8">
-              <div className="text-xs uppercase tracking-[0.22em] text-[#f7d237]">
-                4.5 / 4.6 / 4.7
-              </div>
-              <h3 className="mt-2 text-xl font-semibold text-white md:text-2xl">
-                First Priority Actions + Structural Changes + Dependencies
-              </h3>
-
-              <div className="mt-6 grid gap-5 xl:grid-cols-3">
-                <TimelinePhase
-                  phase="Phase 01"
-                  period="Weeks 1–4"
-                  title="Stabilize entry"
-                  actions={[
-                    "Упаковать Snapshot как понятный первый продукт",
-                    "Сократить путь до первой ценности",
-                    "Убрать ручные разрывы на первом касании",
-                  ]}
-                />
-                <TimelinePhase
-                  phase="Phase 02"
-                  period="Weeks 5–10"
-                  title="Build conversion system"
-                  actions={[
-                    "Собрать маршрут Snapshot → Calendar → Strategy",
-                    "Распределить ownership между ролями",
-                    "Включить базовые точки аналитики по этапам",
-                  ]}
-                />
-                <TimelinePhase
-                  phase="Phase 03"
-                  period="Weeks 11–24"
-                  title="Scale and retain"
-                  actions={[
-                    "Добавить retention-слой и повторные маршруты",
-                    "Тестировать channel diversification",
-                    "Усилить регулярный операционный контроль",
-                  ]}
-                />
-              </div>
-
-              <div className="mt-8 rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-white/72">
-                Логика зависимости простая: нельзя масштабировать трафик, пока
-                не стабилизирован вход; нельзя масштабировать delivery, пока не
-                понятен маршрут клиента; нельзя рассчитывать на LTV, пока не
-                существует пост-покупочного слоя.
-              </div>
-            </div>
-
-            <div className="grid gap-8 xl:grid-cols-[1.02fr_0.98fr]">
-              <BlockCard
-                index="4.8 / 4.9"
-                title="Resources, Ownership & Control Points"
-                accent="blue"
-              >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Ownership
-                    </div>
-                    <div className="mt-4 space-y-3 text-sm leading-6 text-white/74">
-                      <div>Founder → стратегия и контроль модели</div>
-                      <div>Sales layer → первичная конверсия</div>
-                      <div>Ops layer → delivery и передача клиента</div>
-                      <div>Analytics layer → метрики и контроль прогресса</div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-[24px] border border-white/10 bg-white/5 p-5">
-                    <div className="text-sm font-medium text-[#ffe27a]">
-                      Control points
-                    </div>
-                    <div className="mt-4 space-y-3 text-sm leading-6 text-white/74">
-                      <div>Lead → first payment conversion</div>
-                      <div>Время от лида до ценности</div>
-                      <div>Процент обработанного спроса</div>
-                      <div>Процент перехода на следующий продукт</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-6 text-base leading-7 text-white/76">
-                  Контрольные точки должны появляться раньше, чем итоговый
-                  эффект в выручке. Это даёт возможность проверять, работает ли
-                  стратегия, до того как пройдёт полный цикл монетизации.
-                </div>
-              </BlockCard>
-
-              <BlockCard
-                index="4.10"
-                title="Expected Outcome by Horizon"
-                accent="blue"
-              >
-                <div className="space-y-5">
-                  <CompareBar
-                    label="3 months → ранний эффект"
-                    before={24}
-                    after={46}
-                    beforeLabel="base"
-                    afterLabel="expected"
-                  />
-                  <CompareBar
-                    label="6 months → системный эффект"
-                    before={32}
-                    after={63}
-                    beforeLabel="base"
-                    afterLabel="expected"
-                  />
-                  <CompareBar
-                    label="12 months → накопительный эффект"
-                    before={36}
-                    after={79}
-                    beforeLabel="base"
-                    afterLabel="expected"
-                  />
-                </div>
-
-                <div className="mt-8 text-base leading-7 text-white/76">
-                  Краткосрочно бизнес должен увидеть улучшение конверсии и
-                  снижение перегруза. На среднем горизонте появится более
-                  предсказуемая выручка. На длинном — модель станет устойчивее,
-                  а рост перестанет быть полностью завязан на одном человеке.
-                </div>
-              </BlockCard>
-            </div>
-
-            <SummaryPanel title="JTBD Summary">
-              <div className="space-y-6">
-                <div>
-                  <div className="text-sm text-white/42">Главная цель</div>
-                  <div className="mt-2 text-2xl font-semibold text-white">
-                    Сделать рост управляемым
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-white/42">
-                    Что должно измениться
-                  </div>
-                  <div className="mt-2 text-base leading-7 text-white/82">
-                    Бизнес должен перейти от ручного сопровождения спроса к
-                    системе, где вход, конверсия, передача клиента и контроль
-                    качества собираются в единую операционную логику.
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-white/42">
-                    Как выглядит успех
-                  </div>
-                  <div className="mt-2 text-base leading-7 text-white/82">
-                    Спрос больше не перегружает систему, конверсия растёт,
-                    повторные продажи становятся управляемыми, а фаундер
-                    перестаёт быть единственным узлом для принятия решений и
-                    генерации выручки.
-                  </div>
-                </div>
-              </div>
-            </SummaryPanel>
-          </SectionShell>
+        <div className="grid gap-5 lg:grid-cols-2">
+          {sections.map((section) => (
+            <ExpandableSectionCard
+              key={section.id}
+              section={section}
+              open={openSection === section.id}
+              onToggle={() => setOpenSection((prev) => (prev === section.id ? null : section.id))}
+            />
+          ))}
         </div>
       </div>
-    </main>
+
+      <SlideOver open={solutionOpen} title="Solution & Practice" onClose={() => setSolutionOpen(false)}>
+        <div className="space-y-5">
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-[11px] uppercase tracking-[0.28em] text-white/35">Overview</div>
+            <h3 className="mt-3 text-2xl font-semibold text-white">{solutionPanel.title}</h3>
+            <p className="mt-2 text-sm leading-7 text-[#a5aeb2]">{solutionPanel.subtitle}</p>
+            <p className="mt-4 text-sm leading-7 text-white/78">{solutionPanel.lead}</p>
+          </GlassCard>
+
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-sm font-medium text-[#fff3b2]">Primary growth lever</div>
+            <p className="mt-3 text-sm leading-7 text-white/78">{solutionPanel.primaryLever}</p>
+          </GlassCard>
+
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-sm font-medium text-[#fff3b2]">Model change recommendation</div>
+            <p className="mt-3 text-sm leading-7 text-white/78">{solutionPanel.modelShift}</p>
+            <div className="mt-5 text-sm font-medium text-[#fff3b2]">Why now</div>
+            <p className="mt-3 text-sm leading-7 text-white/78">{solutionPanel.whyNow}</p>
+          </GlassCard>
+
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-sm font-medium text-[#fff3b2]">Strategic priorities</div>
+            <div className="mt-4 space-y-3">
+              {solutionPanel.strategicPriorities.map((item, index) => (
+                <div key={item} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm leading-7 text-white/78">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.24em] text-white/35">
+                    Priority {index + 1}
+                  </div>
+                  {item}
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-sm font-medium text-[#fff3b2]">JTBD</div>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">Strategic objective</div>
+                <p className="mt-3 text-sm leading-7 text-white/78">{solutionPanel.jtbd.objective}</p>
+              </div>
+              <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+                <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">Core job</div>
+                <p className="mt-3 text-sm leading-7 text-white/78">{solutionPanel.jtbd.job}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+              <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">First actions</div>
+              <div className="mt-3 space-y-2.5 text-sm leading-7 text-white/78">
+                {solutionPanel.jtbd.nextActions.map((action) => (
+                  <div key={action} className="flex gap-3">
+                    <span className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
+                    <span>{action}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-5 md:p-6">
+            <div className="text-sm font-medium text-[#fff3b2]">Назначить встречу</div>
+            <p className="mt-2 text-sm leading-7 text-[#a5aeb2]">
+              Ниже — черновой блок под выбор слота. Позже сюда можно подставить живые слоты из Notion или Make.
+            </p>
+
+            <div className="mt-5 grid gap-3 md:grid-cols-2">
+              {slotOptions.map((slot) => {
+                const slotKey = `${slot.day}-${slot.date}-${slot.time}`;
+                const active = selectedSlot === slotKey;
+
+                return (
+                  <button
+                    type="button"
+                    key={slotKey}
+                    onClick={() => setSelectedSlot(slotKey)}
+                    className={`rounded-2xl border p-4 text-left transition ${
+                      active
+                        ? "border-[#f7d237]/30 bg-[#f7d237]/10"
+                        : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                    }`}
+                  >
+                    <div className="text-[11px] uppercase tracking-[0.24em] text-white/35">{slot.day}</div>
+                    <div className="mt-2 text-lg font-medium text-white">{slot.date}</div>
+                    <div className="mt-1 text-sm text-[#fff0a8]">{slot.time}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            <button
+              type="button"
+              className="mt-5 w-full rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-5 py-3 text-sm font-medium text-[#fff0a8] transition hover:bg-[#f7d237]/14"
+            >
+              Назначить встречу
+            </button>
+          </GlassCard>
+        </div>
+      </SlideOver>
+    </div>
   );
 }
