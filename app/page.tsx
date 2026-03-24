@@ -2193,9 +2193,9 @@ export default function Home() {
         }
         .start-cards-row {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 540px));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           justify-content: center;
-          gap: 20px;
+          gap: 18px;
           width: 100%;
           align-items: start;
         }
@@ -2204,13 +2204,13 @@ export default function Home() {
           flex-direction: column;
           gap: 12px;
           width: 100%;
-          max-width: 540px;
+          max-width: none;
         }
         .start-card-media-wrap {
           display: grid;
-          grid-template-columns: minmax(0,1fr) 96px;
+          grid-template-columns: minmax(0,1fr) 84px;
           align-items: stretch;
-          gap: 14px;
+          gap: 12px;
           width: 100%;
         }
         .start-card-inner {
@@ -2224,15 +2224,17 @@ export default function Home() {
           box-shadow: none;
           min-height: 0;
           height: auto;
+          aspect-ratio: 1.72 / 1;
         }
         .start-card-inner picture {
           display: block;
           width: 100%;
+          height: 100%;
         }
         .start-card-frame {
           width: 100%;
-          height: auto;
-          object-fit: contain;
+          height: 100%;
+          object-fit: cover;
           object-position: center;
           opacity: 1;
           border-radius: 30px;
@@ -2284,9 +2286,9 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.08);
         }
         .start-card-play-desktop {
-          width: 96px;
-          min-width: 96px;
-          border-radius: 26px;
+          width: 84px;
+          min-width: 84px;
+          border-radius: 24px;
         }
         .start-card-play-mobile {
           display: none;
