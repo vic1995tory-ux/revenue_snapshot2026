@@ -1282,7 +1282,7 @@ export default function Home() {
           <StageCarousel />
         </section>
 
-        <section id="analysis" className="mb-16 analysis-section-extended">
+        <section id="analysis" className="mb-20 md:mb-24">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
@@ -1314,7 +1314,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="try" className="pb-8 cta-section-extended">
+        <section id="try" className="pb-12 md:pb-16">
           <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
@@ -1375,7 +1375,7 @@ export default function Home() {
           max-width: 1440px;
           width: 100%;
           margin: 0 auto;
-          padding: 108px 20px 140px;
+          padding: 108px 20px 40px;
         }
         .content-wrap > *, .hero-grid > *, .preview-grid > *, .analysis-grid > *, .cta-card > *, .stage-card-bottom-inner > *, .journey-compact > * { min-width: 0; }
         .header-fixed {
@@ -2057,14 +2057,6 @@ export default function Home() {
           gap: 28px;
           align-items: stretch;
         }
-        .analysis-section-extended {
-          position: relative;
-          padding-bottom: 180px;
-        }
-        .cta-section-extended {
-          position: relative;
-          margin-top: 40px;
-        }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
         .signal-board {
@@ -2197,27 +2189,31 @@ export default function Home() {
           height: auto;
           overflow: visible;
           max-width: none;
-          margin-top: 4px;
-          padding-bottom: 16px;
+          margin-top: 18px;
         }
         .start-cards-row {
           display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
+          grid-template-columns: 1fr;
+          gap: 28px;
           width: 100%;
           align-items: start;
         }
-        .start-card { display: flex; flex-direction: column; gap: 14px; }
+        .start-card {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          width: 100%;
+        }
         .start-card-media-wrap {
           display: grid;
-          grid-template-columns: minmax(0,1fr) 118px;
+          grid-template-columns: minmax(0,1fr) 164px;
           align-items: stretch;
-          gap: 18px;
+          gap: 22px;
           width: 100%;
         }
         .start-card-inner {
           position: relative;
-          border-radius: 30px;
+          border-radius: 34px;
           overflow: hidden;
           border: none;
           background: transparent;
@@ -2237,7 +2233,7 @@ export default function Home() {
           object-fit: contain;
           object-position: center;
           opacity: 1;
-          border-radius: 30px;
+          border-radius: 34px;
           display: block;
         }
         .start-card-overlay {
@@ -2263,14 +2259,14 @@ export default function Home() {
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
         .start-card-onrec .start-card-price-float {
-          right: 5.4%;
-          bottom: 11.8%;
-          font-size: clamp(44px, 4vw, 82px);
+          right: 5.2%;
+          bottom: 10.8%;
+          font-size: clamp(50px, 4.6vw, 96px);
         }
         .start-card-playground .start-card-price-float {
-          right: 5.8%;
-          top: 20.5%;
-          font-size: clamp(44px, 4vw, 82px);
+          right: 5.4%;
+          top: 17.8%;
+          font-size: clamp(50px, 4.6vw, 96px);
         }
         .start-card-play {
           position: relative;
@@ -2286,9 +2282,9 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.08);
         }
         .start-card-play-desktop {
-          width: 118px;
-          min-width: 118px;
-          border-radius: 30px;
+          width: 164px;
+          min-width: 164px;
+          border-radius: 34px;
         }
         .start-card-play-mobile {
           display: none;
@@ -2296,14 +2292,15 @@ export default function Home() {
         .start-card-play-triangle {
           width: 0;
           height: 0;
-          border-left: 34px solid #0b1d3a;
-          border-top: 22px solid transparent;
-          border-bottom: 22px solid transparent;
-          margin-left: 8px;
+          border-left: 42px solid #0b1d3a;
+          border-top: 28px solid transparent;
+          border-bottom: 28px solid transparent;
+          margin-left: 10px;
           filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
+          margin-top: 42px;
         }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
@@ -2419,7 +2416,7 @@ export default function Home() {
           .content-wrap {
             width: 100%;
             max-width: 100%;
-            padding: 138px 14px 120px;
+            padding: 138px 14px 28px;
           }
           .header-fixed {
             left: 0;
@@ -2586,12 +2583,6 @@ export default function Home() {
           .stage-bar-track { height: 12px; }
           .stage-bar-track-thin { height: 8px; }
           .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
-          .analysis-section-extended {
-            padding-bottom: 132px;
-          }
-          .cta-section-extended {
-            margin-top: 24px;
-          }
           .signal-board {
             grid-template-columns: 1fr;
             grid-template-rows: auto;
@@ -2616,9 +2607,9 @@ export default function Home() {
           .signal-card-title { font-size: 22px; max-width: 100%; }
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
-          .analysis-right-card-plain { height: auto; }
-          .start-cards-row { grid-template-columns: 1fr; gap: 16px; }
-          .start-card { flex: none; gap: 10px; }
+          .analysis-right-card-plain { height: auto; margin-top: 8px; }
+          .start-cards-row { grid-template-columns: 1fr; gap: 18px; }
+          .start-card { flex: none; gap: 14px; }
           .start-card-media-wrap {
             grid-template-columns: 1fr;
             gap: 0;
