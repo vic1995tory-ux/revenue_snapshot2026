@@ -526,9 +526,11 @@ function StartCard({
   href: string;
   stats?: Array<{ label: string; value: string }>;
 }) {
+  const slug = title.toLowerCase().includes("online") ? "playground" : "onrec";
+
   return (
-    <div className="start-card tilt-card">
-      <div className="start-card-shell">
+    <div className={`start-card start-card-${slug} tilt-card`}>
+      <div className="start-card-media-wrap">
         <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
           <picture>
             <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
@@ -540,11 +542,13 @@ function StartCard({
             </div>
           </div>
         </div>
-
-        <a href={href} className="start-card-play" aria-label={`Open ${title}`}>
-          <span className="start-card-play-icon" aria-hidden="true" />
+        <a href={href} className="start-card-play start-card-play-desktop" aria-label={`Открыть ${title}`}>
+          <span className="start-card-play-triangle" />
         </a>
       </div>
+      <a href={href} className="start-card-play start-card-play-mobile" aria-label={`Открыть ${title}`}>
+        <span className="start-card-play-triangle" />
+      </a>
     </div>
   );
 }
@@ -1287,25 +1291,44 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="analysis-grid analysis-grid-main">
+          <div className="analysis-grid">
             <SnapshotStructure />
+            <div className="analysis-right-card analysis-right-card-plain">
+              <div className="start-cards-row">
+                <StartCard
+                  title="On Rec"
+                  icon="/stratsession.svg"
+                  mobileIcon="/on-rec_mobile.svg"
+                  price="$770"
+                  href={tgContactUrl}
+                />
+                <StartCard
+                  title="Online-playground"
+                  icon="/snapshot.svg"
+                  mobileIcon="/online-playground_mobile.svg"
+                  price="$114"
+                  href={payUrl}
+                />
+              </div>
+            </div>
           </div>
+        </section>
 
-          <div className="analysis-tariffs-row">
-            <StartCard
-              title="On Rec"
-              icon="/stratsession.svg"
-              mobileIcon="/on-rec_mobile.svg"
-              price="$770"
-              href={tgContactUrl}
-            />
-            <StartCard
-              title="Online-playground"
-              icon="/snapshot.svg"
-              mobileIcon="/online-playground_mobile.svg"
-              price="$114"
-              href={payUrl}
-            />
+        <section id="try" className="pb-8">
+          <div className="glass-card glare-card cta-card">
+            <div>
+              <div className="section-kicker">CTA</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Откройте полный Revenue Snapshot</h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
+                После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
+              </p>
+            </div>
+
+            <div className="cta-box glare-card-lite">
+              <div className="text-sm text-white/55">Следующий шаг</div>
+              <div className="mt-2 text-2xl font-semibold text-white">Попробовать Snapshot</div>
+              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">Получить Revenue Snapshot</a>
+            </div>
           </div>
         </section>
 
@@ -2030,7 +2053,7 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
+          grid-template-columns: 1fr;
           gap: 28px;
           align-items: stretch;
         }
@@ -2043,9 +2066,9 @@ export default function Home() {
           grid-template-areas:
             "pos pos pos struct struct struct"
             "econ econ clients clients product product";
-          gap: 16px;
+          gap: 14px;
           align-items: stretch;
-          height: 790px;
+          height: 560px;
         }
         .signal-card {
           position: relative;
@@ -2054,8 +2077,8 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 18px;
-          border-radius: 28px;
+          padding: 14px;
+          border-radius: 24px;
           overflow: hidden;
           background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
           border: 1px solid rgba(255,255,255,.13);
@@ -2111,26 +2134,26 @@ export default function Home() {
           font-size: 12px;
         }
         .signal-card-title {
-          margin-top: 14px;
-          font-size: clamp(22px, 2vw, 34px);
+          margin-top: 10px;
+          font-size: clamp(20px, 1.7vw, 28px);
           line-height: .98;
           letter-spacing: -.05em;
           font-weight: 700;
           max-width: 12ch;
         }
         .signal-card-points {
-          margin-top: 18px;
+          margin-top: 12px;
           display: grid;
-          gap: 10px;
+          gap: 8px;
         }
         .signal-card-point {
           display: grid;
           grid-template-columns: 10px 1fr;
-          gap: 10px;
+          gap: 9px;
           align-items: start;
           color: rgba(255,255,255,.72);
-          font-size: 13px;
-          line-height: 1.45;
+          font-size: 12px;
+          line-height: 1.38;
         }
         .signal-card-dot {
           width: 6px;
@@ -2140,7 +2163,7 @@ export default function Home() {
           background: #f7d237;
           box-shadow: 0 0 0 4px rgba(247,210,55,.08);
         }
-        .signal-card-bottom { margin-top: 18px; }
+        .signal-card-bottom { margin-top: 12px; }
         .signal-meter {
           height: 7px;
           border-radius: 999px;
@@ -2162,46 +2185,35 @@ export default function Home() {
           letter-spacing: .12em;
         }
         .analysis-right-card-plain {
-          min-height: 100%;
+          min-height: 0;
           height: auto;
           overflow: visible;
           max-width: none;
-        }
-        .analysis-grid-main { grid-template-columns: 1fr; }
-        .analysis-tariffs-row {
-          margin-top: 24px;
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 22px;
-          align-items: start;
+          margin-top: 4px;
         }
         .start-cards-row {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 22px;
-          height: 100%;
-          justify-content: stretch;
-        }
-        .start-card { min-width: 0; }
-        .start-card-shell {
-          position: relative;
-          display: grid;
-          grid-template-columns: minmax(0,1fr) 112px;
           gap: 18px;
-          align-items: stretch;
+          width: 100%;
+          align-items: start;
         }
-        @media (hover: hover) and (pointer: fine) {
-          .start-card:hover .start-card-inner { transform: rotateX(4deg) rotateY(-6deg) translate3d(0,-4px,0); }
-          .start-card:hover .start-card-play { transform: translate3d(0,-4px,0); }
+        .start-card { display: flex; flex-direction: column; gap: 14px; }
+        .start-card-media-wrap {
+          display: grid;
+          grid-template-columns: minmax(0,1fr) 118px;
+          align-items: stretch;
+          gap: 18px;
+          width: 100%;
         }
         .start-card-inner {
           position: relative;
-          border-radius: 32px;
-          overflow: visible;
+          border-radius: 30px;
+          overflow: hidden;
           border: none;
           background: transparent;
           transform-style: preserve-3d;
-          transition: transform .18s ease-out;
+          transition: transform .24s ease-out;
           box-shadow: none;
           min-height: 0;
           height: auto;
@@ -2216,7 +2228,7 @@ export default function Home() {
           object-fit: contain;
           object-position: center;
           opacity: 1;
-          border-radius: 32px;
+          border-radius: 30px;
           display: block;
         }
         .start-card-overlay {
@@ -2236,51 +2248,53 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 8.6%;
-          right: 5%;
-          font-size: clamp(38px, 3.5vw, 72px);
           line-height: .92;
           letter-spacing: -.06em;
           font-weight: 700;
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
+        .start-card-onrec .start-card-price-float {
+          right: 5.4%;
+          bottom: 11.8%;
+          font-size: clamp(44px, 4vw, 82px);
+        }
+        .start-card-playground .start-card-price-float {
+          right: 5.8%;
+          top: 20.5%;
+          font-size: clamp(44px, 4vw, 82px);
+        }
         .start-card-play {
           position: relative;
-          display: flex;
+          display: inline-flex;
           align-items: center;
           justify-content: center;
-          width: 100%;
-          min-height: 100%;
-          border-radius: 32px;
           text-decoration: none;
-          border: 1px solid rgba(255,255,255,.1);
-          background:
-            radial-gradient(circle at 50% 78%, rgba(255,235,140,.38), transparent 38%),
-            linear-gradient(180deg, #8f72ff 0%, #b88db6 28%, #d7a565 66%, #efc358 100%);
-          background-size: 100% 100%, 180% 180%;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 34px rgba(0,0,0,.2);
           overflow: hidden;
-          isolation: isolate;
+          background: linear-gradient(180deg, #8a78d9 0%, #b7896d 24%, #d69a3a 56%, #f1d56b 78%, #1a1a6f 100%);
+          background-size: 180% 180%;
+          animation: cardPlayFlow 9s ease-in-out infinite;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 12px 30px rgba(0,0,0,.22);
+          border: 1px solid rgba(255,255,255,.08);
         }
-        .start-card-play::before {
-          content: "";
-          position: absolute;
-          inset: -18%;
-          background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,0) 32%, rgba(255,213,92,.18) 58%, rgba(122,92,255,.12) 100%);
-          mix-blend-mode: screen;
-          animation: playGradientShift 8s linear infinite;
-          z-index: 0;
+        .start-card-play-desktop {
+          width: 118px;
+          min-width: 118px;
+          border-radius: 30px;
         }
-        .start-card-play-icon {
-          position: relative;
-          z-index: 1;
+        .start-card-play-mobile {
+          display: none;
+        }
+        .start-card-play-triangle {
           width: 0;
           height: 0;
-          border-top: 26px solid transparent;
-          border-bottom: 26px solid transparent;
-          border-left: 40px solid #0b1d3a;
-          filter: drop-shadow(0 4px 10px rgba(0,0,0,.18));
-          margin-left: 10px;
+          border-left: 34px solid #0b1d3a;
+          border-top: 22px solid transparent;
+          border-bottom: 22px solid transparent;
+          margin-left: 8px;
+          filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
+        }
+        .cta-card {
+          display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
         }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
@@ -2301,11 +2315,6 @@ export default function Home() {
           50% { transform: translate3d(0,0,0) scale(1.05); filter: hue-rotate(4deg); }
           100% { transform: translate3d(0,0,0) scale(1.02); filter: hue-rotate(-4deg); }
         }
-        @keyframes playGradientShift {
-          0% { transform: translate3d(-8%, -6%, 0) rotate(0deg); }
-          50% { transform: translate3d(10%, 8%, 0) rotate(8deg); }
-          100% { transform: translate3d(-8%, -6%, 0) rotate(0deg); }
-        }
         @keyframes premiumGlassShift {
           0% { transform: translate3d(-12px,0,0); }
           50% { transform: translate3d(14px,-6px,0); }
@@ -2315,6 +2324,11 @@ export default function Home() {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
+        }
+        @keyframes cardPlayFlow {
+          0% { background-position: 0% 8%; }
+          50% { background-position: 100% 92%; }
+          100% { background-position: 0% 8%; }
         }
         @keyframes tgShine {
           0% { transform: translateX(-130%); }
@@ -2377,6 +2391,7 @@ export default function Home() {
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
           .start-cards-row { grid-template-columns: 1fr; }
+          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 100px; gap: 14px; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2587,17 +2602,11 @@ export default function Home() {
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; }
-          .analysis-tariffs-row {
-            margin-top: 18px;
-            display: grid;
+          .start-cards-row { grid-template-columns: 1fr; gap: 16px; }
+          .start-card { flex: none; gap: 10px; }
+          .start-card-media-wrap {
             grid-template-columns: 1fr;
-            gap: 16px;
-          }
-          .start-cards-row { gap: 14px; }
-          .start-card { min-width: 0; }
-          .start-card-shell {
-            display: block;
-            position: relative;
+            gap: 0;
           }
           .start-card-inner {
             min-height: 0;
@@ -2605,6 +2614,7 @@ export default function Home() {
             border: none;
             background: transparent;
             box-shadow: none;
+            overflow: hidden;
           }
           .start-card-frame {
             display: block;
@@ -2618,35 +2628,30 @@ export default function Home() {
             background: none;
           }
           .start-card-title-chip { display: none; }
-          .start-card-price-float {
-            display: none;
+          .start-card-onrec .start-card-price-float {
+            right: 4.6%;
+            bottom: 10.2%;
+            top: auto;
+            font-size: clamp(32px, 10.4vw, 58px);
           }
-          .start-card-play {
-            position: absolute;
-            right: -2px;
-            bottom: -2px;
-            width: 88px;
-            height: 88px;
-            min-height: 88px;
-            border-radius: 26px;
-            transform: translate(70%, 30%);
-            z-index: 4;
+          .start-card-playground .start-card-price-float {
+            right: 5%;
+            top: 20%;
+            bottom: auto;
+            font-size: clamp(32px, 10.4vw, 58px);
           }
-          .start-card-play-icon {
+          .start-card-play-desktop { display: none; }
+          .start-card-play-mobile {
+            display: flex;
+            width: 100%;
+            min-height: 104px;
+            border-radius: 24px;
+          }
+          .start-card-play-triangle {
+            border-left-width: 28px;
             border-top-width: 18px;
             border-bottom-width: 18px;
-            border-left-width: 28px;
-            margin-left: 8px;
-          }
-          .tilt-card, .tilt-inner { transform: none !important; }
-          .start-card-btn {
-            left: 14px;
-            right: 14px;
-            bottom: 10%;
-            min-height: 38px;
-            width: auto;
-            padding: 0 14px;
-            font-size: 12px;
+            margin-left: 6px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,
