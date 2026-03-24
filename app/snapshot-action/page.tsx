@@ -17,7 +17,7 @@ type InputType =
   | "analyticsBranch"
   | "strategyGoal"
   | "contact"
-  | "channelDistribution"; 
+  | "channelDistribution";
 
 type Question = {
   id: string;
@@ -804,7 +804,7 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={strokeDashoffset}
           style={{
-            filter: "drop-shadow(0 0 10px rgba(247,210,55,0.45))",
+            filter: "drop-shadow(0 0 4px rgba(247,210,55,0.22))",
             transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
           }}
         />
@@ -830,13 +830,13 @@ function GlassCard({
 }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.05] backdrop-blur-2xl ${className}`}
+      className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] backdrop-blur-2xl ${className}`}
       style={{
         boxShadow:
-          "0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+          "0 18px 56px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.045)",
       }}
     >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_26%)]" />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.09),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.045),transparent_24%)]" />
       <div className="relative">{children}</div>
     </div>
   );
@@ -2786,17 +2786,27 @@ export default function DiagnosticIntakePage() {
                   </div>
 
                   <div className="mt-6 space-y-2.5">
-                    {chapter.questions.slice(0, 3).map((question, i) => (
-                      <div
-                        key={question.id}
-                        className="flex items-start gap-3 text-sm text-white/60"
-                      >
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">
-                          {i + 1}
-                        </span>
-                        <span className="line-clamp-2">{question.label}</span>
-                      </div>
-                    ))}
+                    {chapter.questions.slice(0, 3).map((question, i) => {
+                      const isDone = getQuestionProgress(question, answers) === 100;
+
+                      return (
+                        <div
+                          key={question.id}
+                          className="flex items-start gap-3 text-sm text-white/60"
+                        >
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
+                              isDone
+                                ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
+                                : "border-white/10 bg-transparent text-white/55"
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                          <span className="line-clamp-2">{question.label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
