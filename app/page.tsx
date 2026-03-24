@@ -528,19 +528,25 @@ function StartCard({
 }) {
   return (
     <div className="start-card tilt-card">
-      <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
-        <picture>
-          <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
-          <img src={icon} alt={title} className="start-card-frame" />
-        </picture>
-        <div className="start-card-overlay start-card-overlay-plain">
-          <div className="start-card-bottom-simple">
-            <div className="start-card-price-float">{price}</div>
-            <a href={href} className="start-card-btn start-card-btn-floating">
-              Попробовать Snapshot
-            </a>
+      <div className="start-card-shell">
+        <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
+          <picture>
+            <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
+            <img src={icon} alt={title} className="start-card-frame" />
+          </picture>
+          <div className="start-card-overlay start-card-overlay-plain">
+            <div className="start-card-bottom-simple">
+              <div className="start-card-price-float">{price}</div>
+              <a href={href} className="start-card-btn start-card-btn-floating">
+                Попробовать Snapshot
+              </a>
+            </div>
           </div>
         </div>
+
+        <a href={href} className="start-card-play" aria-label={`Open ${title}`}>
+          <span className="start-card-play-triangle" />
+        </a>
       </div>
     </div>
   );
@@ -885,7 +891,7 @@ export default function Home() {
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const payUrl = "#";
+  const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
@@ -1058,7 +1064,7 @@ export default function Home() {
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
             <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
-            <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
+            <a href="https://www.paypal.com/ncp/payment/GQLFG3CYUHM82" className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
         </div>
@@ -2191,6 +2197,47 @@ export default function Home() {
           justify-content: space-between;
         }
         .start-card { flex: 1 1 0; }
+        .start-card-shell {
+          display: grid;
+          grid-template-columns: minmax(0,1fr) 112px;
+          gap: 16px;
+          align-items: stretch;
+          height: 100%;
+        }
+        .start-card-play {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 28px;
+          min-height: 100%;
+          min-width: 112px;
+          text-decoration: none;
+          border: 1px solid rgba(255,255,255,.12);
+          background: linear-gradient(180deg, rgba(92,71,220,.95) 0%, rgba(225,164,67,.95) 54%, rgba(248,222,109,.98) 76%, rgba(120,126,170,.78) 100%);
+          background-size: 100% 220%;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 16px 34px rgba(0,0,0,.22);
+          animation: startPlayFlow 9s ease-in-out infinite;
+          overflow: hidden;
+        }
+        .start-card-play::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(140deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,.1) 100%);
+          pointer-events: none;
+        }
+        .start-card-play-triangle {
+          position: relative;
+          z-index: 1;
+          width: 0;
+          height: 0;
+          border-top: 26px solid transparent;
+          border-bottom: 26px solid transparent;
+          border-left: 40px solid #0b1d3a;
+          margin-left: 8px;
+          filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
+        }
         .start-card-inner {
           position: relative;
           border-radius: 32px;
@@ -2302,6 +2349,11 @@ export default function Home() {
           0% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.22); opacity: .72; }
           100% { transform: scale(1); opacity: 1; }
+        }
+        @keyframes startPlayFlow {
+          0% { background-position: 50% 0%; }
+          50% { background-position: 50% 100%; }
+          100% { background-position: 50% 0%; }
         }
         @media (max-width: 1280px) {
           .hero-section { min-height: 720px; }
@@ -2566,6 +2618,20 @@ export default function Home() {
           .analysis-right-card-plain { height: auto; }
           .start-cards-row { gap: 14px; }
           .start-card { flex: none; }
+          .start-card-shell {
+            grid-template-columns: minmax(0,1fr) 74px;
+            gap: 10px;
+          }
+          .start-card-play {
+            min-width: 74px;
+            border-radius: 22px;
+          }
+          .start-card-play-triangle {
+            border-top-width: 16px;
+            border-bottom-width: 16px;
+            border-left-width: 24px;
+            margin-left: 4px;
+          }
           .start-card-inner {
             min-height: 0;
             border-radius: 24px;
@@ -2586,11 +2652,7 @@ export default function Home() {
           }
           .start-card-title-chip { display: none; }
           .start-card-price-float {
-            top: 9%;
-            right: 14px;
-            left: auto;
-            bottom: auto;
-            font-size: clamp(28px, 10vw, 40px);
+            display: none;
           }
           .start-card-btn {
             left: 14px;
