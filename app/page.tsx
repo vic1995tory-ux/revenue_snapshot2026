@@ -1291,7 +1291,7 @@ export default function Home() {
                 <StartCard
                   title="On Rec"
                   icon="/stratsession.svg"
-                  mobileIcon="/on-res_mobile.svg"
+                  mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={tgContactUrl}
                 />
