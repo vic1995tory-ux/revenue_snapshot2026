@@ -540,7 +540,8 @@ function StartCard({
             </div>
           </div>
         </div>
-        <a href={href} className="start-card-play" aria-label={`Открыть ${title}`}>
+
+        <a href={href} className="start-card-play" aria-label={`Open ${title}`}>
           <span className="start-card-play-icon" aria-hidden="true" />
         </a>
       </div>
@@ -887,8 +888,8 @@ export default function Home() {
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
-  const tgContactUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
+  const payUrl = "#";
+  const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
 
   useEffect(() => {
@@ -1286,44 +1287,25 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="analysis-grid">
+          <div className="analysis-grid analysis-grid-main">
             <SnapshotStructure />
-            <div className="analysis-right-card analysis-right-card-plain">
-              <div className="start-cards-row">
-                <StartCard
-                  title="On Rec"
-                  icon="/stratsession.svg"
-                  mobileIcon="/on-rec_mobile.svg"
-                  price="$770"
-                  href={tgContactUrl}
-                />
-                <StartCard
-                  title="Online-playground"
-                  icon="/snapshot.svg"
-                  mobileIcon="/online-playground_mobile.svg"
-                  price="$114"
-                  href={payUrl}
-                />
-              </div>
-            </div>
           </div>
-        </section>
 
-        <section id="try" className="pb-8">
-          <div className="glass-card glare-card cta-card">
-            <div>
-              <div className="section-kicker">CTA</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Откройте полный Revenue Snapshot</h2>
-              <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
-                После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
-              </p>
-            </div>
-
-            <div className="cta-box glare-card-lite">
-              <div className="text-sm text-white/55">Следующий шаг</div>
-              <div className="mt-2 text-2xl font-semibold text-white">Попробовать Snapshot</div>
-              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">Получить Revenue Snapshot</a>
-            </div>
+          <div className="analysis-tariffs-row">
+            <StartCard
+              title="On Rec"
+              icon="/stratsession.svg"
+              mobileIcon="/on-rec_mobile.svg"
+              price="$770"
+              href={tgContactUrl}
+            />
+            <StartCard
+              title="Online-playground"
+              icon="/snapshot.svg"
+              mobileIcon="/online-playground_mobile.svg"
+              price="$114"
+              href={payUrl}
+            />
           </div>
         </section>
 
@@ -2181,23 +2163,36 @@ export default function Home() {
         }
         .analysis-right-card-plain {
           min-height: 100%;
-          height: 790px;
+          height: auto;
           overflow: visible;
           max-width: none;
         }
+        .analysis-grid-main { grid-template-columns: 1fr; }
+        .analysis-tariffs-row {
+          margin-top: 24px;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 22px;
+          align-items: start;
+        }
         .start-cards-row {
-          display: flex;
-          flex-direction: column;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 22px;
           height: 100%;
-          justify-content: space-between;
+          justify-content: stretch;
         }
-        .start-card { flex: 1 1 0; }
+        .start-card { min-width: 0; }
         .start-card-shell {
+          position: relative;
           display: grid;
-          grid-template-columns: minmax(0, 1fr) 116px;
+          grid-template-columns: minmax(0,1fr) 112px;
           gap: 18px;
           align-items: stretch;
+        }
+        @media (hover: hover) and (pointer: fine) {
+          .start-card:hover .start-card-inner { transform: rotateX(4deg) rotateY(-6deg) translate3d(0,-4px,0); }
+          .start-card:hover .start-card-play { transform: translate3d(0,-4px,0); }
         }
         .start-card-inner {
           position: relative;
@@ -2241,60 +2236,51 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 11.2%;
-          right: 6.2%;
-          font-size: clamp(36px, 3.5vw, 68px);
+          top: 8.6%;
+          right: 5%;
+          font-size: clamp(38px, 3.5vw, 72px);
           line-height: .92;
           letter-spacing: -.06em;
           font-weight: 700;
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
-        }
-        .start-card-btn {
-          border: 1px solid rgba(255,255,255,.16);
-          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
-          background-size: 220% 220%;
-          box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          pointer-events: auto;
         }
         .start-card-play {
           position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
-          border-radius: 30px;
-          overflow: hidden;
+          width: 100%;
           min-height: 100%;
-          min-width: 0;
+          border-radius: 32px;
           text-decoration: none;
-          background: linear-gradient(180deg, #7566ff 0%, #b58ce8 16%, #c79386 42%, #dda651 70%, #f1c45d 100%);
-          background-size: 100% 180%;
-          animation: playGradientShift 8s ease-in-out infinite alternate;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 18px 36px rgba(0,0,0,.18);
+          border: 1px solid rgba(255,255,255,.1);
+          background:
+            radial-gradient(circle at 50% 78%, rgba(255,235,140,.38), transparent 38%),
+            linear-gradient(180deg, #8f72ff 0%, #b88db6 28%, #d7a565 66%, #efc358 100%);
+          background-size: 100% 100%, 180% 180%;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 18px 34px rgba(0,0,0,.2);
+          overflow: hidden;
+          isolation: isolate;
         }
         .start-card-play::before {
           content: "";
           position: absolute;
-          inset: 0;
-          background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,0) 34%, rgba(8,19,53,.12) 68%, rgba(8,19,53,.24) 100%);
-          pointer-events: none;
+          inset: -18%;
+          background: linear-gradient(135deg, rgba(255,255,255,.18), rgba(255,255,255,0) 32%, rgba(255,213,92,.18) 58%, rgba(122,92,255,.12) 100%);
+          mix-blend-mode: screen;
+          animation: playGradientShift 8s linear infinite;
+          z-index: 0;
         }
         .start-card-play-icon {
           position: relative;
+          z-index: 1;
           width: 0;
           height: 0;
-          border-top: 28px solid transparent;
-          border-bottom: 28px solid transparent;
-          border-left: 42px solid #0b1d3a;
-          margin-left: 8px;
-          filter: drop-shadow(0 6px 16px rgba(0,0,0,.16));
-        }
-        @keyframes playGradientShift {
-          0% { background-position: 50% 0%; }
-          100% { background-position: 50% 100%; }
-        }
-        .cta-card {
-          display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
+          border-top: 26px solid transparent;
+          border-bottom: 26px solid transparent;
+          border-left: 40px solid #0b1d3a;
+          filter: drop-shadow(0 4px 10px rgba(0,0,0,.18));
+          margin-left: 10px;
         }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
@@ -2314,6 +2300,11 @@ export default function Home() {
           0% { transform: translate3d(0,0,0) scale(1); filter: hue-rotate(0deg); }
           50% { transform: translate3d(0,0,0) scale(1.05); filter: hue-rotate(4deg); }
           100% { transform: translate3d(0,0,0) scale(1.02); filter: hue-rotate(-4deg); }
+        }
+        @keyframes playGradientShift {
+          0% { transform: translate3d(-8%, -6%, 0) rotate(0deg); }
+          50% { transform: translate3d(10%, 8%, 0) rotate(8deg); }
+          100% { transform: translate3d(-8%, -6%, 0) rotate(0deg); }
         }
         @keyframes premiumGlassShift {
           0% { transform: translate3d(-12px,0,0); }
@@ -2596,12 +2587,17 @@ export default function Home() {
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; }
+          .analysis-tariffs-row {
+            margin-top: 18px;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+          }
           .start-cards-row { gap: 14px; }
-          .start-card { flex: none; }
+          .start-card { min-width: 0; }
           .start-card-shell {
-            grid-template-columns: minmax(0, 1fr) 96px;
-            gap: 12px;
-            align-items: stretch;
+            display: block;
+            position: relative;
           }
           .start-card-inner {
             min-height: 0;
@@ -2626,13 +2622,31 @@ export default function Home() {
             display: none;
           }
           .start-card-play {
-            border-radius: 24px;
+            position: absolute;
+            right: -2px;
+            bottom: -2px;
+            width: 88px;
+            height: 88px;
+            min-height: 88px;
+            border-radius: 26px;
+            transform: translate(70%, 30%);
+            z-index: 4;
           }
           .start-card-play-icon {
             border-top-width: 18px;
             border-bottom-width: 18px;
             border-left-width: 28px;
-            margin-left: 4px;
+            margin-left: 8px;
+          }
+          .tilt-card, .tilt-inner { transform: none !important; }
+          .start-card-btn {
+            left: 14px;
+            right: 14px;
+            bottom: 10%;
+            min-height: 38px;
+            width: auto;
+            padding: 0 14px;
+            font-size: 12px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,
@@ -2719,10 +2733,6 @@ export default function Home() {
           .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
-        }
-
-        @media (max-width: 767px) {
-          .start-card-price-float { display: none !important; }
         }
       `}</style>
     </main>
