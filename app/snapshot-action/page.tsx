@@ -2243,4 +2243,4 @@ export default function DiagnosticIntakePage() {
     []
   );
 
-  const allComplete = Math.round(total
+  const allComplete = Math.round(total)
