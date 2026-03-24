@@ -2426,19 +2426,19 @@ export default function Home() {
             background: linear-gradient(180deg, rgba(11,29,58,.84) 0%, rgba(11,29,58,.58) 100%);
             border: 1px solid rgba(255,255,255,.08);
           }
-          .hero-left::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image:
-              linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
-              url("/hero_mobile.svg");
-            background-repeat: no-repeat;
-            background-size: cover, contain;
-            background-position: center, center left;
-            opacity: .92;
-            z-index: 0;
-          }
+         .hero-left::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
+    url("/hero_mobile.svg");
+  background-repeat: no-repeat;
+  background-size: cover, cover;
+  background-position: center, center;
+  opacity: .92;
+  z-index: 0;
+}
           .hero-left > * { position: relative; z-index: 1; }
           .hero-main-title { font-size: clamp(46px, 15vw, 72px); }
           .hero-main-subtitle { margin-top: 14px; font-size: 22px; }
