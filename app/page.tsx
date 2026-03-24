@@ -1282,7 +1282,7 @@ export default function Home() {
           <StageCarousel />
         </section>
 
-        <section id="analysis" className="mb-20 md:mb-24">
+        <section id="analysis" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
@@ -1314,7 +1314,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="try" className="pb-12 md:pb-16">
+        <section id="try" className="pb-8">
           <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
@@ -2189,53 +2189,53 @@ export default function Home() {
           height: auto;
           overflow: visible;
           max-width: none;
-          margin-top: 28px;
+          margin-top: 6px;
         }
         .start-cards-row {
           display: grid;
-          grid-template-columns: 1fr;
-          gap: 24px;
+          grid-template-columns: repeat(2, minmax(0, 540px));
+          justify-content: center;
+          gap: 20px;
           width: 100%;
           align-items: start;
         }
         .start-card {
           display: flex;
           flex-direction: column;
-          gap: 14px;
+          gap: 12px;
           width: 100%;
+          max-width: 540px;
         }
         .start-card-media-wrap {
           display: grid;
-          grid-template-columns: minmax(0,1fr) 124px;
+          grid-template-columns: minmax(0,1fr) 96px;
           align-items: stretch;
-          gap: 18px;
+          gap: 14px;
           width: 100%;
         }
         .start-card-inner {
           position: relative;
-          border-radius: 34px;
+          border-radius: 30px;
           overflow: hidden;
           border: none;
           background: transparent;
           transform-style: preserve-3d;
           transition: transform .24s ease-out;
           box-shadow: none;
-          min-height: 320px;
-          aspect-ratio: 1.55 / 1;
+          min-height: 0;
           height: auto;
         }
         .start-card-inner picture {
           display: block;
           width: 100%;
-          height: 100%;
         }
         .start-card-frame {
           width: 100%;
-          height: 100%;
-          object-fit: cover;
+          height: auto;
+          object-fit: contain;
           object-position: center;
           opacity: 1;
-          border-radius: 34px;
+          border-radius: 30px;
           display: block;
         }
         .start-card-overlay {
@@ -2262,13 +2262,13 @@ export default function Home() {
         }
         .start-card-onrec .start-card-price-float {
           right: 5.6%;
-          bottom: 12.8%;
-          font-size: clamp(42px, 4.1vw, 82px);
+          bottom: 12.2%;
+          font-size: clamp(36px, 2.8vw, 64px);
         }
         .start-card-playground .start-card-price-float {
-          right: 5.2%;
-          top: 14.5%;
-          font-size: clamp(42px, 4.1vw, 82px);
+          right: 5.8%;
+          top: 18.8%;
+          font-size: clamp(36px, 2.8vw, 64px);
         }
         .start-card-play {
           position: relative;
@@ -2284,9 +2284,9 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,.08);
         }
         .start-card-play-desktop {
-          width: 124px;
-          min-width: 124px;
-          border-radius: 30px;
+          width: 96px;
+          min-width: 96px;
+          border-radius: 26px;
         }
         .start-card-play-mobile {
           display: none;
@@ -2294,15 +2294,14 @@ export default function Home() {
         .start-card-play-triangle {
           width: 0;
           height: 0;
-          border-left: 42px solid #0b1d3a;
-          border-top: 28px solid transparent;
-          border-bottom: 28px solid transparent;
-          margin-left: 10px;
+          border-left: 28px solid #0b1d3a;
+          border-top: 18px solid transparent;
+          border-bottom: 18px solid transparent;
+          margin-left: 6px;
           filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
-          margin-top: 42px;
         }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
@@ -2398,8 +2397,11 @@ export default function Home() {
           .stage-rotate-cue-right { margin-left: 0; }
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
-          .start-cards-row { grid-template-columns: 1fr; }
-          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 100px; gap: 14px; }
+          .start-cards-row {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+          }
+          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 86px; gap: 12px; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2609,30 +2611,26 @@ export default function Home() {
           .signal-card-title { font-size: 22px; max-width: 100%; }
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
-          .analysis-right-card-plain { height: auto; margin-top: 8px; }
-          .start-cards-row { grid-template-columns: 1fr; gap: 22px; }
-          .start-card { flex: none; gap: 12px; }
+          .analysis-right-card-plain { height: auto; }
+          .start-cards-row { grid-template-columns: 1fr; gap: 16px; }
+          .start-card { flex: none; gap: 10px; }
           .start-card-media-wrap {
             grid-template-columns: 1fr;
             gap: 0;
           }
           .start-card-inner {
             min-height: 0;
-            aspect-ratio: 1.18 / 1;
             border-radius: 24px;
             border: none;
             background: transparent;
             box-shadow: none;
             overflow: hidden;
           }
-          .start-card-inner picture {
-            height: 100%;
-          }
           .start-card-frame {
             display: block;
             width: 100%;
-            height: 100%;
-            object-fit: cover;
+            height: auto;
+            object-fit: contain;
             object-position: center;
             border-radius: 24px;
           }
