@@ -526,12 +526,10 @@ function StartCard({
   href: string;
   stats?: Array<{ label: string; value: string }>;
 }) {
-  const slug = title.toLowerCase().includes("online") ? "playground" : "onrec";
-
   return (
-    <div className={`start-card start-card-${slug} tilt-card`}>
-      <div className="start-card-media-wrap">
-        <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
+    <div className="start-card tilt-card">
+      <div className="start-card-shell tilt-inner">
+        <div className="start-card-inner start-card-inner-plain premium-glass">
           <picture>
             <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
             <img src={icon} alt={title} className="start-card-frame" />
@@ -542,13 +540,11 @@ function StartCard({
             </div>
           </div>
         </div>
-        <a href={href} className="start-card-play start-card-play-desktop tilt-sync" aria-label={`Открыть ${title}`}>
+
+        <a href={href} className="start-card-play" aria-label={`Открыть ${title}`}>
           <span className="start-card-play-triangle" />
         </a>
       </div>
-      <a href={href} className="start-card-play start-card-play-mobile" aria-label={`Открыть ${title}`}>
-        <span className="start-card-play-triangle" />
-      </a>
     </div>
   );
 }
@@ -928,7 +924,6 @@ export default function Home() {
     tiltCards.forEach((card) => {
       const inner = card.querySelector<HTMLElement>(".tilt-inner");
       if (!inner) return;
-      const synced = Array.from(card.querySelectorAll<HTMLElement>(".tilt-sync"));
 
       const handleMove = (e: MouseEvent) => {
         const rect = card.getBoundingClientRect();
@@ -938,19 +933,11 @@ export default function Home() {
         const py = y / rect.height;
         const rotateY = (px - 0.5) * 8;
         const rotateX = (0.5 - py) * 8;
-        const mediaTransform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.012)`;
-        const playTransform = `rotateX(${rotateX * 0.7}deg) rotateY(${rotateY * 0.7}deg) translateY(-4px) scale(1.02)`;
-        inner.style.transform = mediaTransform;
-        synced.forEach((el) => {
-          el.style.transform = playTransform;
-        });
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
       };
 
       const handleLeave = () => {
         inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
-        synced.forEach((el) => {
-          el.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
-        });
       };
 
       card.addEventListener("mousemove", handleMove);
@@ -2062,7 +2049,7 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
           gap: 28px;
           align-items: stretch;
         }
@@ -2075,9 +2062,9 @@ export default function Home() {
           grid-template-areas:
             "pos pos pos struct struct struct"
             "econ econ clients clients product product";
-          gap: 14px;
+          gap: 16px;
           align-items: stretch;
-          height: 560px;
+          height: 790px;
         }
         .signal-card {
           position: relative;
@@ -2086,8 +2073,8 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           justify-content: space-between;
-          padding: 14px;
-          border-radius: 24px;
+          padding: 18px;
+          border-radius: 28px;
           overflow: hidden;
           background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
           border: 1px solid rgba(255,255,255,.13);
@@ -2143,26 +2130,26 @@ export default function Home() {
           font-size: 12px;
         }
         .signal-card-title {
-          margin-top: 10px;
-          font-size: clamp(20px, 1.7vw, 28px);
+          margin-top: 14px;
+          font-size: clamp(22px, 2vw, 34px);
           line-height: .98;
           letter-spacing: -.05em;
           font-weight: 700;
           max-width: 12ch;
         }
         .signal-card-points {
-          margin-top: 12px;
+          margin-top: 18px;
           display: grid;
-          gap: 8px;
+          gap: 10px;
         }
         .signal-card-point {
           display: grid;
           grid-template-columns: 10px 1fr;
-          gap: 9px;
+          gap: 10px;
           align-items: start;
           color: rgba(255,255,255,.72);
-          font-size: 12px;
-          line-height: 1.38;
+          font-size: 13px;
+          line-height: 1.45;
         }
         .signal-card-dot {
           width: 6px;
@@ -2172,7 +2159,7 @@ export default function Home() {
           background: #f7d237;
           box-shadow: 0 0 0 4px rgba(247,210,55,.08);
         }
-        .signal-card-bottom { margin-top: 12px; }
+        .signal-card-bottom { margin-top: 18px; }
         .signal-meter {
           height: 7px;
           border-radius: 999px;
@@ -2194,31 +2181,32 @@ export default function Home() {
           letter-spacing: .12em;
         }
         .analysis-right-card-plain {
-          min-height: 0;
+          min-height: 100%;
           height: auto;
           overflow: visible;
           max-width: none;
-          margin-top: 4px;
         }
         .start-cards-row {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 18px;
-          width: 100%;
+          gap: 26px;
           align-items: start;
         }
-        .start-card { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-        .start-card-media-wrap {
-          display: grid;
-          grid-template-columns: minmax(0,1fr) 84px;
-          align-items: center;
-          gap: 16px;
-          width: 100%;
+        .start-card {
           min-width: 0;
+          perspective: 2200px;
+        }
+        .start-card-shell {
+          display: grid;
+          grid-template-columns: minmax(0,1fr) 72px;
+          gap: 10px;
+          align-items: stretch;
+          transform-style: preserve-3d;
+          transition: transform .26s ease-out;
         }
         .start-card-inner {
           position: relative;
-          border-radius: 28px;
+          border-radius: 34px;
           overflow: hidden;
           border: none;
           background: transparent;
@@ -2231,15 +2219,16 @@ export default function Home() {
         .start-card-inner picture {
           display: block;
           width: 100%;
-          aspect-ratio: 1.72 / 1;
+          height: 100%;
         }
         .start-card-frame {
           width: 100%;
-          height: 100%;
+          aspect-ratio: 840 / 483;
+          height: auto;
           object-fit: cover;
           object-position: center;
           opacity: 1;
-          border-radius: 28px;
+          border-radius: 34px;
           display: block;
         }
         .start-card-overlay {
@@ -2259,68 +2248,51 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
+          top: 15.5%;
+          right: 7.2%;
+          font-size: clamp(44px, 3.8vw, 78px);
           line-height: .92;
           letter-spacing: -.06em;
           font-weight: 700;
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
-        .start-card-onrec .start-card-price-float {
-          right: 5.2%;
-          bottom: 11.2%;
-          font-size: clamp(42px, 3.4vw, 74px);
-        }
-        .start-card-playground .start-card-price-float {
-          right: 5.6%;
-          top: 18.2%;
-          font-size: clamp(42px, 3.4vw, 74px);
-        }
         .start-card-play {
           position: relative;
-          display: inline-flex;
+          display: flex;
           align-items: center;
           justify-content: center;
-          text-decoration: none;
+          align-self: stretch;
+          width: 72px;
+          min-width: 72px;
+          border-radius: 26px;
           overflow: hidden;
-          background: linear-gradient(180deg, #8a78d9 0%, #b7896d 24%, #d69a3a 56%, #f1d56b 78%, #1a1a6f 100%);
-          background-size: 180% 180%;
-          animation: cardPlayFlow 7s ease-in-out infinite;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 16px 32px rgba(0,0,0,.24);
-          border: 1px solid rgba(255,255,255,.08);
+          text-decoration: none;
+          background: linear-gradient(180deg, #b893ff 0%, #d59d48 56%, #f0da63 82%, #d6c4ff 100%);
+          box-shadow: 0 18px 36px rgba(8,14,28,.22), inset 0 1px 0 rgba(255,255,255,.18);
           transition: transform .26s ease-out, box-shadow .26s ease-out, filter .26s ease-out;
-          transform-style: preserve-3d;
-          filter: saturate(1.08);
         }
         .start-card-play::before {
           content: "";
           position: absolute;
-          inset: 0;
-          background:
-            radial-gradient(circle at 50% 78%, rgba(255,235,143,.34), transparent 42%),
-            linear-gradient(180deg, rgba(255,255,255,.18), transparent 30%);
+          inset: -18%;
+          background: radial-gradient(circle at 50% 78%, rgba(255,255,255,.26) 0%, rgba(255,255,255,0) 48%);
+          opacity: .9;
           pointer-events: none;
-          mix-blend-mode: screen;
-        }
-        .start-card-play-desktop {
-          width: 84px;
-          min-width: 84px;
-          border-radius: 26px;
-          min-height: 150px;
-        }
-        .start-card:hover .start-card-play-desktop {
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 22px 44px rgba(12,20,50,.30);
-          filter: saturate(1.16) brightness(1.02);
-        }
-        .start-card-play-mobile {
-          display: none;
         }
         .start-card-play-triangle {
+          position: relative;
           width: 0;
           height: 0;
-          border-left: 26px solid #0b1d3a;
-          border-top: 17px solid transparent;
-          border-bottom: 17px solid transparent;
+          border-top: 20px solid transparent;
+          border-bottom: 20px solid transparent;
+          border-left: 30px solid #08285b;
           margin-left: 6px;
-          filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
+          filter: drop-shadow(0 8px 18px rgba(4,16,39,.18));
+        }
+        .start-card:hover .start-card-play {
+          transform: translateY(-3px) translateZ(28px);
+          box-shadow: 0 22px 42px rgba(8,14,28,.28), inset 0 1px 0 rgba(255,255,255,.22);
+          filter: saturate(1.08);
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
@@ -2353,11 +2325,6 @@ export default function Home() {
           0% { background-position: 0% 50%; }
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
-        }
-        @keyframes cardPlayFlow {
-          0% { background-position: 0% 8%; }
-          50% { background-position: 100% 92%; }
-          100% { background-position: 0% 8%; }
         }
         @keyframes tgShine {
           0% { transform: translateX(-130%); }
@@ -2420,7 +2387,6 @@ export default function Home() {
           .hero-section { min-height: auto; padding: 24px 18px; }
           .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
           .start-cards-row { grid-template-columns: 1fr; }
-          .start-card-media-wrap { grid-template-columns: minmax(0,1fr) 88px; gap: 12px; }
           .stage-carousel-scene { min-height: 520px; }
           .stage-carousel-drum { height: 440px; }
           .stage-carousel-item-free { width: min(700px, 82vw); }
@@ -2631,11 +2597,16 @@ export default function Home() {
           .signal-card-points { gap: 8px; }
           .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; }
-          .start-cards-row { grid-template-columns: 1fr; gap: 16px; }
-          .start-card { flex: none; gap: 10px; }
-          .start-card-media-wrap {
+          .start-cards-row {
+            gap: 16px;
             grid-template-columns: 1fr;
-            gap: 0;
+          }
+          .start-card {
+            flex: none;
+          }
+          .start-card-shell {
+            grid-template-columns: minmax(0,1fr) 62px;
+            gap: 8px;
           }
           .start-card-inner {
             min-height: 0;
@@ -2643,15 +2614,12 @@ export default function Home() {
             border: none;
             background: transparent;
             box-shadow: none;
-            overflow: hidden;
-          }
-          .start-card-inner picture {
-            aspect-ratio: 1.26 / 1;
           }
           .start-card-frame {
             display: block;
             width: 100%;
-            height: 100%;
+            height: auto;
+            aspect-ratio: 840 / 483;
             object-fit: cover;
             object-position: center;
             border-radius: 24px;
@@ -2660,30 +2628,23 @@ export default function Home() {
             background: none;
           }
           .start-card-title-chip { display: none; }
-          .start-card-onrec .start-card-price-float {
-            right: 4.8%;
-            bottom: 10.4%;
-            top: auto;
-            font-size: clamp(30px, 9.8vw, 54px);
-          }
-          .start-card-playground .start-card-price-float {
-            right: 5%;
-            top: 18.6%;
+          .start-card-price-float {
+            top: 16%;
+            right: 7%;
+            left: auto;
             bottom: auto;
-            font-size: clamp(30px, 9.8vw, 54px);
+            font-size: clamp(30px, 9vw, 42px);
           }
-          .start-card-play-desktop { display: none; }
-          .start-card-play-mobile {
-            display: flex;
-            width: 100%;
-            min-height: 88px;
-            border-radius: 22px;
+          .start-card-play {
+            width: 62px;
+            min-width: 62px;
+            border-radius: 20px;
           }
           .start-card-play-triangle {
-            border-left-width: 24px;
             border-top-width: 15px;
             border-bottom-width: 15px;
-            margin-left: 4px;
+            border-left-width: 23px;
+            margin-left: 5px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,
