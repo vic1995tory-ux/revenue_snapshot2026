@@ -1,2665 +1,2693 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
-type InputType =
-  | "rangePercent"
-  | "text"
-  | "tags"
-  | "dualRange"
-  | "tripleMargin"
-  | "cjm"
-  | "seasonality"
-  | "map"
-  | "teamRoles"
-  | "departmentRelations"
-  | "stressRange"
-  | "analyticsBranch"
-  | "strategyGoal"
-  | "contact"
-  | "channelDistribution";
-
-type Question = {
-  id: string;
-  label: string;
-  type: InputType;
-  hint?: string;
-};
-
-type Chapter = {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-  questions: Question[];
-};
-
-type Answers = Record<string, any>;
-
-type TeamMember = {
-  id: string;
-  position: string;
-  responsibility: string;
-  isDecisionMaker: "" | "ЛПР" | "Не ЛПР";
-  participatesIn: string[];
-};
-
-type TouchMap = Record<string, boolean>;
-
-type ChannelDistribution = {
-  values: Record<string, number>;
-  touched: Record<string, boolean>;
-};
-
-type ProductItem = {
-  name: string;
-  value: number;
-  touched: boolean;
-};
-
-type CjmStage = {
-  stage: string;
-  description: string;
-  whatHappens: string;
-  duration: string;
-  clientGets: string;
-  companyGets: string;
-  problems: string;
-};
-
-type SeasonalityPoint = {
-  month: string;
-  value: number;
-};
-
-type TeamLinkMetric = {
-  speed: number;
-  communication: number;
-  infoQuality: number;
-};
-
-type TeamLink = {
-  id: string;
-  fromRole: string;
-  toRole: string;
-  metrics: TeamLinkMetric;
-};
-
-const BRAND = {
-  yellow: "#f7d237",
-  bg: "#0b1d3a",
-  bg2: "#08162d",
-};
-
-const KPI_TAGS = [
-  "Выручка",
-  "Маржа",
-  "ROMI",
-  "CAC",
-  "LTV",
-  "Средний чек",
-  "Конверсия в продажу",
-  "Retention",
-  "NPS",
-  "Скорость сделки",
-  "Загрузка команды",
-  "Cash Flow",
-];
-
-const FLOW_TAGS = [
-  "Instagram",
-  "Meta Ads",
-  "Google Ads",
-  "SEO",
-  "Рефералы",
-  "Партнёрства",
-  "Холодный outreach",
-  "Telegram",
-  "YouTube",
-  "Marketplace",
-];
-
-const RETENTION_TAGS = [
-  "Повторные продажи",
-  "Подписка",
-  "Комьюнити",
-  "Email nurturing",
-  "Личный менеджер",
-  "Апсейлы",
-  "Пакеты услуг",
-  "Реферальная программа",
-];
-
-const ANALYTICS_TAGS = [
-  "Рынок",
-  "Ниша",
-  "Сегменты",
-  "Каналы",
-  "Продажи",
-  "Юнит-экономика",
-  "Retention",
-  "Команда",
-];
-
-const TEAM_PARTICIPATION_TAGS = [
-  "Маркетинг",
-  "Продажи",
-  "Операционка",
-  "Разработка стратегии",
-  "Финансы",
-  "Кадры",
-  "Продукт",
-  "Сервис",
-  "Партнёрства",
-  "Аналитика",
-];
-
-const BUSINESS_STAGE_TAGS = [
-  "Idea",
-  "MVP",
-  "Early Revenue",
-  "PMF Search",
-  "Growth",
-  "Scale",
-  "Mature",
-];
-
-const MONTHS = [
-  "Янв",
-  "Фев",
-  "Мар",
-  "Апр",
-  "Май",
-  "Июн",
-  "Июл",
-  "Авг",
-  "Сен",
-  "Окт",
-  "Ноя",
-  "Дек",
-];
-
-const CJM_STAGES = [
-  "Acquisition",
-  "Activation",
-  "Value Realization",
-  "Conversion",
-  "Retention",
-] as const;
-
-const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
-  Acquisition: "Первый контакт клиента с вами",
-  Activation: "Момент, когда клиент начинает взаимодействие (первое действие)",
-  "Value Realization": "Когда клиент понимает ценность вашего продукта",
-  Conversion: "Этап оплаты или принятия решения о покупке",
-  Retention: "Повторное взаимодействие или продолжение работы с вами",
-};
-
-const STRESS_ZONES = ["Маркетинг", "Продажи", "Операционка", "Управление"];
-
-const chapters: Chapter[] = [
-  {
-    id: "economics",
-    title: "Экономика",
-    subtitle: "Маржа, выручка, объём, KPI",
-    icon: "◔",
-    questions: [
-      {
-        id: "margin",
-        label: "Какая часть выручки остаётся после всех расходов?",
-        type: "rangePercent",
-      },
-      {
-        id: "salesCount",
-        label: "Сколько клиентов или продаж у вас было за прошлый месяц?",
-        type: "text",
-      },
-      {
-        id: "revenue",
-        label: "Какая выручка была у вас за прошлый месяц?",
-        type: "text",
-      },
-      {
-        id: "kpis",
-        label: "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
-        type: "tags",
-      },
-    ],
-  },
-  {
-    id: "flow",
-    title: "Клиенты и поток",
-    subtitle: "Сегмент, спрос, capacity, каналы",
-    icon: "◎",
-    questions: [
-      {
-        id: "clientProfile",
-        label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
-        type: "text",
-      },
-      {
-        id: "demandCapacity",
-        label: "Сколько обращений вы получаете и сколько реально можете обработать?",
-        type: "dualRange",
-      },
-      {
-        id: "acquisitionChannels",
-        label: "Откуда к вам обычно приходят клиенты?",
-        type: "tags",
-      },
-      {
-        id: "channelEfficiency",
-        label: "Как распределяется входящий поток клиентов между выбранными каналами?",
-        type: "channelDistribution",
-      },
-    ],
-  },
-  {
-    id: "product",
-    title: "Продукт и продажи",
-    subtitle: "Маржинальные продукты, retention, CJM",
-    icon: "◈",
-    questions: [
-      {
-        id: "topProducts",
-        label: "Какие 1–3 продукта или услуги самые маржинальные?",
-        type: "tripleMargin",
-      },
-      {
-        id: "retention",
-        label: "Какими механиками вы удерживаете клиентов?",
-        type: "tags",
-      },
-      {
-        id: "cjm",
-        label: "Как проходит путь клиента от первого обращения до положительного опыта?",
-        type: "cjm",
-      },
-      {
-        id: "seasonality",
-        label: "Есть ли пики и спады продаж и чем они объясняются?",
-        type: "seasonality",
-      },
-    ],
-  },
-  {
-    id: "positioning",
-    title: "Позиционирование",
-    subtitle: "Описание бизнеса и география",
-    icon: "◌",
-    questions: [
-      {
-        id: "positionText",
-        label:
-          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
-        type: "text",
-      },
-      {
-        id: "geo",
-        label: "В каком регионе вы продаёте и где физически находится ваш бизнес?",
-        type: "map",
-      },
-    ],
-  },
-  {
-    id: "structure",
-    title: "Структура и процессы",
-    subtitle: "Команда, нагрузка, потери эффективности",
-    icon: "▣",
-    questions: [
-      {
-        id: "team",
-        label: "Как устроена команда: роли, зоны ответственности, перегруз?",
-        type: "teamRoles",
-      },
-      {
-        id: "interaction",
-        label: "Как выстроено взаимодействие между ролями и что изменилось за год?",
-        type: "departmentRelations",
-      },
-      {
-        id: "decisions",
-        label:
-          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
-        type: "text",
-      },
-      {
-        id: "stress",
-        label: "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
-        type: "stressRange",
-      },
-      {
-        id: "lossZones",
-        label: "В каких зонах бизнеса теряется эффективность?",
-        type: "stressRange",
-      },
-    ],
-  },
-  {
-    id: "analytics",
-    title: "Аналитика и управление",
-    subtitle: "Решения, изменения, data maturity",
-    icon: "▤",
-    questions: [
-      {
-        id: "analytics",
-        label:
-          "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
-        type: "analyticsBranch",
-      },
-      {
-        id: "changesNeeded",
-        label: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
-        type: "text",
-      },
-      {
-        id: "implemented",
-        label: "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
-        type: "text",
-      },
-    ],
-  },
-  {
-    id: "strategy",
-    title: "Стратегия",
-    subtitle: "Цели, расходы, горизонты 3/6/12",
-    icon: "✦",
-    questions: [
-      {
-        id: "goal",
-        label: "Какого результата бизнес должен достичь к концу года?",
-        type: "strategyGoal",
-      },
-      {
-        id: "horizons",
-        label: "Вокруг чего вы строите планы на 3, 6 и 12 месяцев?",
-        type: "text",
-      },
-    ],
-  },
-  {
-    id: "contact",
-    title: "Контактный блок",
-    subtitle: "Кому отправить отчёт и встречу",
-    icon: "✉",
-    questions: [
-      {
-        id: "contacts",
-        label: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
-        type: "contact",
-      },
-    ],
-  },
-];
-
-function makeId(prefix = "id") {
-  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
+function fmtMoney(n: number) {
+  return new Intl.NumberFormat("ru-RU", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n);
 }
 
-function textLength(s: string | undefined | null) {
-  return String(s ?? "").trim().length;
+function pct(n: number) {
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${Math.round(n)}%`;
 }
 
-function clamp(n: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, n));
-}
-
-function createEmptyTeamMember(): TeamMember {
-  return {
-    id: makeId("member"),
-    position: "",
-    responsibility: "",
-    isDecisionMaker: "",
-    participatesIn: [],
-  };
-}
-
-function createInitialSeasonalityPoints(): SeasonalityPoint[] {
-  return MONTHS.map((month) => ({ month, value: 0 }));
-}
-
-const initialAnswers: Answers = {
-  margin: { value: 0, note: "", touched: false },
-  salesCount: "",
-  revenue: "",
-  kpis: { selected: [], custom: [] },
-  clientProfile: "",
-  demandCapacity: { demand: 0, capacity: 0, touched: { demand: false, capacity: false } },
-  acquisitionChannels: { selected: [], custom: [] },
-  channelEfficiency: { values: {}, touched: {} },
-  topProducts: [
-    { name: "", value: 0, touched: false },
-    { name: "", value: 0, touched: false },
-    { name: "", value: 0, touched: false },
-  ],
-  retention: { selected: [], custom: [] },
-  cjm: {
-    stages: CJM_STAGES.map((stage) => ({
-      stage,
-      description: CJM_STAGE_DESCRIPTIONS[stage],
-      whatHappens: "",
-      duration: "",
-      clientGets: "",
-      companyGets: "",
-      problems: "",
-    })),
-  },
-  seasonality: {
-    points: createInitialSeasonalityPoints(),
-    peaksReason: "",
-    lowsReason: "",
-  },
-  positionText: { text: "", stages: [] },
-  geo: { physical: "", sales: "" },
-  team: [createEmptyTeamMember()],
-  interaction: {
-    links: [],
-    note: "",
-  },
-  decisions: "",
-  stress: {
-    values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-    touched: { Маркетинг: false, Продажи: false, Операционка: false, Управление: false },
-  },
-  lossZones: {
-    values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-    touched: { Маркетинг: false, Продажи: false, Операционка: false, Управление: false },
-  },
-  analytics: { hasAnalytics: null, tags: [], custom: [], note: "" },
-  changesNeeded: "",
-  implemented: "",
-  goal: { profitTarget: 0, mode: "", costChange: "", touched: false },
-  horizons: "",
-  contacts: { reportEmail: "", meetingContact: "" },
-};
-
-function getTagState(value: any): { selected: string[]; custom: string[] } {
-  if (Array.isArray(value)) return { selected: value, custom: [] };
-  return {
-    selected: value?.selected ?? [],
-    custom: value?.custom ?? [],
-  };
-}
-
-function getAllTagValues(value: any) {
-  const state = getTagState(value);
-  return [...state.selected, ...state.custom].filter(Boolean);
-}
-
-function createTeamLinksFromMembers(members: TeamMember[]): TeamLink[] {
-  const roles = members
-    .map((m) => m.position.trim())
-    .filter(Boolean)
-    .filter((role, index, arr) => arr.indexOf(role) === index);
-
-  const next: TeamLink[] = [];
-  for (let i = 0; i < roles.length; i += 1) {
-    for (let j = i + 1; j < roles.length; j += 1) {
-      next.push({
-        id: `${roles[i]}__${roles[j]}`,
-        fromRole: roles[i],
-        toRole: roles[j],
-        metrics: {
-          speed: 0,
-          communication: 0,
-          infoQuality: 0,
-        },
-      });
-    }
+function color(delta: number, invert = false) {
+  if (invert) {
+    if (delta < 0) return "text-emerald-300";
+    if (delta > 0) return "text-rose-300";
+  } else {
+    if (delta > 0) return "text-emerald-300";
+    if (delta < 0) return "text-rose-300";
   }
-  return next;
+  return "text-white/50";
 }
 
-function mergeTeamLinks(prev: TeamLink[], nextBase: TeamLink[]) {
-  const prevMap = new Map(prev.map((item) => [item.id, item]));
-  return nextBase.map((item) => prevMap.get(item.id) ?? item);
+function normalizeDigits(value: string) {
+  const digits = value.replace(/\D/g, "");
+  if (!digits) return "";
+  return digits.replace(/^0+(?=\d)/, "");
 }
 
-function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
-  const text = value.toLowerCase();
+function parseNumeric(value: string, fallback = 0) {
+  if (!value) return fallback;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  const presets = [
-    { keys: ["тбилиси", "груз", "georgia", "tbilisi"], point: { x: 604, y: 149 } },
-    { keys: ["кипр", "cyprus"], point: { x: 577, y: 184 } },
-    { keys: ["герман", "berlin", "germany"], point: { x: 517, y: 124 } },
-    { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 121 } },
-    { keys: ["эстон", "tallinn", "estonia"], point: { x: 557, y: 92 } },
-    { keys: ["латв", "riga", "latvia"], point: { x: 553, y: 104 } },
-    { keys: ["литв", "vilnius", "lithuania"], point: { x: 550, y: 112 } },
-    { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
-    { keys: ["португал", "lisbon", "portugal"], point: { x: 430, y: 175 } },
-    { keys: ["нидерл", "amsterdam", "netherlands"], point: { x: 500, y: 119 } },
-    { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
-    { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
-    { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
-    { keys: ["лондон", "uk", "united kingdom", "england"], point: { x: 470, y: 113 } },
-    { keys: ["usa", "new york", "united states", "america"], point: { x: 228, y: 145 } },
-    { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
-    { keys: ["браз", "brazil"], point: { x: 314, y: 279 } },
-    { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
-    { keys: ["инд", "india", "delhi"], point: { x: 734, y: 189 } },
-    { keys: ["сингап", "singapore"], point: { x: 815, y: 275 } },
-    { keys: ["австра", "sydney", "australia"], point: { x: 930, y: 321 } },
-    { keys: ["япон", "tokyo", "japan"], point: { x: 900, y: 160 } },
-  ];
-
-  for (const preset of presets) {
-    if (preset.keys.some((key) => text.includes(key))) return preset.point;
+function getMetricFlag(
+  type: "revenue" | "costs" | "profit",
+  delta: number
+): string {
+  if (type === "revenue") {
+    if (delta >= 10) return "Сильный рост";
+    if (delta >= 3) return "Рост";
+    if (delta <= -10) return "Сильное падение";
+    if (delta <= -3) return "Снижение";
+    return "Стабильно";
   }
 
-  return fallback;
-}
-
-function getQuestionProgress(question: Question, answers: Answers): number {
-  const value = answers[question.id];
-
-  switch (question.id) {
-    case "margin":
-      return value?.touched && Number(value?.value ?? 0) >= 0 ? 100 : 0;
-
-    case "salesCount":
-    case "revenue":
-    case "clientProfile":
-    case "changesNeeded":
-    case "implemented":
-    case "decisions":
-    case "horizons":
-      return textLength(value) >= 60 ? 100 : 0;
-
-    case "kpis":
-    case "retention":
-      return getAllTagValues(value).length > 0 ? 100 : 0;
-
-    case "acquisitionChannels":
-      return getAllTagValues(value).length > 0 ? 100 : 0;
-
-    case "demandCapacity": {
-      const touched = value?.touched ?? {};
-      return touched.demand && touched.capacity ? 100 : 0;
-    }
-
-    case "channelEfficiency": {
-      const selectedChannels = getAllTagValues(answers.acquisitionChannels);
-      const state: ChannelDistribution = value ?? { values: {}, touched: {} };
-      if (selectedChannels.length === 0) return 0;
-      const allTouched = selectedChannels.every((channel) => state.touched?.[channel]);
-      const total = selectedChannels.reduce(
-        (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
-        0
-      );
-      return allTouched && total === 100 ? 100 : 0;
-    }
-
-    case "topProducts": {
-      const items: ProductItem[] = value ?? [];
-      if (items.length !== 3) return 0;
-      const allNamed = items.every((item) => textLength(item.name) > 0);
-      const allTouched = items.every((item) => item.touched);
-      const total = items.reduce((acc, item) => acc + Number(item.value || 0), 0);
-      return allNamed && allTouched && total === 100 ? 100 : 0;
-    }
-
-    case "cjm": {
-      const stages: CjmStage[] = value?.stages ?? [];
-      const ok = stages.every((stage) => {
-        return (
-          textLength(stage.whatHappens) >= 30 &&
-          textLength(stage.duration) >= 3 &&
-          textLength(stage.clientGets) >= 30 &&
-          textLength(stage.companyGets) >= 30
-        );
-      });
-      return ok ? 100 : 0;
-    }
-
-    case "seasonality": {
-      const points: SeasonalityPoint[] = value?.points ?? [];
-      const hasMovement = points.some((p) => Math.abs(p.value) >= 10);
-      const peaksReason = textLength(value?.peaksReason) >= 30;
-      const lowsReason = textLength(value?.lowsReason) >= 30;
-      return hasMovement && peaksReason && lowsReason ? 100 : 0;
-    }
-
-    case "positionText":
-      return textLength(value?.text) >= 60 && (value?.stages?.length ?? 0) > 0 ? 100 : 0;
-
-    case "geo":
-      return textLength(value?.physical) > 0 && textLength(value?.sales) > 0 ? 100 : 0;
-
-    case "team": {
-      const members: TeamMember[] = value ?? [];
-      const ok = members.every((member) => {
-        return (
-          textLength(member.position) > 0 &&
-          textLength(member.responsibility) > 0 &&
-          member.isDecisionMaker !== "" &&
-          member.participatesIn.length > 0
-        );
-      });
-      return ok ? 100 : 0;
-    }
-
-    case "interaction": {
-      const links: TeamLink[] = value?.links ?? [];
-      if (links.length === 0) return 0;
-      const allRated = links.every((link) => {
-        return (
-          link.metrics.speed >= 1 &&
-          link.metrics.communication >= 1 &&
-          link.metrics.infoQuality >= 1
-        );
-      });
-      return allRated ? 100 : 0;
-    }
-
-    case "stress":
-    case "lossZones": {
-      const touched: TouchMap = value?.touched ?? {};
-      return STRESS_ZONES.every((zone) => touched[zone]) ? 100 : 0;
-    }
-
-    case "analytics": {
-      if (value?.hasAnalytics === false) return 100;
-      if (value?.hasAnalytics === true) {
-        return getAllTagValues({ selected: value.tags, custom: value.custom }).length > 0 ? 100 : 0;
-      }
-      return 0;
-    }
-
-    case "goal":
-      return value?.touched && textLength(value?.mode) > 0 ? 100 : 0;
-
-    case "contacts":
-      return textLength(value?.reportEmail) > 0 && textLength(value?.meetingContact) > 0 ? 100 : 0;
-
-    default:
-      return 0;
-  }
-}
-
-function getChapterProgress(chapter: Chapter, answers: Answers): number {
-  const total = chapter.questions.length;
-  const filled = chapter.questions.filter((q) => getQuestionProgress(q, answers) === 100).length;
-  return Math.round((filled / total) * 100);
-}
-
-function useAutosizeTextarea(value: string) {
-  const ref = useRef<HTMLTextAreaElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    el.style.height = "0px";
-    el.style.height = `${el.scrollHeight}px`;
-  }, [value]);
-
-  return ref;
-}
-
-function AutoTextarea({
-  value,
-  onChange,
-  placeholder,
-  minRows = 2,
-  className = "",
-}: {
-  value: string;
-  onChange: (next: string) => void;
-  placeholder?: string;
-  minRows?: number;
-  className?: string;
-}) {
-  const ref = useAutosizeTextarea(value);
-
-  return (
-    <textarea
-      ref={ref}
-      value={value}
-      rows={minRows}
-      placeholder={placeholder}
-      onChange={(e) => onChange(e.target.value)}
-      className={className}
-      style={{ overflow: "hidden", resize: "none" }}
-    />
-  );
-}
-
-function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
-  const radius = 44;
-  const stroke = 8;
-  const normalizedRadius = radius - stroke / 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
-        <circle
-          cx="44"
-          cy="44"
-          r={normalizedRadius}
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth={stroke}
-          fill="transparent"
-        />
-        <circle
-          cx="44"
-          cy="44"
-          r={normalizedRadius}
-          stroke={BRAND.yellow}
-          strokeWidth={stroke}
-          fill="transparent"
-          strokeLinecap="round"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
-          style={{
-            filter: "drop-shadow(0 0 10px rgba(247,210,55,0.45))",
-            transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
-          }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-lg font-semibold text-white">{Math.round(progress)}%</div>
-        <div className="text-[10px] uppercase tracking-[0.24em] text-white/45">filled</div>
-      </div>
-    </div>
-  );
-}
-
-function GlassCard({
-  children,
-  className = "",
-}: {
-  children: React.ReactNode;
-  className?: string;
-}) {
-  return (
-    <div
-      className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.05] backdrop-blur-2xl ${className}`}
-      style={{
-        boxShadow: "0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_26%)]" />
-      <div className="relative">{children}</div>
-    </div>
-  );
-}
-
-function TiltCardButton({
-  children,
-  onClick,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
-  const [style, setStyle] = useState({
-    transform:
-      "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
-  });
-
-  function handleMove(e: React.MouseEvent<HTMLButtonElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-
-    const rotateY = (px - 0.5) * 8;
-    const rotateX = (0.5 - py) * 8;
-
-    setStyle({
-      transform: `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.006)`,
-    });
+  if (type === "costs") {
+    if (delta <= -10) return "Снижение затрат";
+    if (delta <= -3) return "Экономия";
+    if (delta >= 10) return "Рост затрат";
+    if (delta >= 3) return "Давление затрат";
+    return "Стабильно";
   }
 
-  function reset() {
-    setStyle({
-      transform:
-        "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
-    });
-  }
-
-  return (
-    <button
-      onClick={onClick}
-      onMouseMove={handleMove}
-      onMouseLeave={reset}
-      onBlur={reset}
-      className="group block w-full text-left"
-      style={{
-        transformStyle: "preserve-3d",
-        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
-        ...style,
-      }}
-    >
-      {children}
-    </button>
-  );
+  if (delta >= 10) return "Рост маржи";
+  if (delta >= 3) return "Позитивная динамика";
+  if (delta <= -10) return "Просадка маржи";
+  if (delta <= -3) return "Давление на маржу";
+  return "Стабильно";
 }
 
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
-
-const compactInputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
-
-const textareaClass =
-  "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
-
-function TagField({
-  label,
-  value,
-  baseTags,
-  onChange,
-}: {
-  label?: string;
-  value: { selected: string[]; custom: string[] };
-  baseTags: string[];
-  onChange: (next: { selected: string[]; custom: string[] }) => void;
-}) {
-  const [isAdding, setIsAdding] = useState(false);
-  const [customValue, setCustomValue] = useState("");
-
-  const allCustom = value.custom ?? [];
-  const selected = value.selected ?? [];
-
-  function addCustomTag() {
-    const next = customValue.trim();
-    if (!next) return;
-    if (selected.includes(next) || allCustom.includes(next)) {
-      setCustomValue("");
-      setIsAdding(false);
-      return;
-    }
-    onChange({
-      selected,
-      custom: [...allCustom, next],
-    });
-    setCustomValue("");
-    setIsAdding(false);
+function flagTone(
+  type: "revenue" | "costs" | "profit",
+  delta: number
+): string {
+  if (type === "costs") {
+    if (delta <= -3) return "flag-good";
+    if (delta >= 3) return "flag-bad";
+    return "flag-neutral";
   }
 
-  function toggleBase(tag: string) {
-    onChange({
-      selected: selected.includes(tag)
-        ? selected.filter((t) => t !== tag)
-        : [...selected, tag],
-      custom: allCustom,
-    });
-  }
-
-  function toggleCustom(tag: string) {
-    onChange({
-      selected,
-      custom: allCustom.filter((t) => t !== tag),
-    });
-  }
-
-  return (
-    <div className="space-y-4">
-      {label ? <div className="text-sm text-white/55">{label}</div> : null}
-
-      <div className="flex flex-wrap gap-2.5">
-        {baseTags.map((tag) => {
-          const active = selected.includes(tag);
-          return (
-            <button
-              type="button"
-              key={tag}
-              onClick={() => toggleBase(tag)}
-              className={`rounded-full border px-3.5 py-2 text-sm transition ${
-                active
-                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2] shadow-[0_0_20px_rgba(247,210,55,0.18)]"
-                  : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"
-              }`}
-            >
-              {tag}
-            </button>
-          );
-        })}
-
-        {allCustom.map((tag) => (
-          <button
-            type="button"
-            key={`custom-${tag}`}
-            onClick={() => toggleCustom(tag)}
-            className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3.5 py-2 text-sm text-cyan-100 transition hover:bg-cyan-400/15"
-          >
-            {tag} ×
-          </button>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => setIsAdding((prev) => !prev)}
-          className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm text-white/75 transition hover:border-[#f7d237]/25 hover:bg-[#f7d237]/10 hover:text-[#fff3b2]"
-        >
-          +
-        </button>
-      </div>
-
-      {isAdding && (
-        <div className="flex flex-wrap gap-2">
-          <input
-            className={compactInputClass}
-            placeholder="Добавить свой вариант"
-            value={customValue}
-            onChange={(e) => setCustomValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustomTag();
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={addCustomTag}
-            className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2] transition hover:bg-[#f7d237]/16"
-          >
-            Сохранить
-          </button>
-        </div>
-      )}
-    </div>
-  );
+  if (delta >= 3) return "flag-good";
+  if (delta <= -3) return "flag-bad";
+  return "flag-neutral";
 }
 
-function RangeBlock({
+function TopMetricCard({
   title,
   value,
-  min,
-  max,
-  onChange,
+  delta,
+  type,
+  invert = false,
 }: {
   title: string;
-  value: number;
-  min: number;
-  max: number;
-  onChange: (val: number) => void;
+  value: string;
+  delta: number;
+  type: "revenue" | "costs" | "profit";
+  invert?: boolean;
 }) {
   return (
-    <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-      <div className="mb-3 flex items-center justify-between text-sm text-white/60">
-        <span>{title}</span>
-        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
-          {value}
-        </span>
-      </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[#f7d237]"
-      />
-    </div>
-  );
-}
-
-function GeoMapPreview({
-  physical,
-  sales,
-}: {
-  physical: string;
-  sales: string;
-}) {
-  const physicalPoint = geoPointFromText(physical, { x: 575, y: 165 });
-  const salesPoint = geoPointFromText(sales, physicalPoint);
-  const salesIsWorld =
-    sales.toLowerCase().includes("весь мир") ||
-    sales.toLowerCase().includes("world") ||
-    sales.toLowerCase().includes("global");
-
-  const salesRadius = salesIsWorld ? 240 : 90;
-
-  return (
-    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
-
-      <div className="relative h-[320px] w-full overflow-hidden rounded-[24px] bg-[#001233]">
-        <img
-          src="/worldmap_w.svg"
-          alt="world map"
-          className="absolute inset-0 h-full w-full object-contain opacity-28"
-        />
-
-        <svg viewBox="0 0 1100 420" className="absolute inset-0 h-full w-full">
-          <g opacity="0.1" stroke="rgba(255,255,255,0.12)">
-            <line x1="80" y1="70" x2="1020" y2="70" />
-            <line x1="80" y1="140" x2="1020" y2="140" />
-            <line x1="80" y1="210" x2="1020" y2="210" />
-            <line x1="80" y1="280" x2="1020" y2="280" />
-            <line x1="80" y1="350" x2="1020" y2="350" />
-          </g>
-
-          <circle
-            cx={salesPoint.x}
-            cy={salesPoint.y}
-            r={salesRadius}
-            stroke="rgba(111,211,255,0.40)"
-            strokeWidth="2"
-            strokeDasharray="8 8"
-            fill="rgba(111,211,255,0.07)"
-          />
-
-          <circle
-            cx={physicalPoint.x}
-            cy={physicalPoint.y}
-            r="10"
-            fill="#f7d237"
-            style={{ filter: "drop-shadow(0 0 16px rgba(247,210,55,0.75))" }}
-          />
-          <circle cx={physicalPoint.x} cy={physicalPoint.y} r="22" fill="rgba(247,210,55,0.12)" />
-
-          <g transform={`translate(${Math.max(physicalPoint.x - 90, 100)}, ${physicalPoint.y - 52})`}>
-            <rect
-              width="180"
-              height="46"
-              rx="23"
-              fill="rgba(247,210,55,0.12)"
-              stroke="rgba(247,210,55,0.35)"
-            />
-            <text x="90" y="29" textAnchor="middle" fill="#fff3b2" fontSize="14">
-              Физическая локация
-            </text>
-          </g>
-
-          <g transform={`translate(${Math.max(salesPoint.x + 18, 120)}, ${salesPoint.y - 12})`}>
-            <rect
-              width={salesIsWorld ? "126" : "158"}
-              height="44"
-              rx="22"
-              fill="rgba(77,194,255,0.12)"
-              stroke="rgba(77,194,255,0.35)"
-            />
-            <text
-              x={salesIsWorld ? "63" : "79"}
-              y="28"
-              textAnchor="middle"
-              fill="#c8f3ff"
-              fontSize="14"
-            >
-              {salesIsWorld ? "Весь мир" : "Радиус продаж"}
-            </text>
-          </g>
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function TeamMembersBuilder({
-  value,
-  onChange,
-}: {
-  value: TeamMember[];
-  onChange: (next: TeamMember[]) => void;
-}) {
-  const members = value ?? [createEmptyTeamMember()];
-
-  function updateMember(id: string, patch: Partial<TeamMember>) {
-    onChange(members.map((member) => (member.id === id ? { ...member, ...patch } : member)));
-  }
-
-  function addMember() {
-    onChange([...members, createEmptyTeamMember()]);
-  }
-
-  function removeMember(id: string) {
-    if (members.length === 1) return;
-    onChange(members.filter((member) => member.id !== id));
-  }
-
-  return (
-    <div className="space-y-4">
-      <div className="space-y-4">
-        {members.map((member, index) => (
-          <div
-            key={member.id}
-            className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5"
-          >
-            <div className="mb-4 flex items-center justify-between gap-3">
-              <div className="text-sm uppercase tracking-[0.22em] text-white/35">
-                Карточка участника {index + 1}
-              </div>
-              {members.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeMember(member.id)}
-                  className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 transition hover:bg-white/[0.05] hover:text-white"
-                >
-                  Удалить
-                </button>
-              )}
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <div className="mb-2 text-sm text-white/55">Должность</div>
-                <input
-                  className={compactInputClass}
-                  placeholder="Например: COO / Head of Sales"
-                  value={member.position}
-                  onChange={(e) => updateMember(member.id, { position: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <div className="mb-2 text-sm text-white/55">Главная зона ответственности</div>
-                <input
-                  className={compactInputClass}
-                  placeholder="Например: рост продаж / операционка"
-                  value={member.responsibility}
-                  onChange={(e) => updateMember(member.id, { responsibility: e.target.value })}
-                />
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <div className="mb-2 text-sm text-white/55">ЛПР / не ЛПР</div>
-              <div className="flex flex-wrap gap-2.5">
-                {["ЛПР", "Не ЛПР"].map((option) => {
-                  const active = member.isDecisionMaker === option;
-                  return (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() =>
-                        updateMember(member.id, {
-                          isDecisionMaker: option as TeamMember["isDecisionMaker"],
-                        })
-                      }
-                      className={`rounded-full border px-3.5 py-2 text-sm transition ${
-                        active
-                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                          : "border-white/10 bg-white/[0.03] text-white/70"
-                      }`}
-                    >
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <div className="mb-2 text-sm text-white/55">Где принимает участие</div>
-              <div className="flex flex-wrap gap-2.5">
-                {TEAM_PARTICIPATION_TAGS.map((tag) => {
-                  const active = member.participatesIn.includes(tag);
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() =>
-                        updateMember(member.id, {
-                          participatesIn: active
-                            ? member.participatesIn.filter((t) => t !== tag)
-                            : [...member.participatesIn, tag],
-                        })
-                      }
-                      className={`rounded-full border px-3.5 py-2 text-sm transition ${
-                        active
-                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                          : "border-white/10 bg-white/[0.03] text-white/70"
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+    <div className="glass-card soft-glow glare-card metric-card metric-card-main">
+      <div className="metric-head">
+        <div className="metric-title-wrap">
+          <div className="metric-label">{title}</div>
+          <div className={`metric-flag ${flagTone(type, delta)}`}>
+            {getMetricFlag(type, delta)}
           </div>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={addMember}
-        className="flex h-[98px] w-full items-center justify-center rounded-[24px] border border-dashed border-white/16 bg-white/[0.03] text-4xl text-white/55 transition hover:border-[#f7d237]/30 hover:bg-[#f7d237]/6 hover:text-[#fff3b2]"
-        aria-label="Добавить карточку"
-      >
-        +
-      </button>
-    </div>
-  );
-}
-
-function RelationStars({
-  value,
-  onChange,
-}: {
-  value: number;
-  onChange: (next: number) => void;
-}) {
-  return (
-    <div className="flex items-center gap-2">
-      {[1, 2, 3, 4, 5].map((n) => {
-        const active = n <= value;
-        return (
-          <button
-            key={n}
-            type="button"
-            onClick={() => onChange(n)}
-            className={`h-8 w-8 rounded-full border text-xs transition ${
-              active
-                ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                : "border-white/10 bg-white/[0.03] text-white/50"
-            }`}
-          >
-            {n}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function TeamRelationsBuilder({
-  value,
-  teamMembers,
-  onChange,
-}: {
-  value: { links: TeamLink[]; note: string };
-  teamMembers: TeamMember[];
-  onChange: (next: { links: TeamLink[]; note: string }) => void;
-}) {
-  const generatedBase = createTeamLinksFromMembers(teamMembers);
-  const links = mergeTeamLinks(value?.links ?? [], generatedBase);
-  const note = value?.note ?? "";
-
-  useEffect(() => {
-    const currentIds = (value?.links ?? []).map((item) => item.id).join("|");
-    const nextIds = links.map((item) => item.id).join("|");
-    if (currentIds !== nextIds) {
-      onChange({ links, note });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamMembers]);
-
-  function updateMetric(linkId: string, patch: Partial<TeamLinkMetric>) {
-    onChange({
-      links: links.map((link) =>
-        link.id === linkId ? { ...link, metrics: { ...link.metrics, ...patch } } : link
-      ),
-      note,
-    });
-  }
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5">
-        <div className="mb-3 text-sm uppercase tracking-[0.22em] text-white/35">
-          Связки между ролями
         </div>
 
-        {links.length === 0 ? (
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/45">
-            Сначала заполните роли в вопросе выше.
+        <div className={`metric-delta-top ${color(delta, invert)}`}>
+          {pct(delta)}
+        </div>
+      </div>
+
+      <div className="metric-main-value">{value}</div>
+    </div>
+  );
+}
+
+function ModelCard({
+  title,
+  value,
+  delta,
+  invert = false,
+}: {
+  title: string;
+  value: string | number;
+  delta: number;
+  invert?: boolean;
+}) {
+  return (
+    <div className="glass-card soft-glow glare-card model-card">
+      <div className="model-head">
+        <div className="model-label">{title}</div>
+        <div className={`model-delta-top ${color(delta, invert)}`}>
+          {pct(delta)}
+        </div>
+      </div>
+
+      <div className="model-main-value">{value}</div>
+    </div>
+  );
+}
+
+function Row({
+  label,
+  delta,
+  invert = false,
+}: {
+  label: string;
+  delta: number;
+  invert?: boolean;
+}) {
+  return (
+    <div className="flex justify-between gap-4">
+      <span className="text-white/60">{label}</span>
+      <span className={color(delta, invert)}>{pct(delta)}</span>
+    </div>
+  );
+}
+
+function Slider({
+  title,
+  subtitle,
+  value,
+  set,
+  onStart,
+}: {
+  title: string;
+  subtitle: string;
+  value: number;
+  set: (v: number) => void;
+  onStart: () => void;
+}) {
+  const [started, setStarted] = useState(false);
+
+  return (
+    <div className="glass-card soft-glow glare-card slider-card">
+      <div>
+        <div className="slider-title">{title}</div>
+        <div className="slider-subtitle">{subtitle}</div>
+      </div>
+
+      <div className="mt-auto">
+        <input
+          type="range"
+          min="-0.3"
+          max="0.3"
+          step="0.01"
+          value={value}
+          onMouseDown={() => {
+            if (!started) {
+              onStart();
+              setStarted(true);
+            }
+          }}
+          onTouchStart={() => {
+            if (!started) {
+              onStart();
+              setStarted(true);
+            }
+          }}
+          onMouseUp={() => setStarted(false)}
+          onTouchEnd={() => setStarted(false)}
+          onChange={(e) => set(Number(e.target.value))}
+          className="range-input mt-4 w-full accent-[#f7d237]"
+        />
+        <div className="slider-percent">{Math.round(value * 100)}%</div>
+      </div>
+    </div>
+  );
+}
+
+function HeroEconomyChart() {
+  const base = {
+    leads: 10,
+    deals: 2.0,
+    aov: 3200,
+    margin: 40,
+    revenue: 13000,
+    opex: 3500,
+    cogs: 3900,
+    grossProfit: 5600,
+  };
+
+  const drivers = [
+    {
+      key: "marketing",
+      label: "Маркетинг",
+      full: "Маркетинг",
+      deltaLabel: "+30% лидов и рост спроса",
+      leads: 13,
+      deals: 2.4,
+      aov: 3200,
+      margin: 42,
+      revenue: 14800,
+      opex: 3200,
+      cogs: 3600,
+      grossProfit: 6200,
+    },
+    {
+      key: "aov",
+      label: "AOV",
+      full: "AOV",
+      deltaLabel: "+рост среднего заказа",
+      leads: 10,
+      deals: 2.0,
+      aov: 4100,
+      margin: 44,
+      revenue: 15200,
+      opex: 3300,
+      cogs: 3900,
+      grossProfit: 6700,
+    },
+    {
+      key: "sales",
+      label: "Продажи",
+      full: "Продажи",
+      deltaLabel: "+0.8 сделки",
+      leads: 10,
+      deals: 2.8,
+      aov: 3200,
+      margin: 45,
+      revenue: 18200,
+      opex: 4600,
+      cogs: 5100,
+      grossProfit: 8500,
+    },
+    {
+      key: "costs",
+      label: "Модель расходов",
+      full: "Модель расходов",
+      deltaLabel: "−давление на OPEX и Margin",
+      leads: 10,
+      deals: 2.0,
+      aov: 3200,
+      margin: 51,
+      revenue: 13000,
+      opex: 2500,
+      cogs: 3900,
+      grossProfit: 6600,
+    },
+  ];
+
+  const [activeIndex, setActiveIndex] = useState(0);
+  const timerRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    timerRef.current = window.setInterval(() => {
+      setActiveIndex((v) => (v + 1) % drivers.length);
+    }, 3400);
+
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+  }, [drivers.length]);
+
+  const setDriver = (index: number) => {
+    setActiveIndex(index);
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    timerRef.current = window.setInterval(() => {
+      setActiveIndex((v) => (v + 1) % drivers.length);
+    }, 3400);
+  };
+
+  const active = drivers[activeIndex];
+  const bars = [
+    { name: "Revenue", value: active.revenue, good: true },
+    { name: "OPEX", value: active.opex, good: false },
+    { name: "COGS", value: active.cogs, good: false },
+    { name: "Gross Profit", value: active.grossProfit, good: true },
+  ];
+  const maxBar = 20000;
+
+  return (
+    <div className="hero-visual-shell">
+      <div className="hero-chart-float">
+        <div className="hero-chart-float-title">MVP-Drivers</div>
+
+        <div className="hero-levers-inline hero-levers-inline-float">
+          {drivers.map((item, index) => (
+            <button
+              key={item.key}
+              type="button"
+              onClick={() => setDriver(index)}
+              className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="hero-chart-box glare-card">
+          <div className="hero-chart-metrics-row">
+            <div className="hero-metric-square glare-card-lite">
+              <span>Лидов / мес</span>
+              <strong>{active.leads}</strong>
+            </div>
+
+            <div className="hero-metric-square glare-card-lite">
+              <span>Сделок / мес</span>
+              <strong>{active.deals.toFixed(1)}</strong>
+            </div>
+
+            <div className="hero-metric-square glare-card-lite">
+              <span>AOV</span>
+              <strong>{fmtMoney(active.aov)}</strong>
+            </div>
+
+            <div className="hero-metric-square glare-card-lite">
+              <span>Маржа</span>
+              <strong>{active.margin}%</strong>
+            </div>
           </div>
-        ) : (
-          <div className="space-y-4">
-            {links.map((link) => (
-              <div
-                key={link.id}
-                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
-              >
-                <div className="mb-4 text-sm font-medium text-white">
-                  {link.fromRole} ↔ {link.toRole}
-                </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">
-                      Скорость выполнения изменений
+          <div className="bar-chart-wrap glare-card-lite">
+            <div className="bar-chart-scale">
+              <span>$0</span>
+              <span>$5 000</span>
+              <span>$10 000</span>
+              <span>$15 000</span>
+              <span>$20 000</span>
+            </div>
+
+            <div className="bar-chart-grid" />
+
+            <div className="bar-chart-columns bar-chart-columns-horizontal">
+              {bars.map((bar) => {
+                const width = Math.max(6, (bar.value / maxBar) * 100);
+
+                return (
+                  <div key={bar.name} className="bar-chart-row">
+                    <div className="bar-chart-row-top">
+                      <div className="bar-chart-label">{bar.name}</div>
+                      <div className="bar-chart-value">{fmtMoney(bar.value)}</div>
                     </div>
-                    <RelationStars
-                      value={link.metrics.speed}
-                      onChange={(next) => updateMetric(link.id, { speed: next })}
-                    />
-                  </div>
 
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">Коммуникация</div>
-                    <RelationStars
-                      value={link.metrics.communication}
-                      onChange={(next) => updateMetric(link.id, { communication: next })}
-                    />
-                  </div>
-
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">
-                      Качество передаваемой информации
+                    <div className="bar-chart-bar-shell-horizontal">
+                      <div
+                        className={`bar-chart-bar bar-chart-bar-horizontal ${bar.good ? "bar-good" : "bar-bad"} ${bar.name === "Revenue" ? "bar-revenue" : ""}`}
+                        style={{ width: `${width}%` }}
+                      />
                     </div>
-                    <RelationStars
-                      value={link.metrics.infoQuality}
-                      onChange={(next) => updateMetric(link.id, { infoQuality: next })}
-                    />
                   </div>
-                </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="hero-chart-bottom">
+            <div className="hero-money-card hero-money-card-clean hero-money-card-muted">
+              <span>База</span>
+              <strong>{fmtMoney(base.revenue)}</strong>
+              <small>{fmtMoney(base.grossProfit)} gross profit / мес</small>
+            </div>
+
+            <div className="hero-money-card hero-money-card-clean hero-money-card-muted">
+              <span>Активный драйвер</span>
+              <strong>{fmtMoney(active.revenue)}</strong>
+              <small>{fmtMoney(active.grossProfit)} gross profit / мес</small>
+            </div>
+          </div>
+
+          <div className="hero-active-note glare-card-lite">
+            <span className="hero-active-note-dot" />
+            <span>
+              Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SnapshotStructure() {
+  const layers = [
+    {
+      title: "Позиционирование",
+      weight: "27%",
+      hint: "точка входа",
+      points: ["что обещание делает понятным", "какой сегмент готов реагировать первым"],
+      level: 27,
+      tone: "violet",
+    },
+    {
+      title: "Структура компании",
+      weight: "27%",
+      hint: "ресурсы и роли",
+      points: ["кто удерживает выручку в системе", "где ручное управление тормозит рост"],
+      level: 27,
+      tone: "blue",
+    },
+    {
+      title: "Экономика",
+      weight: "18%",
+      hint: "unit-логика",
+      points: ["что происходит с маржой и cost stack", "какой рычаг даёт главный финансовый сдвиг"],
+      level: 18,
+      tone: "gold",
+    },
+    {
+      title: "Клиенты",
+      weight: "14%",
+      hint: "спрос и поведение",
+      points: ["кто приносит деньги сейчас", "где теряется конверсия по пути"],
+      level: 14,
+      tone: "slate",
+    },
+    {
+      title: "Продукт",
+      weight: "14%",
+      hint: "ценность и упаковка",
+      points: ["что продаётся легче всего", "какая версия оффера масштабируется"],
+      level: 14,
+      tone: "indigo",
+    },
+  ];
+
+  return (
+    <div className="signal-board">
+      {layers.map((layer, index) => (
+        <article
+          key={layer.title}
+          className={`signal-card signal-card-${layer.tone} signal-card-layout-${index + 1}`}
+          style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
+        >
+          <div className="signal-card-top">
+            <span className="signal-card-hint">{layer.hint}</span>
+            <span className="signal-card-weight">{layer.weight}</span>
+          </div>
+
+          <div className="signal-card-title">{layer.title}</div>
+
+          <div className="signal-card-points">
+            {layer.points.map((point) => (
+              <div key={point} className="signal-card-point">
+                <span className="signal-card-dot" />
+                <span>{point}</span>
               </div>
             ))}
           </div>
-        )}
 
-        <div className="mt-4">
-          <div className="mb-2 text-sm text-white/55">Комментарий</div>
-          <AutoTextarea
-            className={textareaClass}
-            minRows={3}
-            placeholder="Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год"
-            value={note}
-            onChange={(next) => onChange({ links, note: next })}
-          />
+          <div className="signal-card-bottom">
+            <div className="signal-meter">
+              <span style={{ width: `${layer.level * 3}%` }} />
+            </div>
+            <div className="signal-caption">вес слоя в гипотезе</div>
+          </div>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function ResultDocCard({
+  tab,
+  title,
+  text,
+}: {
+  tab: string;
+  title: string;
+  text: string;
+}) {
+  return (
+    <div className="result-doc-card tilt-card">
+      <div className="result-doc-card-inner tilt-inner glare-card">
+        <div className="result-doc-top">
+          <div className="result-doc-tab">{tab}</div>
+        </div>
+        <div className="result-doc-title">{title}</div>
+        <div className="result-doc-text">{text}</div>
+      </div>
+    </div>
+  );
+}
+
+function StartCard({
+  title,
+  icon,
+  mobileIcon,
+  price,
+  href,
+}: {
+  title: string;
+  icon: string;
+  mobileIcon?: string;
+  price: string;
+  href: string;
+  stats?: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <div className="start-card tilt-card">
+      <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
+        <picture>
+          <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
+          <img src={icon} alt={title} className="start-card-frame" />
+        </picture>
+        <div className="start-card-overlay start-card-overlay-plain">
+          <div className="start-card-bottom-simple">
+            <div className="start-card-price-float">{price}</div>
+            <a href={href} className="start-card-btn start-card-btn-floating">
+              Попробовать Snapshot
+            </a>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function SeasonalityChart({
-  value,
-  onChange,
-}: {
-  value: {
-    points: SeasonalityPoint[];
-    peaksReason: string;
-    lowsReason: string;
-  };
-  onChange: (next: {
-    points: SeasonalityPoint[];
-    peaksReason: string;
-    lowsReason: string;
-  }) => void;
-}) {
-  const points = value?.points ?? createInitialSeasonalityPoints();
-  const peaksReason = value?.peaksReason ?? "";
-  const lowsReason = value?.lowsReason ?? "";
+type StageItem = {
+  stage: string;
+  icon: string;
+  industries: string[];
+  setup: string;
+  direction: string;
+  metrics: Array<{ label: string; value: string }>;
+  bars: Array<{ label: string; fact: number; plan: number }>;
+};
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
-  const [dragIndex, setDragIndex] = useState<number | null>(null);
-
-  const width = 980;
-  const height = 260;
-  const paddingX = 28;
-  const paddingY = 24;
-  const chartWidth = width - paddingX * 2;
-  const chartHeight = height - paddingY * 2;
-
-  function pointXY(index: number, v: number) {
-    const x = paddingX + (chartWidth / 11) * index;
-    const y = paddingY + chartHeight / 2 - (v / 100) * (chartHeight / 2 - 10);
-    return { x, y };
-  }
-
-  function smoothPath(values: SeasonalityPoint[]) {
-    const coords = values.map((p, index) => pointXY(index, p.value));
-    if (coords.length === 0) return "";
-
-    let d = `M ${coords[0].x} ${coords[0].y}`;
-    for (let i = 0; i < coords.length - 1; i += 1) {
-      const p0 = coords[i];
-      const p1 = coords[i + 1];
-      const cp1x = p0.x + (p1.x - p0.x) / 2;
-      const cp1y = p0.y;
-      const cp2x = p0.x + (p1.x - p0.x) / 2;
-      const cp2y = p1.y;
-      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
-    }
-    return d;
-  }
-
-  function updatePoint(index: number, clientY: number) {
-    const svg = svgRef.current;
-    if (!svg) return;
-
-    const rect = svg.getBoundingClientRect();
-    const localY = clientY - rect.top;
-    const center = paddingY + chartHeight / 2;
-    const relative = center - localY;
-    const nextValue = clamp(Math.round((relative / (chartHeight / 2 - 10)) * 100), -100, 100);
-
-    const nextPoints = points.map((point, i) =>
-      i === index ? { ...point, value: nextValue } : point
-    );
-
-    onChange({
-      points: nextPoints,
-      peaksReason,
-      lowsReason,
-    });
-  }
-
-  useEffect(() => {
-    function handleMove(e: MouseEvent) {
-      if (dragIndex === null) return;
-      updatePoint(dragIndex, e.clientY);
-    }
-
-    function handleUp() {
-      setDragIndex(null);
-    }
-
-    window.addEventListener("mousemove", handleMove);
-    window.addEventListener("mouseup", handleUp);
-    return () => {
-      window.removeEventListener("mousemove", handleMove);
-      window.removeEventListener("mouseup", handleUp);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dragIndex, points, peaksReason, lowsReason]);
-
-  const peakMonths = points.filter((p) => p.value >= 25).map((p) => p.month);
-  const lowMonths = points.filter((p) => p.value <= -25).map((p) => p.month);
-
+function StageCard({ item, isFront }: { item: StageItem; isFront: boolean }) {
   return (
-    <div className="space-y-5">
-      <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="rounded-2xl border border-emerald-300/25 bg-emerald-400/12 px-4 py-2 text-sm text-emerald-100">
-            Пики
+    <div className={`stage-card-analytics glare-card ${isFront ? "is-front" : ""}`}>
+      <div className="stage-card-top-panel">
+        <div className="stage-card-copy">
+          <div className="stage-copy-block">
+            <h4>Starting Position</h4>
+            <p>{item.setup}</p>
           </div>
-          <div className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
-            Спады
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
-            Двигайте точки по вертикали
+          <div className="stage-copy-block">
+            <h4>Strategic Direction</h4>
+            <p>{item.direction}</p>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <svg
-            ref={svgRef}
-            viewBox={`0 0 ${width} ${height}`}
-            className="h-[260px] min-w-[900px] w-full rounded-[20px] bg-[#071733]"
-          >
-            {[0, 1, 2, 3, 4].map((i) => {
-              const y = paddingY + (chartHeight / 4) * i;
-              return (
-                <line
-                  key={`grid-${i}`}
-                  x1={paddingX}
-                  x2={width - paddingX}
-                  y1={y}
-                  y2={y}
-                  stroke="rgba(255,255,255,0.08)"
-                />
-              );
-            })}
+        <div className="stage-card-heading">
+          <span>Stage</span>
+          <strong>{item.stage}</strong>
+        </div>
+      </div>
 
-            <line
-              x1={paddingX}
-              x2={width - paddingX}
-              y1={paddingY + chartHeight / 2}
-              y2={paddingY + chartHeight / 2}
-              stroke="rgba(255,255,255,0.18)"
-              strokeDasharray="6 6"
-            />
+      <div className="stage-card-bottom-panel">
+        <div className="stage-card-bottom-inner">
+          <div className="stage-rings-grid compact-metrics-grid">
+            {item.metrics.map((metric) => (
+              <div key={metric.label} className="stage-inline-metric">
+                <div className="stage-ring-label">{metric.label}</div>
+                <div className="stage-inline-metric-value">{metric.value}</div>
+              </div>
+            ))}
+          </div>
 
-            <path
-              d={smoothPath(points)}
-              fill="none"
-              stroke="#7dd3fc"
-              strokeWidth="3"
-              style={{ filter: "drop-shadow(0 0 12px rgba(125,211,252,0.25))" }}
-            />
+          <div className="stage-bars-area">
+            <div className="stage-bars-title">fact / plan</div>
+            <div className="stage-bars-wrap">
+              {item.bars.map((bar) => {
+                const max = Math.max(bar.fact, bar.plan, 1);
+                return (
+                  <div className="stage-bar-group" key={bar.label}>
+                    <div className="stage-bar-label">{bar.label}</div>
+                    <div className="stage-bar-stack">
+                      <div className="stage-bar-track">
+                        <div
+                          className="stage-bar-fill stage-bar-fill-fact"
+                          style={{ width: `${(bar.fact / max) * 100}%` }}
+                        />
+                      </div>
+                      <div className="stage-bar-track stage-bar-track-thin">
+                        <div
+                          className="stage-bar-fill stage-bar-fill-plan"
+                          style={{ width: `${(bar.plan / max) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-            {points.map((point, index) => {
-              const { x, y } = pointXY(index, point.value);
-              const pointColor =
-                point.value >= 25
-                  ? "#34d399"
-                  : point.value <= -25
-                    ? "#f7d237"
-                    : "#ffffff";
+function StageCarousel() {
+  const items: StageItem[] = [
+    {
+      stage: "Seed",
+      icon: "/seed.svg",
+      industries: ["industry-saas", "industry-healthtech"],
+      setup:
+        "Есть ранний спрос и подтверждённая ценность, но модель ещё не собрана в устойчивый контур продаж.",
+      direction:
+        "Snapshot помогает найти первый входной продукт и выстроить опорную логику monetization без лишнего масштаба.",
+      metrics: [
+        { label: "Leads", value: "25 / 40" },
+        { label: "Qual leads", value: "6 / 15" },
+        { label: "Demo", value: "2 / 5" },
+        { label: "Deals", value: "1 / 2" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 5, plan: 3 },
+        { label: "CAC payback", fact: 9, plan: 6 },
+      ],
+    },
+    {
+      stage: "Startup",
+      icon: "/startup.svg",
+      industries: ["industry-fintech", "industry-ecom"],
+      setup:
+        "Продукт уже продаётся, но рост держится на ручных усилиях и не превращается в предсказуемую систему.",
+      direction:
+        "Snapshot выделяет главный ограничитель роста и показывает, где усилие даст максимальный сдвиг в unit-экономике.",
+      metrics: [
+        { label: "Leads", value: "70 / 95" },
+        { label: "Qual leads", value: "22 / 30" },
+        { label: "Demo", value: "10 / 14" },
+        { label: "Deals", value: "4 / 6" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 8, plan: 5 },
+        { label: "Margin", fact: 37, plan: 46 },
+      ],
+    },
+    {
+      stage: "Growth",
+      icon: "/growth.svg",
+      industries: [
+        "industry-saas",
+        "industry-ecom",
+        "industry-fintech",
+        "industry-edtech",
+        "industry-healthtech",
+        "industry-b2b",
+      ],
+      setup:
+        "Рост уже есть, но он начинает упираться в связку positioning, cost stack и качество каналов.",
+      direction:
+        "Snapshot помогает перераспределить фокус между продажами, маркетингом и моделью расходов без потери темпа.",
+      metrics: [
+        { label: "Leads", value: "180 / 230" },
+        { label: "Qual leads", value: "62 / 80" },
+        { label: "Demo", value: "28 / 34" },
+        { label: "Deals", value: "11 / 14" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 11, plan: 8 },
+        { label: "CAC payback", fact: 7, plan: 5 },
+      ],
+    },
+    {
+      stage: "Expansion",
+      icon: "/expansion.svg",
+      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
+      setup:
+        "Компания масштабируется, но экономика новых направлений и каналов может размывать прибыльность.",
+      direction:
+        "Snapshot показывает, какие элементы системы можно расширять, а где требуется удержать дисциплину модели.",
+      metrics: [
+        { label: "Leads", value: "340 / 420" },
+        { label: "Qual leads", value: "120 / 150" },
+        { label: "Demo", value: "54 / 66" },
+        { label: "Deals", value: "19 / 24" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 14, plan: 10 },
+        { label: "Margin", fact: 31, plan: 39 },
+      ],
+    },
+  ];
 
-              return (
-                <g key={point.month}>
-                  <line
-                    x1={x}
-                    x2={x}
-                    y1={paddingY}
-                    y2={height - paddingY}
-                    stroke="rgba(255,255,255,0.03)"
-                  />
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r="10"
-                    fill={pointColor}
-                    stroke="rgba(255,255,255,0.28)"
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      setDragIndex(index);
-                    }}
-                    style={{
-                      cursor: "grab",
-                      filter:
-                        point.value >= 25
-                          ? "drop-shadow(0 0 12px rgba(52,211,153,0.42))"
-                          : point.value <= -25
-                            ? "drop-shadow(0 0 12px rgba(247,210,55,0.42))"
-                            : "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
-                    }}
-                  />
-                  <text
-                    x={x}
-                    y={height - 8}
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.7)"
-                    fontSize="13"
-                  >
-                    {point.month}
-                  </text>
-                </g>
-              );
-            })}
+  const [rotation, setRotation] = useState(0);
+  const [isDraggingState, setIsDraggingState] = useState(false);
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
+  const dragStartX = useRef<number | null>(null);
+  const dragStartRotation = useRef(0);
+  const isDragging = useRef(false);
+  const mobileRailRef = useRef<HTMLDivElement | null>(null);
+
+  const itemAngle = 360 / items.length;
+  const radius = 300;
+
+  const activeIndex = useMemo(() => {
+    let frontIndex = 0;
+    let maxZ = -Infinity;
+    items.forEach((_, index) => {
+      const angle = rotation + index * itemAngle;
+      const radians = (angle * Math.PI) / 180;
+      const z = Math.cos(radians) * radius;
+      if (z > maxZ) {
+        maxZ = z;
+        frontIndex = index;
+      }
+    });
+    return frontIndex;
+  }, [rotation, itemAngle]);
+
+  const responsiveActiveIndex = typeof window !== "undefined" && window.innerWidth <= 767 ? mobileActiveIndex : activeIndex;
+  const activeIndustries = new Set(items[responsiveActiveIndex].industries);
+
+  const startDrag = (clientX: number) => {
+    isDragging.current = true;
+    setIsDraggingState(true);
+    dragStartX.current = clientX;
+    dragStartRotation.current = rotation;
+  };
+
+  const moveDrag = (clientX: number) => {
+    if (!isDragging.current || dragStartX.current === null) return;
+    const deltaX = clientX - dragStartX.current;
+    const sensitivity = 0.22;
+    setRotation(dragStartRotation.current + deltaX * sensitivity);
+  };
+
+  const endDrag = () => {
+    isDragging.current = false;
+    setIsDraggingState(false);
+    dragStartX.current = null;
+  };
+
+
+  useEffect(() => {
+    const rail = mobileRailRef.current;
+    if (!rail) return;
+
+    const handleScroll = () => {
+      const firstSlide = rail.querySelector<HTMLElement>(".stage-carousel-mobile-slide");
+      const slideWidth = (firstSlide?.offsetWidth ?? rail.clientWidth * 0.84) + 10;
+      const index = Math.round(rail.scrollLeft / Math.max(slideWidth, 1));
+      setMobileActiveIndex(Math.max(0, Math.min(items.length - 1, index)));
+    };
+
+    handleScroll();
+    rail.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      rail.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [items.length]);
+
+  return (
+    <div className="stage-carousel-wrap">
+      <div className="industries-pills industries-pills-carousel">
+        <div className="industries-pills-left">
+          {[
+            ["industry-saas", "SaaS"],
+            ["industry-ecom", "E-com"],
+            ["industry-fintech", "FinTech"],
+            ["industry-edtech", "EdTech"],
+            ["industry-healthtech", "HealthTech"],
+            ["industry-b2b", "B2B"],
+          ].map(([key, label]) => (
+            <span
+              key={key}
+              className={`industry-pill ${activeIndustries.has(key) ? "industry-pill-active" : "industry-pill-dim"}`}
+            >
+              {label}
+            </span>
+          ))}
+        </div>
+
+        <div className="stage-rotate-cue stage-rotate-cue-right" aria-hidden="true">
+          <span className="stage-rotate-cue-label">drag</span>
+          <svg viewBox="0 0 56 32" fill="none">
+            <path d="M20 7H6M6 7l4-4M6 7l4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M36 25h14m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 8.5c1.8-2.6 4.1-3.9 7-3.9 4.8 0 8.2 3.6 8.2 8.1 0 1.9-.6 3.4-1.8 4.9" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
+            <path d="M34 23.5c-1.7 2.6-4.1 3.9-7 3.9-4.8 0-8.2-3.6-8.2-8.1 0-1.8.6-3.4 1.8-4.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
           </svg>
         </div>
       </div>
 
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-emerald-300/16 bg-emerald-400/6 p-4">
-          <div className="mb-2 text-lg font-medium text-emerald-100">Пики</div>
-          <div className="mb-3 text-sm text-white/60">
-            {peakMonths.length > 0 ? peakMonths.join(", ") : "Пока не выделено ярко выраженных пиков"}
-          </div>
-          <AutoTextarea
-            className={textareaClass}
-            minRows={3}
-            placeholder="Что влияет и от чего зависит?"
-            value={peaksReason}
-            onChange={(next) => onChange({ points, peaksReason: next, lowsReason })}
-          />
-        </div>
-
-        <div className="rounded-[24px] border border-[#f7d237]/16 bg-[#f7d237]/6 p-4">
-          <div className="mb-2 text-lg font-medium text-[#fff3b2]">Спады</div>
-          <div className="mb-3 text-sm text-white/60">
-            {lowMonths.length > 0 ? lowMonths.join(", ") : "Пока не выделено ярко выраженных спадов"}
-          </div>
-          <AutoTextarea
-            className={textareaClass}
-            minRows={3}
-            placeholder="Что влияет и от чего зависит?"
-            value={lowsReason}
-            onChange={(next) => onChange({ points, peaksReason, lowsReason: next })}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function renderInput(
-  question: Question,
-  answers: Answers,
-  setAnswer: (key: string, value: any) => void
-) {
-  switch (question.type) {
-    case "rangePercent": {
-      const value = answers[question.id]?.value ?? 0;
-      const note = answers[question.id]?.note ?? "";
-
-      return (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-sm text-white/60">
-            <span>0%</span>
-            <span className="rounded-full border border-white/10 px-3 py-1 text-[#f7d237]">
-              {value}%
-            </span>
-            <span>100%</span>
-          </div>
-
-          <input
-            type="range"
-            min={0}
-            max={100}
-            value={value}
-            onChange={(e) =>
-              setAnswer(question.id, {
-                value: Number(e.target.value),
-                note,
-                touched: true,
-              })
-            }
-            className="w-full accent-[#f7d237]"
-          />
-
-          <AutoTextarea
-            placeholder="Комментарий или контекст…"
-            className={textareaClass}
-            minRows={2}
-            value={note}
-            onChange={(next) =>
-              setAnswer(question.id, {
-                value,
-                note: next,
-                touched: answers[question.id]?.touched ?? false,
-              })
-            }
-          />
-        </div>
-      );
-    }
-
-    case "text": {
-      if (question.id === "positionText") {
-        const current = answers[question.id] ?? { text: "", stages: [] };
-
-        return (
-          <div className="space-y-4">
-            <TagField
-              label="Стадия бизнеса"
-              value={{ selected: current.stages ?? [], custom: [] }}
-              baseTags={BUSINESS_STAGE_TAGS}
-              onChange={(next) =>
-                setAnswer(question.id, {
-                  ...current,
-                  stages: next.selected,
-                })
-              }
-            />
-
-            <AutoTextarea
-              placeholder="Введите ответ…"
-              className={textareaClass}
-              minRows={3}
-              value={current.text ?? ""}
-              onChange={(next) => setAnswer(question.id, { ...current, text: next })}
-            />
-          </div>
-        );
-      }
-
-      return (
-        <AutoTextarea
-          placeholder="Введите ответ…"
-          className={textareaClass}
-          minRows={3}
-          value={answers[question.id] ?? ""}
-          onChange={(next) => setAnswer(question.id, next)}
-        />
-      );
-    }
-
-    case "tags": {
-      const source =
-        question.id === "kpis"
-          ? KPI_TAGS
-          : question.id === "acquisitionChannels"
-            ? FLOW_TAGS
-            : question.id === "retention"
-              ? RETENTION_TAGS
-              : ANALYTICS_TAGS;
-
-      const state = getTagState(answers[question.id]);
-
-      return (
-        <TagField
-          value={state}
-          baseTags={source}
-          onChange={(next) => {
-            setAnswer(question.id, next);
-
-            if (question.id === "acquisitionChannels") {
-              const allChannels = [...next.selected, ...next.custom];
-              const prev: ChannelDistribution = answers.channelEfficiency ?? {
-                values: {},
-                touched: {},
-              };
-
-              const nextValues: Record<string, number> = {};
-              const nextTouched: Record<string, boolean> = {};
-
-              allChannels.forEach((channel) => {
-                nextValues[channel] = prev.values?.[channel] ?? 0;
-                nextTouched[channel] = prev.touched?.[channel] ?? false;
-              });
-
-              setAnswer("channelEfficiency", {
-                values: nextValues,
-                touched: nextTouched,
-              });
-            }
-          }}
-        />
-      );
-    }
-
-    case "dualRange": {
-      const current = answers[question.id] ?? {
-        demand: 0,
-        capacity: 0,
-        touched: { demand: false, capacity: false },
-      };
-
-      return (
-        <div className="grid gap-5 md:grid-cols-2">
-          <RangeBlock
-            title="Обращения / заявки"
-            value={current.demand}
-            min={0}
-            max={500}
-            onChange={(val) =>
-              setAnswer(question.id, {
-                ...current,
-                demand: val,
-                touched: { ...current.touched, demand: true },
-              })
-            }
-          />
-
-          <RangeBlock
-            title="Реальная capacity"
-            value={current.capacity}
-            min={0}
-            max={500}
-            onChange={(val) =>
-              setAnswer(question.id, {
-                ...current,
-                capacity: val,
-                touched: { ...current.touched, capacity: true },
-              })
-            }
-          />
-        </div>
-      );
-    }
-
-    case "channelDistribution": {
-      const selectedChannels = getAllTagValues(answers.acquisitionChannels);
-      const state: ChannelDistribution = answers.channelEfficiency ?? {
-        values: {},
-        touched: {},
-      };
-
-      if (selectedChannels.length === 0) {
-        return (
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-sm text-white/60">
-            Сначала выберите каналы в предыдущем вопросе.
-          </div>
-        );
-      }
-
-      const total = selectedChannels.reduce(
-        (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
-        0
-      );
-
-      return (
-        <div className="space-y-5">
-          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
-            <div className="text-sm text-white/60">
-              Распределите входящий поток клиентов между выбранными каналами
-            </div>
-            <div
-              className={`rounded-full px-3 py-1 text-sm ${
-                total === 100
-                  ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
-                  : "border border-[#f7d237]/25 bg-[#f7d237]/10 text-[#fff3b2]"
-              }`}
-            >
-              {total}%
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            {selectedChannels.map((channel) => {
-              const value = Number(state.values?.[channel] ?? 0);
-              const otherTotal = selectedChannels.reduce((acc, currentChannel) => {
-                if (currentChannel === channel) return acc;
-                return acc + Number(state.values?.[currentChannel] ?? 0);
-              }, 0);
-              const maxAllowed = Math.max(0, 100 - otherTotal);
-
-              return (
-                <div
-                  key={channel}
-                  className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4"
-                >
-                  <div className="mb-3 flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium text-white">{channel}</div>
-                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
-                      {value}%
-                    </div>
-                  </div>
-
-                  <input
-                    type="range"
-                    min={0}
-                    max={maxAllowed}
-                    value={value}
-                    onChange={(e) => {
-                      const nextValue = Number(e.target.value);
-                      setAnswer("channelEfficiency", {
-                        values: {
-                          ...state.values,
-                          [channel]: nextValue,
-                        },
-                        touched: {
-                          ...state.touched,
-                          [channel]: true,
-                        },
-                      });
-                    }}
-                    className="w-full accent-[#f7d237]"
-                  />
-
-                  <div className="mt-2 text-xs text-white/35">
-                    Максимум сейчас: {maxAllowed}%
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          <div
-            className={`rounded-2xl border px-4 py-3 text-sm ${
-              total === 100
-                ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
-                : "border-white/10 bg-white/[0.03] text-white/55"
-            }`}
-          >
-            {total === 100
-              ? "Распределение заполнено корректно."
-              : `Сейчас сумма составляет ${total}%. Нужно довести до 100%.`}
-          </div>
-        </div>
-      );
-    }
-
-    case "tripleMargin": {
-      const items: ProductItem[] = answers[question.id] ?? initialAnswers.topProducts;
-      const total = items.reduce((acc, item) => acc + Number(item.value || 0), 0);
-
-      return (
-        <div className="space-y-4">
-          {items.map((item, i) => {
-            const otherTotal = items.reduce((acc, current, idx) => {
-              if (idx === i) return acc;
-              return acc + Number(current.value || 0);
-            }, 0);
-            const maxAllowed = Math.max(0, 100 - otherTotal);
+      <div
+        className={`stage-carousel-scene ${isDraggingState ? "is-dragging" : ""}`}
+        onMouseDown={(e) => startDrag(e.clientX)}
+        onMouseMove={(e) => moveDrag(e.clientX)}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
+        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
+        onTouchEnd={endDrag}
+      >
+        <div className="stage-carousel-drum">
+          {items.map((item, index) => {
+            const angle = rotation + index * itemAngle;
+            const radians = (angle * Math.PI) / 180;
+            const x = Math.sin(radians) * radius;
+            const z = Math.cos(radians) * radius;
+            const scale = 0.74 + ((z + radius) / (radius * 2)) * 0.24;
+            const opacity = 0.34 + ((z + radius) / (radius * 2)) * 0.66;
+            const blur = Math.max(0, (1 - scale) * 2);
+            const rotateY = Math.sin(radians) * -10;
 
             return (
-              <div key={i} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-                <div className="mb-3 flex items-center justify-between gap-3">
-                  <input
-                    placeholder={`Продукт ${i + 1}`}
-                    className={compactInputClass}
-                    value={item.name}
-                    onChange={(e) => {
-                      const next = [...items];
-                      next[i] = { ...next[i], name: e.target.value };
-                      setAnswer(question.id, next);
-                    }}
-                  />
-                  <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">
-                    {item.value}%
-                  </div>
-                </div>
-
-                <input
-                  type="range"
-                  min={0}
-                  max={maxAllowed}
-                  value={item.value}
-                  onChange={(e) => {
-                    const next = [...items];
-                    next[i] = {
-                      ...next[i],
-                      value: Number(e.target.value),
-                      touched: true,
-                    };
-                    setAnswer(question.id, next);
-                  }}
-                  className="w-full accent-[#f7d237]"
-                />
-
-                <div className="mt-2 text-xs text-white/35">Максимум сейчас: {maxAllowed}%</div>
-              </div>
-            );
-          })}
-
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
-            Сумма распределения: {total}% из 100%
-          </div>
-        </div>
-      );
-    }
-
-    case "cjm": {
-      const current = answers[question.id] ?? initialAnswers.cjm;
-
-      return (
-        <div className="grid gap-4 md:grid-cols-2">
-          {current.stages.map((step: CjmStage, i: number) => (
-            <div
-              key={step.stage}
-              className={`rounded-[24px] border border-white/8 bg-white/[0.04] p-4 ${
-                i === current.stages.length - 1 ? "md:col-span-2" : ""
-              }`}
-            >
-              <div className="mb-4">
-                <div className="text-xs uppercase tracking-[0.24em] text-white/35">
-                  Stage {i + 1}
-                </div>
-                <div className="mt-1 text-2xl font-semibold text-white">{step.stage}</div>
-                <div className="mt-1 text-sm text-white/50">{step.description}</div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <div className="mb-2 text-sm text-white/55">Что происходит</div>
-                  <AutoTextarea
-                    placeholder="Опишите, что происходит на этом этапе"
-                    className={textareaClass}
-                    minRows={2}
-                    value={step.whatHappens}
-                    onChange={(next) => {
-                      const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], whatHappens: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div className="mb-2 text-sm text-white/55">Длительность</div>
-                  <input
-                    placeholder="Например: 1 день / 2 недели"
-                    className={compactInputClass}
-                    value={step.duration}
-                    onChange={(e) => {
-                      const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], duration: e.target.value };
-                      setAnswer(question.id, { ...current, stages: nextStages });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div className="mb-2 text-sm text-white/55">Что получает клиент</div>
-                  <AutoTextarea
-                    placeholder="Ценность для клиента на этом этапе"
-                    className={textareaClass}
-                    minRows={2}
-                    value={step.clientGets}
-                    onChange={(next) => {
-                      const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], clientGets: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div className="mb-2 text-sm text-white/55">Что получает компания</div>
-                  <AutoTextarea
-                    placeholder="Какой результат получает бизнес"
-                    className={textareaClass}
-                    minRows={2}
-                    value={step.companyGets}
-                    onChange={(next) => {
-                      const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], companyGets: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <div className="mb-2 text-sm text-white/45">Проблемы (опционально)</div>
-                  <AutoTextarea
-                    placeholder="Где здесь возникают потери, трение или замедление"
-                    className={textareaClass}
-                    minRows={2}
-                    value={step.problems}
-                    onChange={(next) => {
-                      const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], problems: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    case "seasonality": {
-      const current = answers[question.id] ?? initialAnswers.seasonality;
-      return (
-        <SeasonalityChart
-          value={current}
-          onChange={(next) => setAnswer(question.id, next)}
-        />
-      );
-    }
-
-    case "map": {
-      const current = answers[question.id] ?? initialAnswers.geo;
-
-      return (
-        <div className="space-y-4">
-          <GeoMapPreview physical={current.physical} sales={current.sales} />
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              className={compactInputClass}
-              placeholder="Где физически находится бизнес"
-              value={current.physical}
-              onChange={(e) => setAnswer(question.id, { ...current, physical: e.target.value })}
-            />
-            <input
-              className={compactInputClass}
-              placeholder="В каком регионе продаёте / например: Европа / весь мир"
-              value={current.sales}
-              onChange={(e) => setAnswer(question.id, { ...current, sales: e.target.value })}
-            />
-          </div>
-        </div>
-      );
-    }
-
-    case "teamRoles":
-      return (
-        <TeamMembersBuilder
-          value={answers[question.id] ?? [createEmptyTeamMember()]}
-          onChange={(next) => setAnswer(question.id, next)}
-        />
-      );
-
-    case "departmentRelations":
-      return (
-        <TeamRelationsBuilder
-          value={answers[question.id] ?? { links: [], note: "" }}
-          teamMembers={answers.team ?? []}
-          onChange={(next) => setAnswer(question.id, next)}
-        />
-      );
-
-    case "stressRange": {
-      const current = answers[question.id] ?? initialAnswers[question.id];
-
-      return (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {STRESS_ZONES.map((zone) => (
-            <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-              <div className="mb-3 text-sm font-medium text-white">{zone}</div>
-              <div className="mb-3 flex items-center justify-between text-xs text-white/45">
-                <span>-10</span>
-                <span className="text-[#fff3b2]">{current.values[zone]}</span>
-                <span>10</span>
-              </div>
-              <input
-                type="range"
-                min={-10}
-                max={10}
-                value={current.values[zone]}
-                onChange={(e) =>
-                  setAnswer(question.id, {
-                    values: {
-                      ...current.values,
-                      [zone]: Number(e.target.value),
-                    },
-                    touched: {
-                      ...current.touched,
-                      [zone]: true,
-                    },
-                  })
-                }
-                className="w-full accent-[#f7d237]"
-              />
-            </div>
-          ))}
-        </div>
-      );
-    }
-
-    case "analyticsBranch": {
-      const current = answers[question.id] ?? initialAnswers.analytics;
-      return (
-        <div className="space-y-4">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setAnswer(question.id, { ...current, hasAnalytics: true })}
-              className={`rounded-2xl border px-4 py-2.5 text-sm ${
-                current.hasAnalytics === true
-                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                  : "border-white/10 bg-white/[0.03] text-white/70"
-              }`}
-            >
-              Да
-            </button>
-            <button
-              type="button"
-              onClick={() => setAnswer(question.id, { ...current, hasAnalytics: false })}
-              className={`rounded-2xl border px-4 py-2.5 text-sm ${
-                current.hasAnalytics === false
-                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                  : "border-white/10 bg-white/[0.03] text-white/70"
-              }`}
-            >
-              Нет
-            </button>
-          </div>
-
-          {current.hasAnalytics === true && (
-            <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-              <div className="mb-3 text-sm text-white/55">Если да — что именно вы используете?</div>
-
-              <TagField
-                value={{ selected: current.tags ?? [], custom: current.custom ?? [] }}
-                baseTags={ANALYTICS_TAGS}
-                onChange={(next) =>
-                  setAnswer(question.id, {
-                    ...current,
-                    tags: next.selected,
-                    custom: next.custom,
-                  })
-                }
-              />
-
-              <div className="mt-4">
-                <AutoTextarea
-                  placeholder="Опишите, как именно аналитика участвует в принятии решений…"
-                  className={textareaClass}
-                  minRows={2}
-                  value={current.note ?? ""}
-                  onChange={(next) => setAnswer(question.id, { ...current, note: next })}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    case "strategyGoal": {
-      const current = answers[question.id] ?? initialAnswers.goal;
-      const modes = ["On hold", "Не превысить лимит", "Сократить расходы"];
-
-      return (
-        <div className="space-y-5">
-          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-            <div className="mb-3 flex items-center justify-between text-sm text-white/60">
-              <span>Цель по чистой прибыли</span>
-              <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
-                +{current.profitTarget}%
-              </span>
-            </div>
-
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={current.profitTarget}
-              onChange={(e) =>
-                setAnswer(question.id, {
-                  ...current,
-                  profitTarget: Number(e.target.value),
-                  touched: true,
-                })
-              }
-              className="w-full accent-[#f7d237]"
-            />
-          </div>
-
-          <div className="grid gap-3 md:grid-cols-3">
-            {modes.map((option) => (
-              <button
-                type="button"
-                key={option}
-                onClick={() => setAnswer(question.id, { ...current, mode: option })}
-                className={`rounded-2xl border px-4 py-4 text-sm ${
-                  current.mode === option
-                    ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                    : "border-white/10 bg-white/[0.03] text-white/70"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-
-          <input
-            className={compactInputClass}
-            placeholder="Если применимо — укажите процент изменения расходов"
-            value={current.costChange}
-            onChange={(e) => setAnswer(question.id, { ...current, costChange: e.target.value })}
-          />
-        </div>
-      );
-    }
-
-    case "contact": {
-      const current = answers[question.id] ?? initialAnswers.contacts;
-      return (
-        <div className="space-y-4">
-          <input
-            className={compactInputClass}
-            placeholder="Email получателя отчёта"
-            value={current.reportEmail}
-            onChange={(e) => setAnswer(question.id, { ...current, reportEmail: e.target.value })}
-          />
-
-          <input
-            className={compactInputClass}
-            placeholder="Email / имя участника онлайн-встречи"
-            value={current.meetingContact}
-            onChange={(e) => setAnswer(question.id, { ...current, meetingContact: e.target.value })}
-          />
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80">
-                <span className="text-[#f7d237]">✉</span> Отправка отчёта
-              </div>
-              Автоматически после завершения диагностики.
-            </div>
-
-            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
-              <div className="mb-2 flex items-center gap-2 text-white/80">
-                <span className="text-[#f7d237]">◷</span> Приглашение на встречу
-              </div>
-              Можно связать со слотами и защитой от повторного входа.
-            </div>
-          </div>
-        </div>
-      );
-    }
-
-    default:
-      return null;
-  }
-}
-
-function FullScreenLoader({ open }: { open: boolean }) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#071325]/92 backdrop-blur-xl">
-      <div className="mx-auto w-full max-w-[560px] px-6">
-        <div className="rounded-[32px] border border-white/10 bg-white/[0.05] p-8 shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
-          <div className="mx-auto mb-6 h-16 w-16 rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 p-3">
-            <div className="h-full w-full animate-spin rounded-full border-2 border-[#f7d237]/25 border-t-[#f7d237]" />
-          </div>
-
-          <div className="text-center">
-            <div className="text-[11px] uppercase tracking-[0.28em] text-white/35">
-              Revenue Snapshot
-            </div>
-
-            <div className="mt-3 text-2xl font-semibold text-white">
-              Отправляем вводные на генерацию
-            </div>
-
-            <p className="mt-3 text-sm leading-6 text-white/55">
-              Пожалуйста, не закрывайте страницу
-            </p>
-
-            <div className="mt-6 overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
-              <div className="h-2 w-full animate-pulse bg-[linear-gradient(90deg,rgba(247,210,55,0.15),rgba(247,210,55,0.9),rgba(247,210,55,0.15))]" />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function DiagnosticIntakePage() {
-  const [active, setActive] = useState<Chapter | null>(null);
-  const [answers, setAnswers] = useState<Answers>(initialAnswers);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const sectionProgress = useMemo(
-    () =>
-      Object.fromEntries(
-        chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)])
-      ),
-    [answers]
-  );
-
-  const total = useMemo(() => {
-    const values = Object.values(sectionProgress) as number[];
-    return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
-  }, [sectionProgress]);
-
-  const totalQuestions = useMemo(
-    () => chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0),
-    []
-  );
-
-  const allComplete = Math.round(total) === 100;
-
-  function setAnswer(key: string, value: any) {
-    setAnswers((prev) => {
-      const next = { ...prev, [key]: value };
-
-      if (key === "team") {
-        const links = mergeTeamLinks(
-          prev.interaction?.links ?? [],
-          createTeamLinksFromMembers(value ?? [])
-        );
-        next.interaction = {
-          ...(prev.interaction ?? { note: "" }),
-          links,
-        };
-      }
-
-      return next;
-    });
-  }
-
-  async function handleSubmit() {
-    if (!allComplete || isSubmitting) return;
-
-    try {
-      setIsSubmitting(true);
-
-      await fetch("/api/generate-results", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "snapshot-action",
-          createdAt: new Date().toISOString(),
-          progress: {
-            total,
-            totalQuestions,
-            sectionProgress,
-          },
-          answers,
-        }),
-      });
-    } catch {
-      // intentionally silent for current stage
-    } finally {
-      setTimeout(() => {
-        setIsSubmitting(false);
-      }, 1600);
-    }
-  }
-
-  return (
-    <div
-      className="min-h-screen text-white"
-      style={{
-        background:
-          "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
-      }}
-    >
-      <style jsx global>{`
-        @keyframes rs-overlay-in {
-          from {
-            opacity: 0;
-            backdrop-filter: blur(0px);
-          }
-          to {
-            opacity: 1;
-            backdrop-filter: blur(4px);
-          }
-        }
-
-        @keyframes rs-panel-in {
-          from {
-            opacity: 0;
-            transform: translateX(42px) scale(0.985);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-        }
-
-        @keyframes rs-fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(16px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `}</style>
-
-      <FullScreenLoader open={isSubmitting} />
-
-      <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
-        <GlassCard className="mb-8 p-5 md:p-7">
-          <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
-            <div>
-              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
-                <span className="text-[#f7d237]">●</span>
-                Revenue Snapshot — Diagnostic Intake
-              </div>
-
-              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
-                Структурированная диагностическая анкета бизнеса
-              </h1>
-
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Каждая глава — отдельная карточка с локальной заполненностью, внутри — half-screen
-                panel с адаптивным типом ввода под конкретный вопрос.
-              </p>
-
-              <div className="mt-8 flex flex-wrap gap-3 pt-1 text-xs text-white/45">
-                <span className="rounded-full border border-white/10 px-3 py-1.5">
-                  Блоков: {chapters.length}
-                </span>
-                <span className="rounded-full border border-white/10 px-3 py-1.5">
-                  Вопросов: {totalQuestions}
-                </span>
-                <span className="rounded-full border border-white/10 px-3 py-1.5">
-                  Формат: card → half-screen modal
-                </span>
-                <span className="rounded-full border border-white/10 px-3 py-1.5">
-                  Логика: adaptive input flow
-                </span>
-              </div>
-            </div>
-
-            <GlassCard className="p-6 md:p-7">
-              <div className="flex flex-col items-center justify-center text-center">
-                <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">
-                  Overall completion
-                </div>
-
-                <div className="mt-6">
-                  <Ring progress={total} size={172} />
-                </div>
-
-                <div className="mt-5 text-2xl font-semibold text-[#fefefe]">
-                  Общая заполненность анкеты
-                </div>
-
-                <p className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">
-                  Диаграмма отражает совокупный прогресс по всем разделам анкеты и обновляется по
-                  мере заполнения блоков.
-                </p>
-
-                <div className="mt-5 w-full">
-                  {allComplete ? (
-                    <button
-                      type="button"
-                      onClick={handleSubmit}
-                      className="w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 hover:shadow-[0_0_26px_rgba(247,210,55,0.25)]"
-                    >
-                      Отправить вводные
-                    </button>
-                  ) : (
-                    <div className="grid w-full grid-cols-2 gap-3 text-left">
-                      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                          Progress
-                        </div>
-                        <div className="mt-1 text-lg font-semibold text-white">
-                          {Math.round(total)}%
-                        </div>
-                      </div>
-                      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                          Total blocks
-                        </div>
-                        <div className="mt-1 text-lg font-semibold text-white">{chapters.length}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </GlassCard>
-          </div>
-        </GlassCard>
-
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {chapters.map((chapter, index) => {
-            const progress = Number(sectionProgress[chapter.id]);
-
-            return (
-              <TiltCardButton key={chapter.id} onClick={() => setActive(chapter)}>
-                <GlassCard className="h-full p-5 md:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
-                      {chapter.icon}
-                    </div>
-                    <Ring progress={progress} size={82} />
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
-                      Block {index + 1}
-                    </div>
-                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{chapter.subtitle}</div>
-                  </div>
-
-                  <div className="mt-6 space-y-2.5">
-                    {chapter.questions.slice(0, 3).map((question, i) => (
-                      <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">
-                          {i + 1}
-                        </span>
-                        <span className="line-clamp-2">{question.label}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
-                    <span className="text-white/55">Открыть блок</span>
-                    <div className="flex items-center gap-2 text-[#f7d237]">
-                      <span>{progress}%</span>
-                      <span>→</span>
-                    </div>
-                  </div>
-                </GlassCard>
-              </TiltCardButton>
-            );
-          })}
-        </div>
-      </div>
-
-      {active && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-            style={{
-              animation: "rs-overlay-in 280ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-            onClick={() => setActive(null)}
-          />
-
-          <div
-            className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
-            style={{
-              animation: "rs-panel-in 420ms cubic-bezier(0.22, 1, 0.36, 1)",
-            }}
-          >
-            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
-                    diagnostic chapter
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
-                  <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Ring progress={Number(sectionProgress[active.id])} size={84} />
-                  <button
-                    onClick={() => setActive(null)}
-                    className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
-                  >
-                    Закрыть
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
-              {active.questions.map((question, index) => (
-                <div
-                  key={question.id}
-                  style={{
-                    animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
-                      40 + index * 40
-                    }ms both`,
-                  }}
-                >
-                  <GlassCard className="p-5 md:p-6">
-                    <div className="mb-4 flex items-start justify-between gap-4">
-                      <div>
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">
-                          Question {index + 1}
-                        </div>
-                        <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">
-                          {question.label}
-                        </h3>
-                      </div>
-
-                      <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-3 text-sm text-[#f7d237]">
-                        {getQuestionProgress(question, answers)}%
-                      </div>
-                    </div>
-
-                    {renderInput(question, answers, setAnswer)}
-                  </GlassCard>
-                </div>
-              ))}
-
               <div
-                className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4"
+                key={item.stage}
+                className="stage-carousel-item stage-carousel-item-free"
                 style={{
-                  animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
-                    80 + active.questions.length * 40
-                  }ms both`,
+                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) rotateY(${rotateY}deg) scale(${scale})`,
+                  opacity,
+                  filter: `blur(${blur}px)`,
+                  zIndex: Math.round(z + radius),
                 }}
               >
-                <div className="text-sm text-white/55">
-                  Прогресс этого блока: {Number(sectionProgress[active.id])}%
-                </div>
+                <StageCard item={item} isFront={activeIndex === index} />
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
-                <button
-                  type="button"
-                  onClick={() => setActive(null)}
-                  className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 hover:shadow-[0_0_24px_rgba(247,210,55,0.22)]"
-                >
-                  Сохранить блок <span>✓</span>
+      <div className="stage-carousel-mobile-rail" ref={mobileRailRef}>
+        {items.map((item) => (
+          <div key={`${item.stage}-mobile`} className="stage-carousel-mobile-slide">
+            <StageCard item={item} isFront />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export default function Home() {
+  const [clientsInput, setClientsInput] = useState("");
+  const [checkInput, setCheckInput] = useState("");
+  const clientsBase = parseNumeric(clientsInput, 0);
+  const checkBase = parseNumeric(checkInput, 0);
+
+  const [sales, setSales] = useState(0);
+  const [retention, setRetention] = useState(0);
+  const [upsell, setUpsell] = useState(0);
+  const [opexEff, setOpexEff] = useState(0);
+
+  const [history, setHistory] = useState<
+    Array<{
+      clientsInput: string;
+      checkInput: string;
+      sales: number;
+      retention: number;
+      upsell: number;
+      opexEff: number;
+    }>
+  >([]);
+
+  const [cursor, setCursor] = useState({ x: -200, y: -200 });
+  const frameRef = useRef<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const payUrl = "#";
+  const tgContactUrl = "https://t.me/growth_avenue_company";
+  const waContactUrl = "https://wa.me/995555163833";
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+      frameRef.current = requestAnimationFrame(() => {
+        setCursor({ x: e.clientX, y: e.clientY });
+      });
+    };
+    window.addEventListener("mousemove", onMove, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      if (frameRef.current) cancelAnimationFrame(frameRef.current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const onResize = () => {
+      if (window.innerWidth > 860) setMobileMenuOpen(false);
+    };
+
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
+
+    const tiltCards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
+    const cleanups: Array<() => void> = [];
+
+    tiltCards.forEach((card) => {
+      const inner = card.querySelector<HTMLElement>(".tilt-inner");
+      if (!inner) return;
+
+      const handleMove = (e: MouseEvent) => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const px = x / rect.width;
+        const py = y / rect.height;
+        const rotateY = (px - 0.5) * 8;
+        const rotateX = (0.5 - py) * 8;
+        inner.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.01)`;
+      };
+
+      const handleLeave = () => {
+        inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)";
+      };
+
+      card.addEventListener("mousemove", handleMove);
+      card.addEventListener("mouseleave", handleLeave);
+      cleanups.push(() => {
+        card.removeEventListener("mousemove", handleMove);
+        card.removeEventListener("mouseleave", handleLeave);
+      });
+    });
+
+    return () => cleanups.forEach((fn) => fn());
+  }, []);
+
+  const pushHistory = () => {
+    setHistory((prev) => [
+      ...prev,
+      { clientsInput, checkInput, sales, retention, upsell, opexEff },
+    ]);
+  };
+
+  const handleUndo = () => {
+    setHistory((prev) => {
+      if (!prev.length) return prev;
+      const last = prev[prev.length - 1];
+      setClientsInput(last.clientsInput);
+      setCheckInput(last.checkInput);
+      setSales(last.sales);
+      setRetention(last.retention);
+      setUpsell(last.upsell);
+      setOpexEff(last.opexEff);
+      return prev.slice(0, -1);
+    });
+  };
+
+  const handleReset = () => {
+    pushHistory();
+    setClientsInput("");
+    setCheckInput("");
+    setSales(0);
+    setRetention(0);
+    setUpsell(0);
+    setOpexEff(0);
+  };
+
+  const data = useMemo(() => {
+    const safeClients = Math.max(0, clientsBase);
+    const safeCheck = Math.max(0, checkBase);
+    const newClients = safeClients * (1 + sales * 0.6);
+    const retainedRevenueLift = 1 + retention * 0.35;
+    const avgCheck = safeCheck * (1 + upsell * 0.7);
+    const revenue = newClients * avgCheck * retainedRevenueLift;
+    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
+    const support = revenue * 0.06 * (1 + retention * 0.25);
+    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
+    const costs = salesCost + support + opex;
+    const profit = revenue - costs;
+
+    return { clients: newClients, avgCheck, revenue, salesCost, support, opex, costs, profit };
+  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
+
+  const base = useMemo(() => {
+    const revenue = clientsBase * checkBase;
+    const salesCost = revenue * 0.18;
+    const support = revenue * 0.06;
+    const opex = revenue * 0.35;
+    const costs = salesCost + support + opex;
+    const profit = revenue - costs;
+    return { clients: clientsBase, avgCheck: checkBase, revenue, salesCost, support, opex, costs, profit };
+  }, [clientsBase, checkBase]);
+
+  const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
+  const revDelta = safeDiv(data.revenue - base.revenue, base.revenue);
+  const costDelta = safeDiv(data.costs - base.costs, base.costs);
+  const profitDelta = safeDiv(data.profit - base.profit, base.profit);
+  const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
+  const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
+  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
+  const opexSupportDelta = safeDiv(data.opex + data.support - (base.opex + base.support), base.opex + base.support);
+
+  const estimatedGap = Math.max(
+    0,
+    Math.round((data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45)
+  );
+
+  return (
+    <main className="page-shell" id="top">
+      <div className="cursor-glow" style={{ transform: `translate(${cursor.x - 54}px, ${cursor.y - 54}px)` }} />
+
+      <div className="page-background" aria-hidden="true">
+        <div className="aurora aurora-1" />
+        <div className="aurora aurora-2" />
+        <div className="aurora aurora-3" />
+        <div className="aurora aurora-4" />
+        <div className="vignette" />
+      </div>
+
+      <header className={`header-fixed ${mobileMenuOpen ? "header-open" : ""}`}>
+        <div className="header-inner">
+          <a href="#top" className="logo-link" aria-label="Growth Avenue home">
+            <img src="/logo.svg" alt="Growth Avenue" className="logo-main" />
+          </a>
+
+          <button
+            type="button"
+            className={`header-burger ${mobileMenuOpen ? "is-open" : ""}`}
+            aria-label="Открыть меню"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((prev) => !prev)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+
+          <nav className={`header-nav ${mobileMenuOpen ? "is-open" : ""}`}>
+            <a href="#how-it-works" className="header-link" onClick={() => setMobileMenuOpen(false)}>Как это работает</a>
+            <a href="#preview" className="header-link" onClick={() => setMobileMenuOpen(false)}>Интерактивное превью</a>
+            <a href="#results" className="header-link" onClick={() => setMobileMenuOpen(false)}>Что вы получите</a>
+            <a href="#analysis" className="header-link" onClick={() => setMobileMenuOpen(false)}>Как проходит анализ</a>
+          </nav>
+
+          <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
+            <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
+            <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
+            <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
+          </div>
+        </div>
+      </header>
+
+      <div className="content-wrap">
+        <section className="hero-section mb-16">
+          <div className="hero-grid hero-grid-frame">
+            <div className="hero-left">
+              <h1 className="hero-main-title">Revenue Snapshot</h1>
+
+              <div className="hero-main-subtitle">
+                стратегическая диагностика
+                <br />
+                экономики вашего бизнеса
+              </div>
+
+              <p className="hero-main-copy">
+                Узнайте, какое изменение в модели способно дать наиболее сильный
+                эффект на выручку, и где сейчас скрываются главные точки потери
+                денег.
+              </p>
+
+              <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
+                <div className="hero-highlight-chip">MVP</div>
+                <div className="hero-highlight-chip">CashCow</div>
+                <div className="hero-highlight-chip">Scaling</div>
+              </div>
+
+              <div className="hero-actions-row">
+                <a href="#try" className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
+                <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Побаловаться</a>
+              </div>
+            </div>
+
+            <HeroEconomyChart />
+          </div>
+        </section>
+
+        <section id="how-it-works" className="mb-16">
+          <div className="section-head">
+            <div className="section-kicker">Как это работает</div>
+            <h2 className="section-title">Путь от простых ответов к комплексному результату</h2>
+            <p className="section-copy">
+              От базовых параметров — к полной картине экономики бизнеса:
+              ограничения, точки роста и сценарии развития.
+            </p>
+          </div>
+
+          <div className="journey-compact">
+            <div className="journey-compact-card glare-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">1</div>
+                <div className="journey-compact-title">Фиксация параметров бизнеса</div>
+              </div>
+              <div className="journey-compact-text">Определяются ключевые показатели текущей модели: экономика, структура продаж, ресурсы и ограничения. Это формирует основу для дальнейшего анализа.</div>
+            </div>
+
+            <div className="journey-compact-card glare-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">2</div>
+                <div className="journey-compact-title">Сборка аналитической<br />модели</div>
+              </div>
+              <div className="journey-compact-text">Инструмент структурирует данные и формирует целостную картину бизнеса: выявляет ограничения, точки роста и взаимосвязи между показателями.</div>
+            </div>
+
+            <div className="journey-compact-card glare-card">
+              <div className="journey-compact-top">
+                <div className="journey-compact-badge">3</div>
+                <div className="journey-compact-title">Результат Snapshot</div>
+              </div>
+              <div className="journey-compact-text">Вы получаете аналитический срез бизнеса с ключевыми выводами: приоритетной точкой роста, оценкой экономического эффекта изменений и пониманием устойчивости текущей модели.</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="preview" className="mb-16">
+          <div className="section-head">
+            <div className="section-kicker">Интерактивное превью</div>
+            <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
+            <p className="section-copy">
+              Здесь пользователь меняет ключевые параметры и видит
+              предварительные сигналы. Полный разбор открывается после оплаты.
+              Модель на этой странице не передает и не запоминает введенные вами
+              данные, поэтому сценарий безопасен для быстрого теста.
+            </p>
+          </div>
+
+          <div className="preview-grid">
+            <div>
+              <div className="preview-input-intro">Введите ваши данные или попробуйте пример ниже</div>
+              <div className="preview-example-row">
+                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("20"); setCheckInput("2000"); }}>
+                  Пример: 20 клиентов / $2000
                 </button>
+                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("45"); setCheckInput("1500"); }}>
+                  Пример: 45 клиентов / $1500
+                </button>
+              </div>
+              <div className="input-grid mb-6 gap-3">
+                <label className="input-shell input-shell-highlight">
+                  <span className="input-label input-label-strong">Клиентов / месяц</span>
+                  <div className="input-wrap input-wrap-primary">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={clientsInput}
+                      onFocus={pushHistory}
+                      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+                      className="glass-input glass-input-primary"
+                      placeholder="например, 20"
+                    />
+                  </div>
+                </label>
+
+                <label className="input-shell input-shell-highlight">
+                  <span className="input-label input-label-strong">Средний чек</span>
+                  <div className="input-wrap input-wrap-primary">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={checkInput}
+                      onFocus={pushHistory}
+                      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+                      className="glass-input glass-input-primary"
+                      placeholder="например, 2000"
+                    />
+                  </div>
+                </label>
+              </div>
+
+              <section className="dashboard-grid">
+                <TopMetricCard title="Выручка" value={fmtMoney(data.revenue)} delta={revDelta} type="revenue" />
+                <TopMetricCard title="Прибыль" value={fmtMoney(data.profit)} delta={profitDelta} type="profit" />
+                <TopMetricCard title="Расходы" value={fmtMoney(data.costs)} delta={costDelta} type="costs" invert />
+              </section>
+
+              <div className="mt-5">
+                <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                  <ModelCard title="Клиенты" value={Math.round(data.clients)} delta={clientsDelta} />
+                  <ModelCard title="Средний чек" value={fmtMoney(data.avgCheck)} delta={avgCheckDelta} />
+                  <ModelCard title="Sales cost" value={fmtMoney(data.salesCost)} delta={salesCostDelta} />
+                  <ModelCard title="Opex + Support" value={fmtMoney(data.opex + data.support)} delta={opexSupportDelta} invert />
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                <div className="text-sm text-white/58">Рычаги управления</div>
+                <div className="preview-actions-inline">
+                  <button type="button" onClick={handleUndo} className="reset-link" disabled={!history.length}>Отменить действие</button>
+                  <button type="button" onClick={handleReset} className="reset-link">Сбросить</button>
+                </div>
+              </div>
+
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <Slider title="Эффективность продаж" subtitle="Влияние на конверсию и поток клиентов." value={sales} set={setSales} onStart={pushHistory} />
+                <Slider title="Повторные продажи" subtitle="Влияние на устойчивость выручки." value={retention} set={setRetention} onStart={pushHistory} />
+                <Slider title="Средний чек" subtitle="Рост денег без роста трафика." value={upsell} set={setUpsell} onStart={pushHistory} />
+                <Slider title="Загрузка команды" subtitle="Влияние на расходы и маржу." value={opexEff} set={setOpexEff} onStart={pushHistory} />
+              </div>
+            </div>
+
+            <aside className="glass-card glare-card preview-side">
+              <div className="reserve-kicker">Оценочный резерв</div>
+              <div className="hero-preview-box mt-4 glare-card-lite">
+                <div className="reserve-amount">≈ {fmtMoney(estimatedGap)} <span>/ мес</span></div>
+                <p className="mt-4 text-sm leading-7 text-white/65">
+                  Это только механика. Полный разбор раскрывает реальные
+                  возможности при текущей ситуации вашего бизнеса.
+                </p>
+              </div>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <Row label="Выручка" delta={revDelta} />
+                <Row label="Расходы" delta={costDelta} invert />
+                <Row label="Прибыль" delta={profitDelta} />
+              </div>
+
+              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
+            </aside>
+          </div>
+        </section>
+
+        <section id="results" className="mb-16">
+          <div className="section-head">
+            <div className="section-kicker">Что вы получите</div>
+            <h2 className="section-title">Цели Revenue Snapshot</h2>
+            <p className="section-copy">
+              Понять, каким должен быть первый <span className="accent-word">верный</span> шаг к построению новой стратегии для новых рубежей.
+            </p>
+          </div>
+
+          <div className="results-grid-2x2">
+            <ResultDocCard tab="ECONOMIC RATE" title="Executive Summary" text="Данные о вашем продукте, его маржинальности и спросе выявляют сильные и слабые стороны бизнеса и определяется главный фокус на данный момент." />
+            <ResultDocCard tab="GROWTH LIMIT" title="Key Conclusions" text="Ключевые выводы из фактов о компании определяют, как достичь текущей цели бизнеса. Формируется управленческий вывод об экономической модели." />
+            <ResultDocCard tab="SOLUTION" title="Strategy&Practice" text="Проведённый анализ данных определяет первичную задачу: целью всегда является повышение дохода." />
+            <ResultDocCard tab="JTBD" title="RoadMap" text="Тезисный план действий на следующие 6 месяцев по запуску конкретного MVP." />
+          </div>
+
+          <div className="results-bottom-stack">
+            <div className="results-roadmap-note">
+              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+            </div>
+            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать путь со Snapshot</a>
+          </div>
+        </section>
+
+        <section className="mb-16 stage-hover-map">
+          <div className="section-head">
+            <div className="section-kicker">Для кого этот инструмент</div>
+            <h2 className="section-title">Где Revenue Snapshot показал результат</h2>
+          </div>
+          <StageCarousel />
+        </section>
+
+        <section id="analysis" className="mb-16">
+          <div className="section-head">
+            <div className="section-kicker">Как проходит анализ</div>
+            <h2 className="section-title analysis-section-title">Что вас ждет</h2>
+            <p className="section-copy">
+              Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор ответов, а карту решений.
+            </p>
+          </div>
+
+          <div className="analysis-grid">
+            <SnapshotStructure />
+            <div className="analysis-right-card analysis-right-card-plain">
+              <div className="start-cards-row">
+                <StartCard
+                  title="On Rec"
+                  icon="/stratsession.svg"
+                  mobileIcon="/on-res_mobile.svg"
+                  price="$770"
+                  href={tgContactUrl}
+                />
+                <StartCard
+                  title="Online-playground"
+                  icon="/snapshot.svg"
+                  mobileIcon="/online-playground_mobile.svg"
+                  price="$114"
+                  href={payUrl}
+                />
               </div>
             </div>
           </div>
-        </>
-      )}
-    </div>
+        </section>
+
+        <section id="try" className="pb-8">
+          <div className="glass-card glare-card cta-card">
+            <div>
+              <div className="section-kicker">CTA</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Откройте полный Revenue Snapshot</h2>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
+                После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
+              </p>
+            </div>
+
+            <div className="cta-box glare-card-lite">
+              <div className="text-sm text-white/55">Следующий шаг</div>
+              <div className="mt-2 text-2xl font-semibold text-white">Попробовать Snapshot</div>
+              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">Получить Revenue Snapshot</a>
+            </div>
+          </div>
+        </section>
+
+        <footer className="page-footer">
+          <div>Growth Avenue</div>
+          <div className="page-footer-links">
+            <Link href="/terms-of-use">Terms of Use</Link>
+            <Link href="/privacy-policy">Privacy Policy</Link>
+          </div>
+        </footer>
+      </div>
+
+      <style jsx global>{`
+        html { scroll-behavior: smooth; }
+        body {
+          background: #0a1526;
+          color: #fefefe;
+          overflow-x: hidden;
+        }
+        img { max-width: 100%; }
+        .page-shell {
+          position: relative;
+          min-height: 100vh;
+          background: #0a1526;
+          overflow: clip;
+          color: #fefefe;
+        }
+        .page-background {
+          pointer-events: none;
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+          background:
+            radial-gradient(circle at 18% 22%, rgba(112,134,255,0.12), transparent 26%),
+            radial-gradient(circle at 82% 18%, rgba(255,255,255,0.05), transparent 22%),
+            radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
+            linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
+          background-size: 140% 140%;
+          animation: pageAmbient 26s ease-in-out infinite alternate;
+        }
+        .content-wrap {
+          position: relative;
+          z-index: 2;
+          max-width: 1440px;
+          width: 100%;
+          margin: 0 auto;
+          padding: 108px 20px 40px;
+        }
+        .content-wrap > *, .hero-grid > *, .preview-grid > *, .analysis-grid > *, .cta-card > *, .stage-card-bottom-inner > *, .journey-compact > * { min-width: 0; }
+        .header-fixed {
+          position: fixed;
+          inset: 0 0 auto 0;
+          z-index: 80;
+          backdrop-filter: blur(18px);
+          -webkit-backdrop-filter: blur(18px);
+          background: linear-gradient(180deg, rgba(4,16,39,0.92), rgba(4,16,39,0.62));
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .header-open .header-inner {
+          background: rgba(4,16,39,.94);
+          border-color: rgba(255,255,255,.12);
+        }
+        .header-inner {
+          max-width: 1400px;
+          margin: 0 auto;
+          padding: 14px 16px 12px;
+          display: grid;
+          grid-template-columns: auto 1fr auto;
+          align-items: center;
+          gap: 18px;
+          border-radius: 0 0 22px 22px;
+        }
+        .logo-link { display: inline-flex; align-items: center; }
+        .header-nav {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          min-width: 0;
+          flex-wrap: wrap;
+        }
+        .header-link {
+          color: rgba(255,255,255,.92);
+          font-size: 13px;
+          font-weight: 600;
+          text-decoration: none;
+          line-height: 1;
+          white-space: nowrap;
+          letter-spacing: -0.02em;
+          transition: opacity .2s ease, transform .2s ease, color .2s ease;
+        }
+        .header-link:hover { opacity: 1; color: #fff; transform: translateY(-1px); }
+        .header-actions {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 8px;
+          flex-wrap: wrap;
+        }
+        .header-cta {
+          min-height: 40px;
+          padding: 0 18px;
+          font-size: 13px;
+          white-space: nowrap;
+        }
+        .header-burger {
+          display: none;
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(11,29,58,.6);
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          padding: 0;
+          flex-direction: column;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .header-burger span {
+          width: 18px;
+          height: 2px;
+          border-radius: 999px;
+          background: #ffffff;
+          transition: transform .22s ease, opacity .22s ease;
+        }
+        .header-burger.is-open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .header-burger.is-open span:nth-child(2) { opacity: 0; }
+        .header-burger.is-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        .header-pill,
+        .hero-highlight-chip {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+          color: #0b1d3a;
+          background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(247,210,55,0.88));
+          box-shadow: 0 10px 24px rgba(247, 210, 55, 0.16);
+        }
+        .hero-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-size: 12px;
+          font-weight: 700;
+          color: rgba(255,255,255,.78);
+          background: rgba(224,225,227,.07);
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+        }
+        .logo-main {
+          width: 250px;
+          height: 62px;
+          object-fit: contain;
+          object-position: left center;
+          display: block;
+          flex-shrink: 0;
+        }
+        .cursor-glow {
+          position: fixed;
+          left: 0;
+          top: 0;
+          width: 108px;
+          height: 108px;
+          border-radius: 9999px;
+          pointer-events: none;
+          z-index: 1;
+          background: radial-gradient(circle, rgba(247,210,55,0.18) 0%, rgba(247,210,55,0.08) 35%, rgba(247,210,55,0.02) 62%, transparent 80%);
+          filter: blur(16px);
+          opacity: 0.62;
+          mix-blend-mode: screen;
+          transition: transform 0.08s linear;
+        }
+        .aurora {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(110px);
+          opacity: .26;
+        }
+        .aurora-1 { width: 380px; height: 380px; left: -80px; top: 40px; background: rgba(80, 127, 255, 0.22); }
+        .aurora-2 { width: 300px; height: 300px; right: 5%; top: 80px; background: rgba(247, 210, 55, 0.12); }
+        .aurora-3 { width: 360px; height: 360px; left: 26%; top: 36%; background: rgba(88, 114, 255, 0.16); }
+        .aurora-4 { width: 300px; height: 300px; right: 10%; bottom: 12%; background: rgba(255,255,255,0.08); }
+        .line-grid { display: none; }
+        .vignette {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(circle at center, transparent 42%, rgba(10,21,38,0.24) 72%, rgba(10,21,38,0.74) 100%);
+        }
+        .glass-card {
+          position: relative;
+          border-radius: 24px;
+          padding: 20px;
+          overflow: hidden;
+          isolation: isolate;
+          background: linear-gradient(180deg, rgba(224,225,227,0.055) 0%, rgba(224,225,227,0.024) 100%);
+          border: 1px solid rgba(214,220,232,0.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), inset 0 -1px 0 rgba(255,255,255,0.025), 0 18px 44px rgba(0,0,0,0.16);
+          backdrop-filter: blur(42px) saturate(155%);
+          -webkit-backdrop-filter: blur(42px) saturate(155%);
+        }
+        .glass-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          opacity: .75;
+          background: linear-gradient(115deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.025) 18%, rgba(255,255,255,0.01) 34%, rgba(255,255,255,0.05) 48%, rgba(255,255,255,0.012) 64%, rgba(255,255,255,0.06) 82%, rgba(255,255,255,0.02) 100%);
+        }
+        .glass-card::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 0;
+          opacity: .12;
+          mix-blend-mode: soft-light;
+          background-image:
+            radial-gradient(circle at 20% 20%, rgba(255,255,255,0.22) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 70% 30%, rgba(255,255,255,0.16) 0 0.8px, transparent 1px),
+            radial-gradient(circle at 35% 75%, rgba(255,255,255,0.18) 0 0.7px, transparent 0.9px),
+            radial-gradient(circle at 80% 80%, rgba(255,255,255,0.12) 0 0.7px, transparent 0.9px);
+          background-size: 16px 16px, 19px 19px, 15px 15px, 21px 21px;
+        }
+        .glass-card > *,.glare-card > *,.glare-card-lite > * { position: relative; z-index: 1; }
+        .soft-glow { box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.04), 0 18px 50px rgba(0,0,0,0.18); }
+        .glare-card::before,.glare-card-lite::before {
+          content: "";
+          position: absolute;
+          width: 34%;
+          height: 34%;
+          left: 14%;
+          top: 12%;
+          border-radius: 999px;
+          background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.035) 38%, transparent 76%);
+          filter: blur(44px);
+          pointer-events: none;
+          z-index: 0;
+          opacity: .8;
+        }
+        .premium-glass { position: relative; overflow: hidden; isolation: isolate; }
+        .premium-glass::before {
+          content: "";
+          position: absolute;
+          inset: -20%;
+          z-index: 0;
+          pointer-events: none;
+          opacity: .18;
+          filter: blur(18px);
+          background: repeating-linear-gradient(105deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 2px, transparent 12px, transparent 42px);
+          animation: premiumGlassShift 14s linear infinite;
+        }
+        .premium-glass::after {
+          content: "";
+          position: absolute;
+          inset: auto -10% -18% -10%;
+          height: 42%;
+          z-index: 0;
+          pointer-events: none;
+          filter: blur(42px);
+          opacity: .95;
+          mix-blend-mode: screen;
+          background:
+            radial-gradient(circle at 30% 40%, rgba(125,255,220,0.34) 0%, transparent 42%),
+            radial-gradient(circle at 68% 50%, rgba(130,120,255,0.32) 0%, transparent 44%),
+            radial-gradient(circle at 48% 44%, rgba(255,255,255,0.12) 0%, transparent 36%);
+        }
+        .section-head { margin-bottom: 22px; }
+        .section-kicker {
+          margin-bottom: 10px;
+          color: #f7d237;
+          font-size: 16px;
+          font-weight: 700;
+          line-height: 1.05;
+          letter-spacing: -0.03em;
+        }
+        .section-title {
+          margin: 0;
+          font-size: clamp(34px, 3.8vw, 58px);
+          line-height: .96;
+          letter-spacing: -.055em;
+          font-weight: 700;
+          color: #fff;
+          max-width: 760px;
+          text-wrap: balance;
+        }
+        .analysis-section-title { max-width: 780px; }
+        .section-copy {
+          margin-top: 16px;
+          max-width: 840px;
+          color: rgba(255,255,255,.7);
+          font-size: 18px;
+          line-height: 1.55;
+        }
+        .hero-section {
+          position: relative;
+          border-radius: 36px;
+          overflow: hidden;
+          padding: 34px 28px 30px;
+          min-height: 860px;
+        }
+        .hero-section::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background-image: url("/hero.svg");
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          z-index: 0;
+          transform-origin: center;
+        }
+        .hero-section::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(90deg, rgba(4,16,39,0.24) 0%, rgba(4,16,39,0.1) 38%, rgba(4,16,39,0.04) 62%, rgba(4,16,39,0.08) 100%);
+          z-index: 1;
+        }
+        .hero-grid { display: grid; gap: 22px; }
+        .hero-grid-frame {
+          grid-template-columns: minmax(0,1fr) minmax(520px,0.92fr);
+          align-items: start;
+          position: relative;
+          z-index: 2;
+        }
+        .hero-left {
+          display: flex;
+          flex-direction: column;
+          min-height: 100%;
+          padding: 4px 6px 8px;
+        }
+        .hero-main-title {
+          margin: 0;
+          font-size: clamp(62px, 6.4vw, 110px);
+          line-height: .9;
+          letter-spacing: -.07em;
+          font-weight: 700;
+          color: #ffffff;
+          max-width: 860px;
+        }
+        .hero-main-subtitle {
+          margin-top: 22px;
+          color: #fff;
+          font-size: clamp(26px, 2vw, 34px);
+          line-height: .98;
+          letter-spacing: -.045em;
+          font-weight: 500;
+        }
+        .hero-main-copy {
+          max-width: 620px;
+          margin-top: 22px;
+          color: rgba(255,255,255,.78);
+          font-size: 22px;
+          line-height: 1.5;
+        }
+        .hero-highlights-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+        .hero-actions-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+        .tg-gradient-btn {
+          position: relative;
+          overflow: hidden;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 46px;
+          border-radius: 999px;
+          padding: 0 20px;
+          text-decoration: none;
+          color: #ffffff;
+          font-weight: 700;
+          border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%;
+          box-shadow: 0 10px 30px rgba(71, 96, 255, 0.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+        }
+        .tg-gradient-btn::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 25%, transparent 50%);
+          transform: translateX(-130%);
+          animation: tgShine 3.8s ease-in-out infinite;
+        }
+        .tg-gradient-btn > * { position: relative; z-index: 1; }
+        .tg-gradient-btn:hover { transform: translateY(-1px); }
+        .ghost-link {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 46px;
+          border-radius: 999px;
+          padding: 0 20px;
+          color: #fefefe;
+          text-decoration: none;
+          background: rgba(224,225,227,.07);
+          border: 1px solid rgba(255,255,255,.12);
+        }
+        .ghost-link-dark { background: rgba(11,29,58,.42); }
+        .hero-chart-float { width: 100%; max-width: 620px; margin-left: auto; }
+        .hero-chart-float-title {
+          margin-bottom: 12px;
+          color: rgba(255,255,255,.64);
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+        }
+        .hero-levers-inline { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .hero-tag {
+          border: 1px solid rgba(255,255,255,.12);
+          cursor: pointer;
+          transition: background .22s ease, color .22s ease, box-shadow .22s ease, border-color .22s ease;
+        }
+        .hero-tag-active {
+          color: #0b1d3a;
+          background: linear-gradient(135deg, rgba(247,210,55,0.98), rgba(247,210,55,0.88));
+          border-color: rgba(247,210,55,.24);
+          box-shadow: 0 0 0 1px rgba(247,210,55,.16), 0 14px 28px rgba(247,210,55,.18);
+        }
+        .hero-chart-box {
+          position: relative;
+          overflow: hidden;
+          border-radius: 28px;
+          padding: 14px;
+          display: flex;
+          flex-direction: column;
+          background: linear-gradient(135deg, rgba(224,225,227,.09) 0%, rgba(224,225,227,.06) 45%, rgba(224,225,227,.04) 100%);
+          backdrop-filter: blur(26px) saturate(145%);
+          -webkit-backdrop-filter: blur(26px) saturate(145%);
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.18), inset 0 -1px 0 rgba(255,255,255,.05), 0 18px 50px rgba(0,0,0,.24);
+        }
+        .hero-chart-metrics-row { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-bottom: 12px; }
+        .hero-metric-square {
+          min-height: 78px;
+          border-radius: 18px;
+          padding: 12px;
+          background: rgba(255,255,255,.04);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .hero-metric-square span,
+        .bar-chart-label,
+        .bar-chart-scale span,
+        .hero-money-card span,
+        .hero-money-card small { color: rgba(255,255,255,.58); font-size: 12px; }
+        .hero-metric-square strong,
+        .hero-money-card strong { display: block; margin-top: 8px; font-size: 18px; line-height: 1.05; }
+        .bar-chart-wrap {
+          position: relative;
+          border-radius: 24px;
+          padding: 16px 14px 14px;
+          background: rgba(255,255,255,.035);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .bar-chart-scale { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); margin-bottom: 18px; }
+        .bar-chart-grid {
+          position: absolute;
+          inset: 40px 14px 14px;
+          background-image: linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+          background-size: 25% 100%;
+        }
+        .bar-chart-columns-horizontal { display: grid; gap: 12px; position: relative; }
+        .bar-chart-row-top { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+        .bar-chart-value { color: rgba(255,255,255,.82); font-size: 13px; }
+        .bar-chart-bar-shell-horizontal {
+          height: 14px;
+          border-radius: 999px;
+          background: rgba(255,255,255,.05);
+          overflow: hidden;
+        }
+        .bar-chart-bar-horizontal { height: 100%; border-radius: inherit; transition: width .8s ease, transform .8s ease; }
+        .bar-good { background: linear-gradient(90deg, rgba(244,221,114,.98), rgba(255,236,149,.98)); }
+        .bar-bad { background: linear-gradient(90deg, rgba(122,149,255,.88), rgba(172,183,255,.88)); }
+        .hero-chart-bottom {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          gap: 10px;
+          margin-top: 12px;
+          position: relative;
+          z-index: 3;
+        }
+        .hero-money-card {
+          border-radius: 18px;
+          padding: 14px;
+          background: rgba(8,18,40,.74);
+          border: 1px solid rgba(255,255,255,.14);
+          backdrop-filter: blur(18px) saturate(130%);
+          -webkit-backdrop-filter: blur(18px) saturate(130%);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 18px 36px rgba(0,0,0,.16);
+        }
+        .hero-active-note {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          margin-top: 12px;
+          border-radius: 18px;
+          padding: 12px 14px;
+          background: rgba(8,18,40,.68);
+          border: 1px solid rgba(255,255,255,.12);
+          color: rgba(255,255,255,.76);
+          font-size: 13px;
+          line-height: 1.45;
+          position: relative;
+          z-index: 3;
+        }
+        .hero-active-note-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 16px rgba(247,210,55,.42);
+          animation: pulseTinyYellow 1.8s ease-in-out infinite;
+          flex-shrink: 0;
+        }
+        .hero-money-card-muted {
+          border: 1px solid rgba(200,200,200,.16) !important;
+          background: rgba(10,18,36,.58) !important;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .journey-compact { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+        .journey-compact-card {
+          position: relative;
+          min-height: 214px;
+          border-radius: 28px;
+          padding: 20px 20px 18px;
+          overflow: hidden;
+          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07));
+          border: 1px solid rgba(255,255,255,.12);
+          backdrop-filter: blur(18px) saturate(130%);
+        }
+        .journey-compact-top { display: grid; grid-template-columns: 54px minmax(0,1fr); align-items: flex-start; column-gap: 14px; margin-bottom: 14px; }
+        .journey-compact-badge {
+          width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0;
+          background: transparent; color: #f7d237; font-size: 13px; font-weight: 700;
+          border: 1px solid rgba(247,210,55,.34);
+        }
+        .journey-compact-arrow { display: none; }
+        .journey-compact-title { padding-top: 2px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
+        .journey-compact-text { margin-top: 0; padding-left: 68px; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
+        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
+        .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
+        .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+        .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
+        .preview-example-chip:hover { transform: translateY(-1px); border-color: rgba(247,210,55,.28); background: rgba(247,210,55,.08); }
+        .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
+        .input-shell {
+          display: flex; flex-direction: column; gap: 8px;
+          border-radius: 22px; padding: 14px; background: rgba(224,225,227,.08); border: 1px solid rgba(255,255,255,.1);
+        }
+        .input-label { color: rgba(255,255,255,.62); font-size: 14px; font-weight: 600; }
+        .input-wrap { border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
+        .glass-input {
+          width: 100%; height: 48px; padding: 0 14px; background: transparent; border: none; outline: none;
+          color: #fff; font-size: 14px; font-weight: 600;
+        }
+        .glass-input::placeholder { color: rgba(255,255,255,.34); font-size: 14px; font-weight: 600; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+        .metric-card,.model-card,.slider-card { min-height: 132px; padding: 16px; }
+        .metric-head,.model-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+        .metric-label,.model-label { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600; }
+        .metric-flag {
+          margin-top: 8px; display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 11px; line-height: 1;
+          border: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.62); background: rgba(255,255,255,.04);
+        }
+        .flag-good { color: #bbf7d0; border-color: rgba(187,247,208,.18); background: rgba(34,197,94,.08); }
+        .flag-bad { color: #fecdd3; border-color: rgba(251,113,133,.18); background: rgba(251,113,133,.08); }
+        .metric-delta-top,.model-delta-top { font-size: 12px; font-weight: 700; }
+        .metric-main-value,.model-main-value {
+          margin-top: 22px;
+          font-size: clamp(22px, 2vw, 30px);
+          line-height: .98;
+          letter-spacing: -.04em;
+          font-weight: 700;
+        }
+        .slider-title { font-size: 14px; line-height: 1.2; font-weight: 600; }
+        .slider-subtitle { margin-top: 10px; min-height: 34px; font-size: 12px; line-height: 1.45; color: rgba(255,255,255,.42); }
+        .slider-percent { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,.5); }
+        .range-input { height: 18px; }
+        .preview-actions-inline { display: flex; align-items: center; gap: 16px; }
+        .reset-link {
+          border: none; background: transparent; color: rgba(255,255,255,.54); cursor: pointer; padding: 0; font-size: 13px;
+        }
+        .reset-link:disabled { opacity: .35; cursor: not-allowed; }
+        .preview-side { position: sticky; top: 100px; }
+        .reserve-kicker { color: #f7d237; font-size: 13px; font-weight: 700; }
+        .hero-preview-box,
+        .side-note-card,
+        .cta-box {
+          border-radius: 20px; padding: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+        }
+        .reserve-amount {
+          font-size: clamp(22px, 2vw, 30px);
+          line-height: .98;
+          letter-spacing: -.04em;
+          font-weight: 700;
+          color: #f7d237;
+        }
+        .reserve-amount span { color: rgba(255,255,255,.62); font-size: inherit; font-weight: inherit; }
+        .results-grid-2x2 { display: grid; grid-template-columns: repeat(2, minmax(0, min(100%, 470px))); gap: 14px; justify-content: center; }
+        .result-doc-card { min-height: 236px; perspective: 1400px; }
+        .result-doc-card-inner {
+          height: 100%; min-height: 236px; border-radius: 28px; padding: 20px; transform-style: preserve-3d; transition: transform .18s ease-out;
+          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07)); border: 1px solid rgba(255,255,255,.12);
+        }
+        .result-doc-top { display: flex; justify-content: flex-start; gap: 10px; margin-bottom: 24px; }
+        .result-doc-tab { display: inline-flex; align-items: center; min-height: 30px; padding: 0 12px; border-radius: 999px; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.9)); border: 1px solid rgba(247,210,55,.24); color: #0b1d3a; font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .result-doc-title { font-size: 28px; line-height: .98; letter-spacing: -.04em; font-weight: 600; }
+        .result-doc-text { margin-top: 16px; color: rgba(255,255,255,.72); font-size: 15px; line-height: 1.55; max-width: 92%; }
+        .results-bottom-stack { display: flex; flex-direction: column; align-items: center; gap: 18px; margin-top: 18px; }
+        .results-roadmap-note {
+          max-width: 860px; text-align: center; color: rgba(255,255,255,.68); font-size: 15px; line-height: 1.65;
+        }
+        .results-roadmap-note span { color: #f7d237; font-weight: 600; }
+        .result-doc-start-btn {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 22px; border-radius: 999px;
+          text-decoration: none; color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+        }
+        .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .industries-pills-carousel {
+          justify-content: space-between;
+          align-items: center;
+          gap: 16px;
+        }
+        .industries-pills-left {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          align-items: center;
+        }
+        .stage-rotate-cue {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          justify-content: center;
+          min-width: 118px;
+          height: 44px;
+          padding: 0 14px;
+          color: rgba(255,255,255,.72);
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.11);
+          background: rgba(255,255,255,.035);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+        }
+        .stage-rotate-cue-label {
+          font-size: 11px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          color: rgba(255,255,255,.54);
+        }
+        .stage-rotate-cue-right { margin-left: auto; }
+        .stage-rotate-cue svg { width: 42px; height: 22px; }
+        .industry-pill {
+          display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 14px; border-radius: 999px;
+          font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: rgba(255,255,255,.48);
+        }
+        .industry-pill-active { color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88)); border-color: rgba(247,210,55,.28); }
+        .stage-carousel-scene {
+          position: relative; perspective: 2200px; min-height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+          touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
+        }
+        .stage-carousel-mobile-rail { display: none; }
+        .stage-carousel-scene.is-dragging { cursor: grabbing; }
+        .stage-carousel-drum { position: relative; width: 100%; height: 456px; transform-style: preserve-3d; }
+        .stage-carousel-item-free {
+          position: absolute; top: 18px; left: 50%; width: min(580px, 50vw); transform-style: preserve-3d;
+          transition: transform .04s linear, opacity .04s linear, filter .04s linear; will-change: transform, opacity, filter;
+        }
+        .stage-card-analytics {
+          position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.36) 0%, rgba(11,20,38,.22) 100%);
+          backdrop-filter: blur(68px) saturate(155%);
+          -webkit-backdrop-filter: blur(68px) saturate(155%);
+          box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .stage-card-analytics::after { display: none; }
+        .stage-card-top-panel {
+          display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 18px; padding: 20px 20px 16px; min-height: 184px;
+          background: linear-gradient(135deg, rgba(255,255,255,.07) 0%, rgba(255,255,255,.025) 100%);
+        }
+        .stage-card-copy { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+        .stage-copy-block h4 {
+          margin: 0; font-size: 20px; line-height: 1.04; font-weight: 500; color: rgba(255,255,255,.96); letter-spacing: -.03em;
+        }
+        .stage-copy-block p { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: rgba(255,255,255,.82); }
+        .stage-card-heading { display: flex; flex-direction: column; align-items: flex-end; justify-content: flex-start; min-width: 130px; }
+        .stage-card-heading span { font-size: 11px; text-transform: uppercase; letter-spacing: .16em; color: rgba(255,255,255,.5); }
+        .stage-card-heading strong { margin-top: 6px; font-size: 42px; line-height: .92; letter-spacing: -.06em; }
+        .stage-card-bottom-panel { position: relative; padding: 16px 18px 18px; flex: 1; }
+        .stage-card-bottom-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; min-height: 100%; }
+        .compact-metrics-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+        .stage-inline-metric {
+          border-radius: 18px; padding: 12px; background: rgba(255,255,255,.065); border: 1px solid rgba(255,255,255,.1);
+          backdrop-filter: blur(16px);
+        }
+        .stage-ring-label { color: rgba(255,255,255,.56); font-size: 11px; text-transform: uppercase; letter-spacing: .12em; }
+        .stage-inline-metric-value { margin-top: 8px; font-size: 22px; line-height: 1; letter-spacing: -.04em; font-weight: 700; }
+        .stage-bars-title { font-size: 24px; line-height: 1; letter-spacing: -.06em; font-weight: 700; }
+        .stage-bars-wrap { display: grid; gap: 12px; margin-top: 14px; }
+        .stage-bar-group { max-width: none; }
+        .stage-bar-label { margin-bottom: 8px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.52); }
+        .stage-bar-stack { display: grid; gap: 8px; }
+        .stage-bar-track { height: 16px; border-radius: 999px; overflow: hidden; background: rgba(255,255,255,.06); }
+        .stage-bar-track-thin { height: 10px; }
+        .stage-bar-fill { height: 100%; border-radius: inherit; }
+        .stage-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96)); }
+        .stage-bar-fill-plan { background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82)); }
+        .stage-card-watermark-icon { display: none; }
+        .analysis-grid {
+          display: grid;
+          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
+          gap: 28px;
+          align-items: stretch;
+        }
+        .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
+        .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
+        .signal-board {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          grid-template-rows: 1fr 1fr;
+          grid-template-areas:
+            "pos pos pos struct struct struct"
+            "econ econ clients clients product product";
+          gap: 16px;
+          align-items: stretch;
+          height: 790px;
+        }
+        .signal-card {
+          position: relative;
+          min-height: 0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          padding: 18px;
+          border-radius: 28px;
+          overflow: hidden;
+          background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+          border: 1px solid rgba(255,255,255,.13);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.16);
+          backdrop-filter: blur(42px) saturate(145%);
+          -webkit-backdrop-filter: blur(42px) saturate(145%);
+        }
+        .signal-card-layout-1 { grid-area: pos; }
+        .signal-card-layout-2 { grid-area: struct; }
+        .signal-card-layout-3 { grid-area: econ; }
+        .signal-card-layout-4 { grid-area: clients; }
+        .signal-card-layout-5 { grid-area: product; }
+        .signal-card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          background: radial-gradient(circle at 20% 18%, rgba(255,255,255,.12), transparent 28%);
+          opacity: .85;
+        }
+        .signal-card-blue::after,
+        .signal-card-violet::after,
+        .signal-card-gold::after,
+        .signal-card-slate::after,
+        .signal-card-indigo::after {
+          content: "";
+          position: absolute;
+          left: 16px;
+          right: 16px;
+          bottom: 14px;
+          height: 1px;
+          opacity: .9;
+          background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.24), rgba(255,255,255,.06));
+        }
+        .signal-card-blue { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(35,88,255,.08); }
+        .signal-card-violet { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(109,76,255,.08); }
+        .signal-card-gold { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(247,210,55,.08); }
+        .signal-card-slate { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(120,136,190,.08); }
+        .signal-card-indigo { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(98,112,255,.08); }
+        .signal-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: rgba(255,255,255,.54);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .14em;
+        }
+        .signal-card-weight {
+          color: #f7d237;
+          font-weight: 700;
+          font-size: 12px;
+        }
+        .signal-card-title {
+          margin-top: 14px;
+          font-size: clamp(22px, 2vw, 34px);
+          line-height: .98;
+          letter-spacing: -.05em;
+          font-weight: 700;
+          max-width: 12ch;
+        }
+        .signal-card-points {
+          margin-top: 18px;
+          display: grid;
+          gap: 10px;
+        }
+        .signal-card-point {
+          display: grid;
+          grid-template-columns: 10px 1fr;
+          gap: 10px;
+          align-items: start;
+          color: rgba(255,255,255,.72);
+          font-size: 13px;
+          line-height: 1.45;
+        }
+        .signal-card-dot {
+          width: 6px;
+          height: 6px;
+          margin-top: 6px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 0 4px rgba(247,210,55,.08);
+        }
+        .signal-card-bottom { margin-top: 18px; }
+        .signal-meter {
+          height: 7px;
+          border-radius: 999px;
+          overflow: hidden;
+          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(255,255,255,.04);
+        }
+        .signal-meter span {
+          display: block;
+          height: 100%;
+          border-radius: inherit;
+          background: linear-gradient(90deg, rgba(247,210,55,.94), rgba(145,120,255,.84));
+        }
+        .signal-caption {
+          margin-top: 8px;
+          color: rgba(255,255,255,.46);
+          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: .12em;
+        }
+        .analysis-right-card-plain {
+          min-height: 100%;
+          height: 790px;
+          overflow: visible;
+          max-width: none;
+        }
+        .start-cards-row {
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
+          height: 100%;
+          justify-content: space-between;
+        }
+        .start-card { flex: 1 1 0; }
+        .start-card-inner {
+          position: relative;
+          border-radius: 32px;
+          overflow: visible;
+          border: none;
+          background: transparent;
+          transform-style: preserve-3d;
+          transition: transform .18s ease-out;
+          box-shadow: none;
+          min-height: 0;
+          height: auto;
+        }
+        .start-card-inner picture {
+          display: block;
+          width: 100%;
+        }
+        .start-card-frame {
+          width: 100%;
+          height: auto;
+          object-fit: contain;
+          object-position: center;
+          opacity: 1;
+          border-radius: 32px;
+          display: block;
+        }
+        .start-card-overlay {
+          position: absolute;
+          inset: 0;
+          display: block;
+          padding: 0;
+          background: none;
+          pointer-events: none;
+        }
+        .start-card-status-dot { display: none; }
+        .start-card-bottom-simple {
+          position: absolute;
+          inset: 0;
+          display: block;
+        }
+        .start-card-title-chip { display: none; }
+        .start-card-price-float {
+          position: absolute;
+          top: 7.8%;
+          right: 5.6%;
+          font-size: clamp(52px, 4.3vw, 92px);
+          line-height: .92;
+          letter-spacing: -.06em;
+          font-weight: 700;
+          text-shadow: 0 10px 28px rgba(0,0,0,.22);
+        }
+        .start-card-btn {
+          position: absolute;
+          left: 4.35%;
+          bottom: 11.2%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 42px;
+          padding: 0 18px;
+          border-radius: 999px;
+          text-decoration: none;
+          color: #ffffff;
+          font-weight: 700;
+          border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%;
+          box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+          pointer-events: auto;
+        }
+        .cta-card {
+          display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
+        }
+        .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+        .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
+        .page-footer {
+          position: relative;
+          z-index: 12;
+          margin-top: 30px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,.08);
+          display: flex; align-items: center; justify-content: space-between; gap: 16px; color: rgba(255,255,255,.52); font-size: 13px;
+        }
+        .page-footer-links { position: relative; z-index: 13; }
+        .page-footer-links a { pointer-events: auto; }
+        .accent-word { color: #f7d237; }
+        .text-emerald-300 { color: #a7f3d0; }
+        .text-rose-300 { color: #fda4af; }
+        .text-white\/50 { color: rgba(255,255,255,.5); }
+        @keyframes pageAmbient {
+          0% { transform: translate3d(0,0,0) scale(1); filter: hue-rotate(0deg); }
+          50% { transform: translate3d(0,0,0) scale(1.05); filter: hue-rotate(4deg); }
+          100% { transform: translate3d(0,0,0) scale(1.02); filter: hue-rotate(-4deg); }
+        }
+        @keyframes premiumGlassShift {
+          0% { transform: translate3d(-12px,0,0); }
+          50% { transform: translate3d(14px,-6px,0); }
+          100% { transform: translate3d(-12px,0,0); }
+        }
+        @keyframes tgGradientFlow {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+        @keyframes tgShine {
+          0% { transform: translateX(-130%); }
+          55% { transform: translateX(130%); }
+          100% { transform: translateX(130%); }
+        }
+        @keyframes pulseTinyYellow {
+          0% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.22); opacity: .72; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        @media (max-width: 1280px) {
+          .hero-section { min-height: 720px; }
+          .hero-main-copy,.section-copy { font-size: 19px; }
+          .stage-carousel-item-free { width: min(620px, 62vw); }
+        }
+        @media (max-width: 1180px) {
+          .header-inner {
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 14px;
+          }
+          .header-burger { display: inline-flex; }
+          .header-nav,
+          .header-actions {
+            display: none;
+            width: 100%;
+            grid-column: 1 / -1;
+          }
+          .header-nav.is-open,
+          .header-actions.is-open {
+            display: flex;
+          }
+          .header-nav {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 0 2px;
+          }
+          .header-actions {
+            gap: 10px;
+            padding-top: 4px;
+            justify-content: flex-start;
+          }
+          .header-cta {
+            width: 100%;
+            justify-content: center;
+          }
+          .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .preview-side { position: static; }
+          .journey-compact,.results-grid-2x2 { grid-template-columns: 1fr; }
+          .stage-carousel-item-free { width: min(680px, 78vw); }
+          .signal-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
+        }
+        @media (max-width: 1023px) {
+          .content-wrap { padding-top: 150px; }
+          .industries-pills-carousel { align-items: flex-start; }
+          .industries-pills-left { width: 100%; }
+          .stage-rotate-cue-right { margin-left: 0; }
+          .hero-section { min-height: auto; padding: 24px 18px; }
+          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
+          .start-cards-row { grid-template-columns: 1fr; }
+          .stage-carousel-scene { min-height: 520px; }
+          .stage-carousel-drum { height: 440px; }
+          .stage-carousel-item-free { width: min(700px, 82vw); }
+          .stage-card-top-panel,.stage-card-bottom-inner { grid-template-columns: 1fr; }
+          .stage-card-heading { align-items: flex-start; }
+        }
+        @media (max-width: 767px) {
+          .cursor-glow,
+          .page-background,
+          .glass-card::before,
+          .glass-card::after,
+          .glare-card::before,
+          .glare-card-lite::before,
+          .premium-glass::before,
+          .premium-glass::after { display: none !important; }
+          .content-wrap {
+            width: 100%;
+            max-width: 100%;
+            padding: 138px 14px 28px;
+          }
+          .header-fixed {
+            left: 0;
+            right: 0;
+            width: 100%;
+            background: rgba(4,16,39,.94);
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+          }
+          .header-inner {
+            width: 100%;
+            max-width: 100%;
+            padding: 12px 14px;
+            border-radius: 0;
+          }
+          .logo-link { min-width: 0; }
+          .logo-main { width: 168px; height: auto; }
+          .header-nav,
+          .header-actions {
+            width: 100%;
+            max-width: 100%;
+          }
+          .header-link { font-size: 14px; }
+          .header-actions {
+            gap: 10px;
+            padding-top: 8px;
+            justify-content: flex-start;
+          }
+          .header-pill { min-width: 52px; }
+          .header-cta {
+            width: 100%;
+            justify-content: center;
+          }
+          .section-head { margin-bottom: 18px; }
+          .section-title { font-size: clamp(30px, 10vw, 42px); }
+          .section-copy { font-size: 15px; line-height: 1.5; }
+          .hero-section {
+            min-height: auto;
+            padding: 14px;
+            border-radius: 28px;
+            overflow: hidden;
+          }
+          .hero-section::before,
+          .hero-section::after { display: none; }
+          .hero-grid { gap: 14px; }
+          .hero-left {
+            position: relative;
+            overflow: hidden;
+            border-radius: 24px;
+            padding: 18px 14px 18px;
+            background: linear-gradient(180deg, rgba(11,29,58,.84) 0%, rgba(11,29,58,.58) 100%);
+            border: 1px solid rgba(255,255,255,.08);
+          }
+          .hero-left::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image:
+              linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
+              url("/hero_mobile.svg");
+            background-repeat: no-repeat;
+            background-size: cover, contain;
+            background-position: center, center left;
+            opacity: .92;
+            z-index: 0;
+          }
+          .hero-left > * { position: relative; z-index: 1; }
+          .hero-main-title { font-size: clamp(46px, 15vw, 72px); }
+          .hero-main-subtitle { margin-top: 14px; font-size: 22px; }
+          .hero-main-copy { margin-top: 16px; font-size: 16px; line-height: 1.45; max-width: 100%; }
+          .hero-highlights-row { margin-top: 18px; gap: 8px; }
+          .hero-highlight-chip { min-height: 30px; padding: 0 12px; font-size: 11px; }
+          .hero-actions-row { margin-top: 18px; gap: 10px; }
+          .hero-chart-float-title { margin-bottom: 10px; font-size: 11px; }
+          .hero-levers-inline {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+          }
+          .hero-tag { width: 100%; min-height: 38px; padding: 0 10px; font-size: 12px; }
+          .hero-chart-box { padding: 12px; border-radius: 22px; }
+          .hero-chart-metrics-row { display: none; }
+          .bar-chart-scale span:nth-child(2),
+          .bar-chart-scale span:nth-child(4) { display: none; }
+          .bar-chart-scale { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+          .bar-chart-scale span { font-size: 11px; }
+          .bar-chart-grid { inset: 38px 14px 14px; background-size: 50% 100%; }
+          .hero-chart-bottom { grid-template-columns: 1fr; gap: 8px; }
+          .hero-money-card { padding: 12px; }
+          .journey-compact { grid-template-columns: 1fr; gap: 12px; }
+          .journey-compact-card { min-height: unset; padding: 18px 16px 16px; border-radius: 22px; }
+          .journey-compact-top { grid-template-columns: 42px minmax(0,1fr); column-gap: 10px; margin-bottom: 10px; }
+          .journey-compact-title { max-width: none; font-size: 18px; }
+          .journey-compact-text { padding-left: 52px; font-size: 13px; line-height: 1.48; }
+          .preview-grid { grid-template-columns: 1fr; gap: 14px; }
+          .preview-input-intro { font-size: 14px; }
+          .preview-example-row { gap: 8px; }
+          .preview-example-chip { width: 100%; justify-content: center; min-height: 46px; padding: 0 16px; border: 1px solid rgba(247,210,55,.52); color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,1), rgba(255,229,122,.98)); box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 24px rgba(247,210,55,.22); font-weight: 800; }
+          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
+          .input-shell { padding: 12px; border-radius: 18px; }
+          .glass-input { height: 46px; }
+          .dashboard-grid { gap: 10px; }
+          .metric-card,.model-card,.slider-card { min-height: auto; padding: 14px; border-radius: 20px; }
+          .metric-main-value,.model-main-value,.reserve-amount { font-size: 22px; }
+          .preview-side { position: static; padding: 16px; border-radius: 22px; }
+          .preview-actions-inline { gap: 12px; }
+          .preview-grid .mt-5 .grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
+          .preview-grid .mt-6 + .mt-3 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 10px;
+          }
+          .results-grid-2x2 { grid-template-columns: 1fr; gap: 12px; }
+          .result-doc-card, .result-doc-card-inner { min-height: unset; }
+          .result-doc-card-inner { padding: 18px; border-radius: 22px; }
+          .result-doc-title { font-size: 22px; }
+          .result-doc-text { max-width: 100%; font-size: 14px; }
+          .industries-pills-carousel { gap: 12px; }
+          .industries-pills-left {
+            width: 100%;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0,1fr));
+            gap: 8px;
+          }
+          .industry-pill { min-height: 32px; padding: 0 8px; font-size: 11px; }
+          .stage-rotate-cue,
+          .stage-carousel-scene { display: none; }
+          .stage-carousel-mobile-rail {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            max-width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            padding: 2px 0 10px;
+            scroll-snap-type: x mandatory;
+            -webkit-overflow-scrolling: touch;
+          }
+          .stage-carousel-mobile-rail::-webkit-scrollbar { display: none; }
+          .stage-carousel-mobile-slide {
+            flex: 0 0 84%;
+            min-width: 84%;
+            width: 84%;
+            scroll-snap-align: start;
+          }
+          .stage-card-analytics { min-height: auto; border-radius: 22px; width: 100%; }
+          .stage-card-top-panel { padding: 14px; min-height: auto; gap: 10px; }
+          .stage-copy-block { display: grid; gap: 6px; }
+          .stage-copy-block h4 { font-size: 14px; }
+          .stage-copy-block p { font-size: 11px; line-height: 1.4; }
+          .stage-card-heading { min-width: 0; align-items: flex-start; }
+          .stage-card-heading span { font-size: 10px; }
+          .stage-card-heading strong { font-size: 28px; }
+          .stage-card-bottom-panel { padding: 12px; }
+          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 10px; }
+          .compact-metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+          .stage-inline-metric { padding: 7px 8px; border-radius: 14px; min-height: 0; }
+          .stage-ring-label { font-size: 9px; letter-spacing: .08em; }
+          .stage-inline-metric-value { margin-top: 4px; font-size: 14px; }
+          .stage-bars-title { font-size: 16px; }
+          .stage-bars-wrap { margin-top: 10px; gap: 10px; }
+          .stage-bar-label { margin-bottom: 6px; font-size: 10px; }
+          .stage-bar-track { height: 12px; }
+          .stage-bar-track-thin { height: 8px; }
+          .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
+          .signal-board {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto;
+            grid-template-areas: none;
+            height: auto;
+            gap: 12px;
+          }
+          .signal-card,
+          .signal-card-layout-1,
+          .signal-card-layout-2,
+          .signal-card-layout-3,
+          .signal-card-layout-4,
+          .signal-card-layout-5 {
+            grid-area: auto;
+          }
+          .signal-card {
+            min-height: unset;
+            height: auto;
+            padding: 16px;
+            border-radius: 22px;
+          }
+          .signal-card-title { font-size: 22px; max-width: 100%; }
+          .signal-card-points { gap: 8px; }
+          .signal-card-point { font-size: 13px; }
+          .analysis-right-card-plain { height: auto; }
+          .start-cards-row { gap: 14px; }
+          .start-card { flex: none; }
+          .start-card-inner {
+            min-height: 0;
+            border-radius: 24px;
+            border: none;
+            background: transparent;
+            box-shadow: none;
+          }
+          .start-card-frame {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            object-position: center;
+            border-radius: 24px;
+          }
+          .start-card-overlay {
+            background: none;
+          }
+          .start-card-title-chip { display: none; }
+          .start-card-price-float {
+            top: 9%;
+            right: 14px;
+            left: auto;
+            bottom: auto;
+            font-size: clamp(28px, 10vw, 40px);
+          }
+          .start-card-btn {
+            left: 14px;
+            right: 14px;
+            bottom: 10%;
+            min-height: 38px;
+            width: auto;
+            padding: 0 14px;
+            font-size: 12px;
+          }
+          .hero-chart-float { max-width: 100%; }
+          .hero-chart-box,
+          .hero-metric-square,
+          .bar-chart-wrap,
+          .hero-money-card,
+          .hero-active-note,
+          .journey-compact-card,
+          .input-shell,
+          .metric-card,
+          .model-card,
+          .slider-card,
+          .preview-side,
+          .stage-card-analytics,
+          .signal-card,
+          .result-doc-card-inner,
+          .start-card-inner,
+          .cta-card,
+          .cta-box {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: 0 10px 28px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.06);
+          }
+          .bar-chart-bar-horizontal,
+          .hero-active-note,
+          .hero-tag,
+          .tg-gradient-btn,
+          .ghost-link,
+          .preview-example-chip { will-change: auto; }
+          .range-input {
+            height: 24px;
+            accent-color: #f7d237;
+          }
+          .range-input::-webkit-slider-runnable-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+          }
+          .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            margin-top: -8px;
+            border-radius: 999px;
+            background: #f7d237;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 18px rgba(247,210,55,.28);
+          }
+          .range-input::-moz-range-track {
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(255,255,255,.14);
+          }
+          .range-input::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 999px;
+            background: #f7d237;
+            border: 2px solid #fff;
+            box-shadow: 0 6px 18px rgba(247,210,55,.28);
+          }
+          .stage-rings-grid.compact-metrics-grid {
+            grid-template-columns: repeat(2, minmax(0,1fr));
+            gap: 8px;
+          }
+          .stage-ring-label { font-size: 10px; }
+          .start-card-inner {
+            min-height: 0;
+            border-radius: 22px;
+            background: transparent;
+          }
+          .start-card-frame {
+            border-radius: 22px;
+          }
+          .start-card-overlay {
+            background: none;
+          }
+          .analysis-grid,
+          .preview-grid,
+          .results-grid-2x2,
+          .journey-compact,
+          .dashboard-grid,
+          .input-grid,
+          .compact-metrics-grid { width: 100%; max-width: 100%; }
+          .cta-card { grid-template-columns: 1fr; gap: 14px; }
+          .page-footer { flex-direction: column; align-items: flex-start; }
+        }
+      `}</style>
+    </main>
   );
 }
