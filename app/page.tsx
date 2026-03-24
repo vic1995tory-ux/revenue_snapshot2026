@@ -537,15 +537,11 @@ function StartCard({
           <div className="start-card-overlay start-card-overlay-plain">
             <div className="start-card-bottom-simple">
               <div className="start-card-price-float">{price}</div>
-              <a href={href} className="start-card-btn start-card-btn-floating">
-                Попробовать Snapshot
-              </a>
             </div>
           </div>
         </div>
-
-        <a href={href} className="start-card-play" aria-label={`Open ${title}`}>
-          <span className="start-card-play-triangle" />
+        <a href={href} className="start-card-play" aria-label={`Открыть ${title}`}>
+          <span className="start-card-play-icon" aria-hidden="true" />
         </a>
       </div>
     </div>
@@ -892,7 +888,7 @@ export default function Home() {
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
-  const tgContactUrl = "https://t.me/growth_avenue_company";
+  const tgContactUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
   const waContactUrl = "https://wa.me/995555163833";
 
   useEffect(() => {
@@ -1064,7 +1060,7 @@ export default function Home() {
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
             <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
-            <a href="https://www.paypal.com/ncp/payment/GQLFG3CYUHM82" className="header-pill" target="_blank" rel="noreferrer">TG</a>
+            <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
         </div>
@@ -2199,44 +2195,9 @@ export default function Home() {
         .start-card { flex: 1 1 0; }
         .start-card-shell {
           display: grid;
-          grid-template-columns: minmax(0,1fr) 112px;
-          gap: 16px;
+          grid-template-columns: minmax(0, 1fr) 116px;
+          gap: 18px;
           align-items: stretch;
-          height: 100%;
-        }
-        .start-card-play {
-          position: relative;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          border-radius: 28px;
-          min-height: 100%;
-          min-width: 112px;
-          text-decoration: none;
-          border: 1px solid rgba(255,255,255,.12);
-          background: linear-gradient(180deg, rgba(92,71,220,.95) 0%, rgba(225,164,67,.95) 54%, rgba(248,222,109,.98) 76%, rgba(120,126,170,.78) 100%);
-          background-size: 100% 220%;
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.16), 0 16px 34px rgba(0,0,0,.22);
-          animation: startPlayFlow 9s ease-in-out infinite;
-          overflow: hidden;
-        }
-        .start-card-play::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          background: linear-gradient(140deg, rgba(255,255,255,.16) 0%, rgba(255,255,255,0) 38%, rgba(255,255,255,.1) 100%);
-          pointer-events: none;
-        }
-        .start-card-play-triangle {
-          position: relative;
-          z-index: 1;
-          width: 0;
-          height: 0;
-          border-top: 26px solid transparent;
-          border-bottom: 26px solid transparent;
-          border-left: 40px solid #0b1d3a;
-          margin-left: 8px;
-          filter: drop-shadow(0 8px 18px rgba(0,0,0,.18));
         }
         .start-card-inner {
           position: relative;
@@ -2280,33 +2241,57 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 7.8%;
-          right: 5.6%;
-          font-size: clamp(52px, 4.3vw, 92px);
+          top: 11.2%;
+          right: 6.2%;
+          font-size: clamp(36px, 3.5vw, 68px);
           line-height: .92;
           letter-spacing: -.06em;
           font-weight: 700;
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
         .start-card-btn {
-          position: absolute;
-          left: 4.35%;
-          bottom: 11.2%;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 42px;
-          padding: 0 18px;
-          border-radius: 999px;
-          text-decoration: none;
-          color: #ffffff;
-          font-weight: 700;
           border: 1px solid rgba(255,255,255,.16);
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
           animation: tgGradientFlow 6s ease-in-out infinite;
           pointer-events: auto;
+        }
+        .start-card-play {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 30px;
+          overflow: hidden;
+          min-height: 100%;
+          min-width: 0;
+          text-decoration: none;
+          background: linear-gradient(180deg, #7566ff 0%, #b58ce8 16%, #c79386 42%, #dda651 70%, #f1c45d 100%);
+          background-size: 100% 180%;
+          animation: playGradientShift 8s ease-in-out infinite alternate;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.24), 0 18px 36px rgba(0,0,0,.18);
+        }
+        .start-card-play::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(145deg, rgba(255,255,255,.12), rgba(255,255,255,0) 34%, rgba(8,19,53,.12) 68%, rgba(8,19,53,.24) 100%);
+          pointer-events: none;
+        }
+        .start-card-play-icon {
+          position: relative;
+          width: 0;
+          height: 0;
+          border-top: 28px solid transparent;
+          border-bottom: 28px solid transparent;
+          border-left: 42px solid #0b1d3a;
+          margin-left: 8px;
+          filter: drop-shadow(0 6px 16px rgba(0,0,0,.16));
+        }
+        @keyframes playGradientShift {
+          0% { background-position: 50% 0%; }
+          100% { background-position: 50% 100%; }
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
@@ -2349,11 +2334,6 @@ export default function Home() {
           0% { transform: scale(1); opacity: 1; }
           50% { transform: scale(1.22); opacity: .72; }
           100% { transform: scale(1); opacity: 1; }
-        }
-        @keyframes startPlayFlow {
-          0% { background-position: 50% 0%; }
-          50% { background-position: 50% 100%; }
-          100% { background-position: 50% 0%; }
         }
         @media (max-width: 1280px) {
           .hero-section { min-height: 720px; }
@@ -2619,18 +2599,9 @@ export default function Home() {
           .start-cards-row { gap: 14px; }
           .start-card { flex: none; }
           .start-card-shell {
-            grid-template-columns: minmax(0,1fr) 74px;
-            gap: 10px;
-          }
-          .start-card-play {
-            min-width: 74px;
-            border-radius: 22px;
-          }
-          .start-card-play-triangle {
-            border-top-width: 16px;
-            border-bottom-width: 16px;
-            border-left-width: 24px;
-            margin-left: 4px;
+            grid-template-columns: minmax(0, 1fr) 96px;
+            gap: 12px;
+            align-items: stretch;
           }
           .start-card-inner {
             min-height: 0;
@@ -2654,14 +2625,14 @@ export default function Home() {
           .start-card-price-float {
             display: none;
           }
-          .start-card-btn {
-            left: 14px;
-            right: 14px;
-            bottom: 10%;
-            min-height: 38px;
-            width: auto;
-            padding: 0 14px;
-            font-size: 12px;
+          .start-card-play {
+            border-radius: 24px;
+          }
+          .start-card-play-icon {
+            border-top-width: 18px;
+            border-bottom-width: 18px;
+            border-left-width: 28px;
+            margin-left: 4px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,
@@ -2748,6 +2719,10 @@ export default function Home() {
           .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
+        }
+
+        @media (max-width: 767px) {
+          .start-card-price-float { display: none !important; }
         }
       `}</style>
     </main>
