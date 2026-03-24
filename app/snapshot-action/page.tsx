@@ -17,7 +17,7 @@ type InputType =
   | "analyticsBranch"
   | "strategyGoal"
   | "contact"
-  | "channelDistribution";
+  | "channelDistribution"; 
 
 type Question = {
   id: string;
@@ -154,15 +154,7 @@ const TEAM_PARTICIPATION_TAGS = [
   "Аналитика",
 ];
 
-const BUSINESS_STAGE_TAGS = [
-  "Idea",
-  "MVP",
-  "Early Revenue",
-  "PMF Search",
-  "Growth",
-  "Scale",
-  "Mature",
-];
+const BUSINESS_STAGE_TAGS = ["Seed", "Startup", "Growth", "Enterprise"];
 
 const MONTHS = [
   "Янв",
@@ -221,7 +213,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "kpis",
-        label: "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+        label:
+          "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
         type: "tags",
       },
     ],
@@ -239,7 +232,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "demandCapacity",
-        label: "Сколько обращений вы получаете и сколько реально можете обработать?",
+        label:
+          "Сколько обращений вы получаете и сколько реально можете обработать?",
         type: "dualRange",
       },
       {
@@ -249,7 +243,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "channelEfficiency",
-        label: "Как распределяется входящий поток клиентов между выбранными каналами?",
+        label:
+          "Как распределяется входящий поток клиентов между выбранными каналами?",
         type: "channelDistribution",
       },
     ],
@@ -272,7 +267,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "cjm",
-        label: "Как проходит путь клиента от первого обращения до положительного опыта?",
+        label:
+          "Как проходит путь клиента от первого обращения до положительного опыта?",
         type: "cjm",
       },
       {
@@ -296,7 +292,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "geo",
-        label: "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+        label:
+          "В каком регионе вы продаёте и где физически находится ваш бизнес?",
         type: "map",
       },
     ],
@@ -314,7 +311,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "interaction",
-        label: "Как выстроено взаимодействие между ролями и что изменилось за год?",
+        label:
+          "Как выстроено взаимодействие между ролями и что изменилось за год?",
         type: "departmentRelations",
       },
       {
@@ -325,7 +323,8 @@ const chapters: Chapter[] = [
       },
       {
         id: "stress",
-        label: "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
+        label:
+          "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
         type: "stressRange",
       },
       {
@@ -349,12 +348,14 @@ const chapters: Chapter[] = [
       },
       {
         id: "changesNeeded",
-        label: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+        label:
+          "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
         type: "text",
       },
       {
         id: "implemented",
-        label: "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+        label:
+          "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
         type: "text",
       },
     ],
@@ -385,7 +386,8 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "contacts",
-        label: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
+        label:
+          "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
         type: "contact",
       },
     ],
@@ -424,7 +426,11 @@ const initialAnswers: Answers = {
   revenue: "",
   kpis: { selected: [], custom: [] },
   clientProfile: "",
-  demandCapacity: { demand: 0, capacity: 0, touched: { demand: false, capacity: false } },
+  demandCapacity: {
+    demand: 0,
+    capacity: 0,
+    touched: { demand: false, capacity: false },
+  },
   acquisitionChannels: { selected: [], custom: [] },
   channelEfficiency: { values: {}, touched: {} },
   topProducts: [
@@ -459,17 +465,27 @@ const initialAnswers: Answers = {
   decisions: "",
   stress: {
     values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-    touched: { Маркетинг: false, Продажи: false, Операционка: false, Управление: false },
+    touched: {
+      Маркетинг: false,
+      Продажи: false,
+      Операционка: false,
+      Управление: false,
+    },
   },
   lossZones: {
     values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-    touched: { Маркетинг: false, Продажи: false, Операционка: false, Управление: false },
+    touched: {
+      Маркетинг: false,
+      Продажи: false,
+      Операционка: false,
+      Управление: false,
+    },
   },
   analytics: { hasAnalytics: null, tags: [], custom: [], note: "" },
   changesNeeded: "",
   implemented: "",
   goal: { profitTarget: 0, mode: "", costChange: "", touched: false },
-  horizons: "",
+  horizons: { plan3: "", plan6: "", plan12: "" },
   contacts: { reportEmail: "", meetingContact: "" },
 };
 
@@ -519,7 +535,10 @@ function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
   const text = value.toLowerCase();
 
   const presets = [
-    { keys: ["тбилиси", "груз", "georgia", "tbilisi"], point: { x: 604, y: 149 } },
+    {
+      keys: ["тбилиси", "груз", "georgia", "tbilisi"],
+      point: { x: 604, y: 149 },
+    },
     { keys: ["кипр", "cyprus"], point: { x: 577, y: 184 } },
     { keys: ["герман", "berlin", "germany"], point: { x: 517, y: 124 } },
     { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 121 } },
@@ -532,8 +551,14 @@ function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
     { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
     { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
     { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
-    { keys: ["лондон", "uk", "united kingdom", "england"], point: { x: 470, y: 113 } },
-    { keys: ["usa", "new york", "united states", "america"], point: { x: 228, y: 145 } },
+    {
+      keys: ["лондон", "uk", "united kingdom", "england"],
+      point: { x: 470, y: 113 },
+    },
+    {
+      keys: ["usa", "new york", "united states", "america"],
+      point: { x: 228, y: 145 },
+    },
     { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
     { keys: ["браз", "brazil"], point: { x: 314, y: 279 } },
     { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
@@ -559,12 +584,20 @@ function getQuestionProgress(question: Question, answers: Answers): number {
 
     case "salesCount":
     case "revenue":
+      return /\d/.test(String(value ?? "")) ? 100 : 0;
+
     case "clientProfile":
     case "changesNeeded":
     case "implemented":
     case "decisions":
+      return textLength(value) > 0 ? 100 : 0;
+
     case "horizons":
-      return textLength(value) >= 60 ? 100 : 0;
+      return textLength(value?.plan3) > 0 &&
+        textLength(value?.plan6) > 0 &&
+        textLength(value?.plan12) > 0
+        ? 100
+        : 0;
 
     case "kpis":
     case "retention":
@@ -582,10 +615,12 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       const selectedChannels = getAllTagValues(answers.acquisitionChannels);
       const state: ChannelDistribution = value ?? { values: {}, touched: {} };
       if (selectedChannels.length === 0) return 0;
-      const allTouched = selectedChannels.every((channel) => state.touched?.[channel]);
+      const allTouched = selectedChannels.every(
+        (channel) => state.touched?.[channel],
+      );
       const total = selectedChannels.reduce(
         (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
-        0
+        0,
       );
       return allTouched && total === 100 ? 100 : 0;
     }
@@ -595,8 +630,7 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       if (items.length !== 3) return 0;
       const allNamed = items.every((item) => textLength(item.name) > 0);
       const allTouched = items.every((item) => item.touched);
-      const total = items.reduce((acc, item) => acc + Number(item.value || 0), 0);
-      return allNamed && allTouched && total === 100 ? 100 : 0;
+      return allNamed && allTouched ? 100 : 0;
     }
 
     case "cjm": {
@@ -621,10 +655,14 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     }
 
     case "positionText":
-      return textLength(value?.text) >= 60 && (value?.stages?.length ?? 0) > 0 ? 100 : 0;
+      return textLength(value?.text) >= 80 && (value?.stages?.length ?? 0) > 0
+        ? 100
+        : 0;
 
     case "geo":
-      return textLength(value?.physical) > 0 && textLength(value?.sales) > 0 ? 100 : 0;
+      return textLength(value?.physical) > 0 && textLength(value?.sales) > 0
+        ? 100
+        : 0;
 
     case "team": {
       const members: TeamMember[] = value ?? [];
@@ -661,7 +699,10 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "analytics": {
       if (value?.hasAnalytics === false) return 100;
       if (value?.hasAnalytics === true) {
-        return getAllTagValues({ selected: value.tags, custom: value.custom }).length > 0 ? 100 : 0;
+        return getAllTagValues({ selected: value.tags, custom: value.custom })
+          .length > 0
+          ? 100
+          : 0;
       }
       return 0;
     }
@@ -670,7 +711,10 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       return value?.touched && textLength(value?.mode) > 0 ? 100 : 0;
 
     case "contacts":
-      return textLength(value?.reportEmail) > 0 && textLength(value?.meetingContact) > 0 ? 100 : 0;
+      return textLength(value?.reportEmail) > 0 &&
+        textLength(value?.meetingContact) > 0
+        ? 100
+        : 0;
 
     default:
       return 0;
@@ -679,7 +723,9 @@ function getQuestionProgress(question: Question, answers: Answers): number {
 
 function getChapterProgress(chapter: Chapter, answers: Answers): number {
   const total = chapter.questions.length;
-  const filled = chapter.questions.filter((q) => getQuestionProgress(q, answers) === 100).length;
+  const filled = chapter.questions.filter(
+    (q) => getQuestionProgress(q, answers) === 100,
+  ).length;
   return Math.round((filled / total) * 100);
 }
 
@@ -733,7 +779,12 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 88 88"
+        className="-rotate-90"
+      >
         <circle
           cx="44"
           cy="44"
@@ -759,8 +810,12 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-lg font-semibold text-white">{Math.round(progress)}%</div>
-        <div className="text-[10px] uppercase tracking-[0.24em] text-white/45">filled</div>
+        <div className="text-lg font-semibold text-white">
+          {Math.round(progress)}%
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.24em] text-white/45">
+          filled
+        </div>
       </div>
     </div>
   );
@@ -777,7 +832,8 @@ function GlassCard({
     <div
       className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.05] backdrop-blur-2xl ${className}`}
       style={{
-        boxShadow: "0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
+        boxShadow:
+          "0 24px 80px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.16),transparent_30%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.08),transparent_26%)]" />
@@ -1050,9 +1106,16 @@ function GeoMapPreview({
             fill="#f7d237"
             style={{ filter: "drop-shadow(0 0 16px rgba(247,210,55,0.75))" }}
           />
-          <circle cx={physicalPoint.x} cy={physicalPoint.y} r="22" fill="rgba(247,210,55,0.12)" />
+          <circle
+            cx={physicalPoint.x}
+            cy={physicalPoint.y}
+            r="22"
+            fill="rgba(247,210,55,0.12)"
+          />
 
-          <g transform={`translate(${Math.max(physicalPoint.x - 90, 100)}, ${physicalPoint.y - 52})`}>
+          <g
+            transform={`translate(${Math.max(physicalPoint.x - 90, 100)}, ${physicalPoint.y - 52})`}
+          >
             <rect
               width="180"
               height="46"
@@ -1060,12 +1123,20 @@ function GeoMapPreview({
               fill="rgba(247,210,55,0.12)"
               stroke="rgba(247,210,55,0.35)"
             />
-            <text x="90" y="29" textAnchor="middle" fill="#fff3b2" fontSize="14">
+            <text
+              x="90"
+              y="29"
+              textAnchor="middle"
+              fill="#fff3b2"
+              fontSize="14"
+            >
               Физическая локация
             </text>
           </g>
 
-          <g transform={`translate(${Math.max(salesPoint.x + 18, 120)}, ${salesPoint.y - 12})`}>
+          <g
+            transform={`translate(${Math.max(salesPoint.x + 18, 120)}, ${salesPoint.y - 12})`}
+          >
             <rect
               width={salesIsWorld ? "126" : "158"}
               height="44"
@@ -1099,7 +1170,11 @@ function TeamMembersBuilder({
   const members = value ?? [createEmptyTeamMember()];
 
   function updateMember(id: string, patch: Partial<TeamMember>) {
-    onChange(members.map((member) => (member.id === id ? { ...member, ...patch } : member)));
+    onChange(
+      members.map((member) =>
+        member.id === id ? { ...member, ...patch } : member,
+      ),
+    );
   }
 
   function addMember() {
@@ -1141,17 +1216,23 @@ function TeamMembersBuilder({
                   className={compactInputClass}
                   placeholder="Например: COO / Head of Sales"
                   value={member.position}
-                  onChange={(e) => updateMember(member.id, { position: e.target.value })}
+                  onChange={(e) =>
+                    updateMember(member.id, { position: e.target.value })
+                  }
                 />
               </div>
 
               <div>
-                <div className="mb-2 text-sm text-white/55">Главная зона ответственности</div>
+                <div className="mb-2 text-sm text-white/55">
+                  Главная зона ответственности
+                </div>
                 <input
                   className={compactInputClass}
                   placeholder="Например: рост продаж / операционка"
                   value={member.responsibility}
-                  onChange={(e) => updateMember(member.id, { responsibility: e.target.value })}
+                  onChange={(e) =>
+                    updateMember(member.id, { responsibility: e.target.value })
+                  }
                 />
               </div>
             </div>
@@ -1167,7 +1248,8 @@ function TeamMembersBuilder({
                       type="button"
                       onClick={() =>
                         updateMember(member.id, {
-                          isDecisionMaker: option as TeamMember["isDecisionMaker"],
+                          isDecisionMaker:
+                            option as TeamMember["isDecisionMaker"],
                         })
                       }
                       className={`rounded-full border px-3.5 py-2 text-sm transition ${
@@ -1184,7 +1266,9 @@ function TeamMembersBuilder({
             </div>
 
             <div className="mt-4">
-              <div className="mb-2 text-sm text-white/55">Где принимает участие</div>
+              <div className="mb-2 text-sm text-white/55">
+                Где принимает участие
+              </div>
               <div className="flex flex-wrap gap-2.5">
                 {TEAM_PARTICIPATION_TAGS.map((tag) => {
                   const active = member.participatesIn.includes(tag);
@@ -1282,7 +1366,9 @@ function TeamRelationsBuilder({
   function updateMetric(linkId: string, patch: Partial<TeamLinkMetric>) {
     onChange({
       links: links.map((link) =>
-        link.id === linkId ? { ...link, metrics: { ...link.metrics, ...patch } } : link
+        link.id === linkId
+          ? { ...link, metrics: { ...link.metrics, ...patch } }
+          : link,
       ),
       note,
     });
@@ -1310,32 +1396,40 @@ function TeamRelationsBuilder({
                   {link.fromRole} ↔ {link.toRole}
                 </div>
 
-                <div className="grid gap-4 lg:grid-cols-3">
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">
+                <div className="grid items-start gap-4 lg:grid-cols-3">
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
                       Скорость выполнения изменений
                     </div>
                     <RelationStars
                       value={link.metrics.speed}
-                      onChange={(next) => updateMetric(link.id, { speed: next })}
+                      onChange={(next) =>
+                        updateMetric(link.id, { speed: next })
+                      }
                     />
                   </div>
 
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">Коммуникация</div>
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
+                      Коммуникация
+                    </div>
                     <RelationStars
                       value={link.metrics.communication}
-                      onChange={(next) => updateMetric(link.id, { communication: next })}
+                      onChange={(next) =>
+                        updateMetric(link.id, { communication: next })
+                      }
                     />
                   </div>
 
-                  <div>
-                    <div className="mb-2 text-sm text-white/55">
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
                       Качество передаваемой информации
                     </div>
                     <RelationStars
                       value={link.metrics.infoQuality}
-                      onChange={(next) => updateMetric(link.id, { infoQuality: next })}
+                      onChange={(next) =>
+                        updateMetric(link.id, { infoQuality: next })
+                      }
                     />
                   </div>
                 </div>
@@ -1419,10 +1513,14 @@ function SeasonalityChart({
     const localY = clientY - rect.top;
     const center = paddingY + chartHeight / 2;
     const relative = center - localY;
-    const nextValue = clamp(Math.round((relative / (chartHeight / 2 - 10)) * 100), -100, 100);
+    const nextValue = clamp(
+      Math.round((relative / (chartHeight / 2 - 10)) * 100),
+      -100,
+      100,
+    );
 
     const nextPoints = points.map((point, i) =>
-      i === index ? { ...point, value: nextValue } : point
+      i === index ? { ...point, value: nextValue } : point,
     );
 
     onChange({
@@ -1458,7 +1556,7 @@ function SeasonalityChart({
     <div className="space-y-5">
       <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
         <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="rounded-2xl border border-emerald-300/25 bg-emerald-400/12 px-4 py-2 text-sm text-emerald-100">
+          <div className="rounded-2xl border border-teal-500/22 bg-teal-500/10 px-4 py-2 text-sm text-teal-100">
             Пики
           </div>
           <div className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
@@ -1469,11 +1567,12 @@ function SeasonalityChart({
           </div>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="w-full">
           <svg
             ref={svgRef}
             viewBox={`0 0 ${width} ${height}`}
-            className="h-[260px] min-w-[900px] w-full rounded-[20px] bg-[#071733]"
+            preserveAspectRatio="none"
+            className="h-[260px] w-full rounded-[20px] bg-[#071733]"
           >
             {[0, 1, 2, 3, 4].map((i) => {
               const y = paddingY + (chartHeight / 4) * i;
@@ -1510,7 +1609,7 @@ function SeasonalityChart({
               const { x, y } = pointXY(index, point.value);
               const pointColor =
                 point.value >= 25
-                  ? "#34d399"
+                  ? "#0f766e"
                   : point.value <= -25
                     ? "#f7d237"
                     : "#ffffff";
@@ -1538,7 +1637,7 @@ function SeasonalityChart({
                       cursor: "grab",
                       filter:
                         point.value >= 25
-                          ? "drop-shadow(0 0 12px rgba(52,211,153,0.42))"
+                          ? "drop-shadow(0 0 10px rgba(15,118,110,0.34))"
                           : point.value <= -25
                             ? "drop-shadow(0 0 12px rgba(247,210,55,0.42))"
                             : "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
@@ -1561,31 +1660,39 @@ function SeasonalityChart({
       </div>
 
       <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-[24px] border border-emerald-300/16 bg-emerald-400/6 p-4">
-          <div className="mb-2 text-lg font-medium text-emerald-100">Пики</div>
+        <div className="rounded-[24px] border border-teal-500/16 bg-teal-500/6 p-4">
+          <div className="mb-2 text-lg font-medium text-teal-100">Пики</div>
           <div className="mb-3 text-sm text-white/60">
-            {peakMonths.length > 0 ? peakMonths.join(", ") : "Пока не выделено ярко выраженных пиков"}
+            {peakMonths.length > 0
+              ? peakMonths.join(", ")
+              : "Пока не выделено ярко выраженных пиков"}
           </div>
           <AutoTextarea
             className={textareaClass}
             minRows={3}
             placeholder="Что влияет и от чего зависит?"
             value={peaksReason}
-            onChange={(next) => onChange({ points, peaksReason: next, lowsReason })}
+            onChange={(next) =>
+              onChange({ points, peaksReason: next, lowsReason })
+            }
           />
         </div>
 
         <div className="rounded-[24px] border border-[#f7d237]/16 bg-[#f7d237]/6 p-4">
           <div className="mb-2 text-lg font-medium text-[#fff3b2]">Спады</div>
           <div className="mb-3 text-sm text-white/60">
-            {lowMonths.length > 0 ? lowMonths.join(", ") : "Пока не выделено ярко выраженных спадов"}
+            {lowMonths.length > 0
+              ? lowMonths.join(", ")
+              : "Пока не выделено ярко выраженных спадов"}
           </div>
           <AutoTextarea
             className={textareaClass}
             minRows={3}
             placeholder="Что влияет и от чего зависит?"
             value={lowsReason}
-            onChange={(next) => onChange({ points, peaksReason, lowsReason: next })}
+            onChange={(next) =>
+              onChange({ points, peaksReason, lowsReason: next })
+            }
           />
         </div>
       </div>
@@ -1596,7 +1703,7 @@ function SeasonalityChart({
 function renderInput(
   question: Question,
   answers: Answers,
-  setAnswer: (key: string, value: any) => void
+  setAnswer: (key: string, value: any) => void,
 ) {
   switch (question.type) {
     case "rangePercent": {
@@ -1664,12 +1771,65 @@ function renderInput(
             />
 
             <AutoTextarea
-              placeholder="Введите ответ…"
+              placeholder="Опишите ваш бизнес"
               className={textareaClass}
               minRows={3}
               value={current.text ?? ""}
-              onChange={(next) => setAnswer(question.id, { ...current, text: next })}
+              onChange={(next) =>
+                setAnswer(question.id, { ...current, text: next })
+              }
             />
+          </div>
+        );
+      }
+
+      if (question.id === "horizons") {
+        const current = answers[question.id] ?? initialAnswers.horizons;
+
+        return (
+          <div className="grid gap-3 md:grid-cols-3">
+            <div>
+              <div className="mb-2 text-sm text-white/55">План на 3 месяца</div>
+              <AutoTextarea
+                placeholder="Что в фокусе на 3 месяца"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan3 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan3: next })
+                }
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm text-white/55">
+                План на 6 месяцев
+              </div>
+              <AutoTextarea
+                placeholder="Что в фокусе на 6 месяцев"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan6 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan6: next })
+                }
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm text-white/55">
+                План на 12 месяцев
+              </div>
+              <AutoTextarea
+                placeholder="Что в фокусе на 12 месяцев"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan12 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan12: next })
+                }
+              />
+            </div>
           </div>
         );
       }
@@ -1786,7 +1946,7 @@ function renderInput(
 
       const total = selectedChannels.reduce(
         (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
-        0
+        0,
       );
 
       return (
@@ -1809,10 +1969,13 @@ function renderInput(
           <div className="space-y-4">
             {selectedChannels.map((channel) => {
               const value = Number(state.values?.[channel] ?? 0);
-              const otherTotal = selectedChannels.reduce((acc, currentChannel) => {
-                if (currentChannel === channel) return acc;
-                return acc + Number(state.values?.[currentChannel] ?? 0);
-              }, 0);
+              const otherTotal = selectedChannels.reduce(
+                (acc, currentChannel) => {
+                  if (currentChannel === channel) return acc;
+                  return acc + Number(state.values?.[currentChannel] ?? 0);
+                },
+                0,
+              );
               const maxAllowed = Math.max(0, 100 - otherTotal);
 
               return (
@@ -1821,7 +1984,9 @@ function renderInput(
                   className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4"
                 >
                   <div className="mb-3 flex items-center justify-between gap-3">
-                    <div className="text-sm font-medium text-white">{channel}</div>
+                    <div className="text-sm font-medium text-white">
+                      {channel}
+                    </div>
                     <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
                       {value}%
                     </div>
@@ -1830,10 +1995,13 @@ function renderInput(
                   <input
                     type="range"
                     min={0}
-                    max={maxAllowed}
+                    max={100}
                     value={value}
                     onChange={(e) => {
-                      const nextValue = Number(e.target.value);
+                      const nextValue = Math.min(
+                        Number(e.target.value),
+                        maxAllowed,
+                      );
                       setAnswer("channelEfficiency", {
                         values: {
                           ...state.values,
@@ -1872,20 +2040,17 @@ function renderInput(
     }
 
     case "tripleMargin": {
-      const items: ProductItem[] = answers[question.id] ?? initialAnswers.topProducts;
-      const total = items.reduce((acc, item) => acc + Number(item.value || 0), 0);
+      const items: ProductItem[] =
+        answers[question.id] ?? initialAnswers.topProducts;
 
       return (
         <div className="space-y-4">
           {items.map((item, i) => {
-            const otherTotal = items.reduce((acc, current, idx) => {
-              if (idx === i) return acc;
-              return acc + Number(current.value || 0);
-            }, 0);
-            const maxAllowed = Math.max(0, 100 - otherTotal);
-
             return (
-              <div key={i} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+              <div
+                key={i}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+              >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <input
                     placeholder={`Продукт ${i + 1}`}
@@ -1905,7 +2070,7 @@ function renderInput(
                 <input
                   type="range"
                   min={0}
-                  max={maxAllowed}
+                  max={100}
                   value={item.value}
                   onChange={(e) => {
                     const next = [...items];
@@ -1918,14 +2083,13 @@ function renderInput(
                   }}
                   className="w-full accent-[#f7d237]"
                 />
-
-                <div className="mt-2 text-xs text-white/35">Максимум сейчас: {maxAllowed}%</div>
               </div>
             );
           })}
 
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
-            Сумма распределения: {total}% из 100%
+            Каждая шкала независима: укажите маржинальность каждого продукта
+            отдельно.
           </div>
         </div>
       );
@@ -1947,13 +2111,19 @@ function renderInput(
                 <div className="text-xs uppercase tracking-[0.24em] text-white/35">
                   Stage {i + 1}
                 </div>
-                <div className="mt-1 text-2xl font-semibold text-white">{step.stage}</div>
-                <div className="mt-1 text-sm text-white/50">{step.description}</div>
+                <div className="mt-1 text-2xl font-semibold text-white">
+                  {step.stage}
+                </div>
+                <div className="mt-1 text-sm text-white/50">
+                  {step.description}
+                </div>
               </div>
 
               <div className="space-y-3">
                 <div>
-                  <div className="mb-2 text-sm text-white/55">Что происходит</div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что происходит
+                  </div>
                   <AutoTextarea
                     placeholder="Опишите, что происходит на этом этапе"
                     className={textareaClass}
@@ -1962,7 +2132,10 @@ function renderInput(
                     onChange={(next) => {
                       const nextStages = [...current.stages];
                       nextStages[i] = { ...nextStages[i], whatHappens: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
                     }}
                   />
                 </div>
@@ -1975,14 +2148,22 @@ function renderInput(
                     value={step.duration}
                     onChange={(e) => {
                       const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], duration: e.target.value };
-                      setAnswer(question.id, { ...current, stages: nextStages });
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        duration: e.target.value,
+                      };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
                     }}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-2 text-sm text-white/55">Что получает клиент</div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что получает клиент
+                  </div>
                   <AutoTextarea
                     placeholder="Ценность для клиента на этом этапе"
                     className={textareaClass}
@@ -1991,13 +2172,18 @@ function renderInput(
                     onChange={(next) => {
                       const nextStages = [...current.stages];
                       nextStages[i] = { ...nextStages[i], clientGets: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
                     }}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-2 text-sm text-white/55">Что получает компания</div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что получает компания
+                  </div>
                   <AutoTextarea
                     placeholder="Какой результат получает бизнес"
                     className={textareaClass}
@@ -2006,13 +2192,18 @@ function renderInput(
                     onChange={(next) => {
                       const nextStages = [...current.stages];
                       nextStages[i] = { ...nextStages[i], companyGets: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
                     }}
                   />
                 </div>
 
                 <div>
-                  <div className="mb-2 text-sm text-white/45">Проблемы (опционально)</div>
+                  <div className="mb-2 text-sm text-white/45">
+                    Проблемы (опционально)
+                  </div>
                   <AutoTextarea
                     placeholder="Где здесь возникают потери, трение или замедление"
                     className={textareaClass}
@@ -2021,7 +2212,10 @@ function renderInput(
                     onChange={(next) => {
                       const nextStages = [...current.stages];
                       nextStages[i] = { ...nextStages[i], problems: next };
-                      setAnswer(question.id, { ...current, stages: nextStages });
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
                     }}
                   />
                 </div>
@@ -2046,22 +2240,23 @@ function renderInput(
       const current = answers[question.id] ?? initialAnswers.geo;
 
       return (
-        <div className="space-y-4">
-          <GeoMapPreview physical={current.physical} sales={current.sales} />
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              className={compactInputClass}
-              placeholder="Где физически находится бизнес"
-              value={current.physical}
-              onChange={(e) => setAnswer(question.id, { ...current, physical: e.target.value })}
-            />
-            <input
-              className={compactInputClass}
-              placeholder="В каком регионе продаёте / например: Европа / весь мир"
-              value={current.sales}
-              onChange={(e) => setAnswer(question.id, { ...current, sales: e.target.value })}
-            />
-          </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            className={compactInputClass}
+            placeholder="Где физически находится бизнес"
+            value={current.physical}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, physical: e.target.value })
+            }
+          />
+          <input
+            className={compactInputClass}
+            placeholder="В каком регионе продаёте"
+            value={current.sales}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, sales: e.target.value })
+            }
+          />
         </div>
       );
     }
@@ -2089,7 +2284,10 @@ function renderInput(
       return (
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
           {STRESS_ZONES.map((zone) => (
-            <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-4">
+            <div
+              key={zone}
+              className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+            >
               <div className="mb-3 text-sm font-medium text-white">{zone}</div>
               <div className="mb-3 flex items-center justify-between text-xs text-white/45">
                 <span>-10</span>
@@ -2128,7 +2326,9 @@ function renderInput(
           <div className="flex gap-3">
             <button
               type="button"
-              onClick={() => setAnswer(question.id, { ...current, hasAnalytics: true })}
+              onClick={() =>
+                setAnswer(question.id, { ...current, hasAnalytics: true })
+              }
               className={`rounded-2xl border px-4 py-2.5 text-sm ${
                 current.hasAnalytics === true
                   ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
@@ -2139,7 +2339,9 @@ function renderInput(
             </button>
             <button
               type="button"
-              onClick={() => setAnswer(question.id, { ...current, hasAnalytics: false })}
+              onClick={() =>
+                setAnswer(question.id, { ...current, hasAnalytics: false })
+              }
               className={`rounded-2xl border px-4 py-2.5 text-sm ${
                 current.hasAnalytics === false
                   ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
@@ -2152,10 +2354,15 @@ function renderInput(
 
           {current.hasAnalytics === true && (
             <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-              <div className="mb-3 text-sm text-white/55">Если да — что именно вы используете?</div>
+              <div className="mb-3 text-sm text-white/55">
+                Если да — что именно вы используете?
+              </div>
 
               <TagField
-                value={{ selected: current.tags ?? [], custom: current.custom ?? [] }}
+                value={{
+                  selected: current.tags ?? [],
+                  custom: current.custom ?? [],
+                }}
                 baseTags={ANALYTICS_TAGS}
                 onChange={(next) =>
                   setAnswer(question.id, {
@@ -2172,7 +2379,9 @@ function renderInput(
                   className={textareaClass}
                   minRows={2}
                   value={current.note ?? ""}
-                  onChange={(next) => setAnswer(question.id, { ...current, note: next })}
+                  onChange={(next) =>
+                    setAnswer(question.id, { ...current, note: next })
+                  }
                 />
               </div>
             </div>
@@ -2211,28 +2420,37 @@ function renderInput(
             />
           </div>
 
-          <div className="grid gap-3 md:grid-cols-3">
-            {modes.map((option) => (
-              <button
-                type="button"
-                key={option}
-                onClick={() => setAnswer(question.id, { ...current, mode: option })}
-                className={`rounded-2xl border px-4 py-4 text-sm ${
-                  current.mode === option
-                    ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                    : "border-white/10 bg-white/[0.03] text-white/70"
-                }`}
-              >
-                {option}
-              </button>
-            ))}
+          <div className="space-y-3">
+            <div className="text-sm text-white/50">
+              Статус расходов к которому стремитесь до конца года
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              {modes.map((option) => (
+                <button
+                  type="button"
+                  key={option}
+                  onClick={() =>
+                    setAnswer(question.id, { ...current, mode: option })
+                  }
+                  className={`rounded-2xl border px-4 py-4 text-sm ${
+                    current.mode === option
+                      ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                      : "border-white/10 bg-white/[0.03] text-white/70"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
           </div>
 
           <input
             className={compactInputClass}
             placeholder="Если применимо — укажите процент изменения расходов"
             value={current.costChange}
-            onChange={(e) => setAnswer(question.id, { ...current, costChange: e.target.value })}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, costChange: e.target.value })
+            }
           />
         </div>
       );
@@ -2246,14 +2464,24 @@ function renderInput(
             className={compactInputClass}
             placeholder="Email получателя отчёта"
             value={current.reportEmail}
-            onChange={(e) => setAnswer(question.id, { ...current, reportEmail: e.target.value })}
+            onChange={(e) =>
+              setAnswer(question.id, {
+                ...current,
+                reportEmail: e.target.value,
+              })
+            }
           />
 
           <input
             className={compactInputClass}
             placeholder="Email / имя участника онлайн-встречи"
             value={current.meetingContact}
-            onChange={(e) => setAnswer(question.id, { ...current, meetingContact: e.target.value })}
+            onChange={(e) =>
+              setAnswer(question.id, {
+                ...current,
+                meetingContact: e.target.value,
+              })
+            }
           />
 
           <div className="grid gap-4 md:grid-cols-2">
@@ -2322,19 +2550,24 @@ export default function DiagnosticIntakePage() {
   const sectionProgress = useMemo(
     () =>
       Object.fromEntries(
-        chapters.map((chapter) => [chapter.id, getChapterProgress(chapter, answers)])
+        chapters.map((chapter) => [
+          chapter.id,
+          getChapterProgress(chapter, answers),
+        ]),
       ),
-    [answers]
+    [answers],
   );
 
   const total = useMemo(() => {
     const values = Object.values(sectionProgress) as number[];
-    return values.length ? values.reduce((acc, v) => acc + v, 0) / values.length : 0;
+    return values.length
+      ? values.reduce((acc, v) => acc + v, 0) / values.length
+      : 0;
   }, [sectionProgress]);
 
   const totalQuestions = useMemo(
     () => chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0),
-    []
+    [],
   );
 
   const allComplete = Math.round(total) === 100;
@@ -2346,7 +2579,7 @@ export default function DiagnosticIntakePage() {
       if (key === "team") {
         const links = mergeTeamLinks(
           prev.interaction?.links ?? [],
-          createTeamLinksFromMembers(value ?? [])
+          createTeamLinksFromMembers(value ?? []),
         );
         next.interaction = {
           ...(prev.interaction ?? { note: "" }),
@@ -2448,8 +2681,9 @@ export default function DiagnosticIntakePage() {
               </h1>
 
               <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Каждая глава — отдельная карточка с локальной заполненностью, внутри — half-screen
-                panel с адаптивным типом ввода под конкретный вопрос.
+                Каждая глава — отдельная карточка с локальной заполненностью,
+                внутри — half-screen panel с адаптивным типом ввода под
+                конкретный вопрос.
               </p>
 
               <div className="mt-8 flex flex-wrap gap-3 pt-1 text-xs text-white/45">
@@ -2483,8 +2717,8 @@ export default function DiagnosticIntakePage() {
                 </div>
 
                 <p className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">
-                  Диаграмма отражает совокупный прогресс по всем разделам анкеты и обновляется по
-                  мере заполнения блоков.
+                  Диаграмма отражает совокупный прогресс по всем разделам анкеты
+                  и обновляется по мере заполнения блоков.
                 </p>
 
                 <div className="mt-5 w-full">
@@ -2510,7 +2744,9 @@ export default function DiagnosticIntakePage() {
                         <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
                           Total blocks
                         </div>
-                        <div className="mt-1 text-lg font-semibold text-white">{chapters.length}</div>
+                        <div className="mt-1 text-lg font-semibold text-white">
+                          {chapters.length}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -2525,7 +2761,10 @@ export default function DiagnosticIntakePage() {
             const progress = Number(sectionProgress[chapter.id]);
 
             return (
-              <TiltCardButton key={chapter.id} onClick={() => setActive(chapter)}>
+              <TiltCardButton
+                key={chapter.id}
+                onClick={() => setActive(chapter)}
+              >
                 <GlassCard className="h-full p-5 md:p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
@@ -2538,13 +2777,20 @@ export default function DiagnosticIntakePage() {
                     <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
                       Block {index + 1}
                     </div>
-                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">{chapter.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{chapter.subtitle}</div>
+                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">
+                      {chapter.title}
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
+                      {chapter.subtitle}
+                    </div>
                   </div>
 
                   <div className="mt-6 space-y-2.5">
                     {chapter.questions.slice(0, 3).map((question, i) => (
-                      <div key={question.id} className="flex items-start gap-3 text-sm text-white/60">
+                      <div
+                        key={question.id}
+                        className="flex items-start gap-3 text-sm text-white/60"
+                      >
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px]">
                           {i + 1}
                         </span>
@@ -2589,12 +2835,19 @@ export default function DiagnosticIntakePage() {
                   <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
                     diagnostic chapter
                   </div>
-                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">{active.title}</div>
-                  <div className="mt-1 text-sm text-[#a5aeb2]">{active.subtitle}</div>
+                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">
+                    {active.title}
+                  </div>
+                  <div className="mt-1 text-sm text-[#a5aeb2]">
+                    {active.subtitle}
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Ring progress={Number(sectionProgress[active.id])} size={84} />
+                  <Ring
+                    progress={Number(sectionProgress[active.id])}
+                    size={84}
+                  />
                   <button
                     onClick={() => setActive(null)}
                     className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
