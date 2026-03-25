@@ -402,6 +402,10 @@ function textLength(s: string | undefined | null) {
   return String(s ?? "").trim().length;
 }
 
+function hasAtSignEmail(value: string | undefined | null) {
+  return String(value ?? "").includes("@");
+}
+
 function clamp(n: number, min: number, max: number) {
   return Math.min(max, Math.max(min, n));
 }
@@ -590,12 +594,12 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "changesNeeded":
     case "implemented":
     case "decisions":
-      return textLength(value) > 0 ? 100 : 0;
+      return textLength(value) >= 20 ? 100 : 0;
 
     case "horizons":
-      return textLength(value?.plan3) > 0 &&
-        textLength(value?.plan6) > 0 &&
-        textLength(value?.plan12) > 0
+      return textLength(value?.plan3) >= 20 &&
+        textLength(value?.plan6) >= 20 &&
+        textLength(value?.plan12) >= 20
         ? 100
         : 0;
 
@@ -637,10 +641,10 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       const stages: CjmStage[] = value?.stages ?? [];
       const ok = stages.every((stage) => {
         return (
-          textLength(stage.whatHappens) >= 30 &&
-          textLength(stage.duration) >= 3 &&
-          textLength(stage.clientGets) >= 30 &&
-          textLength(stage.companyGets) >= 30
+          textLength(stage.whatHappens) > 0 &&
+          textLength(stage.duration) > 0 &&
+          textLength(stage.clientGets) > 0 &&
+          textLength(stage.companyGets) > 0
         );
       });
       return ok ? 100 : 0;
@@ -649,14 +653,14 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "seasonality": {
       const points: SeasonalityPoint[] = value?.points ?? [];
       const hasMovement = points.some((p) => Math.abs(p.value) >= 10);
-      const peaksReason = textLength(value?.peaksReason) >= 30;
-      const lowsReason = textLength(value?.lowsReason) >= 30;
+      const peaksReason = textLength(value?.peaksReason) >= 20;
+      const lowsReason = textLength(value?.lowsReason) >= 20;
       return hasMovement && peaksReason && lowsReason ? 100 : 0;
     }
 
     case "positionText":
       return (
-        textLength(value?.text) >= 80 &&
+        textLength(value?.text) >= 50 &&
         ((value?.stages?.length ?? 0) + (value?.customStages?.length ?? 0) > 0)
       )
         ? 100
@@ -713,11 +717,11 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "goal":
       return value?.touched && textLength(value?.mode) > 0 ? 100 : 0;
 
-    case "contacts":
-      return textLength(value?.reportEmail) > 0 &&
-        textLength(value?.meetingContact) > 0
-        ? 100
-        : 0;
+    case "contacts": {
+      const hasReportEmail = hasAtSignEmail(value?.reportEmail);
+      const hasMeetingContact = hasAtSignEmail(value?.meetingContact);
+      return hasReportEmail && hasMeetingContact ? 100 : 0;
+    }
 
     default:
       return 0;
@@ -1902,6 +1906,9 @@ function SeasonalityChart({
               onChange({ points, peaksReason: next, lowsReason })
             }
           />
+          <div className="mt-2 text-xs text-white/42">
+            Ответ засчитывается от 20 символов. Сейчас: {textLength(peaksReason)}.
+          </div>
         </div>
 
         <div className="rounded-[24px] border border-[#f7d237]/16 bg-[#f7d237]/6 p-4">
@@ -1920,6 +1927,9 @@ function SeasonalityChart({
               onChange({ points, peaksReason, lowsReason: next })
             }
           />
+          <div className="mt-2 text-xs text-white/42">
+            Ответ засчитывается от 20 символов. Сейчас: {textLength(lowsReason)}.
+          </div>
         </div>
       </div>
     </div>
@@ -2001,15 +2011,20 @@ function renderInput(
               }
             />
 
-            <AutoTextarea
-              placeholder="Опишите ваш бизнес"
-              className={textareaClass}
-              minRows={3}
-              value={current.text ?? ""}
-              onChange={(next) =>
-                setAnswer(question.id, { ...current, text: next })
-              }
-            />
+            <div className="space-y-2.5">
+              <AutoTextarea
+                placeholder="Опишите ваш бизнес"
+                className={textareaClass}
+                minRows={3}
+                value={current.text ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, text: next })
+                }
+              />
+              <div className="text-xs text-white/42">
+                Ответ засчитывается от 50 символов. Сейчас: {textLength(current.text ?? "")}.
+              </div>
+            </div>
           </div>
         );
       }
@@ -2030,6 +2045,9 @@ function renderInput(
                   setAnswer(question.id, { ...current, plan3: next })
                 }
               />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan3 ?? "")}.
+              </div>
             </div>
 
             <div>
@@ -2045,6 +2063,9 @@ function renderInput(
                   setAnswer(question.id, { ...current, plan6: next })
                 }
               />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan6 ?? "")}.
+              </div>
             </div>
 
             <div>
@@ -2060,19 +2081,40 @@ function renderInput(
                   setAnswer(question.id, { ...current, plan12: next })
                 }
               />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan12 ?? "")}.
+              </div>
             </div>
           </div>
         );
       }
 
+      const minLengthByQuestion: Record<string, number> = {
+        clientProfile: 20,
+        decisions: 20,
+        changesNeeded: 20,
+        implemented: 20,
+      };
+
+      const minLength = minLengthByQuestion[question.id] ?? 0;
+      const currentLength = textLength(answers[question.id] ?? "");
+
       return (
-        <AutoTextarea
-          placeholder="Введите ответ…"
-          className={textareaClass}
-          minRows={3}
-          value={answers[question.id] ?? ""}
-          onChange={(next) => setAnswer(question.id, next)}
-        />
+        <div className="space-y-2.5">
+          <AutoTextarea
+            placeholder="Введите ответ…"
+            className={textareaClass}
+            minRows={3}
+            value={answers[question.id] ?? ""}
+            onChange={(next) => setAnswer(question.id, next)}
+          />
+
+          {minLength > 0 ? (
+            <div className="text-xs text-white/42">
+              Ответ засчитывается от {minLength} символов. Сейчас: {currentLength}.
+            </div>
+          ) : null}
+        </div>
       );
     }
 
@@ -2351,6 +2393,9 @@ function renderInput(
               </div>
 
               <div className="space-y-3">
+                <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-xs text-white/42">
+                  Для засчитывания этапа достаточно, чтобы поля «Что происходит», «Длительность», «Что получает клиент» и «Что получает компания» были заполнены. Поле «Проблемы» — опционально.
+                </div>
                 <div>
                   <div className="mb-2 text-sm text-white/55">
                     Что происходит
@@ -2691,29 +2736,39 @@ function renderInput(
       const current = answers[question.id] ?? initialAnswers.contacts;
       return (
         <div className="space-y-4">
-          <input
-            className={compactInputClass}
-            placeholder="Email получателя отчёта"
-            value={current.reportEmail}
-            onChange={(e) =>
-              setAnswer(question.id, {
-                ...current,
-                reportEmail: e.target.value,
-              })
-            }
-          />
+          <div>
+            <input
+              className={compactInputClass}
+              placeholder="Email получателя отчёта"
+              value={current.reportEmail}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  reportEmail: e.target.value,
+                })
+              }
+            />
+            <div className="mt-2 text-xs text-white/42">
+              Поле засчитывается только если содержит символ @.
+            </div>
+          </div>
 
-          <input
-            className={compactInputClass}
-            placeholder="Email / имя участника онлайн-встречи"
-            value={current.meetingContact}
-            onChange={(e) =>
-              setAnswer(question.id, {
-                ...current,
-                meetingContact: e.target.value,
-              })
-            }
-          />
+          <div>
+            <input
+              className={compactInputClass}
+              placeholder="Email / имя участника онлайн-встречи"
+              value={current.meetingContact}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  meetingContact: e.target.value,
+                })
+              }
+            />
+            <div className="mt-2 text-xs text-white/42">
+              Поле засчитывается только если содержит символ @.
+            </div>
+          </div>
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
