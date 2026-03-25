@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 type ResolveResponse = {
@@ -15,7 +15,7 @@ type ResolveResponse = {
   error?: string;
 };
 
-export default function StartPage() {
+function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -169,6 +169,28 @@ export default function StartPage() {
   );
 }
 
+function StartPageFallback() {
+  return (
+    <main style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.badge}>Revenue Snapshot</div>
+        <h1 style={styles.title}>Preparing your access...</h1>
+        <p style={styles.text}>
+          We are checking your payment and preparing your personal access link.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+export default function StartPage() {
+  return (
+    <Suspense fallback={<StartPageFallback />}>
+      <StartPageContent />
+    </Suspense>
+  );
+}
+
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: "100vh",
@@ -250,7 +272,6 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "999px",
     border: "3px solid rgba(255,255,255,0.18)",
     borderTopColor: "#f7d237",
-    animation: "spin 1s linear infinite",
   },
   errorBox: {
     marginTop: "22px",
