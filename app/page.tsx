@@ -30,7 +30,6 @@ function TariffCard({
             ) : null}
             <img src={image} alt={title} className="tariff-image" />
           </picture>
-
           <div className={`tariff-price ${priceClassName}`}>{price}</div>
         </div>
 
@@ -66,10 +65,7 @@ export default function HomePage() {
   useEffect(() => {
     if (typeof window === "undefined" || window.innerWidth <= 1023) return;
 
-    const cards = Array.from(
-      document.querySelectorAll<HTMLElement>(".tilt-card")
-    );
-
+    const cards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
     const cleanups: Array<() => void> = [];
 
     cards.forEach((card) => {
@@ -86,8 +82,7 @@ export default function HomePage() {
       };
 
       const onLeave = () => {
-        inner.style.transform =
-          "rotateX(0deg) rotateY(0deg) translateY(0) scale(1)";
+        inner.style.transform = "rotateX(0deg) rotateY(0deg) translateY(0) scale(1)";
       };
 
       card.addEventListener("mousemove", onMove);
@@ -118,18 +113,11 @@ export default function HomePage() {
           </nav>
 
           <div className="header-actions">
-            <a
-              href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC"
-              className="primary-btn"
-            >
+            <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="primary-btn">
               Попробовать Snapshot
             </a>
-            <a href="https://t.me/growth_avenue_company" className="pill-btn">
-              TG
-            </a>
-            <a href="https://wa.me/995555163833" className="pill-btn">
-              WA
-            </a>
+            <a href="https://t.me/growth_avenue_company" className="pill-btn">TG</a>
+            <a href="https://wa.me/995555163833" className="pill-btn">WA</a>
           </div>
         </div>
       </header>
@@ -145,8 +133,7 @@ export default function HomePage() {
             </h2>
             <p>
               Узнайте, какое изменение в модели способно дать наиболее сильный
-              эффект на выручку, и где сейчас скрываются главные точки потери
-              денег.
+              эффект на выручку, и где сейчас скрываются главные точки потери денег.
             </p>
 
             <div className="hero-chips">
@@ -156,15 +143,10 @@ export default function HomePage() {
             </div>
 
             <div className="hero-actions">
-              <a
-                href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC"
-                className="primary-btn"
-              >
+              <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="primary-btn">
                 Попробовать Snapshot
               </a>
-              <a href="#preview" className="ghost-btn">
-                Побаловаться
-              </a>
+              <a href="#preview" className="ghost-btn">Побаловаться</a>
             </div>
           </div>
 
@@ -183,9 +165,8 @@ export default function HomePage() {
             <div className="section-kicker">Как это работает</div>
             <h2>Путь от простых ответов к структурированному результату</h2>
             <p>
-              Пользователь проходит интерактивную диагностику, а на выходе
-              получает не просто заметки, а карту решений по экономике, спросу,
-              продукту и точкам роста.
+              Пользователь проходит интерактивную диагностику, а на выходе получает
+              не просто заметки, а карту решений по экономике, спросу, продукту и точкам роста.
             </p>
           </div>
 
@@ -193,28 +174,19 @@ export default function HomePage() {
             <div className="glass-panel">
               <div className="step-num">01</div>
               <h3>Фиксация параметров бизнеса</h3>
-              <p>
-                Сначала пользователь вводит базовые цифры и проходит короткие
-                блоки по спросу, продукту, расходам и структуре.
-              </p>
+              <p>Сначала пользователь вводит базовые цифры и проходит короткие блоки по спросу, продукту, расходам и структуре.</p>
             </div>
 
             <div className="glass-panel">
               <div className="step-num">02</div>
               <h3>Сборка аналитической логики</h3>
-              <p>
-                Snapshot связывает между собой сигналы из экономики, клиентов и
-                позиционирования и выделяет главный рычаг.
-              </p>
+              <p>Snapshot связывает между собой сигналы из экономики, клиентов и позиционирования и выделяет главный рычаг.</p>
             </div>
 
             <div className="glass-panel">
               <div className="step-num">03</div>
               <h3>Структурированный итог</h3>
-              <p>
-                Пользователь видит, что тормозит рост сейчас, где теряются
-                деньги и какие действия стоят первыми в очереди.
-              </p>
+              <p>Пользователь видит, что тормозит рост сейчас, где теряются деньги и какие действия стоят первыми в очереди.</p>
             </div>
           </div>
         </div>
@@ -225,11 +197,7 @@ export default function HomePage() {
           <div className="section-head">
             <div className="section-kicker">Интерактивное превью</div>
             <h2>Поиграйте с моделью до оплаты</h2>
-            <p>
-              Это облегчённый preview-блок: он показывает логику продукта и
-              помогает быстро понять, на какие зоны Snapshot смотрит в первую
-              очередь.
-            </p>
+            <p>Это облегчённый preview-блок: он показывает логику продукта и помогает быстро понять, на какие зоны Snapshot смотрит в первую очередь.</p>
           </div>
 
           <div className="preview-grid">
@@ -274,33 +242,14 @@ export default function HomePage() {
           <div className="section-head">
             <div className="section-kicker">Что вы получите</div>
             <h2>Структура итогового Snapshot</h2>
-            <p>
-              Результат собирается в четыре читаемых блока, чтобы решение было
-              видно сразу, без длинной расшифровки.
-            </p>
+            <p>Результат собирается в четыре читаемых блока, чтобы решение было видно сразу, без длинной расшифровки.</p>
           </div>
 
           <div className="results-grid">
-            <ResultMiniCard
-              tag="ECONOMIC RATE"
-              title="Executive Summary"
-              text="Показывает логику экономики бизнеса и выделяет главный тип потерь."
-            />
-            <ResultMiniCard
-              tag="GROWTH LIMIT"
-              title="Key Conclusions"
-              text="Фиксирует главный системный предел роста: спрос, конверсия, модель или структура."
-            />
-            <ResultMiniCard
-              tag="SOLUTION"
-              title="Strategy & Practice"
-              text="Собирает первичный рычаг роста и объясняет, почему он сейчас главный."
-            />
-            <ResultMiniCard
-              tag="JTBD"
-              title="RoadMap"
-              text="Переводит выводы в следующую последовательность шагов без лишней теории."
-            />
+            <ResultMiniCard tag="ECONOMIC RATE" title="Executive Summary" text="Показывает логику экономики бизнеса и выделяет главный тип потерь." />
+            <ResultMiniCard tag="GROWTH LIMIT" title="Key Conclusions" text="Фиксирует главный системный предел роста: спрос, конверсия, модель или структура." />
+            <ResultMiniCard tag="SOLUTION" title="Strategy & Practice" text="Собирает первичный рычаг роста и объясняет, почему он сейчас главный." />
+            <ResultMiniCard tag="JTBD" title="RoadMap" text="Переводит выводы в следующую последовательность шагов без лишней теории." />
           </div>
         </div>
       </section>
@@ -310,19 +259,13 @@ export default function HomePage() {
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
             <h2>Что вас ждёт</h2>
-            <p>
-              Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто
-              набор ответов, а карту решений.
-            </p>
+            <p>Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор ответов, а карту решений.</p>
           </div>
 
           <div className="analysis-grid">
             <div className="signal-board">
               <article className="signal-card signal-lg">
-                <div className="signal-top">
-                  <span>Точка входа</span>
-                  <b>27%</b>
-                </div>
+                <div className="signal-top"><span>Точка входа</span><b>27%</b></div>
                 <h3>Позиционирование</h3>
                 <ul>
                   <li>что обещание делает понятным</li>
@@ -331,10 +274,7 @@ export default function HomePage() {
               </article>
 
               <article className="signal-card signal-lg">
-                <div className="signal-top">
-                  <span>Ресурсы и роли</span>
-                  <b>27%</b>
-                </div>
+                <div className="signal-top"><span>Ресурсы и роли</span><b>27%</b></div>
                 <h3>Структура компании</h3>
                 <ul>
                   <li>кто удерживает выручку в системе</li>
@@ -343,10 +283,7 @@ export default function HomePage() {
               </article>
 
               <article className="signal-card">
-                <div className="signal-top">
-                  <span>Unit-логика</span>
-                  <b>18%</b>
-                </div>
+                <div className="signal-top"><span>Unit-логика</span><b>18%</b></div>
                 <h3>Экономика</h3>
                 <ul>
                   <li>что происходит с маржой и cost stack</li>
@@ -355,10 +292,7 @@ export default function HomePage() {
               </article>
 
               <article className="signal-card">
-                <div className="signal-top">
-                  <span>Спрос и поведение</span>
-                  <b>14%</b>
-                </div>
+                <div className="signal-top"><span>Спрос и поведение</span><b>14%</b></div>
                 <h3>Клиенты</h3>
                 <ul>
                   <li>кто приносит деньги сейчас</li>
@@ -367,10 +301,7 @@ export default function HomePage() {
               </article>
 
               <article className="signal-card">
-                <div className="signal-top">
-                  <span>Ценность и упаковка</span>
-                  <b>14%</b>
-                </div>
+                <div className="signal-top"><span>Ценность и упаковка</span><b>14%</b></div>
                 <h3>Продукт</h3>
                 <ul>
                   <li>что продаётся легче всего</li>
@@ -388,7 +319,6 @@ export default function HomePage() {
                 href="https://www.paypal.com/ncp/payment/GQLFG3CYUHM82"
                 priceClassName="price-onrec"
               />
-
               <TariffCard
                 title="Online-playground"
                 image="/snapshot.svg"
@@ -408,20 +338,13 @@ export default function HomePage() {
             <div>
               <div className="section-kicker">CTA</div>
               <h2>Откройте полный Revenue Snapshot</h2>
-              <p>
-                После оплаты пользователь переходит в Telegram, проходит
-                диагностику и получает структурированный результат с финансовой
-                логикой, проблемными зонами и главным направлением усиления.
-              </p>
+              <p>После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.</p>
             </div>
 
             <div className="cta-box">
               <div className="cta-eyebrow">Следующий шаг</div>
               <div className="cta-title">Попробовать Snapshot</div>
-              <a
-                href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC"
-                className="primary-btn"
-              >
+              <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="primary-btn">
                 Получить Revenue Snapshot
               </a>
             </div>
@@ -437,16 +360,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      <style jsx global>{\`
+      <style jsx global>{`
         :root {
           --bg: #0a1526;
-          --panel: rgba(255,255,255,.05);
           --stroke: rgba(255,255,255,.10);
           --text: #fefefe;
           --muted: rgba(255,255,255,.70);
-          --yellow: #f7d237;
-          --blue: #5ea7ff;
-          --violet: #a56bff;
         }
 
         * { box-sizing: border-box; }
@@ -461,23 +380,14 @@ export default function HomePage() {
           overflow-x: hidden;
           font-family: Inter, Arial, sans-serif;
         }
+
         a { color: inherit; }
         img { display: block; max-width: 100%; }
-
-        .landing-page {
-          min-height: 100vh;
-          overflow: hidden;
-        }
-
-        .shell {
-          width: min(1320px, calc(100% - 32px));
-          margin: 0 auto;
-        }
+        .landing-page { min-height: 100vh; overflow: hidden; }
+        .shell { width: min(1320px, calc(100% - 32px)); margin: 0 auto; }
 
         .site-header {
-          position: sticky;
-          top: 0;
-          z-index: 40;
+          position: sticky; top: 0; z-index: 40;
           backdrop-filter: blur(12px);
           -webkit-backdrop-filter: blur(12px);
           background: rgba(7,17,35,.74);
@@ -492,10 +402,7 @@ export default function HomePage() {
           gap: 28px;
         }
 
-        .logo-main {
-          width: 250px;
-          height: auto;
-        }
+        .logo-main { width: 250px; height: auto; }
 
         .desktop-nav {
           display: flex;
@@ -509,15 +416,9 @@ export default function HomePage() {
           color: rgba(255,255,255,.82);
         }
 
-        .header-actions {
-          display: flex;
-          gap: 10px;
-          align-items: center;
-        }
+        .header-actions { display: flex; gap: 10px; align-items: center; }
 
-        .primary-btn,
-        .ghost-btn,
-        .pill-btn {
+        .primary-btn, .ghost-btn, .pill-btn {
           min-height: 52px;
           border-radius: 999px;
           display: inline-flex;
@@ -535,10 +436,7 @@ export default function HomePage() {
           box-shadow: 0 14px 32px rgba(93,111,255,.18), inset 0 1px 0 rgba(255,255,255,.14);
         }
 
-        .ghost-btn {
-          color: #fff;
-          background: rgba(255,255,255,.03);
-        }
+        .ghost-btn { color: #fff; background: rgba(255,255,255,.03); }
 
         .pill-btn {
           min-width: 52px;
@@ -547,17 +445,9 @@ export default function HomePage() {
           background: rgba(247,210,55,.96);
         }
 
-        .section {
-          padding: 52px 0;
-        }
-
-        .section-last {
-          padding-bottom: 34px;
-        }
-
-        .section-head {
-          margin-bottom: 24px;
-        }
+        .section { padding: 52px 0; }
+        .section-last { padding-bottom: 34px; }
+        .section-head { margin-bottom: 24px; }
 
         .section-kicker {
           display: inline-flex;
@@ -574,17 +464,13 @@ export default function HomePage() {
           margin-bottom: 14px;
         }
 
-        .section-head h2,
-        .hero-copy h1,
-        .cta-panel h2 {
+        .section-head h2, .hero-copy h1, .cta-panel h2 {
           margin: 0;
           letter-spacing: -0.045em;
           line-height: .96;
         }
 
-        .hero-section {
-          padding: 42px 0 26px;
-        }
+        .hero-section { padding: 42px 0 26px; }
 
         .hero-grid {
           display: grid;
@@ -616,10 +502,7 @@ export default function HomePage() {
           pointer-events: none;
         }
 
-        .hero-copy > * {
-          position: relative;
-          z-index: 1;
-        }
+        .hero-copy > * { position: relative; z-index: 1; }
 
         .hero-copy h1 {
           font-size: clamp(72px, 7vw, 122px);
@@ -631,27 +514,19 @@ export default function HomePage() {
           margin-bottom: 22px;
         }
 
-        .hero-copy p,
-        .section-head p,
-        .glass-panel p,
-        .result-mini-card p,
-        .cta-panel p {
+        .hero-copy p, .section-head p, .glass-panel p, .result-mini-card p, .cta-panel p {
           color: var(--muted);
           line-height: 1.58;
           font-size: 18px;
         }
 
-        .hero-chips,
-        .hero-actions,
-        .example-pills {
+        .hero-chips, .hero-actions, .example-pills {
           display: flex;
           flex-wrap: wrap;
           gap: 12px;
         }
 
-        .hero-chips {
-          margin: 28px 0 24px;
-        }
+        .hero-chips { margin: 28px 0 24px; }
 
         .hero-chips span {
           min-height: 52px;
@@ -665,10 +540,7 @@ export default function HomePage() {
           background: rgba(247,210,55,.96);
         }
 
-        .hero-visual {
-          display: flex;
-          justify-content: center;
-        }
+        .hero-visual { display: flex; justify-content: center; }
 
         .hero-image-card {
           width: 100%;
@@ -680,11 +552,7 @@ export default function HomePage() {
           background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
         }
 
-        .hero-image {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
+        .hero-image { width: 100%; height: 100%; object-fit: cover; }
 
         .hero-image-overlay {
           position: absolute;
@@ -694,13 +562,7 @@ export default function HomePage() {
           pointer-events: none;
         }
 
-        .glass-panel,
-        .result-mini-card,
-        .signal-card,
-        .cta-panel,
-        .cta-box,
-        .preview-panel,
-        .metric-box {
+        .glass-panel, .result-mini-card, .signal-card, .cta-panel, .cta-box, .preview-panel, .metric-box {
           border-radius: 30px;
           border: 1px solid var(--stroke);
           background: linear-gradient(180deg, rgba(255,255,255,.07), rgba(255,255,255,.03));
@@ -709,16 +571,13 @@ export default function HomePage() {
           -webkit-backdrop-filter: blur(14px);
         }
 
-        .how-grid,
-        .results-grid {
+        .how-grid, .results-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
         }
 
-        .how-grid .glass-panel {
-          padding: 24px;
-        }
+        .how-grid .glass-panel { padding: 24px; }
 
         .step-num {
           color: rgba(247,210,55,.96);
@@ -728,9 +587,7 @@ export default function HomePage() {
           margin-bottom: 14px;
         }
 
-        .glass-panel h3,
-        .result-mini-card h3,
-        .signal-card h3 {
+        .glass-panel h3, .result-mini-card h3, .signal-card h3 {
           margin: 0 0 14px;
           font-size: clamp(28px, 3vw, 42px);
           line-height: .98;
@@ -743,9 +600,7 @@ export default function HomePage() {
           gap: 18px;
         }
 
-        .preview-panel {
-          padding: 24px;
-        }
+        .preview-panel { padding: 24px; }
 
         .input-label {
           font-size: 30px;
@@ -754,9 +609,7 @@ export default function HomePage() {
           margin-bottom: 18px;
         }
 
-        .example-pills {
-          margin-bottom: 18px;
-        }
+        .example-pills { margin-bottom: 18px; }
 
         .example-pills button {
           border: 0;
@@ -776,31 +629,20 @@ export default function HomePage() {
           gap: 14px;
         }
 
-        .mini-input,
-        .metric-box {
-          padding: 20px;
-        }
+        .mini-input, .metric-box { padding: 20px; }
 
-        .mini-input span,
-        .metric-box span {
+        .mini-input span, .metric-box span {
           display: block;
           color: rgba(255,255,255,.56);
           margin-bottom: 10px;
         }
 
-        .mini-input strong,
-        .metric-box strong {
+        .mini-input strong, .metric-box strong {
           font-size: clamp(28px, 3vw, 42px);
         }
 
-        .preview-side {
-          display: grid;
-          gap: 14px;
-        }
-
-        .results-grid {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
+        .preview-side { display: grid; gap: 14px; }
+        .results-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 
         .result-mini-card {
           padding: 24px;
@@ -840,9 +682,7 @@ export default function HomePage() {
           grid-column: span 2;
         }
 
-        .signal-lg {
-          grid-column: span 3;
-        }
+        .signal-lg { grid-column: span 3; }
 
         .signal-top {
           display: flex;
@@ -894,9 +734,7 @@ export default function HomePage() {
           align-items: start;
         }
 
-        .tariff-card {
-          perspective: 1200px;
-        }
+        .tariff-card { perspective: 1200px; }
 
         .tariff-tilt {
           display: grid;
@@ -931,15 +769,8 @@ export default function HomePage() {
           font-size: clamp(42px, 4.2vw, 78px);
         }
 
-        .price-onrec {
-          top: 15.6%;
-          right: 7.2%;
-        }
-
-        .price-playground {
-          top: 15.6%;
-          right: 7.2%;
-        }
+        .price-onrec { top: 15.6%; right: 7.2%; }
+        .price-playground { top: 15.6%; right: 7.2%; }
 
         .tariff-play {
           position: relative;
@@ -990,9 +821,7 @@ export default function HomePage() {
           padding: 24px;
         }
 
-        .cta-box {
-          padding: 22px;
-        }
+        .cta-box { padding: 22px; }
 
         .cta-eyebrow {
           color: rgba(255,255,255,.52);
@@ -1030,150 +859,50 @@ export default function HomePage() {
         }
 
         @media (max-width: 1100px) {
-          .desktop-nav {
-            display: none;
-          }
-
-          .hero-grid,
-          .preview-grid,
-          .cta-panel {
-            grid-template-columns: 1fr;
-          }
-
-          .signal-board {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .signal-card,
-          .signal-lg {
-            grid-column: span 1;
-          }
+          .desktop-nav { display: none; }
+          .hero-grid, .preview-grid, .cta-panel { grid-template-columns: 1fr; }
+          .signal-board { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .signal-card, .signal-lg { grid-column: span 1; }
         }
 
         @media (max-width: 767px) {
-          .shell {
-            width: min(100%, calc(100% - 24px));
-          }
-
-          .header-shell {
-            grid-template-columns: 1fr auto;
-            gap: 12px;
-            min-height: 76px;
-          }
-
-          .header-actions {
-            gap: 8px;
-          }
-
-          .header-actions .primary-btn {
-            display: none;
-          }
-
-          .logo-main {
-            width: 215px;
-          }
-
-          .section {
-            padding: 38px 0;
-          }
-
-          .hero-section {
-            padding-top: 24px;
-          }
-
-          .hero-copy {
-            padding: 22px;
-          }
-
-          .hero-copy h1 {
-            font-size: 72px;
-            margin-bottom: 16px;
-          }
-
-          .hero-copy h2 {
-            font-size: 28px;
-            margin-bottom: 18px;
-          }
-
-          .hero-copy p,
-          .section-head p,
-          .glass-panel p,
-          .result-mini-card p,
-          .cta-panel p {
-            font-size: 16px;
-          }
-
+          .shell { width: min(100%, calc(100% - 24px)); }
+          .header-shell { grid-template-columns: 1fr auto; gap: 12px; min-height: 76px; }
+          .header-actions { gap: 8px; }
+          .header-actions .primary-btn { display: none; }
+          .logo-main { width: 215px; }
+          .section { padding: 38px 0; }
+          .hero-section { padding-top: 24px; }
+          .hero-copy { padding: 22px; }
+          .hero-copy h1 { font-size: 72px; margin-bottom: 16px; }
+          .hero-copy h2 { font-size: 28px; margin-bottom: 18px; }
+          .hero-copy p, .section-head p, .glass-panel p, .result-mini-card p, .cta-panel p { font-size: 16px; }
           .hero-copy::before {
             background-size: cover, cover;
             background-position: center, center;
             opacity: .84;
           }
-
-          .hero-image-card {
-            min-height: 0;
-            aspect-ratio: 4 / 5;
-          }
-
-          .hero-visual {
-            display: none;
-          }
-
-          .hero-chips span {
-            min-height: 44px;
-            padding: 0 18px;
-            font-size: 16px;
-          }
-
-          .primary-btn,
-          .ghost-btn,
-          .pill-btn {
-            min-height: 48px;
-          }
-
-          .how-grid,
-          .results-grid,
-          .signal-board,
-          .tariffs-wrap,
-          .mini-metrics {
-            grid-template-columns: 1fr;
-          }
-
-          .result-mini-card,
-          .signal-card {
-            min-height: 0;
-          }
-
-          .tariff-tilt {
-            grid-template-columns: 1fr;
-            gap: 12px;
-          }
-
-          .tariff-media {
-            border-radius: 26px;
-          }
-
-          .tariff-image {
-            aspect-ratio: 1080 / 720;
-            border-radius: 26px;
-          }
-
-          .tariff-price {
-            display: none;
-          }
-
+          .hero-image-card { min-height: 0; aspect-ratio: 4 / 5; }
+          .hero-visual { display: none; }
+          .hero-chips span { min-height: 44px; padding: 0 18px; font-size: 16px; }
+          .primary-btn, .ghost-btn, .pill-btn { min-height: 48px; }
+          .how-grid, .results-grid, .signal-board, .tariffs-wrap, .mini-metrics { grid-template-columns: 1fr; }
+          .result-mini-card, .signal-card { min-height: 0; }
+          .tariff-tilt { grid-template-columns: 1fr; gap: 12px; }
+          .tariff-media { border-radius: 26px; }
+          .tariff-image { aspect-ratio: 1080 / 720; border-radius: 26px; }
+          .tariff-price { display: none; }
           .tariff-play {
             width: 100%;
             min-width: 0;
             min-height: 104px;
             border-radius: 26px;
           }
-
           .tariff-play-triangle {
             border-top-width: 22px;
             border-bottom-width: 22px;
             border-left-width: 34px;
           }
-
           .footer {
             flex-direction: column;
             align-items: flex-start;
