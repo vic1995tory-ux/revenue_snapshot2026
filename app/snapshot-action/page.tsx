@@ -225,23 +225,23 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "margin",
-        label: "Какая часть выручки остаётся после всех расходов?",
+        label: "Маржинальность",
         type: "rangePercent",
       },
       {
         id: "salesCount",
-        label: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+        label: "Объём",
         type: "text",
       },
       {
         id: "revenue",
-        label: "Какая выручка была у вас за прошлый месяц?",
+        label: "Выручка",
         type: "text",
       },
       {
         id: "kpis",
         label:
-          "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+          "KPI",
         type: "tags",
       },
     ],
@@ -254,24 +254,24 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "clientProfile",
-        label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+        label: "Сегмент",
         type: "text",
       },
       {
         id: "demandCapacity",
         label:
-          "Сколько обращений вы получаете и сколько реально можете обработать?",
+          "Capacity",
         type: "dualRange",
       },
       {
         id: "acquisitionChannels",
-        label: "Откуда к вам обычно приходят клиенты?",
+        label: "Каналы",
         type: "tags",
       },
       {
         id: "channelEfficiency",
         label:
-          "Как распределяется входящий поток клиентов между выбранными каналами?",
+          "Распределение",
         type: "channelDistribution",
       },
     ],
@@ -284,23 +284,23 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "topProducts",
-        label: "Какие 1–3 продукта или услуги самые маржинальные?",
+        label: "Флагман",
         type: "tripleMargin",
       },
       {
         id: "retention",
-        label: "Какими механиками вы удерживаете клиентов?",
+        label: "Retention",
         type: "tags",
       },
       {
         id: "cjm",
         label:
-          "Как проходит путь клиента от первого обращения до положительного опыта?",
+          "CJM",
         type: "cjm",
       },
       {
         id: "seasonality",
-        label: "Есть ли пики и спады продаж и чем они объясняются?",
+        label: "Сезонность",
         type: "seasonality",
       },
     ],
@@ -314,19 +314,19 @@ const chapters: Chapter[] = [
       {
         id: "analytics",
         label:
-          "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+          "Описание",
         type: "analyticsBranch",
       },
       {
         id: "changesNeeded",
         label:
-          "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+          "География",
         type: "text",
       },
       {
         id: "implemented",
         label:
-          "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+          "Стадия & команда",
         type: "text",
       },
     ],
@@ -339,30 +339,30 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "team",
-        label: "Как устроена команда: роли, зоны ответственности?",
+        label: "Структура",
         type: "teamRoles",
       },
       {
         id: "interaction",
         label:
-          "Как выстроено взаимодействие между ролями и что изменилось за год?",
+          "Взаимодействие",
         type: "departmentRelations",
       },
       {
         id: "decisions",
         label:
-          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+          "Решения",
         type: "text",
       },
       {
         id: "stress",
         label:
-          "Где вы как руководитель сильнее всего ощущаете напряжение?",
+          "Нагрузка",
         type: "stressRange",
       },
       {
         id: "lossZones",
-        label: "В каких зонах бизнеса теряется эффективность?",
+        label: "Потери",
         type: "stressRange",
       },
     ],
@@ -375,12 +375,12 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "goal",
-        label: "Какого результата бизнес должен достичь к концу года?",
+        label: "Цель",
         type: "strategyGoal",
       },
       {
         id: "horizons",
-        label: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
+        label: "Фокус",
         type: "text",
       },
     ],
@@ -388,7 +388,7 @@ const chapters: Chapter[] = [
   {
     id: "contact",
     title: "Contact Block",
-    subtitle: "Report recipient and meeting contact",
+    subtitle: "Ожидания",
     icon: "✉",
     questions: [
       {
