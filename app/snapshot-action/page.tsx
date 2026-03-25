@@ -3183,55 +3183,61 @@ export default function DiagnosticIntakePage() {
                 key={chapter.id}
                 onClick={() => setActive(chapter)}
               >
-                <GlassCard className="h-full p-5 md:p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
-                      {chapter.icon}
-                    </div>
-                    <Ring progress={progress} size={82} />
-                  </div>
-
-                  <div className="mt-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
-                      Block {index + 1}
-                    </div>
-                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">
-                      {chapter.title}
-                    </div>
-                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
-                      {chapter.subtitle}
-                    </div>
-                  </div>
-
-                  <div className="mt-6 space-y-2.5">
-                    {chapter.questions.map((question, i) => {
-                      const isDone = getQuestionProgress(question, answers) === 100;
-
-                      return (
-                        <div
-                          key={question.id}
-                          className="flex items-start gap-3 text-sm text-white/60"
-                        >
-                          <span
-                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
-                              isDone
-                                ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
-                                : "border-white/10 bg-transparent text-white/55"
-                            }`}
-                          >
-                            {i + 1}
-                          </span>
-                          <span>{question.label}</span>
+                <GlassCard className="h-full min-h-[430px] p-5 md:p-6">
+                  <div className="flex h-full flex-col">
+                    <div>
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
+                          {chapter.icon}
                         </div>
-                      );
-                    })}
-                  </div>
+                        <Ring progress={progress} size={82} />
+                      </div>
 
-                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
-                    <span className="text-white/55">Открыть блок</span>
-                    <div className="flex items-center gap-2 text-[#f7d237]">
-                      <span>{progress}%</span>
-                      <span>→</span>
+                      <div className="mt-6">
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
+                          Block {index + 1}
+                        </div>
+                        <div className="mt-2 text-xl font-semibold text-[#fefefe]">
+                          {chapter.title}
+                        </div>
+                        <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
+                          {chapter.subtitle}
+                        </div>
+                      </div>
+
+                      <div className="mt-6 space-y-2.5">
+                        {chapter.questions.map((question, i) => {
+                          const isDone = getQuestionProgress(question, answers) === 100;
+
+                          return (
+                            <div
+                              key={question.id}
+                              className="flex items-start gap-3 text-sm text-white/60"
+                            >
+                              <span
+                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
+                                  isDone
+                                    ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
+                                    : "border-white/10 bg-transparent text-white/55"
+                                }`}
+                              >
+                                {i + 1}
+                              </span>
+                              <span>{question.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="mt-auto pt-6">
+                      <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
+                        <span className="text-white/55">Открыть блок</span>
+                        <div className="flex items-center gap-2 text-[#f7d237]">
+                          <span>{progress}%</span>
+                          <span>→</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </GlassCard>
