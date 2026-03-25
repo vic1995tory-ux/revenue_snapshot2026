@@ -907,31 +907,31 @@ function buildPreparedAnswers(answers: any) {
         )
         .join("\n\n"),
     },
-    {
-      question: "Есть ли пики и спады продаж и чем они объясняются?",
-      answer: [
-        (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
-          ? `Пики: ${(answers.seasonality.points ?? [])
-              .filter((p: any) => p.value >= 25)
-              .map((p: any) => p.month)
-              .join(", ")}`
-          : "",
-        answers.seasonality?.peaksReason?.trim()
-          ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
-          : "",
-        (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
-          ? `Спады: ${(answers.seasonality.points ?? [])
-              .filter((p: any) => p.value <= -25)
-              .map((p: any) => p.month)
-              .join(", ")}`
-          : "",
-        answers.seasonality?.lowsReason?.trim()
-          ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
-          : "",
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    },
+ {
+  question: "Есть ли пики и спады продаж и чем они объясняются?",
+  answer: [
+    (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
+      ? `Пики: ${(answers.seasonality.points ?? [])
+          .filter((p: any) => p.value >= 25)
+          .map((p: any) => `${p.month} (${p.value > 0 ? "+" : ""}${p.value}%)`)
+          .join(", ")}`
+      : "",
+    answers.seasonality?.peaksReason?.trim()
+      ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
+      : "",
+    (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
+      ? `Спады: ${(answers.seasonality.points ?? [])
+          .filter((p: any) => p.value <= -25)
+          .map((p: any) => `${p.month} (${p.value}%)`)
+          .join(", ")}`
+      : "",
+    answers.seasonality?.lowsReason?.trim()
+      ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n"),
+},
     {
       question: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
       answer: [
