@@ -194,7 +194,6 @@ const chapters: Chapter[] = [
   {
     id: "positioning",
     title: "Positioning",
-    subtitle: "Business description and geography",
     icon: "◌",
     questions: [
       {
@@ -220,7 +219,6 @@ const chapters: Chapter[] = [
   {
     id: "economics",
     title: "Economics",
-    subtitle: "Margin, revenue, volume, KPI",
     icon: "◔",
     questions: [
       {
@@ -249,7 +247,6 @@ const chapters: Chapter[] = [
   {
     id: "flow",
     title: "Clients & Flow",
-    subtitle: "Segment, demand, capacity, channels",
     icon: "◎",
     questions: [
       {
@@ -279,7 +276,6 @@ const chapters: Chapter[] = [
   {
     id: "product",
     title: "Product & Sales",
-    subtitle: "Margin products, retention, CJM",
     icon: "◈",
     questions: [
       {
@@ -308,7 +304,6 @@ const chapters: Chapter[] = [
   {
     id: "analytics",
     title: "Analytics & Management",
-    subtitle: "Insights, changes, decision support",
     icon: "▤",
     questions: [
       {
@@ -334,7 +329,6 @@ const chapters: Chapter[] = [
   {
     id: "structure",
     title: "Structure & Processes",
-    subtitle: "Team, interactions, efficiency",
     icon: "▣",
     questions: [
       {
@@ -370,7 +364,6 @@ const chapters: Chapter[] = [
   {
     id: "strategy",
     title: "Strategy",
-    subtitle: "Targets, costs, horizons",
     icon: "✦",
     questions: [
       {
@@ -388,7 +381,6 @@ const chapters: Chapter[] = [
   {
     id: "contact",
     title: "Contact Block",
-    subtitle: "Ожидания",
     icon: "✉",
     questions: [
       {
