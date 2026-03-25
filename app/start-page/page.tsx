@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -47,11 +48,11 @@ function StartPageContent() {
         setError("");
 
         if (!tx) {
-          throw new Error("Payment ID was not found in the link.");
+          throw new Error("Не найден Payment ID в ссылке.");
         }
 
         if (String(st).toUpperCase() !== "COMPLETED") {
-          throw new Error("Payment is not marked as completed.");
+          throw new Error("Оплата не подтверждена.");
         }
 
         const res = await fetch("/api/paypal/resolve-session", {
@@ -72,18 +73,18 @@ function StartPageContent() {
         if (cancelled) return;
 
         if (!res.ok || !data?.ok) {
-          throw new Error(data?.error || "Failed to resolve payment session.");
+          throw new Error(data?.error || "Не удалось подготовить доступ.");
         }
 
         if (!data.access_token) {
-          throw new Error("Access token was not returned.");
+          throw new Error("Не удалось получить access token.");
         }
 
         setResolved(data);
       } catch (err) {
         if (cancelled) return;
         const message =
-          err instanceof Error ? err.message : "Something went wrong.";
+          err instanceof Error ? err.message : "Что-то пошло не так.";
         setError(message);
       } finally {
         if (!cancelled) {
@@ -105,45 +106,55 @@ function StartPageContent() {
       setError("");
 
       if (!resolved?.access_token) {
-        throw new Error("Access token is missing.");
+        throw new Error("Не найден access token.");
       }
 
       if (!fullName.trim()) {
-        throw new Error("Please enter your name.");
+        throw new Error("Введите имя и фамилию.");
       }
 
       if (!companyName.trim()) {
-        throw new Error("Please enter your company name.");
+        throw new Error("Введите название компании.");
       }
 
       if (!whatsapp.trim()) {
-        throw new Error("Please enter your WhatsApp.");
+        throw new Error("Введите WhatsApp.");
       }
+
+      const payload = {
+        payment_id: tx,
+        access_token: resolved.access_token,
+        full_name: fullName.trim(),
+        company_name: companyName.trim(),
+        whatsapp: whatsapp.trim(),
+      };
 
       const res = await fetch("/api/paypal/start-action", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          payment_id: tx,
-          access_token: resolved.access_token,
-          full_name: fullName.trim(),
-          company_name: companyName.trim(),
-          whatsapp: whatsapp.trim(),
-        }),
+        body: JSON.stringify(payload),
       });
+
+      const contentType = res.headers.get("content-type") || "";
+      if (!contentType.includes("application/json")) {
+        const raw = await res.text();
+        throw new Error(
+          `start-action вернул не JSON. Ответ: ${raw.slice(0, 120)}`
+        );
+      }
 
       const data: StartActionResponse = await res.json();
 
       if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || "Failed to save your details.");
+        throw new Error(data?.error || "Не удалось сохранить данные.");
       }
 
       router.push(`/start/${resolved.access_token}`);
     } catch (err) {
       const message =
-        err instanceof Error ? err.message : "Something went wrong.";
+        err instanceof Error ? err.message : "Что-то пошло не так.";
       setError(message);
     } finally {
       setSubmitting(false);
@@ -153,16 +164,30 @@ function StartPageContent() {
   return (
     <main style={styles.page}>
       <div style={styles.card}>
-        <div style={styles.badge}>Revenue Snapshot</div>
+        <div style={styles.logoWrap}>
+          <Image
+            src="/logo.svg"
+            alt="Growth Avenue"
+            width={180}
+            height={42}
+            style={styles.logo}
+            priority
+          />
+        </div>
+
+        <div style={styles.badge}>
+          <span className="pulse-dot" style={styles.badgeDot} />
+          <span>REVENUE SNAPSHOT</span>
+        </div>
 
         <h1 style={styles.title}>
-          {resolving ? "Preparing your access..." : "Complete your access"}
+          {resolving ? "Подготавливаем доступ" : "Завершите доступ"}
         </h1>
 
         <p style={styles.text}>
           {resolving
-            ? "We are checking your payment and preparing your personal access."
-            : "Your payment is confirmed. Please fill in your details to continue to your personal page."}
+            ? "Мы проверяем оплату и подготавливаем ваш персональный доступ."
+            : "Оплата подтверждена. Заполните данные ниже, чтобы перейти в персональную страницу."}
         </p>
 
         <div style={styles.infoBox}>
@@ -200,29 +225,29 @@ function StartPageContent() {
         {!resolving && !error && (
           <div style={styles.form}>
             <div style={styles.field}>
-              <label style={styles.label}>Name and surname</label>
+              <label style={styles.label}>Имя и фамилия</label>
               <input
                 style={styles.input}
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="Your full name"
+                placeholder="Введите имя и фамилию"
               />
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>Company name</label>
+              <label style={styles.label}>Название компании</label>
               <input
                 style={styles.input}
                 type="text"
                 value={companyName}
                 onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Your company"
+                placeholder="Введите название компании"
               />
             </div>
 
             <div style={styles.field}>
-              <label style={styles.label}>WhatsApp</label>
+              <label style={styles.label}>Телефон в WhatsApp</label>
               <input
                 style={styles.input}
                 type="text"
@@ -238,11 +263,11 @@ function StartPageContent() {
               disabled={submitting}
               style={{
                 ...styles.button,
-                opacity: submitting ? 0.7 : 1,
+                opacity: submitting ? 0.75 : 1,
                 cursor: submitting ? "wait" : "pointer",
               }}
             >
-              {submitting ? "Saving..." : "Start"}
+              {submitting ? "Сохраняем..." : "Начать"}
             </button>
           </div>
         )}
@@ -250,9 +275,9 @@ function StartPageContent() {
         {!resolving && error && (
           <>
             <div style={styles.errorBox}>
-              <strong style={styles.errorTitle}>Access issue</strong>
+              <strong style={styles.errorTitle}>Ошибка доступа</strong>
               <p style={styles.errorText}>{error}</p>
-              <div style={styles.manualBox}>{tx || "No payment ID found"}</div>
+              <div style={styles.manualBox}>{tx || "Нет payment ID"}</div>
             </div>
 
             <button
@@ -260,14 +285,15 @@ function StartPageContent() {
               onClick={() => window.location.reload()}
               style={styles.button}
             >
-              Try again
+              Попробовать снова
             </button>
           </>
         )}
 
         {!resolving && resolved?.access_token && !error && (
           <p style={styles.smallText}>
-            Access prepared. Your personal page will open after you press Start.
+            Доступ подготовлен. После нажатия «Начать» откроется персональная
+            страница.
           </p>
         )}
       </div>
@@ -279,10 +305,25 @@ function StartPageFallback() {
   return (
     <main style={styles.page}>
       <div style={styles.card}>
-        <div style={styles.badge}>Revenue Snapshot</div>
-        <h1 style={styles.title}>Preparing your access...</h1>
+        <div style={styles.logoWrap}>
+          <Image
+            src="/logo.svg"
+            alt="Growth Avenue"
+            width={180}
+            height={42}
+            style={styles.logo}
+            priority
+          />
+        </div>
+
+        <div style={styles.badge}>
+          <span className="pulse-dot" style={styles.badgeDot} />
+          <span>REVENUE SNAPSHOT</span>
+        </div>
+
+        <h1 style={styles.title}>Подготавливаем доступ</h1>
         <p style={styles.text}>
-          We are checking your payment and preparing your personal access.
+          Мы проверяем оплату и подготавливаем ваш персональный доступ.
         </p>
       </div>
     </main>
@@ -310,18 +351,25 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     width: "100%",
-    maxWidth: "640px",
-    borderRadius: "28px",
-    padding: "28px",
+    maxWidth: "760px",
+    borderRadius: "32px",
+    padding: "34px 32px",
     background: "rgba(255,255,255,0.08)",
     border: "1px solid rgba(255,255,255,0.12)",
     boxShadow: "0 10px 40px rgba(0,0,0,0.28)",
     backdropFilter: "blur(18px)",
   },
+  logoWrap: {
+    marginBottom: "18px",
+  },
+  logo: {
+    width: "auto",
+    height: "38px",
+  },
   badge: {
     display: "inline-flex",
     alignItems: "center",
-    gap: "8px",
+    gap: "10px",
     fontSize: "12px",
     fontWeight: 700,
     letterSpacing: "0.08em",
@@ -329,24 +377,32 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#f7d237",
     marginBottom: "14px",
   },
+  badgeDot: {
+    width: "7px",
+    height: "7px",
+    borderRadius: "999px",
+    background: "#f7d237",
+    boxShadow: "0 0 10px rgba(247,210,55,0.95)",
+  },
   title: {
     margin: 0,
-    fontSize: "32px",
-    lineHeight: 1.1,
+    fontSize: "56px",
+    lineHeight: 1.05,
     fontWeight: 700,
   },
   text: {
-    marginTop: "14px",
-    marginBottom: "22px",
-    fontSize: "15px",
+    marginTop: "18px",
+    marginBottom: "26px",
+    fontSize: "18px",
     lineHeight: 1.6,
     color: "#d8dce7",
+    maxWidth: "720px",
   },
   infoBox: {
     display: "grid",
-    gap: "10px",
-    padding: "16px",
-    borderRadius: "18px",
+    gap: "16px",
+    padding: "22px 28px",
+    borderRadius: "22px",
     background: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.08)",
   },
@@ -354,97 +410,97 @@ const styles: Record<string, React.CSSProperties> = {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: "12px",
+    gap: "18px",
   },
   infoLabel: {
-    fontSize: "13px",
-    color: "#a5aeb2",
+    fontSize: "16px",
+    color: "#b4bccf",
   },
   infoValue: {
-    fontSize: "13px",
-    fontWeight: 600,
+    fontSize: "17px",
+    fontWeight: 700,
     color: "#ffffff",
     textAlign: "right",
     wordBreak: "break-all",
   },
   loaderWrap: {
-    marginTop: "20px",
+    marginTop: "24px",
     display: "flex",
     justifyContent: "center",
   },
   loader: {
-    width: "38px",
-    height: "38px",
+    width: "40px",
+    height: "40px",
     borderRadius: "999px",
     border: "3px solid rgba(255,255,255,0.18)",
     borderTopColor: "#f7d237",
   },
   form: {
-    marginTop: "22px",
+    marginTop: "28px",
     display: "grid",
-    gap: "14px",
+    gap: "16px",
   },
   field: {
     display: "grid",
     gap: "8px",
   },
   label: {
-    fontSize: "13px",
+    fontSize: "14px",
     color: "#e0e1e3",
   },
   input: {
     width: "100%",
-    borderRadius: "14px",
+    borderRadius: "16px",
     border: "1px solid rgba(255,255,255,0.12)",
     background: "rgba(255,255,255,0.06)",
     color: "#fff",
-    padding: "14px 16px",
-    fontSize: "14px",
+    padding: "15px 16px",
+    fontSize: "15px",
     outline: "none",
   },
   errorBox: {
-    marginTop: "22px",
-    padding: "16px",
-    borderRadius: "18px",
+    marginTop: "26px",
+    padding: "18px",
+    borderRadius: "22px",
     background: "rgba(255, 87, 87, 0.08)",
     border: "1px solid rgba(255, 87, 87, 0.22)",
   },
   errorTitle: {
     display: "block",
-    marginBottom: "8px",
-    fontSize: "14px",
+    marginBottom: "10px",
+    fontSize: "16px",
     color: "#fff",
   },
   errorText: {
     margin: 0,
-    fontSize: "14px",
-    lineHeight: 1.5,
-    color: "#e8caca",
+    fontSize: "16px",
+    lineHeight: 1.55,
+    color: "#f0d1d1",
   },
   manualBox: {
-    marginTop: "12px",
-    padding: "12px 14px",
-    borderRadius: "12px",
+    marginTop: "14px",
+    padding: "14px 16px",
+    borderRadius: "14px",
     background: "rgba(0,0,0,0.18)",
     color: "#fff",
-    fontSize: "13px",
+    fontSize: "15px",
     fontWeight: 700,
     wordBreak: "break-all",
   },
   button: {
-    marginTop: "8px",
+    marginTop: "18px",
     width: "100%",
     border: 0,
-    borderRadius: "16px",
-    padding: "14px 18px",
-    fontSize: "14px",
+    borderRadius: "18px",
+    padding: "18px 20px",
+    fontSize: "16px",
     fontWeight: 700,
     background: "#f7d237",
     color: "#0b1d3a",
   },
   smallText: {
     marginTop: "14px",
-    fontSize: "12px",
+    fontSize: "13px",
     color: "#a5aeb2",
   },
 };
