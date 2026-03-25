@@ -2235,7 +2235,7 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 22%;
+          top: 29%;
           right: 6.67%;
           font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
@@ -2246,7 +2246,7 @@ export default function Home() {
         .start-card-btn {
           position: absolute;
           left: 4.35%;
-          bottom: 18%;
+          bottom: 10%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
