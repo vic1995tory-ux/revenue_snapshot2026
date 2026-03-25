@@ -2246,7 +2246,7 @@ export default function Home() {
         .start-card-btn {
           position: absolute;
           left: 4.35%;
-          bottom: -10%;
+          bottom: -17%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
