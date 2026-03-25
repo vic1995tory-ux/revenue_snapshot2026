@@ -131,14 +131,15 @@ const RETENTION_TAGS = [
 ];
 
 const ANALYTICS_TAGS = [
-  "Рынок",
-  "Ниша",
-  "Сегменты",
-  "Каналы",
-  "Продажи",
-  "Юнит-экономика",
-  "Retention",
-  "Команда",
+  "Анализ конкурентов",
+  "Размер и рост рынка (TAM/SAM/SOM)",
+  "Сегментация клиентов",
+  "Конверсии и воронка продаж",
+  "LTV / CAC",
+  "Финансовая модель",
+  "Сквозная аналитика",
+  "Не используем аналитику",
+  "Данные есть, но не используем в решениях",
 ];
 
 const TEAM_PARTICIPATION_TAGS = [
@@ -191,9 +192,35 @@ const STRESS_ZONES = ["Маркетинг", "Продажи", "Операцио�
 
 const chapters: Chapter[] = [
   {
+    id: "positioning",
+    title: "Positioning",
+    subtitle: "Business description and geography",
+    icon: "◌",
+    questions: [
+      {
+        id: "positionText",
+        label:
+          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+        type: "text",
+      },
+      {
+        id: "businessScale",
+        label:
+          "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
+        type: "text",
+      },
+      {
+        id: "geo",
+        label:
+          "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+        type: "map",
+      },
+    ],
+  },
+  {
     id: "economics",
-    title: "Экономика",
-    subtitle: "Маржа, выручка, объём, KPI",
+    title: "Economics",
+    subtitle: "Margin, revenue, volume, KPI",
     icon: "◔",
     questions: [
       {
@@ -221,8 +248,8 @@ const chapters: Chapter[] = [
   },
   {
     id: "flow",
-    title: "Клиенты и поток",
-    subtitle: "Сегмент, спрос, capacity, каналы",
+    title: "Clients & Flow",
+    subtitle: "Segment, demand, capacity, channels",
     icon: "◎",
     questions: [
       {
@@ -251,8 +278,8 @@ const chapters: Chapter[] = [
   },
   {
     id: "product",
-    title: "Продукт и продажи",
-    subtitle: "Маржинальные продукты, retention, CJM",
+    title: "Product & Sales",
+    subtitle: "Margin products, retention, CJM",
     icon: "◈",
     questions: [
       {
@@ -279,65 +306,9 @@ const chapters: Chapter[] = [
     ],
   },
   {
-    id: "positioning",
-    title: "Позиционирование",
-    subtitle: "Описание бизнеса и география",
-    icon: "◌",
-    questions: [
-      {
-        id: "positionText",
-        label:
-          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
-        type: "text",
-      },
-      {
-        id: "geo",
-        label:
-          "В каком регионе вы продаёте и где физически находится ваш бизнес?",
-        type: "map",
-      },
-    ],
-  },
-  {
-    id: "structure",
-    title: "Структура и процессы",
-    subtitle: "Команда, нагрузка, потери эффективности",
-    icon: "▣",
-    questions: [
-      {
-        id: "team",
-        label: "Как устроена команда: роли, зоны ответственности, перегруз?",
-        type: "teamRoles",
-      },
-      {
-        id: "interaction",
-        label:
-          "Как выстроено взаимодействие между ролями и что изменилось за год?",
-        type: "departmentRelations",
-      },
-      {
-        id: "decisions",
-        label:
-          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
-        type: "text",
-      },
-      {
-        id: "stress",
-        label:
-          "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
-        type: "stressRange",
-      },
-      {
-        id: "lossZones",
-        label: "В каких зонах бизнеса теряется эффективность?",
-        type: "stressRange",
-      },
-    ],
-  },
-  {
     id: "analytics",
-    title: "Аналитика и управление",
-    subtitle: "Решения, изменения, data maturity",
+    title: "Analytics & Management",
+    subtitle: "Insights, changes, decision support",
     icon: "▤",
     questions: [
       {
@@ -361,9 +332,45 @@ const chapters: Chapter[] = [
     ],
   },
   {
+    id: "structure",
+    title: "Structure & Processes",
+    subtitle: "Team, interactions, efficiency",
+    icon: "▣",
+    questions: [
+      {
+        id: "team",
+        label: "Как устроена команда: роли, зоны ответственности?",
+        type: "teamRoles",
+      },
+      {
+        id: "interaction",
+        label:
+          "Как выстроено взаимодействие между ролями и что изменилось за год?",
+        type: "departmentRelations",
+      },
+      {
+        id: "decisions",
+        label:
+          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+        type: "text",
+      },
+      {
+        id: "stress",
+        label:
+          "Где вы как руководитель сильнее всего ощущаете напряжение?",
+        type: "stressRange",
+      },
+      {
+        id: "lossZones",
+        label: "В каких зонах бизнеса теряется эффективность?",
+        type: "stressRange",
+      },
+    ],
+  },
+  {
     id: "strategy",
-    title: "Стратегия",
-    subtitle: "Цели, расходы, горизонты 3/6/12",
+    title: "Strategy",
+    subtitle: "Targets, costs, horizons",
     icon: "✦",
     questions: [
       {
@@ -373,15 +380,15 @@ const chapters: Chapter[] = [
       },
       {
         id: "horizons",
-        label: "Вокруг чего вы строите планы на 3, 6 и 12 месяцев?",
+        label: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
         type: "text",
       },
     ],
   },
   {
     id: "contact",
-    title: "Контактный блок",
-    subtitle: "Кому отправить отчёт и встречу",
+    title: "Contact Block",
+    subtitle: "Report recipient and meeting contact",
     icon: "✉",
     questions: [
       {
@@ -460,6 +467,7 @@ const initialAnswers: Answers = {
     lowsReason: "",
   },
   positionText: { text: "", stages: [], customStages: [] },
+  businessScale: "",
   geo: { physical: "", sales: "" },
   team: [createEmptyTeamMember()],
   interaction: {
@@ -475,17 +483,13 @@ const initialAnswers: Answers = {
       Операционка: false,
       Управление: false,
     },
+    customZones: [],
   },
   lossZones: {
-    values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
-    touched: {
-      Маркетинг: false,
-      Продажи: false,
-      Операционка: false,
-      Управление: false,
-    },
+    selected: [],
+    notes: {},
   },
-  analytics: { hasAnalytics: null, tags: [], custom: [], note: "" },
+  analytics: { tags: [], custom: [], note: "" },
   changesNeeded: "",
   implemented: "",
   goal: { profitTarget: 0, mode: "", costChange: "", touched: false },
@@ -652,7 +656,7 @@ function getQuestionProgress(question: Question, answers: Answers): number {
 
     case "seasonality": {
       const points: SeasonalityPoint[] = value?.points ?? [];
-      const hasMovement = points.some((p) => Math.abs(p.value) >= 10);
+      const hasMovement = points.some((p) => Math.abs(p.value) >= 6);
       const peaksReason = textLength(value?.peaksReason) >= 20;
       const lowsReason = textLength(value?.lowsReason) >= 20;
       return hasMovement && peaksReason && lowsReason ? 100 : 0;
@@ -665,6 +669,9 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       )
         ? 100
         : 0;
+
+    case "businessScale":
+      return textLength(value) >= 20 ? 100 : 0;
 
     case "geo":
       return textLength(value?.physical) > 0 && textLength(value?.sales) > 0
@@ -697,21 +704,22 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       return allRated ? 100 : 0;
     }
 
-    case "stress":
-    case "lossZones": {
+    case "stress": {
       const touched: TouchMap = value?.touched ?? {};
-      return STRESS_ZONES.every((zone) => touched[zone]) ? 100 : 0;
+      const allZones = [
+        ...STRESS_ZONES,
+        ...((value?.customZones ?? []) as string[]),
+      ];
+      return allZones.length > 0 && allZones.every((zone) => touched[zone]) ? 100 : 0;
+    }
+
+    case "lossZones": {
+      const selected = value?.selected ?? [];
+      return selected.length > 0 && selected.every((zone: string) => textLength(value?.notes?.[zone]) > 0) ? 100 : 0;
     }
 
     case "analytics": {
-      if (value?.hasAnalytics === false) return 100;
-      if (value?.hasAnalytics === true) {
-        return getAllTagValues({ selected: value.tags, custom: value.custom })
-          .length > 0
-          ? 100
-          : 0;
-      }
-      return 0;
+      return getAllTagValues({ selected: value.tags, custom: value.custom }).length > 0 ? 100 : 0;
     }
 
     case "goal":
@@ -796,7 +804,7 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
           cx="44"
           cy="44"
           r={normalizedRadius}
-          stroke="rgba(255,255,255,0.08)"
+          stroke="rgba(255,255,255,0.045)"
           strokeWidth={stroke}
           fill="transparent"
         />
@@ -828,82 +836,6 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
   );
 }
 
-
-
-
-function QuestionStatusBadge({ done }: { done: boolean }) {
-  return (
-    <div
-      className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border px-3 text-sm font-medium transition ${
-        done
-          ? "border-[#f7d237]/28 bg-[#f7d237]/10 text-[#fff3b2]"
-          : "border-white/10 bg-white/[0.05] text-white/34"
-      }`}
-      aria-label={done ? "Заполнено" : "Не заполнено"}
-    >
-      {done ? "✓" : "○"}
-    </div>
-  );
-}
-
-function PercentInputPill({
-  value,
-  onChange,
-  min = 0,
-  max = 100,
-}: {
-  value: number;
-  onChange: (next: number) => void;
-  min?: number;
-  max?: number;
-}) {
-  return (
-    <label className="flex min-w-[96px] items-center justify-center gap-1 rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-sm text-[#fff3b2]">
-      <input
-        type="number"
-        min={min}
-        max={max}
-        value={Number.isFinite(value) ? value : 0}
-        onChange={(e) => onChange(clamp(Number(e.target.value || 0), min, max))}
-        className="w-[52px] bg-transparent text-center text-[#fff3b2] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-      />
-      <span>%</span>
-    </label>
-  );
-}
-
-function RangeWithPercentInput({
-  value,
-  onChange,
-  min = 0,
-  max = 100,
-  className = "w-full accent-[#f7d237]",
-}: {
-  value: number;
-  onChange: (next: number) => void;
-  min?: number;
-  max?: number;
-  className?: string;
-}) {
-  const safeValue = clamp(Number.isFinite(value) ? value : 0, min, max);
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-end">
-        <PercentInputPill value={safeValue} onChange={onChange} min={min} max={max} />
-      </div>
-
-      <input
-        type="range"
-        min={min}
-        max={max}
-        value={safeValue}
-        onChange={(e) => onChange(clamp(Number(e.target.value), min, max))}
-        className={className}
-      />
-    </div>
-  );
-}
 
 function getTagValues(value: any): string[] {
   if (!value) return [];
@@ -1021,7 +953,11 @@ function buildPreparedAnswers(answers: any) {
         .join("\n"),
     },
     {
-      question: "Как устроена команда: роли, зоны ответственности, перегруз?",
+      question: "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
+      answer: String(answers.businessScale ?? "").trim(),
+    },
+    {
+      question: "Как устроена команда: роли, зоны ответственности?",
       answer: (answers.team ?? [])
         .map(
           (member: any, index: number) =>
@@ -1046,33 +982,27 @@ function buildPreparedAnswers(answers: any) {
       answer: String(answers.decisions ?? "").trim(),
     },
     {
-      question: "Где вы как руководитель сильнее всего ощущаете напряжение или перегруз?",
+      question: "Где вы как руководитель сильнее всего ощущаете напряжение?",
       answer: Object.entries(answers.stress?.values ?? {})
         .map(([key, value]) => `${key}: ${value}`)
         .join("\n"),
     },
     {
       question: "В каких зонах бизнеса теряется эффективность?",
-      answer: Object.entries(answers.lossZones?.values ?? {})
-        .map(([key, value]) => `${key}: ${value}`)
+      answer: (answers.lossZones?.selected ?? [])
+        .map((key: string) => `${key}: ${answers.lossZones?.notes?.[key] ?? ""}`)
         .join("\n"),
     },
     {
       question: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
-      answer:
-        answers.analytics?.hasAnalytics === false
-          ? "Нет"
-          : answers.analytics?.hasAnalytics === true
-            ? [
-                "Да",
-                getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).length
-                  ? `Используем: ${getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).join(", ")}`
-                  : "",
-                answers.analytics?.note?.trim() ? `Комментарий: ${answers.analytics.note.trim()}` : "",
-              ]
-                .filter(Boolean)
-                .join("\n")
-            : "",
+      answer: [
+        getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).length
+          ? `Используем: ${getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).join(", ")}`
+          : "",
+        answers.analytics?.note?.trim() ? `Комментарий: ${answers.analytics.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
     },
     {
       question: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
@@ -1093,7 +1023,7 @@ function buildPreparedAnswers(answers: any) {
         .join("\n"),
     },
     {
-      question: "Вокруг чего вы строите планы на 3, 6 и 12 месяцев?",
+      question: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
       answer: [
         `3 месяца: ${answers.horizons?.plan3 ?? ""}`,
         `6 месяцев: ${answers.horizons?.plan6 ?? ""}`,
@@ -1326,6 +1256,128 @@ function TagField({
   );
 }
 
+
+function CustomZoneComposer({
+  zones,
+  onChange,
+}: {
+  zones: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function addZone() {
+    const next = draft.trim();
+    if (!next) return;
+    if ([...STRESS_ZONES, ...zones].some((item) => item.toLowerCase() === next.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...zones, next]);
+    setDraft("");
+  }
+
+  return (
+    <div className="space-y-3">
+      {zones.length > 0 ? (
+        <div className="flex flex-wrap gap-2.5">
+          {zones.map((zone) => (
+            <button
+              key={zone}
+              type="button"
+              onClick={() => onChange(zones.filter((item) => item !== zone))}
+              className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3.5 py-2 text-sm text-cyan-100 transition hover:bg-cyan-400/15"
+            >
+              {zone} ×
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2">
+        <input
+          className={compactInputClass}
+          placeholder="Добавить свой вариант"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addZone();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={addZone}
+          className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2] transition hover:bg-[#f7d237]/16"
+        >
+          Добавить
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LossZoneTagEditor({
+  zones,
+  value,
+  onChange,
+}: {
+  zones: string[];
+  value: { selected: string[]; notes: Record<string, string> };
+  onChange: (next: { selected: string[]; notes: Record<string, string> }) => void;
+}) {
+  const selected = value.selected ?? [];
+  const notes = value.notes ?? {};
+
+  function toggleZone(zone: string) {
+    const active = selected.includes(zone);
+    onChange({
+      selected: active ? selected.filter((item) => item !== zone) : [...selected, zone],
+      notes,
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2.5">
+        {zones.map((zone) => {
+          const active = selected.includes(zone);
+          return (
+            <button
+              key={zone}
+              type="button"
+              onClick={() => toggleZone(zone)}
+              className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                active
+                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                  : "border-white/10 bg-white/[0.03] text-white/70"
+              }`}
+            >
+              {zone}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="space-y-3">
+        {selected.map((zone) => (
+          <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+            <div className="mb-2 text-sm text-[#fff3b2]">{zone}</div>
+            <AutoTextarea
+              className={textareaClass}
+              minRows={2}
+              placeholder="Что именно не устраивает в этой зоне?"
+              value={notes[zone] ?? ""}
+              onChange={(next) => onChange({ selected, notes: { ...notes, [zone]: next } })}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 function RangeBlock({
   title,
   value,
@@ -1343,16 +1395,9 @@ function RangeBlock({
     <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
       <div className="mb-3 flex items-center justify-between text-sm text-white/60">
         <span>{title}</span>
-        <label className="flex min-w-[86px] items-center justify-center rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
-          <input
-            type="number"
-            min={min}
-            max={max}
-            value={value}
-            onChange={(e) => onChange(clamp(Number(e.target.value || 0), min, max))}
-            className="w-[54px] bg-transparent text-center text-[#fff3b2] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-          />
-        </label>
+        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
+          {value}
+        </span>
       </div>
       <input
         type="range"
@@ -1582,31 +1627,15 @@ function TeamMembersBuilder({
               <div className="mb-2 text-sm text-white/55">
                 Где принимает участие
               </div>
-              <div className="flex flex-wrap gap-2.5">
-                {TEAM_PARTICIPATION_TAGS.map((tag) => {
-                  const active = member.participatesIn.includes(tag);
-                  return (
-                    <button
-                      key={tag}
-                      type="button"
-                      onClick={() =>
-                        updateMember(member.id, {
-                          participatesIn: active
-                            ? member.participatesIn.filter((t) => t !== tag)
-                            : [...member.participatesIn, tag],
-                        })
-                      }
-                      className={`rounded-full border px-3.5 py-2 text-sm transition ${
-                        active
-                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                          : "border-white/10 bg-white/[0.03] text-white/70"
-                      }`}
-                    >
-                      {tag}
-                    </button>
-                  );
-                })}
-              </div>
+              <TagField
+                value={{ selected: member.participatesIn ?? [], custom: [] }}
+                baseTags={TEAM_PARTICIPATION_TAGS}
+                onChange={(next) =>
+                  updateMember(member.id, {
+                    participatesIn: [...next.selected, ...next.custom],
+                  })
+                }
+              />
             </div>
           </div>
         ))}
@@ -1632,9 +1661,20 @@ function RelationStars({
   onChange: (next: number) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(0)}
+        className={`rounded-full border px-3 py-2 text-xs transition ${
+          value === 0
+            ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+            : "border-white/10 bg-white/[0.03] text-white/50"
+        }`}
+      >
+        Не взаимодействуют
+      </button>
       {[1, 2, 3, 4, 5].map((n) => {
-        const active = n <= value;
+        const active = n <= value && value > 0;
         return (
           <button
             key={n}
@@ -1797,7 +1837,7 @@ function SeasonalityChart({
 
   function pointXY(index: number, v: number) {
     const x = paddingX + (chartWidth / 11) * index;
-    const y = paddingY + chartHeight / 2 - (v / 100) * (chartHeight / 2 - 10);
+    const y = paddingY + chartHeight / 2 - (v / 50) * (chartHeight / 2 - 10);
     return { x, y };
   }
 
@@ -1827,9 +1867,9 @@ function SeasonalityChart({
     const center = paddingY + chartHeight / 2;
     const relative = center - localY;
     const nextValue = clamp(
-      Math.round((relative / (chartHeight / 2 - 10)) * 100),
-      -100,
-      100,
+      Math.round((relative / (chartHeight / 2 - 10)) * 50),
+      -50,
+      50,
     );
 
     const nextPoints = points.map((point, i) =>
@@ -1862,8 +1902,8 @@ function SeasonalityChart({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dragIndex, points, peaksReason, lowsReason]);
 
-  const peakMonths = points.filter((p) => p.value >= 25).map((p) => p.month);
-  const lowMonths = points.filter((p) => p.value <= -25).map((p) => p.month);
+  const peakMonths = points.filter((p) => p.value >= 12).map((p) => p.month);
+  const lowMonths = points.filter((p) => p.value <= -12).map((p) => p.month);
 
   return (
     <div className="space-y-5">
@@ -1885,7 +1925,7 @@ function SeasonalityChart({
             ref={svgRef}
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="none"
-            className="h-[260px] w-full rounded-[20px] bg-[#071733]"
+            className="h-[260px] w-full rounded-[20px] bg-[#06162f]"
           >
             {[0, 1, 2, 3, 4].map((i) => {
               const y = paddingY + (chartHeight / 4) * i;
@@ -1896,7 +1936,7 @@ function SeasonalityChart({
                   x2={width - paddingX}
                   y1={y}
                   y2={y}
-                  stroke="rgba(255,255,255,0.08)"
+                  stroke="rgba(255,255,255,0.045)"
                 />
               );
             })}
@@ -1906,24 +1946,39 @@ function SeasonalityChart({
               x2={width - paddingX}
               y1={paddingY + chartHeight / 2}
               y2={paddingY + chartHeight / 2}
-              stroke="rgba(255,255,255,0.18)"
+              stroke="rgba(255,255,255,0.10)"
               strokeDasharray="6 6"
             />
+
+            {[50, 25, 0, -25, -50].map((mark, idx) => {
+              const y = paddingY + (chartHeight / 4) * idx;
+              return (
+                <text
+                  key={`y-${mark}`}
+                  x={10}
+                  y={y + 4}
+                  fill="rgba(255,255,255,0.35)"
+                  fontSize="12"
+                >
+                  {mark > 0 ? `+${mark}%` : `${mark}%`}
+                </text>
+              );
+            })}
 
             <path
               d={smoothPath(points)}
               fill="none"
               stroke="#7dd3fc"
               strokeWidth="3"
-              style={{ filter: "drop-shadow(0 0 12px rgba(125,211,252,0.25))" }}
+              style={{ filter: "drop-shadow(0 0 6px rgba(125,211,252,0.14))" }}
             />
 
             {points.map((point, index) => {
               const { x, y } = pointXY(index, point.value);
               const pointColor =
-                point.value >= 25
+                point.value >= 12
                   ? "#0f766e"
-                  : point.value <= -25
+                  : point.value <= -12
                     ? "#f7d237"
                     : "#ffffff";
 
@@ -1949,10 +2004,10 @@ function SeasonalityChart({
                     style={{
                       cursor: "grab",
                       filter:
-                        point.value >= 25
-                          ? "drop-shadow(0 0 10px rgba(15,118,110,0.34))"
-                          : point.value <= -25
-                            ? "drop-shadow(0 0 12px rgba(247,210,55,0.42))"
+                        point.value >= 12
+                          ? "drop-shadow(0 0 6px rgba(15,118,110,0.18))"
+                          : point.value <= -12
+                            ? "drop-shadow(0 0 6px rgba(247,210,55,0.20))"
                             : "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
                     }}
                   />
@@ -2033,16 +2088,9 @@ function renderInput(
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm text-white/60">
             <span>0%</span>
-            <PercentInputPill
-              value={value}
-              onChange={(nextValue) =>
-                setAnswer(question.id, {
-                  value: nextValue,
-                  note,
-                  touched: true,
-                })
-              }
-            />
+            <span className="rounded-full border border-white/10 px-3 py-1 text-[#f7d237]">
+              {value}%
+            </span>
             <span>100%</span>
           </div>
 
@@ -2123,11 +2171,11 @@ function renderInput(
         const current = answers[question.id] ?? initialAnswers.horizons;
 
         return (
-          <div className="grid gap-3 md:grid-cols-3">
+          <div className="space-y-4">
             <div>
-              <div className="mb-2 text-sm text-white/55">План на 3 месяца</div>
+              <div className="mb-2 text-sm text-white/55">Следующие 3 месяца</div>
               <AutoTextarea
-                placeholder="Что в фокусе на 3 месяца"
+                placeholder="Чего вы ждете от следующих 3 месяцев"
                 className={textareaClass}
                 minRows={3}
                 value={current.plan3 ?? ""}
@@ -2142,10 +2190,10 @@ function renderInput(
 
             <div>
               <div className="mb-2 text-sm text-white/55">
-                План на 6 месяцев
+                Следующие 6 месяцев
               </div>
               <AutoTextarea
-                placeholder="Что в фокусе на 6 месяцев"
+                placeholder="Чего вы ждете от следующих 6 месяцев"
                 className={textareaClass}
                 minRows={3}
                 value={current.plan6 ?? ""}
@@ -2160,10 +2208,10 @@ function renderInput(
 
             <div>
               <div className="mb-2 text-sm text-white/55">
-                План на 12 месяцев
+                Следующие 12 месяцев
               </div>
               <AutoTextarea
-                placeholder="Что в фокусе на 12 месяцев"
+                placeholder="Чего вы ждете от следующих 12 месяцев"
                 className={textareaClass}
                 minRows={3}
                 value={current.plan12 ?? ""}
@@ -2184,6 +2232,7 @@ function renderInput(
         decisions: 20,
         changesNeeded: 20,
         implemented: 20,
+        businessScale: 20,
       };
 
       const minLength = minLengthByQuestion[question.id] ?? 0;
@@ -2192,7 +2241,7 @@ function renderInput(
       return (
         <div className="space-y-2.5">
           <AutoTextarea
-            placeholder="Введите ответ…"
+            placeholder={question.id === "businessScale" ? "Например: 6 лет на рынке, команда 18 человек" : "Введите ответ…"}
             className={textareaClass}
             minRows={3}
             value={answers[question.id] ?? ""}
@@ -2350,22 +2399,9 @@ function renderInput(
                     <div className="text-sm font-medium text-white">
                       {channel}
                     </div>
-                    <PercentInputPill
-                      value={value}
-                      max={maxAllowed}
-                      onChange={(nextValue) =>
-                        setAnswer("channelEfficiency", {
-                          values: {
-                            ...state.values,
-                            [channel]: nextValue,
-                          },
-                          touched: {
-                            ...state.touched,
-                            [channel]: true,
-                          },
-                        })
-                      }
-                    />
+                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
+                      {value}%
+                    </div>
                   </div>
 
                   <input
@@ -2438,18 +2474,9 @@ function renderInput(
                       setAnswer(question.id, next);
                     }}
                   />
-                  <PercentInputPill
-                    value={item.value}
-                    onChange={(nextValue) => {
-                      const next = [...items];
-                      next[i] = {
-                        ...next[i],
-                        value: nextValue,
-                        touched: true,
-                      };
-                      setAnswer(question.id, next);
-                    }}
-                  />
+                  <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">
+                    {item.value}%
+                  </div>
                 </div>
 
                 <input
@@ -2505,9 +2532,6 @@ function renderInput(
               </div>
 
               <div className="space-y-3">
-                <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-xs text-white/42">
-                  Для засчитывания этапа достаточно, чтобы поля «Что происходит», «Длительность», «Что получает клиент» и «Что получает компания» были заполнены. Поле «Проблемы» — опционально.
-                </div>
                 <div>
                   <div className="mb-2 text-sm text-white/55">
                     Что происходит
@@ -2667,42 +2691,82 @@ function renderInput(
       );
 
     case "stressRange": {
+      if (question.id === "lossZones") {
+        const current = answers[question.id] ?? initialAnswers.lossZones;
+        const inheritedZones = answers.stress?.customZones ?? [];
+        const zones = [...STRESS_ZONES, ...inheritedZones];
+
+        return (
+          <LossZoneTagEditor
+            zones={zones}
+            value={current}
+            onChange={(next) => setAnswer(question.id, next)}
+          />
+        );
+      }
+
       const current = answers[question.id] ?? initialAnswers[question.id];
+      const customZones: string[] = current.customZones ?? [];
+      const zones = [...STRESS_ZONES, ...customZones];
 
       return (
-        <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-          {STRESS_ZONES.map((zone) => (
-            <div
-              key={zone}
-              className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
-            >
-              <div className="mb-3 text-sm font-medium text-white">{zone}</div>
-              <div className="mb-3 flex items-center justify-between text-xs text-white/45">
-                <span>-10</span>
-                <span className="text-[#fff3b2]">{current.values[zone]}</span>
-                <span>10</span>
+        <div className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {zones.map((zone) => (
+              <div
+                key={zone}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+              >
+                <div className="mb-3 text-sm font-medium text-white">{zone}</div>
+                <div className="mb-3 flex items-center justify-between text-xs text-white/45">
+                  <span>-10</span>
+                  <span className="text-[#fff3b2]">{current.values[zone] ?? 0}</span>
+                  <span>10</span>
+                </div>
+                <input
+                  type="range"
+                  min={-10}
+                  max={10}
+                  value={current.values[zone] ?? 0}
+                  onChange={(e) =>
+                    setAnswer(question.id, {
+                      ...current,
+                      values: {
+                        ...current.values,
+                        [zone]: Number(e.target.value),
+                      },
+                      touched: {
+                        ...current.touched,
+                        [zone]: true,
+                      },
+                    })
+                  }
+                  className="w-full accent-[#f7d237]"
+                />
               </div>
-              <input
-                type="range"
-                min={-10}
-                max={10}
-                value={current.values[zone]}
-                onChange={(e) =>
-                  setAnswer(question.id, {
-                    values: {
-                      ...current.values,
-                      [zone]: Number(e.target.value),
-                    },
-                    touched: {
-                      ...current.touched,
-                      [zone]: true,
-                    },
-                  })
-                }
-                className="w-full accent-[#f7d237]"
-              />
-            </div>
-          ))}
+            ))}
+          </div>
+
+          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+            <div className="mb-3 text-sm text-white/55">Добавить свою зону</div>
+            <CustomZoneComposer
+              zones={customZones}
+              onChange={(nextZones) =>
+                setAnswer(question.id, {
+                  ...current,
+                  customZones: nextZones,
+                  values: nextZones.reduce((acc: Record<string, number>, zone: string) => ({
+                    ...acc,
+                    [zone]: current.values?.[zone] ?? 0,
+                  }), current.values ?? {}),
+                  touched: nextZones.reduce((acc: Record<string, boolean>, zone: string) => ({
+                    ...acc,
+                    [zone]: current.touched?.[zone] ?? false,
+                  }), current.touched ?? {}),
+                })
+              }
+            />
+          </div>
         </div>
       );
     }
@@ -2710,70 +2774,33 @@ function renderInput(
     case "analyticsBranch": {
       const current = answers[question.id] ?? initialAnswers.analytics;
       return (
-        <div className="space-y-4">
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() =>
-                setAnswer(question.id, { ...current, hasAnalytics: true })
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+          <TagField
+            value={{
+              selected: current.tags ?? [],
+              custom: current.custom ?? [],
+            }}
+            baseTags={ANALYTICS_TAGS}
+            onChange={(next) =>
+              setAnswer(question.id, {
+                ...current,
+                tags: next.selected,
+                custom: next.custom,
+              })
+            }
+          />
+
+          <div className="mt-4">
+            <AutoTextarea
+              placeholder="Опишите, как именно аналитика участвует в принятии решений…"
+              className={textareaClass}
+              minRows={2}
+              value={current.note ?? ""}
+              onChange={(next) =>
+                setAnswer(question.id, { ...current, note: next })
               }
-              className={`rounded-2xl border px-4 py-2.5 text-sm ${
-                current.hasAnalytics === true
-                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                  : "border-white/10 bg-white/[0.03] text-white/70"
-              }`}
-            >
-              Да
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setAnswer(question.id, { ...current, hasAnalytics: false })
-              }
-              className={`rounded-2xl border px-4 py-2.5 text-sm ${
-                current.hasAnalytics === false
-                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
-                  : "border-white/10 bg-white/[0.03] text-white/70"
-              }`}
-            >
-              Нет
-            </button>
+            />
           </div>
-
-          {current.hasAnalytics === true && (
-            <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-              <div className="mb-3 text-sm text-white/55">
-                Если да — что именно вы используете?
-              </div>
-
-              <TagField
-                value={{
-                  selected: current.tags ?? [],
-                  custom: current.custom ?? [],
-                }}
-                baseTags={ANALYTICS_TAGS}
-                onChange={(next) =>
-                  setAnswer(question.id, {
-                    ...current,
-                    tags: next.selected,
-                    custom: next.custom,
-                  })
-                }
-              />
-
-              <div className="mt-4">
-                <AutoTextarea
-                  placeholder="Опишите, как именно аналитика участвует в принятии решений…"
-                  className={textareaClass}
-                  minRows={2}
-                  value={current.note ?? ""}
-                  onChange={(next) =>
-                    setAnswer(question.id, { ...current, note: next })
-                  }
-                />
-              </div>
-            </div>
-          )}
         </div>
       );
     }
@@ -2787,16 +2814,9 @@ function renderInput(
           <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
             <div className="mb-3 flex items-center justify-between text-sm text-white/60">
               <span>Цель по чистой прибыли</span>
-              <PercentInputPill
-                value={current.profitTarget}
-                onChange={(nextValue) =>
-                  setAnswer(question.id, {
-                    ...current,
-                    profitTarget: nextValue,
-                    touched: true,
-                  })
-                }
-              />
+              <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
+                +{current.profitTarget}%
+              </span>
             </div>
 
             <input
@@ -3193,7 +3213,7 @@ export default function DiagnosticIntakePage() {
                   </div>
 
                   <div className="mt-6 space-y-2.5">
-                    {chapter.questions.slice(0, 3).map((question, i) => {
+                    {chapter.questions.map((question, i) => {
                       const isDone = getQuestionProgress(question, answers) === 100;
 
                       return (
@@ -3210,7 +3230,7 @@ export default function DiagnosticIntakePage() {
                           >
                             {i + 1}
                           </span>
-                          <span className="line-clamp-2">{question.label}</span>
+                          <span>{question.label}</span>
                         </div>
                       );
                     })}
@@ -3296,9 +3316,9 @@ export default function DiagnosticIntakePage() {
                         </h3>
                       </div>
 
-                      <QuestionStatusBadge
-                        done={getQuestionProgress(question, answers) === 100}
-                      />
+                      <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-3 text-sm text-[#f7d237]">
+                        {getQuestionProgress(question, answers) === 100 ? "✓" : "○"}
+                      </div>
                     </div>
 
                     {renderInput(question, answers, setAnswer)}
