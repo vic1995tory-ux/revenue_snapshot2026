@@ -2247,12 +2247,6 @@ function renderInput(
             value={answers[question.id] ?? ""}
             onChange={(next) => setAnswer(question.id, next)}
           />
-
-          {minLength > 0 ? (
-            <div className="text-xs text-white/42">
-              Ответ засчитывается от {minLength} символов. Сейчас: {currentLength}.
-            </div>
-          ) : null}
         </div>
       );
     }
