@@ -25,6 +25,10 @@ function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const [logoTransform, setLogoTransform] = useState(
+    "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
+  );
+
   const [resolving, setResolving] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -100,6 +104,35 @@ function StartPageContent() {
     };
   }, [tx, st, amt, cc]);
 
+  function handleLogoMove(e: React.MouseEvent<HTMLDivElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+
+    const rotateY = ((x - centerX) / centerX) * 6;
+    const rotateX = ((centerY - y) / centerY) * 6;
+
+    setLogoTransform(
+      `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03,1.03,1.03)`
+    );
+  }
+
+  function handleLogoLeave() {
+    setLogoTransform(
+      "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
+    );
+  }
+
+  function handleLogoEnter() {
+    setLogoTransform(
+      "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1.02,1.02,1.02)"
+    );
+  }
+
   async function handleStart() {
     try {
       setSubmitting(true);
@@ -163,139 +196,152 @@ function StartPageContent() {
 
   return (
     <main style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.logoWrap}>
-          <Image
-            src="/logo.svg"
-            alt="Growth Avenue"
-            width={180}
-            height={42}
-            style={styles.logo}
-            priority
-          />
-        </div>
-
-        <div style={styles.badge}>
-          <span className="pulse-dot" style={styles.badgeDot} />
-          <span>REVENUE SNAPSHOT</span>
-        </div>
-
-        <h1 style={styles.title}>
-          {resolving ? "Подготавливаем доступ" : "Завершите доступ"}
-        </h1>
-
-        <p style={styles.text}>
-          {resolving
-            ? "Мы проверяем оплату и подготавливаем ваш персональный доступ."
-            : "Оплата подтверждена. Заполните данные ниже, чтобы перейти в персональную страницу."}
-        </p>
-
-        <div style={styles.infoBox}>
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Payment ID</span>
-            <span style={styles.infoValue}>{tx || "—"}</span>
-          </div>
-
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Status</span>
-            <span style={styles.infoValue}>{st || "—"}</span>
-          </div>
-
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Amount</span>
-            <span style={styles.infoValue}>
-              {amt ? `${amt} ${cc || ""}`.trim() : "—"}
-            </span>
-          </div>
-
-          <div style={styles.infoRow}>
-            <span style={styles.infoLabel}>Launches</span>
-            <span style={styles.infoValue}>
-              {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
-            </span>
+      <div style={styles.shell}>
+        <div style={styles.logoOuter}>
+          <div
+            style={{
+              ...styles.logoTilt,
+              transform: logoTransform,
+            }}
+            onMouseMove={handleLogoMove}
+            onMouseLeave={handleLogoLeave}
+            onMouseEnter={handleLogoEnter}
+          >
+            <div style={styles.logoGlow} />
+            <Image
+              src="/logo.svg"
+              alt="Growth Avenue"
+              width={220}
+              height={52}
+              style={styles.logo}
+              priority
+            />
           </div>
         </div>
 
-        {resolving && (
-          <div style={styles.loaderWrap}>
-            <div style={styles.loader} />
+        <div style={styles.card}>
+          <div style={styles.badge}>
+            <span className="pulse-dot" style={styles.badgeDot} />
+            <span>REVENUE SNAPSHOT</span>
           </div>
-        )}
 
-        {!resolving && !error && (
-          <div style={styles.form}>
-            <div style={styles.field}>
-              <label style={styles.label}>Имя и фамилия</label>
-              <input
-                style={styles.input}
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Введите имя и фамилию"
-              />
-            </div>
+          <h1 style={styles.title}>
+            {resolving ? "Подготавливаем доступ" : "Завершите доступ"}
+          </h1>
 
-            <div style={styles.field}>
-              <label style={styles.label}>Название компании</label>
-              <input
-                style={styles.input}
-                type="text"
-                value={companyName}
-                onChange={(e) => setCompanyName(e.target.value)}
-                placeholder="Введите название компании"
-              />
-            </div>
-
-            <div style={styles.field}>
-              <label style={styles.label}>Телефон в WhatsApp</label>
-              <input
-                style={styles.input}
-                type="text"
-                value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
-                placeholder="+995..."
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={handleStart}
-              disabled={submitting}
-              style={{
-                ...styles.button,
-                opacity: submitting ? 0.75 : 1,
-                cursor: submitting ? "wait" : "pointer",
-              }}
-            >
-              {submitting ? "Сохраняем..." : "Начать"}
-            </button>
-          </div>
-        )}
-
-        {!resolving && error && (
-          <>
-            <div style={styles.errorBox}>
-              <strong style={styles.errorTitle}>Ошибка доступа</strong>
-              <p style={styles.errorText}>{error}</p>
-              <div style={styles.manualBox}>{tx || "Нет payment ID"}</div>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => window.location.reload()}
-              style={styles.button}
-            >
-              Попробовать снова
-            </button>
-          </>
-        )}
-
-        {!resolving && resolved?.access_token && !error && (
-          <p style={styles.smallText}>
-            Доступ подготовлен. После нажатия «Начать» откроется персональная
-            страница.
+          <p style={styles.text}>
+            {resolving
+              ? "Мы проверяем оплату и подготавливаем ваш персональный доступ."
+              : "Оплата подтверждена. Заполните данные ниже, чтобы перейти в персональную страницу."}
           </p>
-        )}
+
+          <div style={styles.infoBox}>
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Payment ID</span>
+              <span style={styles.infoValue}>{tx || "—"}</span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Status</span>
+              <span style={styles.infoValue}>{st || "—"}</span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Amount</span>
+              <span style={styles.infoValue}>
+                {amt ? `${amt} ${cc || ""}`.trim() : "—"}
+              </span>
+            </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Launches</span>
+              <span style={styles.infoValue}>
+                {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
+              </span>
+            </div>
+          </div>
+
+          {resolving && (
+            <div style={styles.loaderWrap}>
+              <div style={styles.loader} />
+            </div>
+          )}
+
+          {!resolving && !error && (
+            <div style={styles.form}>
+              <div style={styles.field}>
+                <label style={styles.label}>Имя и фамилия</label>
+                <input
+                  style={styles.input}
+                  type="text"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Введите имя и фамилию"
+                />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Название компании</label>
+                <input
+                  style={styles.input}
+                  type="text"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                  placeholder="Введите название компании"
+                />
+              </div>
+
+              <div style={styles.field}>
+                <label style={styles.label}>Телефон в WhatsApp</label>
+                <input
+                  style={styles.input}
+                  type="text"
+                  value={whatsapp}
+                  onChange={(e) => setWhatsapp(e.target.value)}
+                  placeholder="+995..."
+                />
+              </div>
+
+              <button
+                type="button"
+                onClick={handleStart}
+                disabled={submitting}
+                style={{
+                  ...styles.button,
+                  opacity: submitting ? 0.75 : 1,
+                  cursor: submitting ? "wait" : "pointer",
+                }}
+              >
+                {submitting ? "Сохраняем..." : "Начать"}
+              </button>
+            </div>
+          )}
+
+          {!resolving && error && (
+            <>
+              <div style={styles.errorBox}>
+                <strong style={styles.errorTitle}>Ошибка доступа</strong>
+                <p style={styles.errorText}>{error}</p>
+                <div style={styles.manualBox}>{tx || "Нет payment ID"}</div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => window.location.reload()}
+                style={styles.button}
+              >
+                Попробовать снова
+              </button>
+            </>
+          )}
+
+          {!resolving && resolved?.access_token && !error && (
+            <p style={styles.smallText}>
+              Доступ подготовлен. После нажатия «Начать» откроется персональная
+              страница.
+            </p>
+          )}
+        </div>
       </div>
     </main>
   );
@@ -304,27 +350,32 @@ function StartPageContent() {
 function StartPageFallback() {
   return (
     <main style={styles.page}>
-      <div style={styles.card}>
-        <div style={styles.logoWrap}>
-          <Image
-            src="/logo.svg"
-            alt="Growth Avenue"
-            width={180}
-            height={42}
-            style={styles.logo}
-            priority
-          />
+      <div style={styles.shell}>
+        <div style={styles.logoOuter}>
+          <div style={styles.logoTilt}>
+            <div style={styles.logoGlow} />
+            <Image
+              src="/logo.svg"
+              alt="Growth Avenue"
+              width={220}
+              height={52}
+              style={styles.logo}
+              priority
+            />
+          </div>
         </div>
 
-        <div style={styles.badge}>
-          <span className="pulse-dot" style={styles.badgeDot} />
-          <span>REVENUE SNAPSHOT</span>
-        </div>
+        <div style={styles.card}>
+          <div style={styles.badge}>
+            <span className="pulse-dot" style={styles.badgeDot} />
+            <span>REVENUE SNAPSHOT</span>
+          </div>
 
-        <h1 style={styles.title}>Подготавливаем доступ</h1>
-        <p style={styles.text}>
-          Мы проверяем оплату и подготавливаем ваш персональный доступ.
-        </p>
+          <h1 style={styles.title}>Подготавливаем доступ</h1>
+          <p style={styles.text}>
+            Мы проверяем оплату и подготавливаем ваш персональный доступ.
+          </p>
+        </div>
       </div>
     </main>
   );
@@ -349,6 +400,21 @@ const styles: Record<string, React.CSSProperties> = {
       "radial-gradient(circle at top, rgba(247,210,55,0.14), transparent 30%), #0b1d3a",
     color: "#fefefe",
   },
+  shell: {
+    width: "100%",
+    maxWidth: "900px",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    gap: "18px",
+  },
+  logoOuter: {
+    width: "100%",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "88px",
+  },
   card: {
     width: "100%",
     maxWidth: "760px",
@@ -359,12 +425,31 @@ const styles: Record<string, React.CSSProperties> = {
     boxShadow: "0 10px 40px rgba(0,0,0,0.28)",
     backdropFilter: "blur(18px)",
   },
-  logoWrap: {
-    marginBottom: "18px",
+  logoTilt: {
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    transformStyle: "preserve-3d",
+    transition: "transform 0.18s ease-out",
+    willChange: "transform",
+  },
+  logoGlow: {
+    position: "absolute",
+    inset: "-18px -24px",
+    borderRadius: "999px",
+    background:
+      "radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 35%, rgba(255,255,255,0) 74%)",
+    filter: "blur(16px)",
+    pointerEvents: "none",
   },
   logo: {
     width: "auto",
-    height: "38px",
+    height: "48px",
+    position: "relative",
+    zIndex: 2,
+    filter:
+      "drop-shadow(0 0 10px rgba(255,255,255,0.08)) drop-shadow(0 0 20px rgba(255,255,255,0.04))",
   },
   badge: {
     display: "inline-flex",
