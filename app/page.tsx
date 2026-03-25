@@ -536,9 +536,9 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
-            <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="start-card-btn start-card-btn-floating">
-              Попробовать Snapshot
-            </a>
+<a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="start-card-btn start-card-btn-floating">
+  Попробовать Snapshot
+</a>
           </div>
         </div>
       </div>
@@ -1059,7 +1059,7 @@ export default function Home() {
           </nav>
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
-            <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
+            <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1240,7 +1240,7 @@ export default function Home() {
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
+              <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
             </aside>
           </div>
         </section>
@@ -1295,14 +1295,14 @@ export default function Home() {
                   icon="/stratsession.svg"
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
-                  href={https://www.paypal.com/ncp/payment/GQLFG3CYUHM82}
+                  href="https://www.paypal.com/ncp/payment/GQLFG3CYUHM82"
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
-                  href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC}
+                  href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC"
                 />
               </div>
             </div>
