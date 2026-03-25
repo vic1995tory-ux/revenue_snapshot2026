@@ -1322,7 +1322,7 @@ export default function Home() {
             <div className="cta-box glare-card-lite">
               <div className="text-sm text-white/55">Следующий шаг</div>
               <div className="mt-2 text-2xl font-semibold text-white">Узнать больше</div>
-              <a href={https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0} className="tg-gradient-btn mt-5 inline-flex">Связаться с нами</a>
+              <a href="https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0" className="tg-gradient-btn mt-5 inline-flex">Связаться с нами</a>
             </div>
           </div>
         </section>
