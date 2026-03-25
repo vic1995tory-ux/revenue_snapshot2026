@@ -829,6 +829,82 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
 }
 
 
+
+
+function QuestionStatusBadge({ done }: { done: boolean }) {
+  return (
+    <div
+      className={`flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border px-3 text-sm font-medium transition ${
+        done
+          ? "border-[#f7d237]/28 bg-[#f7d237]/10 text-[#fff3b2]"
+          : "border-white/10 bg-white/[0.05] text-white/34"
+      }`}
+      aria-label={done ? "Заполнено" : "Не заполнено"}
+    >
+      {done ? "✓" : "○"}
+    </div>
+  );
+}
+
+function PercentInputPill({
+  value,
+  onChange,
+  min = 0,
+  max = 100,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  min?: number;
+  max?: number;
+}) {
+  return (
+    <label className="flex min-w-[96px] items-center justify-center gap-1 rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-sm text-[#fff3b2]">
+      <input
+        type="number"
+        min={min}
+        max={max}
+        value={Number.isFinite(value) ? value : 0}
+        onChange={(e) => onChange(clamp(Number(e.target.value || 0), min, max))}
+        className="w-[52px] bg-transparent text-center text-[#fff3b2] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+      />
+      <span>%</span>
+    </label>
+  );
+}
+
+function RangeWithPercentInput({
+  value,
+  onChange,
+  min = 0,
+  max = 100,
+  className = "w-full accent-[#f7d237]",
+}: {
+  value: number;
+  onChange: (next: number) => void;
+  min?: number;
+  max?: number;
+  className?: string;
+}) {
+  const safeValue = clamp(Number.isFinite(value) ? value : 0, min, max);
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-end">
+        <PercentInputPill value={safeValue} onChange={onChange} min={min} max={max} />
+      </div>
+
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={safeValue}
+        onChange={(e) => onChange(clamp(Number(e.target.value), min, max))}
+        className={className}
+      />
+    </div>
+  );
+}
+
 function getTagValues(value: any): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -1267,9 +1343,16 @@ function RangeBlock({
     <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
       <div className="mb-3 flex items-center justify-between text-sm text-white/60">
         <span>{title}</span>
-        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
-          {value}
-        </span>
+        <label className="flex min-w-[86px] items-center justify-center rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
+          <input
+            type="number"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(e) => onChange(clamp(Number(e.target.value || 0), min, max))}
+            className="w-[54px] bg-transparent text-center text-[#fff3b2] outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          />
+        </label>
       </div>
       <input
         type="range"
@@ -1950,9 +2033,16 @@ function renderInput(
         <div className="space-y-4">
           <div className="flex items-center justify-between text-sm text-white/60">
             <span>0%</span>
-            <span className="rounded-full border border-white/10 px-3 py-1 text-[#f7d237]">
-              {value}%
-            </span>
+            <PercentInputPill
+              value={value}
+              onChange={(nextValue) =>
+                setAnswer(question.id, {
+                  value: nextValue,
+                  note,
+                  touched: true,
+                })
+              }
+            />
             <span>100%</span>
           </div>
 
@@ -2260,9 +2350,22 @@ function renderInput(
                     <div className="text-sm font-medium text-white">
                       {channel}
                     </div>
-                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
-                      {value}%
-                    </div>
+                    <PercentInputPill
+                      value={value}
+                      max={maxAllowed}
+                      onChange={(nextValue) =>
+                        setAnswer("channelEfficiency", {
+                          values: {
+                            ...state.values,
+                            [channel]: nextValue,
+                          },
+                          touched: {
+                            ...state.touched,
+                            [channel]: true,
+                          },
+                        })
+                      }
+                    />
                   </div>
 
                   <input
@@ -2335,9 +2438,18 @@ function renderInput(
                       setAnswer(question.id, next);
                     }}
                   />
-                  <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">
-                    {item.value}%
-                  </div>
+                  <PercentInputPill
+                    value={item.value}
+                    onChange={(nextValue) => {
+                      const next = [...items];
+                      next[i] = {
+                        ...next[i],
+                        value: nextValue,
+                        touched: true,
+                      };
+                      setAnswer(question.id, next);
+                    }}
+                  />
                 </div>
 
                 <input
@@ -2675,9 +2787,16 @@ function renderInput(
           <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
             <div className="mb-3 flex items-center justify-between text-sm text-white/60">
               <span>Цель по чистой прибыли</span>
-              <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
-                +{current.profitTarget}%
-              </span>
+              <PercentInputPill
+                value={current.profitTarget}
+                onChange={(nextValue) =>
+                  setAnswer(question.id, {
+                    ...current,
+                    profitTarget: nextValue,
+                    touched: true,
+                  })
+                }
+              />
             </div>
 
             <input
@@ -3177,9 +3296,9 @@ export default function DiagnosticIntakePage() {
                         </h3>
                       </div>
 
-                      <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-3 text-sm text-[#f7d237]">
-                        {getQuestionProgress(question, answers)}%
-                      </div>
+                      <QuestionStatusBadge
+                        done={getQuestionProgress(question, answers) === 100}
+                      />
                     </div>
 
                     {renderInput(question, answers, setAnswer)}
