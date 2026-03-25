@@ -15,13 +15,23 @@ type ResolveResponse = {
   error?: string;
 };
 
+type StartActionResponse = {
+  ok: boolean;
+  error?: string;
+};
+
 function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [loading, setLoading] = useState(true);
+  const [resolving, setResolving] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [debugInfo, setDebugInfo] = useState<ResolveResponse | null>(null);
+  const [resolved, setResolved] = useState<ResolveResponse | null>(null);
+
+  const [fullName, setFullName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [whatsapp, setWhatsapp] = useState("");
 
   const tx = useMemo(() => searchParams.get("tx") || "", [searchParams]);
   const st = useMemo(() => searchParams.get("st") || "", [searchParams]);
@@ -33,7 +43,7 @@ function StartPageContent() {
 
     async function resolveSession() {
       try {
-        setLoading(true);
+        setResolving(true);
         setError("");
 
         if (!tx) {
@@ -61,8 +71,6 @@ function StartPageContent() {
 
         if (cancelled) return;
 
-        setDebugInfo(data);
-
         if (!res.ok || !data?.ok) {
           throw new Error(data?.error || "Failed to resolve payment session.");
         }
@@ -71,16 +79,15 @@ function StartPageContent() {
           throw new Error("Access token was not returned.");
         }
 
-        router.replace(`/start/${data.access_token}`);
+        setResolved(data);
       } catch (err) {
         if (cancelled) return;
-
         const message =
           err instanceof Error ? err.message : "Something went wrong.";
         setError(message);
       } finally {
         if (!cancelled) {
-          setLoading(false);
+          setResolving(false);
         }
       }
     }
@@ -90,7 +97,58 @@ function StartPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [tx, st, amt, cc, router]);
+  }, [tx, st, amt, cc]);
+
+  async function handleStart() {
+    try {
+      setSubmitting(true);
+      setError("");
+
+      if (!resolved?.access_token) {
+        throw new Error("Access token is missing.");
+      }
+
+      if (!fullName.trim()) {
+        throw new Error("Please enter your name.");
+      }
+
+      if (!companyName.trim()) {
+        throw new Error("Please enter your company name.");
+      }
+
+      if (!whatsapp.trim()) {
+        throw new Error("Please enter your WhatsApp.");
+      }
+
+      const res = await fetch("/api/paypal/start-action", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          payment_id: tx,
+          access_token: resolved.access_token,
+          full_name: fullName.trim(),
+          company_name: companyName.trim(),
+          whatsapp: whatsapp.trim(),
+        }),
+      });
+
+      const data: StartActionResponse = await res.json();
+
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Failed to save your details.");
+      }
+
+      router.push(`/start/${resolved.access_token}`);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Something went wrong.";
+      setError(message);
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   return (
     <main style={styles.page}>
@@ -98,20 +156,13 @@ function StartPageContent() {
         <div style={styles.badge}>Revenue Snapshot</div>
 
         <h1 style={styles.title}>
-          {loading ? "Preparing your access..." : error ? "Access issue" : "Redirecting..."}
+          {resolving ? "Preparing your access..." : "Complete your access"}
         </h1>
 
         <p style={styles.text}>
-          {loading &&
-            "We are checking your payment and preparing your personal access link."}
-
-          {!loading &&
-            !error &&
-            "Your access is ready. Redirecting you to your personal page..."}
-
-          {!loading &&
-            error &&
-            "We could not automatically open your personal page. Please use the payment link again or contact us with your payment ID."}
+          {resolving
+            ? "We are checking your payment and preparing your personal access."
+            : "Your payment is confirmed. Please fill in your details to continue to your personal page."}
         </p>
 
         <div style={styles.infoBox}>
@@ -131,21 +182,76 @@ function StartPageContent() {
               {amt ? `${amt} ${cc || ""}`.trim() : "—"}
             </span>
           </div>
+
+          <div style={styles.infoRow}>
+            <span style={styles.infoLabel}>Launches</span>
+            <span style={styles.infoValue}>
+              {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
+            </span>
+          </div>
         </div>
 
-        {loading && (
+        {resolving && (
           <div style={styles.loaderWrap}>
             <div style={styles.loader} />
           </div>
         )}
 
-        {!loading && error && (
+        {!resolving && !error && (
+          <div style={styles.form}>
+            <div style={styles.field}>
+              <label style={styles.label}>Name and surname</label>
+              <input
+                style={styles.input}
+                type="text"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+                placeholder="Your full name"
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>Company name</label>
+              <input
+                style={styles.input}
+                type="text"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+                placeholder="Your company"
+              />
+            </div>
+
+            <div style={styles.field}>
+              <label style={styles.label}>WhatsApp</label>
+              <input
+                style={styles.input}
+                type="text"
+                value={whatsapp}
+                onChange={(e) => setWhatsapp(e.target.value)}
+                placeholder="+995..."
+              />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleStart}
+              disabled={submitting}
+              style={{
+                ...styles.button,
+                opacity: submitting ? 0.7 : 1,
+                cursor: submitting ? "wait" : "pointer",
+              }}
+            >
+              {submitting ? "Saving..." : "Start"}
+            </button>
+          </div>
+        )}
+
+        {!resolving && error && (
           <>
             <div style={styles.errorBox}>
-              <strong style={styles.errorTitle}>What to send manually</strong>
-              <p style={styles.errorText}>
-                Send this payment ID to support or use it to restore access manually.
-              </p>
+              <strong style={styles.errorTitle}>Access issue</strong>
+              <p style={styles.errorText}>{error}</p>
               <div style={styles.manualBox}>{tx || "No payment ID found"}</div>
             </div>
 
@@ -159,9 +265,9 @@ function StartPageContent() {
           </>
         )}
 
-        {!loading && debugInfo?.access_token && (
+        {!resolving && resolved?.access_token && !error && (
           <p style={styles.smallText}>
-            Access token received. Redirect should happen automatically.
+            Access prepared. Your personal page will open after you press Start.
           </p>
         )}
       </div>
@@ -176,7 +282,7 @@ function StartPageFallback() {
         <div style={styles.badge}>Revenue Snapshot</div>
         <h1 style={styles.title}>Preparing your access...</h1>
         <p style={styles.text}>
-          We are checking your payment and preparing your personal access link.
+          We are checking your payment and preparing your personal access.
         </p>
       </div>
     </main>
@@ -273,6 +379,29 @@ const styles: Record<string, React.CSSProperties> = {
     border: "3px solid rgba(255,255,255,0.18)",
     borderTopColor: "#f7d237",
   },
+  form: {
+    marginTop: "22px",
+    display: "grid",
+    gap: "14px",
+  },
+  field: {
+    display: "grid",
+    gap: "8px",
+  },
+  label: {
+    fontSize: "13px",
+    color: "#e0e1e3",
+  },
+  input: {
+    width: "100%",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    padding: "14px 16px",
+    fontSize: "14px",
+    outline: "none",
+  },
   errorBox: {
     marginTop: "22px",
     padding: "16px",
@@ -303,14 +432,13 @@ const styles: Record<string, React.CSSProperties> = {
     wordBreak: "break-all",
   },
   button: {
-    marginTop: "18px",
+    marginTop: "8px",
     width: "100%",
     border: 0,
     borderRadius: "16px",
     padding: "14px 18px",
     fontSize: "14px",
     fontWeight: 700,
-    cursor: "pointer",
     background: "#f7d237",
     color: "#0b1d3a",
   },
