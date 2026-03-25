@@ -401,19 +401,7 @@ const chapters: Chapter[] = [
   },
 ];
 
-const chapterSubtitles: Record<string, string> = {
-  positioning: "Business description and geography",
-  economics: "Margin, revenue, volume, KPI",
-  clients: "Segment, demand, capacity, channels",
-  product: "Margin products, retention, CJM",
-  analytics: "Insights, changes, decision support",
-  structure: "Team, interactions, efficiency",
-  strategy: "Targets, costs, horizons",
-  contact: "Report recipient and meeting contact",
-};
-
 function makeId(prefix = "id") {
-
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -3220,7 +3208,7 @@ export default function DiagnosticIntakePage() {
                       {chapter.title}
                     </div>
                     <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
-                      {chapterSubtitles[chapter.id] ?? ""}
+                      {chapter.subtitle}
                     </div>
                   </div>
 
@@ -3288,7 +3276,7 @@ export default function DiagnosticIntakePage() {
                     {active.title}
                   </div>
                   <div className="mt-1 text-sm text-[#a5aeb2]">
-                    {chapterSubtitles[active.id] ?? ""}
+                    {active.subtitle}
                   </div>
                 </div>
 
