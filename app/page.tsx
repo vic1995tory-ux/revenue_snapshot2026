@@ -826,9 +826,11 @@ function StageCarousel() {
             const radians = (angle * Math.PI) / 180;
             const x = Math.sin(radians) * radius;
             const z = Math.cos(radians) * radius;
-            const scale = 0.74 + ((z + radius) / (radius * 2)) * 0.24;
-            const opacity = 0.34 + ((z + radius) / (radius * 2)) * 0.66;
-            const blur = Math.max(0,(1 - scale)*22);
+            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
+            const depthProgress = (z + radius) / (radius * 2);
+            const opacity = 0.18 + depthProgress * 0.82;
+            const blur = Math.max(0, (1 - scale) * 14);
+            const brightness = 0.64 + depthProgress * 0.36;
             const rotateY = Math.sin(radians) * -10;
 
             return (
@@ -838,7 +840,7 @@ function StageCarousel() {
                 style={{
                   transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) rotateY(${rotateY}deg) scale(${scale})`,
                   opacity,
-                  filter: `blur(${blur}px)`,
+                  filter: `blur(${blur}px) brightness(${brightness})`,
                   zIndex: Math.round(z + radius),
                 }}
               >
@@ -2233,8 +2235,8 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 7.8%;
-          right: 5.6%;
+          top: 19.72%;
+          right: 6.67%;
           font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
           letter-spacing: -.06em;
@@ -2244,7 +2246,7 @@ export default function Home() {
         .start-card-btn {
           position: absolute;
           left: 4.35%;
-          bottom: 11.2%;
+          bottom: 23.06%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -2586,8 +2588,8 @@ export default function Home() {
           }
           .start-card-title-chip { display: none; }
           .start-card-price-float {
-            top: 9%;
-            right: 14px;
+            top: 19.72%;
+            right: 6.67%;
             left: auto;
             bottom: auto;
             font-size: clamp(28px, 10vw, 40px);
@@ -2690,16 +2692,4 @@ export default function Home() {
       `}</style>
     </main>
   );
-}
-
-
-/* UPDATED PRICING POSITIONS */
-.start-card-price-float {
-  top: 19.72% !important;
-  right: 6.67% !important;
-}
-
-.start-card-btn {
-  left: 4.35% !important;
-  bottom: 23.06% !important;
 }
