@@ -828,7 +828,7 @@ function StageCarousel() {
             const z = Math.cos(radians) * radius;
             const scale = 0.74 + ((z + radius) / (radius * 2)) * 0.24;
             const opacity = 0.34 + ((z + radius) / (radius * 2)) * 0.66;
-            const blur = Math.max(0, (1 - scale) * 2);
+            const blur = Math.max(0,(1 - scale)*22);
             const rotateY = Math.sin(radians) * -10;
 
             return (
@@ -2690,4 +2690,16 @@ export default function Home() {
       `}</style>
     </main>
   );
+}
+
+
+/* UPDATED PRICING POSITIONS */
+.start-card-price-float {
+  top: 19.72% !important;
+  right: 6.67% !important;
+}
+
+.start-card-btn {
+  left: 4.35% !important;
+  bottom: 23.06% !important;
 }
