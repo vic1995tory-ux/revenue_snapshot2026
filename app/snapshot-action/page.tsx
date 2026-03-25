@@ -29,6 +29,7 @@ type Question = {
 type Chapter = {
   id: string;
   title: string;
+  subtitle: string;
   icon: string;
   questions: Question[];
 };
@@ -193,24 +194,25 @@ const chapters: Chapter[] = [
   {
     id: "positioning",
     title: "Positioning",
+    subtitle: "Business description and geography",
     icon: "◌",
     questions: [
       {
         id: "positionText",
         label:
-          "Описание",
+          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
         type: "text",
       },
       {
         id: "businessScale",
         label:
-          "Стадия & команда",
+          "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
         type: "text",
       },
       {
         id: "geo",
         label:
-          "География",
+          "В каком регионе вы продаёте и где физически находится ваш бизнес?",
         type: "map",
       },
     ],
@@ -218,27 +220,28 @@ const chapters: Chapter[] = [
   {
     id: "economics",
     title: "Economics",
+    subtitle: "Margin, revenue, volume, KPI",
     icon: "◔",
     questions: [
       {
         id: "margin",
-        label: "Маржинальность",
+        label: "Какая часть выручки остаётся после всех расходов?",
         type: "rangePercent",
       },
       {
         id: "salesCount",
-        label: "Объём",
+        label: "Сколько клиентов или продаж у вас было за прошлый месяц?",
         type: "text",
       },
       {
         id: "revenue",
-        label: "Выручка",
+        label: "Какая выручка была у вас за прошлый месяц?",
         type: "text",
       },
       {
         id: "kpis",
         label:
-          "KPI",
+          "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
         type: "tags",
       },
     ],
@@ -246,28 +249,29 @@ const chapters: Chapter[] = [
   {
     id: "flow",
     title: "Clients & Flow",
+    subtitle: "Segment, demand, capacity, channels",
     icon: "◎",
     questions: [
       {
         id: "clientProfile",
-        label: "Сегмент",
+        label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
         type: "text",
       },
       {
         id: "demandCapacity",
         label:
-          "Capacity",
+          "Сколько обращений вы получаете и сколько реально можете обработать?",
         type: "dualRange",
       },
       {
         id: "acquisitionChannels",
-        label: "Каналы",
+        label: "Откуда к вам обычно приходят клиенты?",
         type: "tags",
       },
       {
         id: "channelEfficiency",
         label:
-          "Распределение",
+          "Как распределяется входящий поток клиентов между выбранными каналами?",
         type: "channelDistribution",
       },
     ],
@@ -275,27 +279,28 @@ const chapters: Chapter[] = [
   {
     id: "product",
     title: "Product & Sales",
+    subtitle: "Margin products, retention, CJM",
     icon: "◈",
     questions: [
       {
         id: "topProducts",
-        label: "Флагман",
+        label: "Какие 1–3 продукта или услуги самые маржинальные?",
         type: "tripleMargin",
       },
       {
         id: "retention",
-        label: "Retention",
+        label: "Какими механиками вы удерживаете клиентов?",
         type: "tags",
       },
       {
         id: "cjm",
         label:
-          "CJM",
+          "Как проходит путь клиента от первого обращения до положительного опыта?",
         type: "cjm",
       },
       {
         id: "seasonality",
-        label: "Сезонность",
+        label: "Есть ли пики и спады продаж и чем они объясняются?",
         type: "seasonality",
       },
     ],
@@ -303,24 +308,25 @@ const chapters: Chapter[] = [
   {
     id: "analytics",
     title: "Analytics & Management",
+    subtitle: "Insights, changes, decision support",
     icon: "▤",
     questions: [
       {
         id: "analytics",
         label:
-          "Описание",
+          "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
         type: "analyticsBranch",
       },
       {
         id: "changesNeeded",
         label:
-          "География",
+          "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
         type: "text",
       },
       {
         id: "implemented",
         label:
-          "Стадия & команда",
+          "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
         type: "text",
       },
     ],
@@ -328,34 +334,35 @@ const chapters: Chapter[] = [
   {
     id: "structure",
     title: "Structure & Processes",
+    subtitle: "Team, interactions, efficiency",
     icon: "▣",
     questions: [
       {
         id: "team",
-        label: "Структура",
+        label: "Как устроена команда: роли, зоны ответственности?",
         type: "teamRoles",
       },
       {
         id: "interaction",
         label:
-          "Взаимодействие",
+          "Как выстроено взаимодействие между ролями и что изменилось за год?",
         type: "departmentRelations",
       },
       {
         id: "decisions",
         label:
-          "Решения",
+          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
         type: "text",
       },
       {
         id: "stress",
         label:
-          "Нагрузка",
+          "Где вы как руководитель сильнее всего ощущаете напряжение?",
         type: "stressRange",
       },
       {
         id: "lossZones",
-        label: "Потери",
+        label: "В каких зонах бизнеса теряется эффективность?",
         type: "stressRange",
       },
     ],
@@ -363,16 +370,17 @@ const chapters: Chapter[] = [
   {
     id: "strategy",
     title: "Strategy",
+    subtitle: "Targets, costs, horizons",
     icon: "✦",
     questions: [
       {
         id: "goal",
-        label: "Цель",
+        label: "Какого результата бизнес должен достичь к концу года?",
         type: "strategyGoal",
       },
       {
         id: "horizons",
-        label: "Фокус",
+        label: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
         type: "text",
       },
     ],
@@ -380,6 +388,7 @@ const chapters: Chapter[] = [
   {
     id: "contact",
     title: "Contact Block",
+    subtitle: "Report recipient and meeting contact",
     icon: "✉",
     questions: [
       {
@@ -392,7 +401,19 @@ const chapters: Chapter[] = [
   },
 ];
 
+const chapterSubtitles: Record<string, string> = {
+  positioning: "Business description and geography",
+  economics: "Margin, revenue, volume, KPI",
+  clients: "Segment, demand, capacity, channels",
+  product: "Margin products, retention, CJM",
+  analytics: "Insights, changes, decision support",
+  structure: "Team, interactions, efficiency",
+  strategy: "Targets, costs, horizons",
+  contact: "Report recipient and meeting contact",
+};
+
 function makeId(prefix = "id") {
+
   return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
@@ -3183,61 +3204,55 @@ export default function DiagnosticIntakePage() {
                 key={chapter.id}
                 onClick={() => setActive(chapter)}
               >
-                <GlassCard className="h-full min-h-[430px] p-5 md:p-6">
-                  <div className="flex h-full flex-col">
-                    <div>
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
-                          {chapter.icon}
-                        </div>
-                        <Ring progress={progress} size={82} />
-                      </div>
-
-                      <div className="mt-6">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
-                          Block {index + 1}
-                        </div>
-                        <div className="mt-2 text-xl font-semibold text-[#fefefe]">
-                          {chapter.title}
-                        </div>
-                        <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
-                          {chapter.subtitle}
-                        </div>
-                      </div>
-
-                      <div className="mt-6 space-y-2.5">
-                        {chapter.questions.map((question, i) => {
-                          const isDone = getQuestionProgress(question, answers) === 100;
-
-                          return (
-                            <div
-                              key={question.id}
-                              className="flex items-start gap-3 text-sm text-white/60"
-                            >
-                              <span
-                                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
-                                  isDone
-                                    ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
-                                    : "border-white/10 bg-transparent text-white/55"
-                                }`}
-                              >
-                                {i + 1}
-                              </span>
-                              <span>{question.label}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
+                <GlassCard className="h-full p-5 md:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
+                      {chapter.icon}
                     </div>
+                    <Ring progress={progress} size={82} />
+                  </div>
 
-                    <div className="mt-auto pt-6">
-                      <div className="flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
-                        <span className="text-white/55">Открыть блок</span>
-                        <div className="flex items-center gap-2 text-[#f7d237]">
-                          <span>{progress}%</span>
-                          <span>→</span>
+                  <div className="mt-6">
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
+                      Block {index + 1}
+                    </div>
+                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">
+                      {chapter.title}
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
+                      {chapterSubtitles[chapter.id] ?? ""}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-2.5">
+                    {chapter.questions.map((question, i) => {
+                      const isDone = getQuestionProgress(question, answers) === 100;
+
+                      return (
+                        <div
+                          key={question.id}
+                          className="flex items-start gap-3 text-sm text-white/60"
+                        >
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
+                              isDone
+                                ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
+                                : "border-white/10 bg-transparent text-white/55"
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                          <span>{question.label}</span>
                         </div>
-                      </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
+                    <span className="text-white/55">Открыть блок</span>
+                    <div className="flex items-center gap-2 text-[#f7d237]">
+                      <span>{progress}%</span>
+                      <span>→</span>
                     </div>
                   </div>
                 </GlassCard>
@@ -3273,7 +3288,7 @@ export default function DiagnosticIntakePage() {
                     {active.title}
                   </div>
                   <div className="mt-1 text-sm text-[#a5aeb2]">
-                    {active.subtitle}
+                    {chapterSubtitles[active.id] ?? ""}
                   </div>
                 </div>
 
