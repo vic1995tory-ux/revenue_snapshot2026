@@ -1,1065 +1,3355 @@
-'use client';
+"use client";
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from "react";
 
-type StatusTone = 'stable' | 'watch' | 'priority';
-type PanelKey =
-  | 'solution'
-  | 'economic'
-  | 'clients'
-  | 'product'
-  | 'sales'
-  | 'positioning'
-  | 'structure'
-  | 'analytics'
-  | 'strategy'
-  | null;
+type InputType =
+  | "rangePercent"
+  | "text"
+  | "tags"
+  | "dualRange"
+  | "tripleMargin"
+  | "cjm"
+  | "seasonality"
+  | "map"
+  | "teamRoles"
+  | "departmentRelations"
+  | "stressRange"
+  | "analyticsBranch"
+  | "strategyGoal"
+  | "contact"
+  | "channelDistribution";
 
-type LeverSim = {
-  key: string;
+type Question = {
+  id: string;
   label: string;
-  deltaLabel: string;
-  why: string;
-  min: number;
-  max: number;
-  step: number;
-  unit: '%' | 'x';
-  current: number;
-  ceilingNote: string;
-  base: {
-    revenue: number;
-    opex: number;
-    cogs: number;
-    grossProfit: number;
-    leads: number;
-    deals: number;
-    aov: number;
-    margin: number;
-  };
-  project: (v: number) => {
-    revenue: number;
-    opex: number;
-    cogs: number;
-    grossProfit: number;
-    leads: number;
-    deals: number;
-    aov: number;
-    margin: number;
-    explanation: string;
-  };
+  type: InputType;
+  hint?: string;
 };
 
-function fmtMoney(n: number) {
-  return new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 0,
-  }).format(n);
-}
-
-function clamp(v: number, min: number, max: number) {
-  return Math.min(max, Math.max(min, v));
-}
-
-function pctDelta(a: number, b: number) {
-  if (!a) return '0%';
-  const d = ((b - a) / a) * 100;
-  const sign = d > 0 ? '+' : '';
-  return `${sign}${Math.round(d)}%`;
-}
-
-function toneClass(tone: StatusTone) {
-  if (tone === 'priority') return 'bg-amber-400/15 text-amber-200 border-amber-300/25';
-  if (tone === 'watch') return 'bg-violet-400/15 text-violet-200 border-violet-300/25';
-  return 'bg-emerald-400/15 text-emerald-200 border-emerald-300/25';
-}
-
-const sectionCards: {
-  key: Exclude<PanelKey, 'solution' | null>;
+type Chapter = {
+  id: string;
   title: string;
-  short: string;
-  score: string;
-  status: StatusTone;
-  points: string[];
-  detail: string;
-}[] = [
+  subtitle: string;
+  icon: string;
+  questions: Question[];
+};
+
+type Answers = Record<string, any>;
+
+type TeamMember = {
+  id: string;
+  position: string;
+  responsibility: string;
+  isDecisionMaker: "" | "ЛПР" | "Не ЛПР";
+  participatesIn: string[];
+};
+
+type TouchMap = Record<string, boolean>;
+
+type ChannelDistribution = {
+  values: Record<string, number>;
+  touched: Record<string, boolean>;
+};
+
+type ProductItem = {
+  name: string;
+  value: number;
+  touched: boolean;
+};
+
+type CjmStage = {
+  stage: string;
+  description: string;
+  whatHappens: string;
+  duration: string;
+  clientGets: string;
+  companyGets: string;
+  problems: string;
+};
+
+type SeasonalityPoint = {
+  month: string;
+  value: number;
+};
+
+type TeamLinkMetric = {
+  speed: number;
+  communication: number;
+  infoQuality: number;
+};
+
+type TeamLink = {
+  id: string;
+  fromRole: string;
+  toRole: string;
+  metrics: TeamLinkMetric;
+};
+
+const BRAND = {
+  yellow: "#f7d237",
+  bg: "#0b1d3a",
+  bg2: "#08162d",
+};
+
+const KPI_TAGS = [
+  "Выручка",
+  "Маржа",
+  "ROMI",
+  "CAC",
+  "LTV",
+  "Средний чек",
+  "Конверсия в продажу",
+  "Retention",
+  "NPS",
+  "Скорость сделки",
+  "Загрузка команды",
+  "Cash Flow",
+];
+
+const FLOW_TAGS = [
+  "Instagram",
+  "Meta Ads",
+  "Google Ads",
+  "SEO",
+  "Рефералы",
+  "Партнёрства",
+  "Холодный outreach",
+  "Telegram",
+  "YouTube",
+  "Marketplace",
+];
+
+const RETENTION_TAGS = [
+  "Повторные продажи",
+  "Подписка",
+  "Комьюнити",
+  "Email nurturing",
+  "Личный менеджер",
+  "Апсейлы",
+  "Пакеты услуг",
+  "Реферальная программа",
+];
+
+const ANALYTICS_TAGS = [
+  "Анализ конкурентов",
+  "Размер и рост рынка (TAM/SAM/SOM)",
+  "Сегментация клиентов",
+  "Конверсии и воронка продаж",
+  "LTV / CAC",
+  "Финансовая модель",
+  "Сквозная аналитика",
+  "Не используем аналитику",
+  "Данные есть, но не используем в решениях",
+];
+
+const TEAM_PARTICIPATION_TAGS = [
+  "Маркетинг",
+  "Продажи",
+  "Операционка",
+  "Разработка стратегии",
+  "Финансы",
+  "Кадры",
+  "Продукт",
+  "Сервис",
+  "Партнёрства",
+  "Аналитика",
+];
+
+const BUSINESS_STAGE_TAGS = ["Seed", "Startup", "Growth", "Enterprise"];
+
+const MONTHS = [
+  "Янв",
+  "Фев",
+  "Мар",
+  "Апр",
+  "Май",
+  "Июн",
+  "Июл",
+  "Авг",
+  "Сен",
+  "Окт",
+  "Ноя",
+  "Дек",
+];
+
+const CJM_STAGES = [
+  "Acquisition",
+  "Activation",
+  "Value Realization",
+  "Conversion",
+  "Retention",
+] as const;
+
+const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
+  Acquisition: "Первый контакт клиента с вами",
+  Activation: "Момент, когда клиент начинает взаимодействие (первое действие)",
+  "Value Realization": "Когда клиент понимает ценность вашего продукта",
+  Conversion: "Этап оплаты или принятия решения о покупке",
+  Retention: "Повторное взаимодействие или продолжение работы с вами",
+};
+
+const STRESS_ZONES = ["Маркетинг", "Продажи", "Операционка", "Управление"];
+
+const chapters: Chapter[] = [
   {
-    key: 'economic',
-    title: 'Economic Rate',
-    short: 'Экономика держится, но прибыльность ограничена неравномерной нагрузкой и структурой дохода.',
-    score: '0.5',
-    status: 'watch',
-    points: ['Тип потерь: conversion + structure', 'Главный разрыв: спрос приходит быстрее, чем перерабатывается', 'Pressure: margin'],
-    detail:
-      'Блок раскрывает, где именно модель теряет деньги: в недообработанном спросе, слабой конверсии или структуре маржи. На карточке оставляем короткий вывод, а вся расшифровка открывается в правом окне.',
+    id: "positioning",
+    title: "Positioning",
+    subtitle: "Business description and geography",
+    icon: "◌",
+    questions: [
+      {
+        id: "positionText",
+        label:
+          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+        type: "text",
+      },
+      {
+        id: "businessScale",
+        label:
+          "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
+        type: "text",
+      },
+      {
+        id: "geo",
+        label:
+          "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+        type: "map",
+      },
+    ],
   },
   {
-    key: 'clients',
-    title: 'Clients & Flow',
-    short: 'Поток есть, но часть лидов не доходит до обработки и квалификации.',
-    score: '0.7',
-    status: 'priority',
-    points: ['Сегмент перегрет', 'Capacity ниже входящего потока', 'Потери в качестве входящего потока'],
-    detail:
-      'Внутри панели показываем, где именно теряется входящий поток: источник, распределение, capacity gap и качество сегмента.',
+    id: "economics",
+    title: "Economics",
+    subtitle: "Margin, revenue, volume, KPI",
+    icon: "◔",
+    questions: [
+      {
+        id: "margin",
+        label: "Какая часть выручки остаётся после всех расходов?",
+        type: "rangePercent",
+      },
+      {
+        id: "salesCount",
+        label: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+        type: "text",
+      },
+      {
+        id: "revenue",
+        label: "Какая выручка была у вас за прошлый месяц?",
+        type: "text",
+      },
+      {
+        id: "kpis",
+        label:
+          "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+        type: "tags",
+      },
+    ],
   },
   {
-    key: 'product',
-    title: 'Product',
-    short: 'Маржинальность продукта нормальная, но роль апселла и упаковки используется слабо.',
-    score: '0.4',
-    status: 'watch',
-    points: ['Margin stable', 'Upsell low', 'Повторные продажи не оформлены в систему'],
-    detail:
-      'Этот блок должен показывать, за счёт чего держится маржа, какие продукты тянут прибыль и где можно усилить вклад нового продукта.',
+    id: "flow",
+    title: "Clients & Flow",
+    subtitle: "Segment, demand, capacity, channels",
+    icon: "◎",
+    questions: [
+      {
+        id: "clientProfile",
+        label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+        type: "text",
+      },
+      {
+        id: "demandCapacity",
+        label:
+          "Сколько обращений вы получаете и сколько реально можете обработать?",
+        type: "dualRange",
+      },
+      {
+        id: "acquisitionChannels",
+        label: "Откуда к вам обычно приходят клиенты?",
+        type: "tags",
+      },
+      {
+        id: "channelEfficiency",
+        label:
+          "Как распределяется входящий поток клиентов между выбранными каналами?",
+        type: "channelDistribution",
+      },
+    ],
   },
   {
-    key: 'sales',
-    title: 'Sales',
-    short: 'Продажи недобирают из-за слабого перевода интереса в сделку и слабого усиления AOV.',
-    score: '0.8',
-    status: 'priority',
-    points: ['Conversion below target', 'AOV leverage underused', 'Pipeline uneven'],
-    detail:
-      'Здесь должны быть выводы по CJM, скорости сделки, месту потерь на этапах и влиянию продаж на итоговую выручку.',
+    id: "product",
+    title: "Product & Sales",
+    subtitle: "Margin products, retention, CJM",
+    icon: "◈",
+    questions: [
+      {
+        id: "topProducts",
+        label: "Какие 1–3 продукта или услуги самые маржинальные?",
+        type: "tripleMargin",
+      },
+      {
+        id: "retention",
+        label: "Какими механиками вы удерживаете клиентов?",
+        type: "tags",
+      },
+      {
+        id: "cjm",
+        label:
+          "Как проходит путь клиента от первого обращения до положительного опыта?",
+        type: "cjm",
+      },
+      {
+        id: "seasonality",
+        label: "Есть ли пики и спады продаж и чем они объясняются?",
+        type: "seasonality",
+      },
+    ],
   },
   {
-    key: 'positioning',
-    title: 'Positioning',
-    short: 'Ценность считывается, но не монетизируется в цене и аргументации.',
-    score: '0.3',
-    status: 'stable',
-    points: ['Core promise exists', 'Price logic weak', 'Differentiation partially visible'],
-    detail:
-      'Показываем, как рынок воспринимает компанию, где есть разрыв между восприятием и ценой, и как это влияет на продажи.',
+    id: "analytics",
+    title: "Analytics & Management",
+    subtitle: "Insights, changes, decision support",
+    icon: "▤",
+    questions: [
+      {
+        id: "analytics",
+        label:
+          "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+        type: "analyticsBranch",
+      },
+      {
+        id: "changesNeeded",
+        label:
+          "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+        type: "text",
+      },
+      {
+        id: "implemented",
+        label:
+          "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+        type: "text",
+      },
+    ],
   },
   {
-    key: 'structure',
-    title: 'Structure & Processes',
-    short: 'Команда перегружена в точках принятия решений и передачи клиента между ролями.',
-    score: '0.6',
-    status: 'watch',
-    points: ['Founder overload', 'Handoffs slow', 'Responsibility blurred'],
-    detail:
-      'Здесь раскрываем перегруз, роли, decision-making и где именно процессы тормозят рост.',
+    id: "structure",
+    title: "Structure & Processes",
+    subtitle: "Team, interactions, efficiency",
+    icon: "▣",
+    questions: [
+      {
+        id: "team",
+        label: "Как устроена команда: роли, зоны ответственности?",
+        type: "teamRoles",
+      },
+      {
+        id: "interaction",
+        label:
+          "Как выстроено взаимодействие между ролями и что изменилось за год?",
+        type: "departmentRelations",
+      },
+      {
+        id: "decisions",
+        label:
+          "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+        type: "text",
+      },
+      {
+        id: "stress",
+        label:
+          "Где вы как руководитель сильнее всего ощущаете напряжение?",
+        type: "stressRange",
+      },
+      {
+        id: "lossZones",
+        label: "В каких зонах бизнеса теряется эффективность?",
+        type: "stressRange",
+      },
+    ],
   },
   {
-    key: 'analytics',
-    title: 'Analytics & Management',
-    short: 'Аналитика есть частично, но решения принимаются без полной картины по экономике и сегментам.',
-    score: '0.5',
-    status: 'watch',
-    points: ['Blind spots in metrics', 'No systematic market layer', 'Management sees symptoms first'],
-    detail:
-      'Блок описывает, что измеряется, чего не хватает в данных и почему это влияет на скорость решений.',
+    id: "strategy",
+    title: "Strategy",
+    subtitle: "Targets, costs, horizons",
+    icon: "✦",
+    questions: [
+      {
+        id: "goal",
+        label: "Какого результата бизнес должен достичь к концу года?",
+        type: "strategyGoal",
+      },
+      {
+        id: "horizons",
+        label: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
+        type: "text",
+      },
+    ],
   },
   {
-    key: 'strategy',
-    title: 'Strategy',
-    short: 'Цели есть, но в текущем виде не до конца связаны с главным ограничением модели.',
-    score: '0.9',
-    status: 'priority',
-    points: ['Need tighter 3/6/12 horizon', 'Target does not fully reflect bottleneck', 'Execution order matters'],
-    detail:
-      'Здесь важно показать реализм горизонтов и как стратегия должна быть перестроена вокруг основного ограничения.',
+    id: "contact",
+    title: "Contact Block",
+    subtitle: "Report recipient and meeting contact",
+    icon: "✉",
+    questions: [
+      {
+        id: "contacts",
+        label:
+          "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
+        type: "contact",
+      },
+    ],
   },
 ];
 
-const levers: LeverSim[] = [
-  {
-    key: 'aov',
-    label: 'Средний чек',
-    deltaLabel: '+рост среднего заказа',
-    why: 'Рост среднего чека упирается не только в цену, а в упаковку предложения, bundle-логику и допродажи. Выше +20% без пересборки оффера рост становится малореалистичным.',
-    min: 0,
-    max: 20,
-    step: 1,
-    unit: '%',
-    current: 12,
-    ceilingNote: 'Выше +20% без новой упаковки и доп. продукта рост становится малореалистичным.',
-    base: { revenue: 13000, opex: 3300, cogs: 3900, grossProfit: 5800, leads: 10, deals: 2.0, aov: 3200, margin: 44 },
-    project: (v) => {
-      const lift = 1 + v / 100;
-      const revenue = Math.round(13000 * lift);
-      const opex = 3300;
-      const cogs = Math.round(3900 * (1 + v / 140));
-      const grossProfit = revenue - opex - cogs;
-      const aov = Math.round(3200 * lift);
-      const margin = Math.round((grossProfit / revenue) * 100);
-      return {
-        revenue,
-        opex,
-        cogs,
-        grossProfit,
-        leads: 10,
-        deals: 2.0,
-        aov,
-        margin,
-        explanation: 'Рост опирается на bundle, допродажи и более дорогую упаковку входного предложения.',
-      };
-    },
-  },
-  {
-    key: 'marketing',
-    label: 'Маркетинг',
-    deltaLabel: '+рост входящего потока',
-    why: 'Дополнительный маркетинговый бюджет имеет смысл только пока команда способна переработать входящий поток. Без capacity-изменений рост быстро упирается в обработку.',
-    min: 0,
-    max: 30,
-    step: 1,
-    unit: '%',
-    current: 15,
-    ceilingNote: 'Выше +30% лидов без расширения capacity часть спроса снова будет теряться.',
-    base: { revenue: 13000, opex: 3500, cogs: 3900, grossProfit: 5600, leads: 10, deals: 2.0, aov: 3200, margin: 40 },
-    project: (v) => {
-      const leadLift = 1 + v / 100;
-      const leads = Number((10 * leadLift).toFixed(1));
-      const deals = Number((2.0 * (1 + v / 125)).toFixed(1));
-      const revenue = Math.round(13000 * (1 + v / 80));
-      const opex = Math.round(3500 * (1 + v / 120));
-      const cogs = Math.round(3900 * (1 + v / 110));
-      const grossProfit = revenue - opex - cogs;
-      const margin = Math.round((grossProfit / revenue) * 100);
-      return {
-        revenue,
-        opex,
-        cogs,
-        grossProfit,
-        leads,
-        deals,
-        aov: 3200,
-        margin,
-        explanation: 'Эффект строится на росте лидов и небольшом подъёме числа сделок, но зависит от capacity и качества потока.',
-      };
-    },
-  },
-  {
-    key: 'pricing',
-    label: 'Повышение цены',
-    deltaLabel: '+повышение цены и аргументации',
-    why: 'Поднимать цену можно только пока ценность воспринимается и не рушится конверсия. Поэтому диапазон ограничен и требует поддержки позиционированием.',
-    min: 0,
-    max: 15,
-    step: 1,
-    unit: '%',
-    current: 8,
-    ceilingNote: 'Выше +15% без усиления позиционирования и кейсов растёт риск потери конверсии.',
-    base: { revenue: 13000, opex: 3300, cogs: 3900, grossProfit: 5800, leads: 10, deals: 2.0, aov: 3200, margin: 44 },
-    project: (v) => {
-      const revenue = Math.round(13000 * (1 + v / 100) * (1 - v / 500));
-      const opex = 3300;
-      const cogs = 3900;
-      const grossProfit = revenue - opex - cogs;
-      const margin = Math.round((grossProfit / revenue) * 100);
-      return {
-        revenue,
-        opex,
-        cogs,
-        grossProfit,
-        leads: 10,
-        deals: Number((2.0 * (1 - v / 180)).toFixed(1)),
-        aov: Math.round(3200 * (1 + v / 100)),
-        margin,
-        explanation: 'Эффект опирается на пересборку ценовой аргументации, а не просто на механическое поднятие цены.',
-      };
-    },
-  },
-  {
-    key: 'costs',
-    label: 'Модель расходов',
-    deltaLabel: '−давление на OPEX',
-    why: 'Снижать расходы имеет смысл только там, где не режется производственная способность и качество результата.',
-    min: 0,
-    max: 18,
-    step: 1,
-    unit: '%',
-    current: 10,
-    ceilingNote: 'Выше −18% OPEX уже есть риск повредить delivery и качество обработки клиентов.',
-    base: { revenue: 13000, opex: 3500, cogs: 3900, grossProfit: 5600, leads: 10, deals: 2.0, aov: 3200, margin: 40 },
-    project: (v) => {
-      const revenue = 13000;
-      const opex = Math.round(3500 * (1 - v / 100));
-      const cogs = 3900;
-      const grossProfit = revenue - opex - cogs;
-      const margin = Math.round((grossProfit / revenue) * 100);
-      return {
-        revenue,
-        opex,
-        cogs,
-        grossProfit,
-        leads: 10,
-        deals: 2.0,
-        aov: 3200,
-        margin,
-        explanation: 'Рычаг работает через сокращение неключевого OPEX, перераспределение нагрузки и выравнивание операционной модели.',
-      };
-    },
-  },
-];
-
-export default function ResultsPage() {
-  const [activePanel, setActivePanel] = useState<PanelKey>(null);
-
-  return (
-    <main className="min-h-screen bg-[#07152d] text-white">
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(247,210,55,0.08),transparent_26%),radial-gradient(circle_at_80%_20%,rgba(92,115,255,0.12),transparent_24%),linear-gradient(180deg,#07152d_0%,#081830_48%,#0a1d3a_100%)]" />
-        <div className="absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,.09)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.08)_1px,transparent_1px)] [background-size:48px_48px]" />
-      </div>
-
-      <div className="relative mx-auto max-w-[1500px] px-5 pb-20 pt-8 md:px-8">
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_390px]">
-          <div className="rounded-[34px] border border-white/10 bg-[#081327]/90 p-6 shadow-[0_30px_80px_rgba(0,0,0,0.38)] backdrop-blur-xl">
-            <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <div className="mb-2 inline-flex rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-                  Revenue Snapshot · Diagnostic Output
-                </div>
-                <h1 className="text-3xl font-semibold tracking-tight text-white md:text-[2.45rem]">
-                  Стратегическая диагностика модели роста
-                </h1>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65 md:text-[15px]">
-                  Черновой executive-output: главные ограничения, рычаги роста и приоритетная практика на горизонте 6 месяцев.
-                </p>
-              </div>
-
-              <div className="grid min-w-[290px] grid-cols-2 gap-3">
-                <MiniStat label="Economic rate" value="0.5" sub="watch" />
-                <MiniStat label="Main growth limit" value="0.8" sub="priority" />
-                <MiniStat label="Priority horizon" value="6M" sub="active" />
-                <MiniStat label="Status" value="Stable" sub="reviewed" />
-              </div>
-            </div>
-
-            <HeroEconomyChart />
-          </div>
-
-          <SolutionEntryCard onOpen={() => setActivePanel('solution')} />
-        </section>
-
-        <section className="mt-7 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {sectionCards.map((card) => (
-            <SummaryCard key={card.key} card={card} onOpen={() => setActivePanel(card.key)} />
-          ))}
-        </section>
-
-        <section className="mt-8 rounded-[30px] border border-white/10 bg-white/[0.04] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div>
-              <div className="text-[11px] uppercase tracking-[0.28em] text-white/45">Decoding session</div>
-              <h3 className="mt-2 text-2xl font-semibold">Назначить встречу и выбрать слот</h3>
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-white/65">
-                После диагностики можно забронировать короткую сессию, чтобы пройтись по решениям, рискам и очередности действий.
-              </p>
-            </div>
-            <button className="rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:translate-y-[-1px]">
-              Выбрать слот
-            </button>
-          </div>
-        </section>
-      </div>
-
-      <RightDrawer activePanel={activePanel} onClose={() => setActivePanel(null)} />
-    </main>
-  );
+function makeId(prefix = "id") {
+  return `${prefix}-${Math.random().toString(36).slice(2, 9)}`;
 }
 
-function MiniStat({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="rounded-[22px] border border-white/10 bg-white/[0.05] px-4 py-3">
-      <div className="text-[11px] uppercase tracking-[0.22em] text-white/40">{label}</div>
-      <div className="mt-2 text-[28px] font-semibold text-white">{value}</div>
-      <div className="text-xs text-white/45">{sub}</div>
-    </div>
-  );
+function textLength(s: string | undefined | null) {
+  return String(s ?? "").trim().length;
 }
 
-function SummaryCard({
-  card,
-  onOpen,
+function hasAtSignEmail(value: string | undefined | null) {
+  return String(value ?? "").includes("@");
+}
+
+function clamp(n: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, n));
+}
+
+function createEmptyTeamMember(): TeamMember {
+  return {
+    id: makeId("member"),
+    position: "",
+    responsibility: "",
+    isDecisionMaker: "",
+    participatesIn: [],
+  };
+}
+
+function createInitialSeasonalityPoints(): SeasonalityPoint[] {
+  return MONTHS.map((month) => ({ month, value: 0 }));
+}
+
+const initialAnswers: Answers = {
+  margin: { value: 0, note: "", touched: false },
+  salesCount: "",
+  revenue: "",
+  kpis: { selected: [], custom: [] },
+  clientProfile: "",
+  demandCapacity: {
+    demand: 0,
+    capacity: 0,
+    touched: { demand: false, capacity: false },
+  },
+  acquisitionChannels: { selected: [], custom: [] },
+  channelEfficiency: { values: {}, touched: {} },
+  topProducts: [
+    { name: "", value: 0, touched: false },
+    { name: "", value: 0, touched: false },
+    { name: "", value: 0, touched: false },
+  ],
+  retention: { selected: [], custom: [] },
+  cjm: {
+    stages: CJM_STAGES.map((stage) => ({
+      stage,
+      description: CJM_STAGE_DESCRIPTIONS[stage],
+      whatHappens: "",
+      duration: "",
+      clientGets: "",
+      companyGets: "",
+      problems: "",
+    })),
+  },
+  seasonality: {
+    points: createInitialSeasonalityPoints(),
+    peaksReason: "",
+    lowsReason: "",
+  },
+  positionText: { text: "", stages: [], customStages: [] },
+  businessScale: "",
+  geo: { physical: "", sales: "" },
+  team: [createEmptyTeamMember()],
+  interaction: {
+    links: [],
+    note: "",
+  },
+  decisions: "",
+  stress: {
+    values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
+    touched: {
+      Маркетинг: false,
+      Продажи: false,
+      Операционка: false,
+      Управление: false,
+    },
+    customZones: [],
+  },
+  lossZones: {
+    selected: [],
+    notes: {},
+  },
+  analytics: { tags: [], custom: [], note: "" },
+  changesNeeded: "",
+  implemented: "",
+  goal: { profitTarget: 0, mode: "", costChange: "", touched: false },
+  horizons: { plan3: "", plan6: "", plan12: "" },
+  contacts: { reportEmail: "", meetingContact: "" },
+};
+
+function getTagState(value: any): { selected: string[]; custom: string[] } {
+  if (Array.isArray(value)) return { selected: value, custom: [] };
+  return {
+    selected: value?.selected ?? [],
+    custom: value?.custom ?? [],
+  };
+}
+
+function getAllTagValues(value: any) {
+  const state = getTagState(value);
+  return [...state.selected, ...state.custom].filter(Boolean);
+}
+
+function createTeamLinksFromMembers(members: TeamMember[]): TeamLink[] {
+  const roles = members
+    .map((m) => m.position.trim())
+    .filter(Boolean)
+    .filter((role, index, arr) => arr.indexOf(role) === index);
+
+  const next: TeamLink[] = [];
+  for (let i = 0; i < roles.length; i += 1) {
+    for (let j = i + 1; j < roles.length; j += 1) {
+      next.push({
+        id: `${roles[i]}__${roles[j]}`,
+        fromRole: roles[i],
+        toRole: roles[j],
+        metrics: {
+          speed: 0,
+          communication: 0,
+          infoQuality: 0,
+        },
+      });
+    }
+  }
+  return next;
+}
+
+function mergeTeamLinks(prev: TeamLink[], nextBase: TeamLink[]) {
+  const prevMap = new Map(prev.map((item) => [item.id, item]));
+  return nextBase.map((item) => prevMap.get(item.id) ?? item);
+}
+
+function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
+  const text = value.toLowerCase();
+
+  const presets = [
+    {
+      keys: ["тбилиси", "груз", "georgia", "tbilisi"],
+      point: { x: 604, y: 149 },
+    },
+    { keys: ["кипр", "cyprus"], point: { x: 577, y: 184 } },
+    { keys: ["герман", "berlin", "germany"], point: { x: 517, y: 124 } },
+    { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 121 } },
+    { keys: ["эстон", "tallinn", "estonia"], point: { x: 557, y: 92 } },
+    { keys: ["латв", "riga", "latvia"], point: { x: 553, y: 104 } },
+    { keys: ["литв", "vilnius", "lithuania"], point: { x: 550, y: 112 } },
+    { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
+    { keys: ["португал", "lisbon", "portugal"], point: { x: 430, y: 175 } },
+    { keys: ["нидерл", "amsterdam", "netherlands"], point: { x: 500, y: 119 } },
+    { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
+    { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
+    { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
+    {
+      keys: ["лондон", "uk", "united kingdom", "england"],
+      point: { x: 470, y: 113 },
+    },
+    {
+      keys: ["usa", "new york", "united states", "america"],
+      point: { x: 228, y: 145 },
+    },
+    { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
+    { keys: ["браз", "brazil"], point: { x: 314, y: 279 } },
+    { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
+    { keys: ["инд", "india", "delhi"], point: { x: 734, y: 189 } },
+    { keys: ["сингап", "singapore"], point: { x: 815, y: 275 } },
+    { keys: ["австра", "sydney", "australia"], point: { x: 930, y: 321 } },
+    { keys: ["япон", "tokyo", "japan"], point: { x: 900, y: 160 } },
+  ];
+
+  for (const preset of presets) {
+    if (preset.keys.some((key) => text.includes(key))) return preset.point;
+  }
+
+  return fallback;
+}
+
+function getQuestionProgress(question: Question, answers: Answers): number {
+  const value = answers[question.id];
+
+  switch (question.id) {
+    case "margin":
+      return value?.touched && Number(value?.value ?? 0) >= 0 ? 100 : 0;
+
+    case "salesCount":
+    case "revenue":
+      return /\d/.test(String(value ?? "")) ? 100 : 0;
+
+    case "clientProfile":
+    case "changesNeeded":
+    case "implemented":
+    case "decisions":
+      return textLength(value) >= 20 ? 100 : 0;
+
+    case "horizons":
+      return textLength(value?.plan3) >= 20 &&
+        textLength(value?.plan6) >= 20 &&
+        textLength(value?.plan12) >= 20
+        ? 100
+        : 0;
+
+    case "kpis":
+    case "retention":
+      return getAllTagValues(value).length > 0 ? 100 : 0;
+
+    case "acquisitionChannels":
+      return getAllTagValues(value).length > 0 ? 100 : 0;
+
+    case "demandCapacity": {
+      const touched = value?.touched ?? {};
+      return touched.demand && touched.capacity ? 100 : 0;
+    }
+
+    case "channelEfficiency": {
+      const selectedChannels = getAllTagValues(answers.acquisitionChannels);
+      const state: ChannelDistribution = value ?? { values: {}, touched: {} };
+      if (selectedChannels.length === 0) return 0;
+      const allTouched = selectedChannels.every(
+        (channel) => state.touched?.[channel],
+      );
+      const total = selectedChannels.reduce(
+        (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
+        0,
+      );
+      return allTouched && total === 100 ? 100 : 0;
+    }
+
+    case "topProducts": {
+      const items: ProductItem[] = value ?? [];
+      if (items.length !== 3) return 0;
+      const allNamed = items.every((item) => textLength(item.name) > 0);
+      const allTouched = items.every((item) => item.touched);
+      return allNamed && allTouched ? 100 : 0;
+    }
+
+    case "cjm": {
+      const stages: CjmStage[] = value?.stages ?? [];
+      const ok = stages.every((stage) => {
+        return (
+          textLength(stage.whatHappens) > 0 &&
+          textLength(stage.duration) > 0 &&
+          textLength(stage.clientGets) > 0 &&
+          textLength(stage.companyGets) > 0
+        );
+      });
+      return ok ? 100 : 0;
+    }
+
+    case "seasonality": {
+      const points: SeasonalityPoint[] = value?.points ?? [];
+      const hasMovement = points.some((p) => Math.abs(p.value) >= 6);
+      const peaksReason = textLength(value?.peaksReason) >= 20;
+      const lowsReason = textLength(value?.lowsReason) >= 20;
+      return hasMovement && peaksReason && lowsReason ? 100 : 0;
+    }
+
+    case "positionText":
+      return (
+        textLength(value?.text) >= 50 &&
+        ((value?.stages?.length ?? 0) + (value?.customStages?.length ?? 0) > 0)
+      )
+        ? 100
+        : 0;
+
+    case "businessScale":
+      return textLength(value) >= 20 ? 100 : 0;
+
+    case "geo":
+      return textLength(value?.physical) > 0 && textLength(value?.sales) > 0
+        ? 100
+        : 0;
+
+    case "team": {
+      const members: TeamMember[] = value ?? [];
+      const ok = members.every((member) => {
+        return (
+          textLength(member.position) > 0 &&
+          textLength(member.responsibility) > 0 &&
+          member.isDecisionMaker !== "" &&
+          member.participatesIn.length > 0
+        );
+      });
+      return ok ? 100 : 0;
+    }
+
+    case "interaction": {
+      const links: TeamLink[] = value?.links ?? [];
+      if (links.length === 0) return 0;
+      const allRated = links.every((link) => {
+        return (
+          link.metrics.speed >= 1 &&
+          link.metrics.communication >= 1 &&
+          link.metrics.infoQuality >= 1
+        );
+      });
+      return allRated ? 100 : 0;
+    }
+
+    case "stress": {
+      const touched: TouchMap = value?.touched ?? {};
+      const allZones = [
+        ...STRESS_ZONES,
+        ...((value?.customZones ?? []) as string[]),
+      ];
+      return allZones.length > 0 && allZones.every((zone) => touched[zone]) ? 100 : 0;
+    }
+
+    case "lossZones": {
+      const selected = value?.selected ?? [];
+      return selected.length > 0 && selected.every((zone: string) => textLength(value?.notes?.[zone]) > 0) ? 100 : 0;
+    }
+
+    case "analytics": {
+      return getAllTagValues({ selected: value.tags, custom: value.custom }).length > 0 ? 100 : 0;
+    }
+
+    case "goal":
+      return value?.touched && textLength(value?.mode) > 0 ? 100 : 0;
+
+    case "contacts": {
+      const hasReportEmail = hasAtSignEmail(value?.reportEmail);
+      const hasMeetingContact = hasAtSignEmail(value?.meetingContact);
+      return hasReportEmail && hasMeetingContact ? 100 : 0;
+    }
+
+    default:
+      return 0;
+  }
+}
+
+function getChapterProgress(chapter: Chapter, answers: Answers): number {
+  const total = chapter.questions.length;
+  const filled = chapter.questions.filter(
+    (q) => getQuestionProgress(q, answers) === 100,
+  ).length;
+  return Math.round((filled / total) * 100);
+}
+
+function useAutosizeTextarea(value: string) {
+  const ref = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    el.style.height = "0px";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [value]);
+
+  return ref;
+}
+
+function AutoTextarea({
+  value,
+  onChange,
+  placeholder,
+  minRows = 2,
+  className = "",
 }: {
-  card: (typeof sectionCards)[number];
-  onOpen: () => void;
+  value: string;
+  onChange: (next: string) => void;
+  placeholder?: string;
+  minRows?: number;
+  className?: string;
 }) {
+  const ref = useAutosizeTextarea(value);
+
   return (
-    <article className="rounded-[28px] border border-white/10 bg-white/[0.05] p-5 shadow-[0_16px_40px_rgba(0,0,0,0.24)] backdrop-blur-xl">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">Section</div>
-          <h3 className="mt-2 text-xl font-semibold">{card.title}</h3>
-        </div>
-        <div className={`rounded-full border px-3 py-1 text-xs ${toneClass(card.status)}`}>{card.status}</div>
-      </div>
-
-      <div className="mt-4 flex items-end justify-between">
-        <div>
-          <div className="text-[11px] uppercase tracking-[0.2em] text-white/35">Score</div>
-          <div className="mt-1 text-[34px] font-semibold text-white">{card.score}</div>
-        </div>
-        <button onClick={onOpen} className="rounded-2xl border border-white/12 bg-white/[0.06] px-4 py-2 text-sm text-white/90 transition hover:bg-white/[0.1]">
-          Open
-        </button>
-      </div>
-
-      <p className="mt-4 text-sm leading-6 text-white/68">{card.short}</p>
-
-      <div className="mt-4 space-y-2">
-        {card.points.map((point) => (
-          <div key={point} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-2 text-sm text-white/72">
-            {point}
-          </div>
-        ))}
-      </div>
-    </article>
+    <textarea
+      ref={ref}
+      value={value}
+      rows={minRows}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+      className={className}
+      style={{ overflow: "hidden", resize: "none" }}
+    />
   );
 }
 
-function SolutionEntryCard({ onOpen }: { onOpen: () => void }) {
+function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
+  const radius = 44;
+  const stroke = 8;
+  const normalizedRadius = radius - stroke / 2;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
   return (
-    <aside className="rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(247,210,55,0.12),rgba(255,255,255,0.03))] p-6 shadow-[0_25px_60px_rgba(0,0,0,0.28)] backdrop-blur-xl">
-      <div className="inline-flex rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[11px] uppercase tracking-[0.26em] text-[#f7d237]">
-        Solution & Practice
-      </div>
-      <h2 className="mt-4 text-[30px] font-semibold leading-[1.06] text-white">
-        Главный фокус — рост AOV, перераспределение спроса и управляемое усиление воронки.
-      </h2>
-      <p className="mt-4 text-sm leading-6 text-white/72">
-        Внутри: solution, practice, JTBD roadmap и инструмент, который показывает влияние вычисленных рычагов на выручку и gross profit.
-      </p>
-
-      <div className="mt-5 grid gap-3">
-        <MetricLine label="Main lever" value="AOV + pricing logic" />
-        <MetricLine label="Expected horizon" value="0–6 months" />
-        <MetricLine label="Primary impact" value="+ revenue / + gross profit" />
-      </div>
-
-      <button
-        onClick={onOpen}
-        className="mt-6 w-full rounded-[22px] bg-[#f7d237] px-4 py-3 text-sm font-semibold text-[#0b1d3a] transition hover:translate-y-[-1px]"
+    <div className="relative shrink-0" style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        viewBox="0 0 88 88"
+        className="-rotate-90"
       >
-        Open Solution & Practice
-      </button>
-    </aside>
-  );
-}
-
-function MetricLine({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/15 px-4 py-3 text-sm">
-      <span className="text-white/58">{label}</span>
-      <span className="font-medium text-white">{value}</span>
+        <circle
+          cx="44"
+          cy="44"
+          r={normalizedRadius}
+          stroke="rgba(255,255,255,0.045)"
+          strokeWidth={stroke}
+          fill="transparent"
+        />
+        <circle
+          cx="44"
+          cy="44"
+          r={normalizedRadius}
+          stroke={BRAND.yellow}
+          strokeWidth={stroke}
+          fill="transparent"
+          strokeLinecap="round"
+          strokeDasharray={`${circumference} ${circumference}`}
+          strokeDashoffset={strokeDashoffset}
+          style={{
+            filter: "drop-shadow(0 0 4px rgba(247,210,55,0.22))",
+            transition: "all 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
+          }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <div className="text-lg font-semibold text-white">
+          {Math.round(progress)}%
+        </div>
+        <div className="text-[10px] uppercase tracking-[0.24em] text-white/45">
+          filled
+        </div>
+      </div>
     </div>
   );
 }
 
-function RightDrawer({
-  activePanel,
-  onClose,
+
+function getTagValues(value: any): string[] {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.filter(Boolean);
+  return [...(value.selected ?? []), ...(value.custom ?? [])].filter(Boolean);
+}
+
+function buildPreparedAnswers(answers: any) {
+  const prepared = [
+    {
+      question: "Какая часть выручки остаётся после всех расходов?",
+      answer: [
+        typeof answers.margin?.value === "number" ? `${answers.margin.value}%` : "",
+        answers.margin?.note?.trim() ? `Комментарий: ${answers.margin.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+      answer: String(answers.salesCount ?? "").trim(),
+    },
+    {
+      question: "Какая выручка была у вас за прошлый месяц?",
+      answer: String(answers.revenue ?? "").trim(),
+    },
+    {
+      question: "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+      answer: getTagValues(answers.kpis).join(", "),
+    },
+    {
+      question: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+      answer: String(answers.clientProfile ?? "").trim(),
+    },
+    {
+      question: "Сколько обращений вы получаете и сколько реально можете обработать?",
+      answer: [
+        `Обращения: ${answers.demandCapacity?.demand ?? 0}`,
+        `Capacity: ${answers.demandCapacity?.capacity ?? 0}`,
+      ].join("\n"),
+    },
+    {
+      question: "Откуда к вам обычно приходят клиенты?",
+      answer: getTagValues(answers.acquisitionChannels).join(", "),
+    },
+    {
+      question: "Как распределяется входящий поток клиентов между выбранными каналами?",
+      answer: getTagValues(answers.acquisitionChannels)
+        .map((channel) => `${channel} — ${answers.channelEfficiency?.values?.[channel] ?? 0}%`)
+        .join("\n"),
+    },
+    {
+      question: "Какие 1–3 продукта или услуги самые маржинальные?",
+      answer: (answers.topProducts ?? [])
+        .filter((item: any) => String(item?.name ?? "").trim())
+        .map((item: any, index: number) => `Продукт ${index + 1}: ${item.name} — ${item.value ?? 0}%`)
+        .join("\n"),
+    },
+    {
+      question: "Какими механиками вы удерживаете клиентов?",
+      answer: getTagValues(answers.retention).join(", "),
+    },
+    {
+      question: "Как проходит путь клиента от первого обращения до положительного опыта?",
+      answer: (answers.cjm?.stages ?? [])
+        .map(
+          (stage: any) =>
+            `${stage.stage}\nЧто происходит: ${stage.whatHappens || "-"}\nДлительность: ${stage.duration || "-"}\nЧто получает клиент: ${stage.clientGets || "-"}\nЧто получает компания: ${stage.companyGets || "-"}\nПроблемы: ${stage.problems || "-"}`
+        )
+        .join("\n\n"),
+    },
+    {
+      question: "Есть ли пики и спады продаж и чем они объясняются?",
+      answer: [
+        (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
+          ? `Пики: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value >= 25)
+              .map((p: any) => p.month)
+              .join(", ")}`
+          : "",
+        answers.seasonality?.peaksReason?.trim()
+          ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
+          : "",
+        (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
+          ? `Спады: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value <= -25)
+              .map((p: any) => p.month)
+              .join(", ")}`
+          : "",
+        answers.seasonality?.lowsReason?.trim()
+          ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+      answer: [
+        [...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].length
+          ? `Стадия бизнеса: ${[...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].join(", ")}`
+          : "",
+        answers.positionText?.text?.trim() ? `Описание: ${answers.positionText.text.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+      answer: [
+        answers.geo?.physical ? `Физическая локация: ${answers.geo.physical}` : "",
+        answers.geo?.sales ? `География продаж: ${answers.geo.sales}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
+      answer: String(answers.businessScale ?? "").trim(),
+    },
+    {
+      question: "Как устроена команда: роли, зоны ответственности?",
+      answer: (answers.team ?? [])
+        .map(
+          (member: any, index: number) =>
+            `Участник ${index + 1}\nДолжность: ${member.position || "-"}\nОтветственность: ${member.responsibility || "-"}\nЛПР: ${member.isDecisionMaker || "-"}\nУчаствует в: ${(member.participatesIn ?? []).join(", ") || "-"}`
+        )
+        .join("\n\n"),
+    },
+    {
+      question: "Как выстроено взаимодействие между ролями и что изменилось за год?",
+      answer: [
+        ...(answers.interaction?.links ?? []).map(
+          (link: any) =>
+            `${link.fromRole} ↔ ${link.toRole}\nСкорость: ${link.metrics?.speed ?? 0}/5\nКоммуникация: ${link.metrics?.communication ?? 0}/5\nКачество информации: ${link.metrics?.infoQuality ?? 0}/5`
+        ),
+        answers.interaction?.note?.trim() ? `Комментарий: ${answers.interaction.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+    },
+    {
+      question: "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+      answer: String(answers.decisions ?? "").trim(),
+    },
+    {
+      question: "Где вы как руководитель сильнее всего ощущаете напряжение?",
+      answer: Object.entries(answers.stress?.values ?? {})
+        .map(([key, value]) => `${key}: ${value}`)
+        .join("\n"),
+    },
+    {
+      question: "В каких зонах бизнеса теряется эффективность?",
+      answer: (answers.lossZones?.selected ?? [])
+        .map((key: string) => `${key}: ${answers.lossZones?.notes?.[key] ?? ""}`)
+        .join("\n"),
+    },
+    {
+      question: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+      answer: [
+        getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).length
+          ? `Используем: ${getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).join(", ")}`
+          : "",
+        answers.analytics?.note?.trim() ? `Комментарий: ${answers.analytics.note.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+      answer: String(answers.changesNeeded ?? "").trim(),
+    },
+    {
+      question: "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+      answer: String(answers.implemented ?? "").trim(),
+    },
+    {
+      question: "Какого результата бизнес должен достичь к концу года?",
+      answer: [
+        `Цель по чистой прибыли: +${answers.goal?.profitTarget ?? 0}%`,
+        answers.goal?.mode ? `Статус расходов: ${answers.goal.mode}` : "",
+        answers.goal?.costChange?.trim() ? `Изменение расходов: ${answers.goal.costChange.trim()}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question: "Чего вы ждете от следующих 3, 6, 12 месяцев?",
+      answer: [
+        `3 месяца: ${answers.horizons?.plan3 ?? ""}`,
+        `6 месяцев: ${answers.horizons?.plan6 ?? ""}`,
+        `12 месяцев: ${answers.horizons?.plan12 ?? ""}`,
+      ]
+        .filter((line) => !line.endsWith(": "))
+        .join("\n"),
+    },
+    {
+      question: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
+      answer: [
+        answers.contacts?.reportEmail?.trim()
+          ? `Email для отчёта: ${answers.contacts.reportEmail.trim()}`
+          : "",
+        answers.contacts?.meetingContact?.trim()
+          ? `Контакт для встречи: ${answers.contacts.meetingContact.trim()}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+  ];
+
+  return prepared.filter((item) => item.answer.trim().length > 0);
+}
+
+function GlassCard({
+  children,
+  className = "",
 }: {
-  activePanel: PanelKey;
-  onClose: () => void;
+  children: React.ReactNode;
+  className?: string;
 }) {
   return (
     <div
-      className={`fixed inset-0 z-50 transition ${activePanel ? 'pointer-events-auto' : 'pointer-events-none'}`}
-      aria-hidden={!activePanel}
+      className={`relative overflow-hidden rounded-[28px] border border-white/10 bg-white/[0.045] backdrop-blur-2xl ${className}`}
+      style={{
+        boxShadow:
+          "0 18px 56px rgba(0,0,0,0.24), inset 0 1px 0 rgba(255,255,255,0.045)",
+      }}
     >
-      <div
-        className={`absolute inset-0 bg-black/45 transition-opacity duration-300 ${activePanel ? 'opacity-100' : 'opacity-0'}`}
-        onClick={onClose}
-      />
-      <div
-        className={`absolute right-0 top-0 h-full w-full max-w-[760px] transform border-l border-white/10 bg-[#08152b]/96 p-6 shadow-[-30px_0_80px_rgba(0,0,0,0.4)] backdrop-blur-2xl transition-transform duration-300 md:p-8 ${
-          activePanel ? 'translate-x-0' : 'translate-x-full'
-        }`}
-      >
-        <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">Detail view</div>
-            <h3 className="mt-2 text-2xl font-semibold text-white">
-              {activePanel === 'solution'
-                ? 'Solution & Practice'
-                : sectionCards.find((item) => item.key === activePanel)?.title ?? ''}
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white/75"
-          >
-            Close
-          </button>
-        </div>
-
-        <div className="mt-6 h-[calc(100%-88px)] overflow-y-auto pr-1">
-          {activePanel === 'solution' ? (
-            <SolutionWorkspace />
-          ) : (
-            <SectionDetail panel={activePanel} />
-          )}
-        </div>
-      </div>
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(247,210,55,0.09),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.045),transparent_24%)]" />
+      <div className="relative">{children}</div>
     </div>
   );
 }
 
-function SectionDetail({ panel }: { panel: PanelKey }) {
-  const card = sectionCards.find((item) => item.key === panel);
-  if (!card) return null;
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.22em] text-white/40">Executive summary</div>
-            <div className="mt-2 text-xl font-semibold">{card.title}</div>
-          </div>
-          <div className={`rounded-full border px-3 py-1 text-xs ${toneClass(card.status)}`}>{card.status}</div>
-        </div>
-        <p className="mt-4 text-sm leading-6 text-white/72">{card.detail}</p>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {card.points.map((point) => (
-          <div key={point} className="rounded-[22px] border border-white/10 bg-black/15 p-4 text-sm leading-6 text-white/72">
-            {point}
-          </div>
-        ))}
-      </div>
-
-      <div className="rounded-[26px] border border-white/10 bg-white/[0.04] p-5">
-        <div className="text-[11px] uppercase tracking-[0.22em] text-white/40">Why it matters</div>
-        <p className="mt-3 text-sm leading-6 text-white/72">
-          На самой странице эта карточка должна оставаться краткой, а вся длинная интерпретация, связки и причины должны читаться в выезжающей правой панели — как в Snapchat Action.
-        </p>
-      </div>
-    </div>
-  );
-}
-
-function SolutionWorkspace() {
-  const [tab, setTab] = useState<'overview' | 'levers' | 'simulator' | 'execution' | 'jtbd'>('overview');
-  const [leverKey, setLeverKey] = useState(levers[0].key);
-
-  const lever = levers.find((item) => item.key === leverKey) ?? levers[0];
-
-  return (
-    <div className="space-y-5">
-      <div className="rounded-[26px] border border-[#f7d237]/20 bg-[linear-gradient(180deg,rgba(247,210,55,0.08),rgba(255,255,255,0.03))] p-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.26em] text-[#f7d237]">Main recommendation</div>
-            <div className="mt-2 text-2xl font-semibold text-white">
-              Рост через AOV, pricing logic и точечное усиление потока
-            </div>
-          </div>
-          <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-xs text-[#f7d237]">Priority horizon · 6M</div>
-        </div>
-        <p className="mt-4 text-sm leading-6 text-white/74">
-          Здесь solution и JTBD должны быть расписаны шире остальных блоков. Отсюда же открывается инструмент, который показывает влияние вычисленных рычагов — по логике твоего референса — но уже в контексте конкретного решения.
-        </p>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <TabButton active={tab === 'overview'} onClick={() => setTab('overview')}>Overview</TabButton>
-        <TabButton active={tab === 'levers'} onClick={() => setTab('levers')}>Levers</TabButton>
-        <TabButton active={tab === 'simulator'} onClick={() => setTab('simulator')}>Simulator</TabButton>
-        <TabButton active={tab === 'execution'} onClick={() => setTab('execution')}>Execution conditions</TabButton>
-        <TabButton active={tab === 'jtbd'} onClick={() => setTab('jtbd')}>JTBD roadmap</TabButton>
-      </div>
-
-      {tab === 'overview' && (
-        <div className="space-y-4">
-          <PanelBlock
-            eyebrow="Overview"
-            title="Почему решение строится вокруг AOV и не сводится только к маркетингу"
-            text="Маркетинг можно усиливать, но сейчас главный рычаг — не просто в объёме спроса, а в способности бизнеса брать больше денег с каждого входа, не разрушая конверсию. Поэтому решение фокусируется на AOV, цене, упаковке предложения и последовательности внедрения."
-          />
-          <div className="grid gap-4 md:grid-cols-3">
-            <KpiCard label="Primary lever" value="AOV" note="+ revenue / + GP" />
-            <KpiCard label="Model change" value="Pricing logic" note="аргументация цены" />
-            <KpiCard label="Support lever" value="Marketing" note="только после выравнивания capacity" />
-          </div>
-        </div>
-      )}
-
-      {tab === 'levers' && (
-        <div className="space-y-4">
-          <div className="flex flex-wrap gap-2">
-            {levers.map((item) => (
-              <button
-                key={item.key}
-                onClick={() => setLeverKey(item.key)}
-                className={`rounded-full border px-4 py-2 text-sm transition ${
-                  item.key === lever.key
-                    ? 'border-[#f7d237]/40 bg-[#f7d237] text-[#0b1d3a]'
-                    : 'border-white/12 bg-white/[0.05] text-white/78 hover:bg-white/[0.08]'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          <PanelBlock eyebrow="Lever" title={lever.label} text={lever.why} />
-          <div className="grid gap-4 md:grid-cols-2">
-            <KpiCard label="Допустимый диапазон" value={`0–${lever.max}${lever.unit}`} note="выше нерационально" />
-            <KpiCard label="Почему ceiling" value={lever.ceilingNote} note={lever.deltaLabel} />
-          </div>
-        </div>
-      )}
-
-      {tab === 'simulator' && <LeverImpactSimulator lever={lever} onLeverChange={setLeverKey} />}
-
-      {tab === 'execution' && (
-        <div className="space-y-4">
-          <PanelBlock
-            eyebrow="Execution conditions"
-            title="Что должно быть готово для внедрения"
-            text="Пересборка оффера, логика bundle / upsell, сценарии аргументации цены, контроль конверсии по этапам и ограничение по нагрузке на delivery. Без этого рост одного рычага будет либо краткосрочным, либо неустойчивым."
-          />
-          <div className="grid gap-4 md:grid-cols-2">
-            <BulletCard
-              title="Что нужно подготовить"
-              items={['Усилить упаковку предложения', 'Собрать bundle / допродажи', 'Пересобрать аргументацию цены', 'Привязать рост к capacity']}
-            />
-            <BulletCard
-              title="Что может сорвать гипотезу"
-              items={['Резкое повышение цены без подкрепления ценности', 'Рост входящего потока без обработки', 'Отсутствие owner у внедрения', 'Слабый контроль этапной конверсии']}
-            />
-          </div>
-        </div>
-      )}
-
-      {tab === 'jtbd' && (
-        <div className="space-y-4">
-          <PanelBlock
-            eyebrow="JTBD roadmap"
-            title="Подробная карта действий"
-            text="Job to be done здесь должен быть намного подробнее остальных блоков: objective, workstreams, dependencies, first actions, horizons и expected outcome. Это не просто summary, а рабочая карта реализации."
-          />
-          <div className="grid gap-4">
-            <RoadmapRow period="0–6 недель" text="Упаковать новый оффер, пересобрать аргументацию цены, подготовить upsell-механику и контроль конверсии по этапам." />
-            <RoadmapRow period="3 месяца" text="Провести тест bundle / price ladder, сравнить влияние на AOV и gross profit, закрепить рабочий сценарий." />
-            <RoadmapRow period="6 месяцев" text="Масштабировать только те рычаги, которые дали управляемый рост без разрушения конверсии и capacity." />
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TabButton({
-  active,
-  onClick,
+function TiltCardButton({
   children,
+  onClick,
 }: {
-  active: boolean;
-  onClick: () => void;
   children: React.ReactNode;
+  onClick: () => void;
 }) {
+  const [style, setStyle] = useState({
+    transform:
+      "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
+  });
+
+  function handleMove(e: React.MouseEvent<HTMLButtonElement>) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width;
+    const py = (e.clientY - rect.top) / rect.height;
+
+    const rotateY = (px - 0.5) * 8;
+    const rotateX = (0.5 - py) * 8;
+
+    setStyle({
+      transform: `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px) scale(1.006)`,
+    });
+  }
+
+  function reset() {
+    setStyle({
+      transform:
+        "perspective(1400px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
+    });
+  }
+
   return (
     <button
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-sm transition ${
-        active
-          ? 'border-[#f7d237]/40 bg-[#f7d237] text-[#0b1d3a]'
-          : 'border-white/12 bg-white/[0.05] text-white/78 hover:bg-white/[0.08]'
-      }`}
+      onMouseMove={handleMove}
+      onMouseLeave={reset}
+      onBlur={reset}
+      className="group block w-full text-left"
+      style={{
+        transformStyle: "preserve-3d",
+        transition: "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)",
+        ...style,
+      }}
     >
       {children}
     </button>
   );
 }
 
-function PanelBlock({ eyebrow, title, text }: { eyebrow: string; title: string; text: string }) {
-  return (
-    <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
-      <div className="text-[11px] uppercase tracking-[0.24em] text-white/42">{eyebrow}</div>
-      <div className="mt-2 text-xl font-semibold text-white">{title}</div>
-      <p className="mt-3 text-sm leading-6 text-white/72">{text}</p>
-    </div>
-  );
-}
+const inputClass =
+  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
 
-function KpiCard({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div className="rounded-[22px] border border-white/10 bg-black/15 p-4">
-      <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">{label}</div>
-      <div className="mt-2 text-lg font-semibold leading-7 text-white">{value}</div>
-      <div className="mt-2 text-xs leading-5 text-white/5٠">{note}</div>
-    </div>
-  );
-}
+const compactInputClass =
+  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
 
-function BulletCard({ title, items }: { title: string; items: string[] }) {
-  return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.05] p-5">
-      <div className="text-lg font-semibold text-white">{title}</div>
-      <div className="mt-4 space-y-2">
-        {items.map((item) => (
-          <div key={item} className="rounded-2xl border border-white/8 bg-black/15 px-3 py-2 text-sm text-white/72">
-            {item}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const textareaClass =
+  "w-full rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
 
-function RoadmapRow({ period, text }: { period: string; text: string }) {
-  return (
-    <div className="grid gap-3 rounded-[24px] border border-white/10 bg-white/[0.05] p-5 md:grid-cols-[180px_1fr]">
-      <div className="text-sm font-semibold uppercase tracking-[0.22em] text-[#f7d237]">{period}</div>
-      <div className="text-sm leading-6 text-white/72">{text}</div>
-    </div>
-  );
-}
-
-function HeroEconomyChart() {
-  const base = {
-    leads: 10,
-    deals: 2.0,
-    aov: 3200,
-    margin: 40,
-    revenue: 13000,
-    opex: 3500,
-    cogs: 3900,
-    grossProfit: 5600,
-  };
-
-  const drivers = [
-    {
-      key: 'marketing',
-      label: 'Маркетинг',
-      full: 'Маркетинг',
-      deltaLabel: '+30% лидов и рост спроса',
-      leads: 13,
-      deals: 2.4,
-      aov: 3200,
-      margin: 42,
-      revenue: 14800,
-      opex: 3200,
-      cogs: 3600,
-      grossProfit: 6200,
-    },
-    {
-      key: 'aov',
-      label: 'AOV',
-      full: 'AOV',
-      deltaLabel: '+рост среднего заказа',
-      leads: 10,
-      deals: 2.0,
-      aov: 4100,
-      margin: 44,
-      revenue: 15200,
-      opex: 3300,
-      cogs: 3900,
-      grossProfit: 6700,
-    },
-    {
-      key: 'sales',
-      label: 'Продажи',
-      full: 'Продажи',
-      deltaLabel: '+0.8 сделки',
-      leads: 10,
-      deals: 2.8,
-      aov: 3200,
-      margin: 45,
-      revenue: 18200,
-      opex: 4600,
-      cogs: 5100,
-      grossProfit: 8500,
-    },
-    {
-      key: 'costs',
-      label: 'Модель расходов',
-      full: 'Модель расходов',
-      deltaLabel: '−давление на OPEX и Margin',
-      leads: 10,
-      deals: 2.0,
-      aov: 3200,
-      margin: 51,
-      revenue: 13000,
-      opex: 2500,
-      cogs: 3900,
-      grossProfit: 6600,
-    },
-  ];
-
-  const [activeIndex, setActiveIndex] = useState(1);
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [drivers.length]);
-
-  const setDriver = (index: number) => {
-    setActiveIndex(index);
-    if (timerRef.current) window.clearInterval(timerRef.current);
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-  };
-
-  const active = drivers[activeIndex];
-  const bars = [
-    { name: 'Revenue', value: active.revenue, good: true },
-    { name: 'OPEX', value: active.opex, good: false },
-    { name: 'COGS', value: active.cogs, good: false },
-    { name: 'Gross Profit', value: active.grossProfit, good: true },
-  ];
-  const maxBar = 20000;
-
-  return (
-    <div className="rounded-[30px] border border-white/10 bg-[#050e20] px-5 py-5 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
-      <div className="text-[14px] uppercase tracking-[0.3em] text-white/55">MVP-DRIVERS</div>
-
-      <div className="mt-4 flex flex-wrap gap-3">
-        {drivers.map((item, index) => (
-          <button
-            key={item.key}
-            type="button"
-            onClick={() => setDriver(index)}
-            className={`rounded-full border px-6 py-3 text-lg font-semibold transition ${
-              index === activeIndex
-                ? 'border-[#f7d237]/50 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_28px_rgba(247,210,55,0.35)]'
-                : 'border-white/12 bg-white/[0.05] text-white/85 hover:bg-white/[0.08]'
-            }`}
-          >
-            {item.label}
-          </button>
-        ))}
-      </div>
-
-      <div className="mt-5 rounded-[30px] border border-white/10 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.04),transparent_55%)] p-5">
-        <div className="grid gap-4 md:grid-cols-4">
-          <HeroMetric title="Лидов / мес" value={String(active.leads)} />
-          <HeroMetric title="Сделок / мес" value={active.deals.toFixed(1)} />
-          <HeroMetric title="AOV" value={fmtMoney(active.aov)} />
-          <HeroMetric title="Маржа" value={`${active.margin}%`} />
-        </div>
-
-        <div className="relative mt-5 overflow-hidden rounded-[28px] border border-white/8 bg-white/[0.03] p-5">
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.03)_50%,transparent_100%)]" />
-          <div className="grid grid-cols-5 gap-3 text-right text-[15px] text-white/48">
-            <span className="text-left">$0</span>
-            <span>$5 000</span>
-            <span>$10 000</span>
-            <span>$15 000</span>
-            <span>$20 000</span>
-          </div>
-
-          <div className="pointer-events-none absolute inset-y-[78px] left-5 right-5 grid grid-cols-5">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="border-l border-white/8 first:border-l-0" />
-            ))}
-          </div>
-
-          <div className="relative mt-6 space-y-5">
-            {bars.map((bar) => {
-              const width = Math.max(6, (bar.value / maxBar) * 100);
-
-              return (
-                <div key={bar.name}>
-                  <div className="mb-3 flex items-center justify-between gap-4">
-                    <div className="text-[15px] text-white/72">{bar.name}</div>
-                    <div className="text-[15px] text-white/72">{fmtMoney(bar.value)}</div>
-                  </div>
-                  <div className="h-6 rounded-full bg-white/[0.06]">
-                    <div
-                      className={`h-6 rounded-full transition-all duration-500 ${
-                        bar.good
-                          ? bar.name === 'Revenue'
-                            ? 'bg-[#f2df79]'
-                            : 'bg-[#ead77a]'
-                          : 'bg-[linear-gradient(90deg,#8398ff_0%,#93a5ff_100%)]'
-                      }`}
-                      style={{ width: `${width}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <MoneyCard title="База" revenue={fmtMoney(base.revenue)} gross={fmtMoney(base.grossProfit)} />
-          <MoneyCard title="Активный драйвер" revenue={fmtMoney(active.revenue)} gross={fmtMoney(active.grossProfit)} />
-        </div>
-
-        <div className="mt-5 rounded-[22px] border border-[#f7d237]/18 bg-[linear-gradient(180deg,rgba(247,210,55,0.12),rgba(255,255,255,0.04))] px-4 py-4 text-[15px] text-white/78">
-          <span className="mr-3 inline-block h-3.5 w-3.5 rounded-full bg-[#f7d237] shadow-[0_0_15px_rgba(247,210,55,0.45)]" />
-          Сейчас подсвечен <b>{active.full}</b> — {active.deltaLabel}.
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function HeroMetric({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.05] p-5">
-      <div className="text-[15px] text-white/56">{title}</div>
-      <div className="mt-3 text-[32px] font-semibold text-white">{value}</div>
-    </div>
-  );
-}
-
-function MoneyCard({ title, revenue, gross }: { title: string; revenue: string; gross: string }) {
-  return (
-    <div className="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/[0.04] p-5">
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-[radial-gradient(ellipse_at_bottom,rgba(247,210,55,0.38),transparent_68%)]" />
-      <div className="relative">
-        <div className="text-[15px] text-white/56">{title}</div>
-        <div className="mt-3 text-[34px] font-semibold text-white">{revenue}</div>
-        <div className="mt-1 text-[15px] text-white/56">{gross} gross profit / мес</div>
-      </div>
-    </div>
-  );
-}
-
-function LeverImpactSimulator({
-  lever,
-  onLeverChange,
+function TagField({
+  label,
+  value,
+  baseTags,
+  onChange,
+  single = false,
 }: {
-  lever: LeverSim;
-  onLeverChange: (key: string) => void;
+  label?: string;
+  value: { selected: string[]; custom: string[] };
+  baseTags: string[];
+  onChange: (next: { selected: string[]; custom: string[] }) => void;
+  single?: boolean;
 }) {
-  const [value, setValue] = useState(lever.current);
+  const [isAdding, setIsAdding] = useState(false);
+  const [customValue, setCustomValue] = useState("");
 
-  useEffect(() => {
-    setValue(lever.current);
-  }, [lever]);
+  const allCustom = value.custom ?? [];
+  const selected = value.selected ?? [];
 
-  const projected = useMemo(() => lever.project(clamp(value, lever.min, lever.max)), [lever, value]);
+  function addCustomTag() {
+    const next = customValue.trim();
+    if (!next) return;
+    if (selected.includes(next) || allCustom.includes(next)) {
+      setCustomValue("");
+      setIsAdding(false);
+      return;
+    }
+    onChange({
+      selected: single ? [] : selected,
+      custom: single ? [next] : [...allCustom, next],
+    });
+    setCustomValue("");
+    setIsAdding(false);
+  }
 
-  const bars = [
-    { name: 'Revenue', value: projected.revenue, good: true },
-    { name: 'OPEX', value: projected.opex, good: false },
-    { name: 'COGS', value: projected.cogs, good: false },
-    { name: 'Gross Profit', value: projected.grossProfit, good: true },
-  ];
-  const maxBar = 20000;
+  function toggleBase(tag: string) {
+    const isActive = selected.includes(tag);
+    onChange({
+      selected: single
+        ? isActive
+          ? []
+          : [tag]
+        : isActive
+          ? selected.filter((t) => t !== tag)
+          : [...selected, tag],
+      custom: single && !isActive ? [] : allCustom,
+    });
+  }
+
+  function toggleCustom(tag: string) {
+    onChange({
+      selected: single ? [] : selected,
+      custom: single ? [] : allCustom.filter((t) => t !== tag),
+    });
+  }
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[26px] border border-white/10 bg-white/[0.05] p-5">
-        <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">Impact simulator</div>
-        <h4 className="mt-2 text-xl font-semibold text-white">Инструмент влияния вычисленных рычагов</h4>
-        <p className="mt-3 text-sm leading-6 text-white/72">
-          Внутри Solution & Practice этот модуль показывает, как выбранный рычаг влияет на экономику на горизонте 6 месяцев — по мотивам референса из hero-инструмента. Выше допустимого диапазона значение не растёт, потому что это уже нереалистично без пересборки модели.
-        </p>
+      {label ? <div className="text-sm text-white/55">{label}</div> : null}
+
+      <div className="flex flex-wrap gap-2.5">
+        {baseTags.map((tag) => {
+          const active = selected.includes(tag);
+          return (
+            <button
+              type="button"
+              key={tag}
+              onClick={() => toggleBase(tag)}
+              className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                active
+                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2] shadow-[0_0_20px_rgba(247,210,55,0.18)]"
+                  : "border-white/10 bg-white/[0.03] text-white/70 hover:bg-white/[0.05]"
+              }`}
+            >
+              {tag}
+            </button>
+          );
+        })}
+
+        {allCustom.map((tag) => (
+          <button
+            type="button"
+            key={`custom-${tag}`}
+            onClick={() => toggleCustom(tag)}
+            className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3.5 py-2 text-sm text-cyan-100 transition hover:bg-cyan-400/15"
+          >
+            {tag} ×
+          </button>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => setIsAdding((prev) => !prev)}
+          className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm text-white/75 transition hover:border-[#f7d237]/25 hover:bg-[#f7d237]/10 hover:text-[#fff3b2]"
+        >
+          +
+        </button>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {levers.map((item) => (
+      {isAdding && (
+        <div className="flex flex-wrap gap-2">
+          <input
+            className={compactInputClass}
+            placeholder="Добавить свой вариант"
+            value={customValue}
+            onChange={(e) => setCustomValue(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addCustomTag();
+              }
+            }}
+          />
           <button
-            key={item.key}
-            onClick={() => onLeverChange(item.key)}
-            className={`rounded-full border px-4 py-2 text-sm transition ${
-              item.key === lever.key
-                ? 'border-[#f7d237]/40 bg-[#f7d237] text-[#0b1d3a]'
-                : 'border-white/12 bg-white/[0.05] text-white/78 hover:bg-white/[0.08]'
-            }`}
+            type="button"
+            onClick={addCustomTag}
+            className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2] transition hover:bg-[#f7d237]/16"
           >
-            {item.label}
+            Сохранить
           </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+function CustomZoneComposer({
+  zones,
+  onChange,
+}: {
+  zones: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+
+  function addZone() {
+    const next = draft.trim();
+    if (!next) return;
+    if ([...STRESS_ZONES, ...zones].some((item) => item.toLowerCase() === next.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onChange([...zones, next]);
+    setDraft("");
+  }
+
+  return (
+    <div className="space-y-3">
+      {zones.length > 0 ? (
+        <div className="flex flex-wrap gap-2.5">
+          {zones.map((zone) => (
+            <button
+              key={zone}
+              type="button"
+              onClick={() => onChange(zones.filter((item) => item !== zone))}
+              className="rounded-full border border-cyan-300/25 bg-cyan-400/10 px-3.5 py-2 text-sm text-cyan-100 transition hover:bg-cyan-400/15"
+            >
+              {zone} ×
+            </button>
+          ))}
+        </div>
+      ) : null}
+
+      <div className="flex flex-wrap gap-2">
+        <input
+          className={compactInputClass}
+          placeholder="Добавить свой вариант"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addZone();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={addZone}
+          className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2] transition hover:bg-[#f7d237]/16"
+        >
+          Добавить
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function LossZoneTagEditor({
+  zones,
+  value,
+  onChange,
+}: {
+  zones: string[];
+  value: { selected: string[]; notes: Record<string, string> };
+  onChange: (next: { selected: string[]; notes: Record<string, string> }) => void;
+}) {
+  const selected = value.selected ?? [];
+  const notes = value.notes ?? {};
+
+  function toggleZone(zone: string) {
+    const active = selected.includes(zone);
+    onChange({
+      selected: active ? selected.filter((item) => item !== zone) : [...selected, zone],
+      notes,
+    });
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2.5">
+        {zones.map((zone) => {
+          const active = selected.includes(zone);
+          return (
+            <button
+              key={zone}
+              type="button"
+              onClick={() => toggleZone(zone)}
+              className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                active
+                  ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                  : "border-white/10 bg-white/[0.03] text-white/70"
+              }`}
+            >
+              {zone}
+            </button>
+          );
+        })}
+      </div>
+
+      <div className="space-y-3">
+        {selected.map((zone) => (
+          <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+            <div className="mb-2 text-sm text-[#fff3b2]">{zone}</div>
+            <AutoTextarea
+              className={textareaClass}
+              minRows={2}
+              placeholder="Что именно не устраивает в этой зоне?"
+              value={notes[zone] ?? ""}
+              onChange={(next) => onChange({ selected, notes: { ...notes, [zone]: next } })}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+function RangeBlock({
+  title,
+  value,
+  min,
+  max,
+  onChange,
+}: {
+  title: string;
+  value: number;
+  min: number;
+  max: number;
+  onChange: (val: number) => void;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+      <div className="mb-3 flex items-center justify-between text-sm text-white/60">
+        <span>{title}</span>
+        <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
+          {value}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full accent-[#f7d237]"
+      />
+    </div>
+  );
+}
+
+function GeoMapPreview({
+  physical,
+  sales,
+}: {
+  physical: string;
+  sales: string;
+}) {
+  const physicalPoint = geoPointFromText(physical, { x: 575, y: 165 });
+  const salesPoint = geoPointFromText(sales, physicalPoint);
+  const salesIsWorld =
+    sales.toLowerCase().includes("весь мир") ||
+    sales.toLowerCase().includes("world") ||
+    sales.toLowerCase().includes("global");
+
+  const salesRadius = salesIsWorld ? 240 : 90;
+
+  return (
+    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
+
+      <div className="relative h-[320px] w-full overflow-hidden rounded-[24px] bg-[#001233]">
+        <img
+          src="/worldmap_w.svg"
+          alt="world map"
+          className="absolute inset-0 h-full w-full object-contain opacity-28"
+        />
+
+        <svg viewBox="0 0 1100 420" className="absolute inset-0 h-full w-full">
+          <g opacity="0.1" stroke="rgba(255,255,255,0.12)">
+            <line x1="80" y1="70" x2="1020" y2="70" />
+            <line x1="80" y1="140" x2="1020" y2="140" />
+            <line x1="80" y1="210" x2="1020" y2="210" />
+            <line x1="80" y1="280" x2="1020" y2="280" />
+            <line x1="80" y1="350" x2="1020" y2="350" />
+          </g>
+
+          <circle
+            cx={salesPoint.x}
+            cy={salesPoint.y}
+            r={salesRadius}
+            stroke="rgba(111,211,255,0.40)"
+            strokeWidth="2"
+            strokeDasharray="8 8"
+            fill="rgba(111,211,255,0.07)"
+          />
+
+          <circle
+            cx={physicalPoint.x}
+            cy={physicalPoint.y}
+            r="10"
+            fill="#f7d237"
+            style={{ filter: "drop-shadow(0 0 16px rgba(247,210,55,0.75))" }}
+          />
+          <circle
+            cx={physicalPoint.x}
+            cy={physicalPoint.y}
+            r="22"
+            fill="rgba(247,210,55,0.12)"
+          />
+
+          <g
+            transform={`translate(${Math.max(physicalPoint.x - 90, 100)}, ${physicalPoint.y - 52})`}
+          >
+            <rect
+              width="180"
+              height="46"
+              rx="23"
+              fill="rgba(247,210,55,0.12)"
+              stroke="rgba(247,210,55,0.35)"
+            />
+            <text
+              x="90"
+              y="29"
+              textAnchor="middle"
+              fill="#fff3b2"
+              fontSize="14"
+            >
+              Физическая локация
+            </text>
+          </g>
+
+          <g
+            transform={`translate(${Math.max(salesPoint.x + 18, 120)}, ${salesPoint.y - 12})`}
+          >
+            <rect
+              width={salesIsWorld ? "126" : "158"}
+              height="44"
+              rx="22"
+              fill="rgba(77,194,255,0.12)"
+              stroke="rgba(77,194,255,0.35)"
+            />
+            <text
+              x={salesIsWorld ? "63" : "79"}
+              y="28"
+              textAnchor="middle"
+              fill="#c8f3ff"
+              fontSize="14"
+            >
+              {salesIsWorld ? "Весь мир" : "Радиус продаж"}
+            </text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function TeamMembersBuilder({
+  value,
+  onChange,
+}: {
+  value: TeamMember[];
+  onChange: (next: TeamMember[]) => void;
+}) {
+  const members = value ?? [createEmptyTeamMember()];
+
+  function updateMember(id: string, patch: Partial<TeamMember>) {
+    onChange(
+      members.map((member) =>
+        member.id === id ? { ...member, ...patch } : member,
+      ),
+    );
+  }
+
+  function addMember() {
+    onChange([...members, createEmptyTeamMember()]);
+  }
+
+  function removeMember(id: string) {
+    if (members.length === 1) return;
+    onChange(members.filter((member) => member.id !== id));
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="space-y-4">
+        {members.map((member, index) => (
+          <div
+            key={member.id}
+            className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5"
+          >
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="text-sm uppercase tracking-[0.22em] text-white/35">
+                Карточка участника {index + 1}
+              </div>
+              {members.length > 1 && (
+                <button
+                  type="button"
+                  onClick={() => removeMember(member.id)}
+                  className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/60 transition hover:bg-white/[0.05] hover:text-white"
+                >
+                  Удалить
+                </button>
+              )}
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div>
+                <div className="mb-2 text-sm text-white/55">Должность</div>
+                <input
+                  className={compactInputClass}
+                  placeholder="Например: COO / Head of Sales"
+                  value={member.position}
+                  onChange={(e) =>
+                    updateMember(member.id, { position: e.target.value })
+                  }
+                />
+              </div>
+
+              <div>
+                <div className="mb-2 text-sm text-white/55">
+                  Главная зона ответственности
+                </div>
+                <input
+                  className={compactInputClass}
+                  placeholder="Например: рост продаж / операционка"
+                  value={member.responsibility}
+                  onChange={(e) =>
+                    updateMember(member.id, { responsibility: e.target.value })
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="mb-2 text-sm text-white/55">ЛПР / не ЛПР</div>
+              <div className="flex flex-wrap gap-2.5">
+                {["ЛПР", "Не ЛПР"].map((option) => {
+                  const active = member.isDecisionMaker === option;
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      onClick={() =>
+                        updateMember(member.id, {
+                          isDecisionMaker:
+                            option as TeamMember["isDecisionMaker"],
+                        })
+                      }
+                      className={`rounded-full border px-3.5 py-2 text-sm transition ${
+                        active
+                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                          : "border-white/10 bg-white/[0.03] text-white/70"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4">
+              <div className="mb-2 text-sm text-white/55">
+                Где принимает участие
+              </div>
+              <TagField
+                value={{ selected: member.participatesIn ?? [], custom: [] }}
+                baseTags={TEAM_PARTICIPATION_TAGS}
+                onChange={(next) =>
+                  updateMember(member.id, {
+                    participatesIn: [...next.selected, ...next.custom],
+                  })
+                }
+              />
+            </div>
+          </div>
         ))}
       </div>
 
-      <div className="rounded-[30px] border border-white/10 bg-[#050e20] p-5">
-        <div className="grid gap-4 md:grid-cols-4">
-          <HeroMetric title="Лидов / мес" value={String(projected.leads)} />
-          <HeroMetric title="Сделок / мес" value={String(projected.deals)} />
-          <HeroMetric title="AOV" value={fmtMoney(projected.aov)} />
-          <HeroMetric title="Маржа" value={`${projected.margin}%`} />
+      <button
+        type="button"
+        onClick={addMember}
+        className="flex h-[98px] w-full items-center justify-center rounded-[24px] border border-dashed border-white/16 bg-white/[0.03] text-4xl text-white/55 transition hover:border-[#f7d237]/30 hover:bg-[#f7d237]/6 hover:text-[#fff3b2]"
+        aria-label="Добавить карточку"
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+function RelationStars({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (next: number) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(0)}
+        className={`rounded-full border px-3 py-2 text-xs transition ${
+          value === 0
+            ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+            : "border-white/10 bg-white/[0.03] text-white/50"
+        }`}
+      >
+        Не взаимодействуют
+      </button>
+      {[1, 2, 3, 4, 5].map((n) => {
+        const active = n <= value && value > 0;
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            className={`h-8 w-8 rounded-full border text-xs transition ${
+              active
+                ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                : "border-white/10 bg-white/[0.03] text-white/50"
+            }`}
+          >
+            {n}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TeamRelationsBuilder({
+  value,
+  teamMembers,
+  onChange,
+}: {
+  value: { links: TeamLink[]; note: string };
+  teamMembers: TeamMember[];
+  onChange: (next: { links: TeamLink[]; note: string }) => void;
+}) {
+  const generatedBase = createTeamLinksFromMembers(teamMembers);
+  const links = mergeTeamLinks(value?.links ?? [], generatedBase);
+  const note = value?.note ?? "";
+
+  useEffect(() => {
+    const currentIds = (value?.links ?? []).map((item) => item.id).join("|");
+    const nextIds = links.map((item) => item.id).join("|");
+    if (currentIds !== nextIds) {
+      onChange({ links, note });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [teamMembers]);
+
+  function updateMetric(linkId: string, patch: Partial<TeamLinkMetric>) {
+    onChange({
+      links: links.map((link) =>
+        link.id === linkId
+          ? { ...link, metrics: { ...link.metrics, ...patch } }
+          : link,
+      ),
+      note,
+    });
+  }
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-[24px] border border-white/8 bg-white/[0.04] p-4 md:p-5">
+        <div className="mb-3 text-sm uppercase tracking-[0.22em] text-white/35">
+          Связки между ролями
         </div>
 
-        <div className="mt-5 rounded-[28px] border border-white/8 bg-white/[0.03] p-5">
-          <div className="grid grid-cols-5 gap-3 text-right text-[15px] text-white/48">
-            <span className="text-left">$0</span>
-            <span>$5 000</span>
-            <span>$10 000</span>
-            <span>$15 000</span>
-            <span>$20 000</span>
+        {links.length === 0 ? (
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4 text-sm text-white/45">
+            Сначала заполните роли в вопросе выше.
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {links.map((link) => (
+              <div
+                key={link.id}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+              >
+                <div className="mb-4 text-sm font-medium text-white">
+                  {link.fromRole} ↔ {link.toRole}
+                </div>
+
+                <div className="grid items-start gap-4 lg:grid-cols-3">
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
+                      Скорость выполнения изменений
+                    </div>
+                    <RelationStars
+                      value={link.metrics.speed}
+                      onChange={(next) =>
+                        updateMetric(link.id, { speed: next })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
+                      Коммуникация
+                    </div>
+                    <RelationStars
+                      value={link.metrics.communication}
+                      onChange={(next) =>
+                        updateMetric(link.id, { communication: next })
+                      }
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <div className="mb-2 min-h-[56px] text-sm text-white/55">
+                      Качество передаваемой информации
+                    </div>
+                    <RelationStars
+                      value={link.metrics.infoQuality}
+                      onChange={(next) =>
+                        updateMetric(link.id, { infoQuality: next })
+                      }
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-4">
+          <div className="mb-2 text-sm text-white/55">Комментарий</div>
+          <AutoTextarea
+            className={textareaClass}
+            minRows={3}
+            placeholder="Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год"
+            value={note}
+            onChange={(next) => onChange({ links, note: next })}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SeasonalityChart({
+  value,
+  onChange,
+}: {
+  value: {
+    points: SeasonalityPoint[];
+    peaksReason: string;
+    lowsReason: string;
+  };
+  onChange: (next: {
+    points: SeasonalityPoint[];
+    peaksReason: string;
+    lowsReason: string;
+  }) => void;
+}) {
+  const points = value?.points ?? createInitialSeasonalityPoints();
+  const peaksReason = value?.peaksReason ?? "";
+  const lowsReason = value?.lowsReason ?? "";
+
+  const svgRef = useRef<SVGSVGElement | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const width = 980;
+  const height = 260;
+  const paddingX = 28;
+  const paddingY = 24;
+  const chartWidth = width - paddingX * 2;
+  const chartHeight = height - paddingY * 2;
+
+  function pointXY(index: number, v: number) {
+    const x = paddingX + (chartWidth / 11) * index;
+    const y = paddingY + chartHeight / 2 - (v / 50) * (chartHeight / 2 - 10);
+    return { x, y };
+  }
+
+  function smoothPath(values: SeasonalityPoint[]) {
+    const coords = values.map((p, index) => pointXY(index, p.value));
+    if (coords.length === 0) return "";
+
+    let d = `M ${coords[0].x} ${coords[0].y}`;
+    for (let i = 0; i < coords.length - 1; i += 1) {
+      const p0 = coords[i];
+      const p1 = coords[i + 1];
+      const cp1x = p0.x + (p1.x - p0.x) / 2;
+      const cp1y = p0.y;
+      const cp2x = p0.x + (p1.x - p0.x) / 2;
+      const cp2y = p1.y;
+      d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p1.x} ${p1.y}`;
+    }
+    return d;
+  }
+
+  function updatePoint(index: number, clientY: number) {
+    const svg = svgRef.current;
+    if (!svg) return;
+
+    const rect = svg.getBoundingClientRect();
+    const localY = clientY - rect.top;
+    const center = paddingY + chartHeight / 2;
+    const relative = center - localY;
+    const nextValue = clamp(
+      Math.round((relative / (chartHeight / 2 - 10)) * 50),
+      -50,
+      50,
+    );
+
+    const nextPoints = points.map((point, i) =>
+      i === index ? { ...point, value: nextValue } : point,
+    );
+
+    onChange({
+      points: nextPoints,
+      peaksReason,
+      lowsReason,
+    });
+  }
+
+  useEffect(() => {
+    function handleMove(e: MouseEvent) {
+      if (dragIndex === null) return;
+      updatePoint(dragIndex, e.clientY);
+    }
+
+    function handleUp() {
+      setDragIndex(null);
+    }
+
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleUp);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleUp);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dragIndex, points, peaksReason, lowsReason]);
+
+  const peakMonths = points.filter((p) => p.value >= 12).map((p) => p.month);
+  const lowMonths = points.filter((p) => p.value <= -12).map((p) => p.month);
+
+  return (
+    <div className="space-y-5">
+      <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+        <div className="mb-4 flex flex-wrap items-center gap-3">
+          <div className="rounded-2xl border border-teal-500/22 bg-teal-500/10 px-4 py-2 text-sm text-teal-100">
+            Пики
+          </div>
+          <div className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
+            Спады
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
+            Двигайте точки по вертикали
+          </div>
+        </div>
+
+        <div className="w-full">
+          <svg
+            ref={svgRef}
+            viewBox={`0 0 ${width} ${height}`}
+            preserveAspectRatio="none"
+            className="h-[260px] w-full rounded-[20px] bg-[#06162f]"
+          >
+            {[0, 1, 2, 3, 4].map((i) => {
+              const y = paddingY + (chartHeight / 4) * i;
+              return (
+                <line
+                  key={`grid-${i}`}
+                  x1={paddingX}
+                  x2={width - paddingX}
+                  y1={y}
+                  y2={y}
+                  stroke="rgba(255,255,255,0.045)"
+                />
+              );
+            })}
+
+            <line
+              x1={paddingX}
+              x2={width - paddingX}
+              y1={paddingY + chartHeight / 2}
+              y2={paddingY + chartHeight / 2}
+              stroke="rgba(255,255,255,0.10)"
+              strokeDasharray="6 6"
+            />
+
+            {[50, 25, 0, -25, -50].map((mark, idx) => {
+              const y = paddingY + (chartHeight / 4) * idx;
+              return (
+                <text
+                  key={`y-${mark}`}
+                  x={10}
+                  y={y + 4}
+                  fill="rgba(255,255,255,0.35)"
+                  fontSize="12"
+                >
+                  {mark > 0 ? `+${mark}%` : `${mark}%`}
+                </text>
+              );
+            })}
+
+            <path
+              d={smoothPath(points)}
+              fill="none"
+              stroke="#7dd3fc"
+              strokeWidth="3"
+              style={{ filter: "drop-shadow(0 0 6px rgba(125,211,252,0.14))" }}
+            />
+
+            {points.map((point, index) => {
+              const { x, y } = pointXY(index, point.value);
+              const pointColor =
+                point.value >= 12
+                  ? "#0f766e"
+                  : point.value <= -12
+                    ? "#f7d237"
+                    : "#ffffff";
+
+              return (
+                <g key={point.month}>
+                  <line
+                    x1={x}
+                    x2={x}
+                    y1={paddingY}
+                    y2={height - paddingY}
+                    stroke="rgba(255,255,255,0.03)"
+                  />
+                  <circle
+                    cx={x}
+                    cy={y}
+                    r="10"
+                    fill={pointColor}
+                    stroke="rgba(255,255,255,0.28)"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      setDragIndex(index);
+                    }}
+                    style={{
+                      cursor: "grab",
+                      filter:
+                        point.value >= 12
+                          ? "drop-shadow(0 0 6px rgba(15,118,110,0.18))"
+                          : point.value <= -12
+                            ? "drop-shadow(0 0 6px rgba(247,210,55,0.20))"
+                            : "drop-shadow(0 0 8px rgba(255,255,255,0.2))",
+                    }}
+                  />
+                  <text
+                    x={x}
+                    y={height - 8}
+                    textAnchor="middle"
+                    fill="rgba(255,255,255,0.7)"
+                    fontSize="13"
+                  >
+                    {point.month}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+        </div>
+      </div>
+
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="rounded-[24px] border border-teal-500/16 bg-teal-500/6 p-4">
+          <div className="mb-2 text-lg font-medium text-teal-100">Пики</div>
+          <div className="mb-3 text-sm text-white/60">
+            {peakMonths.length > 0
+              ? peakMonths.join(", ")
+              : "Пока не выделено ярко выраженных пиков"}
+          </div>
+          <AutoTextarea
+            className={textareaClass}
+            minRows={3}
+            placeholder="Что влияет и от чего зависит?"
+            value={peaksReason}
+            onChange={(next) =>
+              onChange({ points, peaksReason: next, lowsReason })
+            }
+          />
+          <div className="mt-2 text-xs text-white/42">
+            Ответ засчитывается от 20 символов. Сейчас: {textLength(peaksReason)}.
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#f7d237]/16 bg-[#f7d237]/6 p-4">
+          <div className="mb-2 text-lg font-medium text-[#fff3b2]">Спады</div>
+          <div className="mb-3 text-sm text-white/60">
+            {lowMonths.length > 0
+              ? lowMonths.join(", ")
+              : "Пока не выделено ярко выраженных спадов"}
+          </div>
+          <AutoTextarea
+            className={textareaClass}
+            minRows={3}
+            placeholder="Что влияет и от чего зависит?"
+            value={lowsReason}
+            onChange={(next) =>
+              onChange({ points, peaksReason, lowsReason: next })
+            }
+          />
+          <div className="mt-2 text-xs text-white/42">
+            Ответ засчитывается от 20 символов. Сейчас: {textLength(lowsReason)}.
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function renderInput(
+  question: Question,
+  answers: Answers,
+  setAnswer: (key: string, value: any) => void,
+) {
+  switch (question.type) {
+    case "rangePercent": {
+      const value = answers[question.id]?.value ?? 0;
+      const note = answers[question.id]?.note ?? "";
+
+      return (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between text-sm text-white/60">
+            <span>0%</span>
+            <span className="rounded-full border border-white/10 px-3 py-1 text-[#f7d237]">
+              {value}%
+            </span>
+            <span>100%</span>
           </div>
 
-          <div className="mt-6 space-y-5">
-            {bars.map((bar) => {
-              const width = Math.max(6, (bar.value / maxBar) * 100);
+          <input
+            type="range"
+            min={0}
+            max={100}
+            value={value}
+            onChange={(e) =>
+              setAnswer(question.id, {
+                value: Number(e.target.value),
+                note,
+                touched: true,
+              })
+            }
+            className="w-full accent-[#f7d237]"
+          />
+
+          <AutoTextarea
+            placeholder="Комментарий или контекст…"
+            className={textareaClass}
+            minRows={2}
+            value={note}
+            onChange={(next) =>
+              setAnswer(question.id, {
+                value,
+                note: next,
+                touched: answers[question.id]?.touched ?? false,
+              })
+            }
+          />
+        </div>
+      );
+    }
+
+    case "text": {
+      if (question.id === "positionText") {
+        const current = answers[question.id] ?? { text: "", stages: [] };
+
+        return (
+          <div className="space-y-4">
+            <TagField
+              label="Стадия бизнеса"
+              value={{
+                selected: current.stages ?? [],
+                custom: current.customStages ?? [],
+              }}
+              baseTags={BUSINESS_STAGE_TAGS}
+              single
+              onChange={(next) =>
+                setAnswer(question.id, {
+                  ...current,
+                  stages: next.selected,
+                  customStages: next.custom,
+                })
+              }
+            />
+
+            <div className="space-y-2.5">
+              <AutoTextarea
+                placeholder="Опишите ваш бизнес"
+                className={textareaClass}
+                minRows={3}
+                value={current.text ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, text: next })
+                }
+              />
+              <div className="text-xs text-white/42">
+                Ответ засчитывается от 50 символов. Сейчас: {textLength(current.text ?? "")}.
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      if (question.id === "horizons") {
+        const current = answers[question.id] ?? initialAnswers.horizons;
+
+        return (
+          <div className="space-y-4">
+            <div>
+              <div className="mb-2 text-sm text-white/55">Следующие 3 месяца</div>
+              <AutoTextarea
+                placeholder="Чего вы ждете от следующих 3 месяцев"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan3 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan3: next })
+                }
+              />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan3 ?? "")}.
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm text-white/55">
+                Следующие 6 месяцев
+              </div>
+              <AutoTextarea
+                placeholder="Чего вы ждете от следующих 6 месяцев"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan6 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan6: next })
+                }
+              />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan6 ?? "")}.
+              </div>
+            </div>
+
+            <div>
+              <div className="mb-2 text-sm text-white/55">
+                Следующие 12 месяцев
+              </div>
+              <AutoTextarea
+                placeholder="Чего вы ждете от следующих 12 месяцев"
+                className={textareaClass}
+                minRows={3}
+                value={current.plan12 ?? ""}
+                onChange={(next) =>
+                  setAnswer(question.id, { ...current, plan12: next })
+                }
+              />
+              <div className="mt-2 text-xs text-white/42">
+                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan12 ?? "")}.
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      const minLengthByQuestion: Record<string, number> = {
+        clientProfile: 20,
+        decisions: 20,
+        changesNeeded: 20,
+        implemented: 20,
+        businessScale: 20,
+      };
+
+      const minLength = minLengthByQuestion[question.id] ?? 0;
+      const currentLength = textLength(answers[question.id] ?? "");
+
+      return (
+        <div className="space-y-2.5">
+          <AutoTextarea
+            placeholder={question.id === "businessScale" ? "Например: 6 лет на рынке, команда 18 человек" : "Введите ответ…"}
+            className={textareaClass}
+            minRows={3}
+            value={answers[question.id] ?? ""}
+            onChange={(next) => setAnswer(question.id, next)}
+          />
+
+          {minLength > 0 ? (
+            <div className="text-xs text-white/42">
+              Ответ засчитывается от {minLength} символов. Сейчас: {currentLength}.
+            </div>
+          ) : null}
+        </div>
+      );
+    }
+
+    case "tags": {
+      const source =
+        question.id === "kpis"
+          ? KPI_TAGS
+          : question.id === "acquisitionChannels"
+            ? FLOW_TAGS
+            : question.id === "retention"
+              ? RETENTION_TAGS
+              : ANALYTICS_TAGS;
+
+      const state = getTagState(answers[question.id]);
+
+      return (
+        <TagField
+          value={state}
+          baseTags={source}
+          onChange={(next) => {
+            setAnswer(question.id, next);
+
+            if (question.id === "acquisitionChannels") {
+              const allChannels = [...next.selected, ...next.custom];
+              const prev: ChannelDistribution = answers.channelEfficiency ?? {
+                values: {},
+                touched: {},
+              };
+
+              const nextValues: Record<string, number> = {};
+              const nextTouched: Record<string, boolean> = {};
+
+              allChannels.forEach((channel) => {
+                nextValues[channel] = prev.values?.[channel] ?? 0;
+                nextTouched[channel] = prev.touched?.[channel] ?? false;
+              });
+
+              setAnswer("channelEfficiency", {
+                values: nextValues,
+                touched: nextTouched,
+              });
+            }
+          }}
+        />
+      );
+    }
+
+    case "dualRange": {
+      const current = answers[question.id] ?? {
+        demand: 0,
+        capacity: 0,
+        touched: { demand: false, capacity: false },
+      };
+
+      return (
+        <div className="grid gap-5 md:grid-cols-2">
+          <RangeBlock
+            title="Обращения / заявки"
+            value={current.demand}
+            min={0}
+            max={500}
+            onChange={(val) =>
+              setAnswer(question.id, {
+                ...current,
+                demand: val,
+                touched: { ...current.touched, demand: true },
+              })
+            }
+          />
+
+          <RangeBlock
+            title="Реальная capacity"
+            value={current.capacity}
+            min={0}
+            max={500}
+            onChange={(val) =>
+              setAnswer(question.id, {
+                ...current,
+                capacity: val,
+                touched: { ...current.touched, capacity: true },
+              })
+            }
+          />
+        </div>
+      );
+    }
+
+    case "channelDistribution": {
+      const selectedChannels = getAllTagValues(answers.acquisitionChannels);
+      const state: ChannelDistribution = answers.channelEfficiency ?? {
+        values: {},
+        touched: {},
+      };
+
+      if (selectedChannels.length === 0) {
+        return (
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5 text-sm text-white/60">
+            Сначала выберите каналы в предыдущем вопросе.
+          </div>
+        );
+      }
+
+      const total = selectedChannels.reduce(
+        (acc, channel) => acc + Number(state.values?.[channel] ?? 0),
+        0,
+      );
+
+      return (
+        <div className="space-y-5">
+          <div className="flex items-center justify-between rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <div className="text-sm text-white/60">
+              Распределите входящий поток клиентов между выбранными каналами
+            </div>
+            <div
+              className={`rounded-full px-3 py-1 text-sm ${
+                total === 100
+                  ? "border border-emerald-400/30 bg-emerald-400/10 text-emerald-200"
+                  : "border border-[#f7d237]/25 bg-[#f7d237]/10 text-[#fff3b2]"
+              }`}
+            >
+              {total}%
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {selectedChannels.map((channel) => {
+              const value = Number(state.values?.[channel] ?? 0);
+              const otherTotal = selectedChannels.reduce(
+                (acc, currentChannel) => {
+                  if (currentChannel === channel) return acc;
+                  return acc + Number(state.values?.[currentChannel] ?? 0);
+                },
+                0,
+              );
+              const maxAllowed = Math.max(0, 100 - otherTotal);
+
               return (
-                <div key={bar.name}>
-                  <div className="mb-3 flex items-center justify-between gap-4">
-                    <div className="text-[15px] text-white/72">{bar.name}</div>
-                    <div className="text-[15px] text-white/72">{fmtMoney(bar.value)}</div>
+                <div
+                  key={channel}
+                  className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4"
+                >
+                  <div className="mb-3 flex items-center justify-between gap-3">
+                    <div className="text-sm font-medium text-white">
+                      {channel}
+                    </div>
+                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-sm text-[#fff3b2]">
+                      {value}%
+                    </div>
                   </div>
-                  <div className="h-6 rounded-full bg-white/[0.06]">
-                    <div
-                      className={`h-6 rounded-full ${
-                        bar.good
-                          ? bar.name === 'Revenue'
-                            ? 'bg-[#f2df79]'
-                            : 'bg-[#ead77a]'
-                          : 'bg-[linear-gradient(90deg,#8398ff_0%,#93a5ff_100%)]'
-                      }`}
-                      style={{ width: `${width}%` }}
-                    />
+
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={value}
+                    onChange={(e) => {
+                      const nextValue = Math.min(
+                        Number(e.target.value),
+                        maxAllowed,
+                      );
+                      setAnswer("channelEfficiency", {
+                        values: {
+                          ...state.values,
+                          [channel]: nextValue,
+                        },
+                        touched: {
+                          ...state.touched,
+                          [channel]: true,
+                        },
+                      });
+                    }}
+                    className="w-full accent-[#f7d237]"
+                  />
+
+                  <div className="mt-2 text-xs text-white/35">
+                    Максимум сейчас: {maxAllowed}%
                   </div>
                 </div>
               );
             })}
           </div>
-        </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
-          <MoneyCard title="База" revenue={fmtMoney(lever.base.revenue)} gross={fmtMoney(lever.base.grossProfit)} />
-          <MoneyCard title="Активный рычаг" revenue={fmtMoney(projected.revenue)} gross={fmtMoney(projected.grossProfit)} />
+          <div
+            className={`rounded-2xl border px-4 py-3 text-sm ${
+              total === 100
+                ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
+                : "border-white/10 bg-white/[0.03] text-white/55"
+            }`}
+          >
+            {total === 100
+              ? "Распределение заполнено корректно."
+              : `Сейчас сумма составляет ${total}%. Нужно довести до 100%.`}
+          </div>
         </div>
+      );
+    }
 
-        <div className="mt-5 rounded-[22px] border border-[#f7d237]/18 bg-[linear-gradient(180deg,rgba(247,210,55,0.12),rgba(255,255,255,0.04))] p-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="text-sm text-white/72">
-              <b>{lever.label}</b> — {lever.deltaLabel}
+    case "tripleMargin": {
+      const items: ProductItem[] =
+        answers[question.id] ?? initialAnswers.topProducts;
+
+      return (
+        <div className="space-y-4">
+          {items.map((item, i) => {
+            return (
+              <div
+                key={i}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+              >
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <input
+                    placeholder={`Продукт ${i + 1}`}
+                    className={compactInputClass}
+                    value={item.name}
+                    onChange={(e) => {
+                      const next = [...items];
+                      next[i] = { ...next[i], name: e.target.value };
+                      setAnswer(question.id, next);
+                    }}
+                  />
+                  <div className="min-w-[86px] rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-2 text-center text-sm text-[#fff3b2]">
+                    {item.value}%
+                  </div>
+                </div>
+
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={item.value}
+                  onChange={(e) => {
+                    const next = [...items];
+                    next[i] = {
+                      ...next[i],
+                      value: Number(e.target.value),
+                      touched: true,
+                    };
+                    setAnswer(question.id, next);
+                  }}
+                  className="w-full accent-[#f7d237]"
+                />
+              </div>
+            );
+          })}
+
+          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/60">
+            Каждая шкала независима: укажите маржинальность каждого продукта
+            отдельно.
+          </div>
+        </div>
+      );
+    }
+
+    case "cjm": {
+      const current = answers[question.id] ?? initialAnswers.cjm;
+
+      return (
+        <div className="grid gap-4 md:grid-cols-2">
+          {current.stages.map((step: CjmStage, i: number) => (
+            <div
+              key={step.stage}
+              className={`rounded-[24px] border border-white/8 bg-white/[0.04] p-4 ${
+                i === current.stages.length - 1 ? "md:col-span-2" : ""
+              }`}
+            >
+              <div className="mb-4">
+                <div className="text-xs uppercase tracking-[0.24em] text-white/35">
+                  Stage {i + 1}
+                </div>
+                <div className="mt-1 text-2xl font-semibold text-white">
+                  {step.stage}
+                </div>
+                <div className="mt-1 text-sm text-white/50">
+                  {step.description}
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что происходит
+                  </div>
+                  <AutoTextarea
+                    placeholder="Опишите, что происходит на этом этапе"
+                    className={textareaClass}
+                    minRows={2}
+                    value={step.whatHappens}
+                    onChange={(next) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = { ...nextStages[i], whatHappens: next };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-2 text-sm text-white/55">Длительность</div>
+                  <input
+                    placeholder="Например: 1 день / 2 недели"
+                    className={compactInputClass}
+                    value={step.duration}
+                    onChange={(e) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        duration: e.target.value,
+                      };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что получает клиент
+                  </div>
+                  <AutoTextarea
+                    placeholder="Ценность для клиента на этом этапе"
+                    className={textareaClass}
+                    minRows={2}
+                    value={step.clientGets}
+                    onChange={(next) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = { ...nextStages[i], clientGets: next };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Что получает компания
+                  </div>
+                  <AutoTextarea
+                    placeholder="Какой результат получает бизнес"
+                    className={textareaClass}
+                    minRows={2}
+                    value={step.companyGets}
+                    onChange={(next) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = { ...nextStages[i], companyGets: next };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
+                    }}
+                  />
+                </div>
+
+                <div>
+                  <div className="mb-2 text-sm text-white/45">
+                    Проблемы (опционально)
+                  </div>
+                  <AutoTextarea
+                    placeholder="Где здесь возникают потери, трение или замедление"
+                    className={textareaClass}
+                    minRows={2}
+                    value={step.problems}
+                    onChange={(next) => {
+                      const nextStages = [...current.stages];
+                      nextStages[i] = { ...nextStages[i], problems: next };
+                      setAnswer(question.id, {
+                        ...current,
+                        stages: nextStages,
+                      });
+                    }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="rounded-full border border-white/10 bg-black/15 px-3 py-1 text-sm text-white/72">
-              Horizon: 6 months
-            </div>
+          ))}
+        </div>
+      );
+    }
+
+    case "seasonality": {
+      const current = answers[question.id] ?? initialAnswers.seasonality;
+      return (
+        <SeasonalityChart
+          value={current}
+          onChange={(next) => setAnswer(question.id, next)}
+        />
+      );
+    }
+
+    case "map": {
+      const current = answers[question.id] ?? initialAnswers.geo;
+
+      return (
+        <div className="grid gap-3 md:grid-cols-2">
+          <input
+            className={compactInputClass}
+            placeholder="Где физически находится бизнес"
+            value={current.physical}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, physical: e.target.value })
+            }
+          />
+          <input
+            className={compactInputClass}
+            placeholder="В каком регионе продаёте"
+            value={current.sales}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, sales: e.target.value })
+            }
+          />
+        </div>
+      );
+    }
+
+    case "teamRoles":
+      return (
+        <TeamMembersBuilder
+          value={answers[question.id] ?? [createEmptyTeamMember()]}
+          onChange={(next) => setAnswer(question.id, next)}
+        />
+      );
+
+    case "departmentRelations":
+      return (
+        <TeamRelationsBuilder
+          value={answers[question.id] ?? { links: [], note: "" }}
+          teamMembers={answers.team ?? []}
+          onChange={(next) => setAnswer(question.id, next)}
+        />
+      );
+
+    case "stressRange": {
+      if (question.id === "lossZones") {
+        const current = answers[question.id] ?? initialAnswers.lossZones;
+        const inheritedZones = answers.stress?.customZones ?? [];
+        const zones = [...STRESS_ZONES, ...inheritedZones];
+
+        return (
+          <LossZoneTagEditor
+            zones={zones}
+            value={current}
+            onChange={(next) => setAnswer(question.id, next)}
+          />
+        );
+      }
+
+      const current = answers[question.id] ?? initialAnswers[question.id];
+      const customZones: string[] = current.customZones ?? [];
+      const zones = [...STRESS_ZONES, ...customZones];
+
+      return (
+        <div className="space-y-4">
+          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            {zones.map((zone) => (
+              <div
+                key={zone}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
+              >
+                <div className="mb-3 text-sm font-medium text-white">{zone}</div>
+                <div className="mb-3 flex items-center justify-between text-xs text-white/45">
+                  <span>-10</span>
+                  <span className="text-[#fff3b2]">{current.values[zone] ?? 0}</span>
+                  <span>10</span>
+                </div>
+                <input
+                  type="range"
+                  min={-10}
+                  max={10}
+                  value={current.values[zone] ?? 0}
+                  onChange={(e) =>
+                    setAnswer(question.id, {
+                      ...current,
+                      values: {
+                        ...current.values,
+                        [zone]: Number(e.target.value),
+                      },
+                      touched: {
+                        ...current.touched,
+                        [zone]: true,
+                      },
+                    })
+                  }
+                  className="w-full accent-[#f7d237]"
+                />
+              </div>
+            ))}
           </div>
 
+          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+            <div className="mb-3 text-sm text-white/55">Добавить свою зону</div>
+            <CustomZoneComposer
+              zones={customZones}
+              onChange={(nextZones) =>
+                setAnswer(question.id, {
+                  ...current,
+                  customZones: nextZones,
+                  values: nextZones.reduce((acc: Record<string, number>, zone: string) => ({
+                    ...acc,
+                    [zone]: current.values?.[zone] ?? 0,
+                  }), current.values ?? {}),
+                  touched: nextZones.reduce((acc: Record<string, boolean>, zone: string) => ({
+                    ...acc,
+                    [zone]: current.touched?.[zone] ?? false,
+                  }), current.touched ?? {}),
+                })
+              }
+            />
+          </div>
+        </div>
+      );
+    }
+
+    case "analyticsBranch": {
+      const current = answers[question.id] ?? initialAnswers.analytics;
+      return (
+        <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+          <TagField
+            value={{
+              selected: current.tags ?? [],
+              custom: current.custom ?? [],
+            }}
+            baseTags={ANALYTICS_TAGS}
+            onChange={(next) =>
+              setAnswer(question.id, {
+                ...current,
+                tags: next.selected,
+                custom: next.custom,
+              })
+            }
+          />
+
           <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between text-sm text-white/62">
-              <span>
-                Изменение: {value}
-                {lever.unit}
+            <AutoTextarea
+              placeholder="Опишите, как именно аналитика участвует в принятии решений…"
+              className={textareaClass}
+              minRows={2}
+              value={current.note ?? ""}
+              onChange={(next) =>
+                setAnswer(question.id, { ...current, note: next })
+              }
+            />
+          </div>
+        </div>
+      );
+    }
+
+    case "strategyGoal": {
+      const current = answers[question.id] ?? initialAnswers.goal;
+      const modes = ["On hold", "Не превысить лимит", "Сократить расходы"];
+
+      return (
+        <div className="space-y-5">
+          <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
+            <div className="mb-3 flex items-center justify-between text-sm text-white/60">
+              <span>Цель по чистой прибыли</span>
+              <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1 text-[#fff3b2]">
+                +{current.profitTarget}%
               </span>
-              <span>Ceiling: {lever.max}{lever.unit}</span>
             </div>
+
             <input
               type="range"
-              min={lever.min}
-              max={lever.max}
-              step={lever.step}
-              value={value}
-              onChange={(e) => setValue(Number(e.target.value))}
-              className="h-2 w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-[#f7d237]"
+              min={0}
+              max={100}
+              value={current.profitTarget}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  profitTarget: Number(e.target.value),
+                  touched: true,
+                })
+              }
+              className="w-full accent-[#f7d237]"
             />
           </div>
 
-          <div className="mt-4 grid gap-3 md:grid-cols-3">
-            <KpiCard label="Revenue impact" value={pctDelta(lever.base.revenue, projected.revenue)} note={fmtMoney(projected.revenue)} />
-            <KpiCard label="Gross Profit impact" value={pctDelta(lever.base.grossProfit, projected.grossProfit)} note={fmtMoney(projected.grossProfit)} />
-            <KpiCard label="Почему это работает" value={projected.explanation} note={lever.ceilingNote} />
+          <div className="space-y-3">
+            <div className="text-sm text-white/50">
+              Статус расходов к которому стремитесь до конца года
+            </div>
+            <div className="grid gap-3 md:grid-cols-3">
+              {modes.map((option) => (
+                <button
+                  type="button"
+                  key={option}
+                  onClick={() =>
+                    setAnswer(question.id, { ...current, mode: option })
+                  }
+                  className={`rounded-2xl border px-4 py-4 text-sm ${
+                    current.mode === option
+                      ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#fff3b2]"
+                      : "border-white/10 bg-white/[0.03] text-white/70"
+                  }`}
+                >
+                  {option}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <input
+            className={compactInputClass}
+            placeholder="Если применимо — укажите процент изменения расходов"
+            value={current.costChange}
+            onChange={(e) =>
+              setAnswer(question.id, { ...current, costChange: e.target.value })
+            }
+          />
+        </div>
+      );
+    }
+
+    case "contact": {
+      const current = answers[question.id] ?? initialAnswers.contacts;
+      return (
+        <div className="space-y-4">
+          <div>
+            <input
+              className={compactInputClass}
+              placeholder="Email получателя отчёта"
+              value={current.reportEmail}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  reportEmail: e.target.value,
+                })
+              }
+            />
+            <div className="mt-2 text-xs text-white/42">
+              Поле засчитывается только если содержит символ @.
+            </div>
+          </div>
+
+          <div>
+            <input
+              className={compactInputClass}
+              placeholder="Email / имя участника онлайн-встречи"
+              value={current.meetingContact}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  meetingContact: e.target.value,
+                })
+              }
+            />
+            <div className="mt-2 text-xs text-white/42">
+              Поле засчитывается только если содержит символ @.
+            </div>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
+              <div className="mb-2 flex items-center gap-2 text-white/80">
+                <span className="text-[#f7d237]">✉</span> Отправка отчёта
+              </div>
+              Автоматически после завершения диагностики.
+            </div>
+
+            <div className="rounded-2xl border border-white/8 bg-white/[0.03] p-4 text-sm text-white/60">
+              <div className="mb-2 flex items-center gap-2 text-white/80">
+                <span className="text-[#f7d237]">◷</span> Приглашение на встречу
+              </div>
+              Можно связать со слотами и защитой от повторного входа.
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    default:
+      return null;
+  }
+}
+
+function FullScreenLoader({ open }: { open: boolean }) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999] flex items-center justify-center bg-[#071325]/92 backdrop-blur-xl">
+      <div className="mx-auto w-full max-w-[560px] px-6">
+        <div className="rounded-[32px] border border-white/10 bg-white/[0.05] p-8 shadow-[0_30px_100px_rgba(0,0,0,0.45)]">
+          <div className="mx-auto mb-6 h-16 w-16 rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 p-3">
+            <div className="h-full w-full animate-spin rounded-full border-2 border-[#f7d237]/25 border-t-[#f7d237]" />
+          </div>
+
+          <div className="text-center">
+            <div className="text-[11px] uppercase tracking-[0.28em] text-white/35">
+              Revenue Snapshot
+            </div>
+
+            <div className="mt-3 text-2xl font-semibold text-white">
+              Отправляем вводные на генерацию
+            </div>
+
+            <p className="mt-3 text-sm leading-6 text-white/55">
+              Пожалуйста, не закрывайте страницу
+            </p>
+
+            <div className="mt-6 overflow-hidden rounded-full border border-white/10 bg-white/[0.04]">
+              <div className="h-2 w-full animate-pulse bg-[linear-gradient(90deg,rgba(247,210,55,0.15),rgba(247,210,55,0.9),rgba(247,210,55,0.15))]" />
+            </div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+export default function DiagnosticIntakePage() {
+  const [active, setActive] = useState<Chapter | null>(null);
+  const [answers, setAnswers] = useState<Answers>(initialAnswers);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const sectionProgress = useMemo(
+    () =>
+      Object.fromEntries(
+        chapters.map((chapter) => [
+          chapter.id,
+          getChapterProgress(chapter, answers),
+        ]),
+      ),
+    [answers],
+  );
+
+  const total = useMemo(() => {
+    const values = Object.values(sectionProgress) as number[];
+    return values.length
+      ? values.reduce((acc, v) => acc + v, 0) / values.length
+      : 0;
+  }, [sectionProgress]);
+
+  const totalQuestions = useMemo(
+    () => chapters.reduce((acc, chapter) => acc + chapter.questions.length, 0),
+    [],
+  );
+
+  const allComplete = Math.round(total) === 100;
+
+  function setAnswer(key: string, value: any) {
+    setAnswers((prev) => {
+      const next = { ...prev, [key]: value };
+
+      if (key === "team") {
+        const links = mergeTeamLinks(
+          prev.interaction?.links ?? [],
+          createTeamLinksFromMembers(value ?? []),
+        );
+        next.interaction = {
+          ...(prev.interaction ?? { note: "" }),
+          links,
+        };
+      }
+
+      return next;
+    });
+  }
+
+  async function handleSubmit() {
+    if (!allComplete || isSubmitting) return;
+
+    try {
+      setIsSubmitting(true);
+
+      const preparedAnswers = buildPreparedAnswers(answers);
+
+      await fetch("https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          source: "snapshot-action",
+          createdAt: new Date().toISOString(),
+          progress: {
+            total,
+            totalQuestions,
+            sectionProgress,
+          },
+          answers: preparedAnswers,
+        }),
+      });
+    } catch {
+      // intentionally silent for current stage
+    } finally {
+      setTimeout(() => {
+        setIsSubmitting(false);
+      }, 1600);
+    }
+  }
+
+  return (
+    <div
+      className="min-h-screen text-white"
+      style={{
+        background:
+          "radial-gradient(circle at top, rgba(247,210,55,0.08), transparent 18%), linear-gradient(180deg, #0b1d3a 0%, #08162d 100%)",
+      }}
+    >
+      <style jsx global>{`
+        @keyframes rs-overlay-in {
+          from {
+            opacity: 0;
+            backdrop-filter: blur(0px);
+          }
+          to {
+            opacity: 1;
+            backdrop-filter: blur(4px);
+          }
+        }
+
+        @keyframes rs-panel-in {
+          from {
+            opacity: 0;
+            transform: translateX(42px) scale(0.985);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        @keyframes rs-fade-up {
+          from {
+            opacity: 0;
+            transform: translateY(16px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
+
+      <FullScreenLoader open={isSubmitting} />
+
+      <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
+        <GlassCard className="mb-8 p-5 md:p-7">
+          <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
+            <div>
+              <div className="mb-4 flex items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
+                <span className="text-[#f7d237]">●</span>
+                Revenue Snapshot — Diagnostic Intake
+              </div>
+
+              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
+                Структурированная диагностическая анкета бизнеса
+              </h1>
+
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
+                Каждая глава — отдельная карточка с локальной заполненностью,
+                внутри — half-screen panel с адаптивным типом ввода под
+                конкретный вопрос.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-3 pt-1 text-xs text-white/45">
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Блоков: {chapters.length}
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Вопросов: {totalQuestions}
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Формат: card → half-screen modal
+                </span>
+                <span className="rounded-full border border-white/10 px-3 py-1.5">
+                  Логика: adaptive input flow
+                </span>
+              </div>
+            </div>
+
+            <GlassCard className="p-6 md:p-7">
+              <div className="flex flex-col items-center justify-center text-center">
+                <div className="text-[11px] uppercase tracking-[0.28em] text-white/40">
+                  Overall completion
+                </div>
+
+                <div className="mt-6">
+                  <Ring progress={total} size={172} />
+                </div>
+
+                <div className="mt-5 text-2xl font-semibold text-[#fefefe]">
+                  Общая заполненность анкеты
+                </div>
+
+                <p className="mt-2 max-w-sm text-sm leading-6 text-[#a5aeb2]">
+                  Диаграмма отражает совокупный прогресс по всем разделам анкеты
+                  и обновляется по мере заполнения блоков.
+                </p>
+
+                <div className="mt-5 w-full">
+                  {allComplete ? (
+                    <button
+                      type="button"
+                      onClick={handleSubmit}
+                      className="w-full rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 hover:shadow-[0_0_26px_rgba(247,210,55,0.25)]"
+                    >
+                      Отправить вводные
+                    </button>
+                  ) : (
+                    <div className="grid w-full grid-cols-2 gap-3 text-left">
+                      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                          Progress
+                        </div>
+                        <div className="mt-1 text-lg font-semibold text-white">
+                          {Math.round(total)}%
+                        </div>
+                      </div>
+                      <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3">
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                          Total blocks
+                        </div>
+                        <div className="mt-1 text-lg font-semibold text-white">
+                          {chapters.length}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </GlassCard>
+          </div>
+        </GlassCard>
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {chapters.map((chapter, index) => {
+            const progress = Number(sectionProgress[chapter.id]);
+
+            return (
+              <TiltCardButton
+                key={chapter.id}
+                onClick={() => setActive(chapter)}
+              >
+                <GlassCard className="h-full p-5 md:p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_30px_rgba(247,210,55,0.10)]">
+                      {chapter.icon}
+                    </div>
+                    <Ring progress={progress} size={82} />
+                  </div>
+
+                  <div className="mt-6">
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
+                      Block {index + 1}
+                    </div>
+                    <div className="mt-2 text-xl font-semibold text-[#fefefe]">
+                      {chapter.title}
+                    </div>
+                    <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
+                      {chapter.subtitle}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 space-y-2.5">
+                    {chapter.questions.map((question, i) => {
+                      const isDone = getQuestionProgress(question, answers) === 100;
+
+                      return (
+                        <div
+                          key={question.id}
+                          className="flex items-start gap-3 text-sm text-white/60"
+                        >
+                          <span
+                            className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[10px] transition ${
+                              isDone
+                                ? "border-[#f7d237]/45 bg-[#f7d237] text-[#0b1d3a] shadow-[0_0_12px_rgba(247,210,55,0.18)]"
+                                : "border-white/10 bg-transparent text-white/55"
+                            }`}
+                          >
+                            {i + 1}
+                          </span>
+                          <span>{question.label}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
+                    <span className="text-white/55">Открыть блок</span>
+                    <div className="flex items-center gap-2 text-[#f7d237]">
+                      <span>{progress}%</span>
+                      <span>→</span>
+                    </div>
+                  </div>
+                </GlassCard>
+              </TiltCardButton>
+            );
+          })}
+        </div>
+      </div>
+
+      {active && (
+        <>
+          <div
+            className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+            style={{
+              animation: "rs-overlay-in 280ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+            onClick={() => setActive(null)}
+          />
+
+          <div
+            className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
+            style={{
+              animation: "rs-panel-in 420ms cubic-bezier(0.22, 1, 0.36, 1)",
+            }}
+          >
+            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
+                    diagnostic chapter
+                  </div>
+                  <div className="mt-1 text-2xl font-semibold text-[#fefefe]">
+                    {active.title}
+                  </div>
+                  <div className="mt-1 text-sm text-[#a5aeb2]">
+                    {active.subtitle}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <Ring
+                    progress={Number(sectionProgress[active.id])}
+                    size={84}
+                  />
+                  <button
+                    onClick={() => setActive(null)}
+                    className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
+                  >
+                    Закрыть
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
+              {active.questions.map((question, index) => (
+                <div
+                  key={question.id}
+                  style={{
+                    animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
+                      40 + index * 40
+                    }ms both`,
+                  }}
+                >
+                  <GlassCard className="p-5 md:p-6">
+                    <div className="mb-4 flex items-start justify-between gap-4">
+                      <div>
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/38">
+                          Question {index + 1}
+                        </div>
+                        <h3 className="mt-2 text-lg font-medium leading-7 text-[#fefefe]">
+                          {question.label}
+                        </h3>
+                      </div>
+
+                      <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-3 text-sm text-[#f7d237]">
+                        {getQuestionProgress(question, answers) === 100 ? "✓" : "○"}
+                      </div>
+                    </div>
+
+                    {renderInput(question, answers, setAnswer)}
+                  </GlassCard>
+                </div>
+              ))}
+
+              <div
+                className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/8 bg-white/[0.04] px-5 py-4"
+                style={{
+                  animation: `rs-fade-up 420ms cubic-bezier(0.22, 1, 0.36, 1) ${
+                    80 + active.questions.length * 40
+                  }ms both`,
+                }}
+              >
+                <div className="text-sm text-white/55">
+                  Прогресс этого блока: {Number(sectionProgress[active.id])}%
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setActive(null)}
+                  className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 hover:shadow-[0_0_24px_rgba(247,210,55,0.22)]"
+                >
+                  Сохранить блок <span>✓</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
