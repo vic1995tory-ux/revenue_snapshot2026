@@ -536,7 +536,7 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
-            <a href={href} className="start-card-btn start-card-btn-floating">
+            <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="start-card-btn start-card-btn-floating">
               Попробовать Snapshot
             </a>
           </div>
@@ -1059,7 +1059,7 @@ export default function Home() {
           </nav>
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
-            <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
+            <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1091,7 +1091,7 @@ export default function Home() {
               </div>
 
               <div className="hero-actions-row">
-                <a href="#try" className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
+                <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
                 <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Побаловаться</a>
               </div>
             </div>
@@ -1140,12 +1140,12 @@ export default function Home() {
         <section id="preview" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Интерактивное превью</div>
-            <h2 className="section-title">Поиграйте с моделью до оплаты</h2>
+            <h2 className="section-title">Посмотрите, как меняется экономика при разных сценариях
+</h2>
             <p className="section-copy">
-              Здесь пользователь меняет ключевые параметры и видит
-              предварительные сигналы. Полный разбор открывается после оплаты.
-              Модель на этой странице не передает и не запоминает введенные вами
-              данные, поэтому сценарий безопасен для быстрого теста.
+Это предварительная симуляция логики бизнеса.
+Она помогает увидеть, какие параметры сильнее всего влияют на результат, но не заменяет полный анализ.
+Полный Snapshot показывает, где именно находится ваше ограничение роста, почему оно возникает и какой шаг даст наибольший экономический эффект.
             </p>
           </div>
 
@@ -1240,7 +1240,7 @@ export default function Home() {
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
+              <a href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
             </aside>
           </div>
         </section>
@@ -1295,14 +1295,14 @@ export default function Home() {
                   icon="/stratsession.svg"
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
-                  href={tgContactUrl}
+                  href={https://www.paypal.com/ncp/payment/GQLFG3CYUHM82}
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
-                  href={payUrl}
+                  href={https://www.paypal.com/ncp/payment/J573NHRDCJQZC}
                 />
               </div>
             </div>
@@ -1313,16 +1313,16 @@ export default function Home() {
           <div className="glass-card glare-card cta-card">
             <div>
               <div className="section-kicker">CTA</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Откройте полный Revenue Snapshot</h2>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Revenue Snapshot – платформа детальной диагностики бизнеса</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
-                После оплаты пользователь переходит в Telegram, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
+                После оплаты пользователь попадает внутрь нашей платформы, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
               </p>
             </div>
 
             <div className="cta-box glare-card-lite">
               <div className="text-sm text-white/55">Следующий шаг</div>
-              <div className="mt-2 text-2xl font-semibold text-white">Попробовать Snapshot</div>
-              <a href={payUrl} className="tg-gradient-btn mt-5 inline-flex">Получить Revenue Snapshot</a>
+              <div className="mt-2 text-2xl font-semibold text-white">Узнать больше</div>
+              <a href={https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0} className="tg-gradient-btn mt-5 inline-flex">Связаться с нами</a>
             </div>
           </div>
         </section>
