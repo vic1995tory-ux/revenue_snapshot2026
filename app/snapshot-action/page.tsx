@@ -671,7 +671,7 @@ function getQuestionProgress(question: Question, answers: Answers): number {
         : 0;
 
     case "businessScale":
-      return textLength(value) >= 20 ? 100 : 0;
+      return textLength(value) > 0 ? 100 : 0;
 
     case "geo":
       return textLength(value?.physical) > 0 && textLength(value?.sales) > 0
