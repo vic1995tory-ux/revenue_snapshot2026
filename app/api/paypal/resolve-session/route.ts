@@ -1,202 +1,178 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-type PaymentStatus = "confirmed" | "pending" | "failed";
-type AccessStatus = "active" | "expired" | "exhausted" | "revoked";
+const MAKE_RESOLVE_WEBHOOK_URL =
+  "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
-type PaymentRecord = {
-  payment_id: string;
-  plan: string;
-  source?: string;
-  payment_status: PaymentStatus;
+function generateFallbackToken() {
+  return (
+    "rs_" +
+    Math.random().toString(36).slice(2) +
+    Date.now().toString(36)
+  );
+}
 
-  access_token?: string;
-  access_expires_at?: string;
-  launch_count?: number;
-  launch_limit?: number;
-  status?: AccessStatus;
-};
+function addDays(date: Date, days: number) {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
 
-type AttachAccessPayload = {
-  access_token: string;
-  access_expires_at: string;
-  launch_count: number;
-  launch_limit: number;
-  status: AccessStatus;
-};
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
 
-type ResolveSessionSuccess = {
-  ok: true;
-  access_token: string;
-  expires_at: string;
-  launch_count: number;
-  launch_limit: number;
-  redirect_to: string;
-};
+  return NextResponse.json({
+    ok: true,
+    route: "paypal resolve-session is alive",
+    received: {
+      tx: searchParams.get("tx"),
+      st: searchParams.get("st"),
+      amt: searchParams.get("amt"),
+      cc: searchParams.get("cc"),
+    },
+  });
+}
 
-type ResolveSessionError = {
-  ok: false;
-  code:
-    | "missing_payment_reference"
-    | "payment_not_found"
-    | "payment_not_confirmed"
-    | "plan_mismatch"
-    | "server_error";
-  message: string;
-};
-
-export async function GET(request: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-
-    const paymentRef = (searchParams.get("payment_ref") || "").trim();
-    const plan = (searchParams.get("plan") || "").trim();
-    const src = (searchParams.get("src") || "").trim();
-
-    if (!paymentRef) {
-      const response: ResolveSessionError = {
-        ok: false,
-        code: "missing_payment_reference",
-        message: "Не найден идентификатор оплаты в URL возврата.",
-      };
-
-      return NextResponse.json(response, { status: 400 });
+    if (!MAKE_RESOLVE_WEBHOOK_URL) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "MAKE_RESOLVE_WEBHOOK_URL is not set",
+        },
+        { status: 500 }
+      );
     }
 
-    const payment = await findPaymentByReference(paymentRef, src);
+    const body = await req.json();
 
-    if (!payment) {
-      const response: ResolveSessionError = {
-        ok: false,
-        code: "payment_not_found",
-        message: "Мы не нашли подтверждённую оплату по этому возврату.",
-      };
+    const tx = body?.tx ?? body?.payment_id ?? "";
+    const st = body?.st ?? body?.payment_status ?? "";
+    const amt = body?.amt ?? body?.gross_amount ?? "";
+    const cc = body?.cc ?? body?.currency ?? "";
+    const firstName = body?.first_name ?? "";
+    const clientEmail = body?.client_email ?? "";
+    const source = "paypal";
 
-      return NextResponse.json(response, { status: 404 });
+    if (!tx) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "payment_id / tx is required",
+        },
+        { status: 400 }
+      );
     }
 
-    if (payment.payment_status !== "confirmed") {
-      const response: ResolveSessionError = {
-        ok: false,
-        code: "payment_not_confirmed",
-        message: "Оплата ещё не подтверждена. Попробуйте снова через минуту.",
-      };
+    const normalizedStatus =
+      String(st).toUpperCase() === "COMPLETED" ? "confirmed" : "pending";
 
-      return NextResponse.json(response, { status: 409 });
-    }
+    const fallbackToken = generateFallbackToken();
+    const expiresAt = addDays(new Date(), 365).toISOString();
 
-    if (plan && payment.plan && payment.plan !== plan) {
-      const response: ResolveSessionError = {
-        ok: false,
-        code: "plan_mismatch",
-        message: "Параметры тарифа не совпадают с записью об оплате.",
-      };
+    /**
+     * Вот payload, который уйдет в Make.
+     * Ключи уже названы так, как тебе удобно дальше мапить в Notion.
+     */
+    const makePayload = {
+      action: "resolve_session",
 
-      return NextResponse.json(response, { status: 409 });
-    }
+      // ключ оплаты
+      payment_id: tx,
 
-    let accessToken = payment.access_token;
-    let expiresAt = payment.access_expires_at;
-    let launchCount = payment.launch_count ?? 0;
-    let launchLimit = payment.launch_limit ?? 3;
+      // paypal данные
+      paypal_status_raw: st,
+      payment_status: normalizedStatus,
+      gross_amount: amt ? Number(amt) : null,
+      currency: cc || null,
+      source,
 
-    if (!accessToken) {
-      accessToken = generateAccessToken(32);
-      expiresAt = addDaysToNowIso(7);
-      launchCount = 0;
-      launchLimit = 3;
+      // клиентские поля
+      "First Name": firstName || null,
+      client_email: clientEmail || null,
 
-      await attachAccessTokenToPayment(payment.payment_id, {
-        access_token: accessToken,
-        access_expires_at: expiresAt,
-        launch_count: launchCount,
-        launch_limit: launchLimit,
-        status: "active",
-      });
-    }
+      // доступ
+      access_token: fallbackToken,
+      access_expires_at: expiresAt,
+      launch_count: 0,
+      launch_limit: 3,
+      status: "active",
 
-    const response: ResolveSessionSuccess = {
-      ok: true,
-      access_token: accessToken,
-      expires_at: expiresAt!,
-      launch_count: launchCount,
-      launch_limit: launchLimit,
-      redirect_to: `/start/${encodeURIComponent(accessToken)}`,
+      // для отладки
+      raw_payload: body,
     };
 
-    return NextResponse.json(response, { status: 200 });
+    const makeRes = await fetch(MAKE_RESOLVE_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(makePayload),
+      cache: "no-store",
+    });
+
+    const contentType = makeRes.headers.get("content-type") || "";
+    const makeData = contentType.includes("application/json")
+      ? await makeRes.json()
+      : { raw: await makeRes.text() };
+
+    if (!makeRes.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Make webhook returned non-200 response",
+          make_status: makeRes.status,
+          make_response: makeData,
+        },
+        { status: 502 }
+      );
+    }
+
+    /**
+     * Ожидаем, что Make вернет уже итог:
+     * {
+     *   ok: true,
+     *   access_token: "...",
+     *   created: true/false,
+     *   page_id: "...",
+     *   launch_count: 0,
+     *   launch_limit: 3
+     * }
+     */
+    const resolvedToken =
+      makeData?.access_token ||
+      makeData?.data?.access_token ||
+      fallbackToken;
+
+    const resolvedLaunchCount =
+      makeData?.launch_count ??
+      makeData?.data?.launch_count ??
+      0;
+
+    const resolvedLaunchLimit =
+      makeData?.launch_limit ??
+      makeData?.data?.launch_limit ??
+      3;
+
+    return NextResponse.json({
+      ok: true,
+      access_token: resolvedToken,
+      launch_count: resolvedLaunchCount,
+      launch_limit: resolvedLaunchLimit,
+      created: makeData?.created ?? makeData?.data?.created ?? null,
+      page_id: makeData?.page_id ?? makeData?.data?.page_id ?? null,
+      payment_id: tx,
+      payment_status: normalizedStatus,
+    });
   } catch (error) {
     console.error("resolve-session error:", error);
 
-    const response: ResolveSessionError = {
-      ok: false,
-      code: "server_error",
-      message: "Внутренняя ошибка при создании сессии доступа.",
-    };
-
-    return NextResponse.json(response, { status: 500 });
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "resolve-session failed",
+      },
+      { status: 500 }
+    );
   }
-}
-
-function generateAccessToken(length = 32) {
-  const chars =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "";
-
-  for (let i = 0; i < length; i += 1) {
-    const randomIndex = Math.floor(Math.random() * chars.length);
-    result += chars[randomIndex];
-  }
-
-  return result;
-}
-
-function addDaysToNowIso(days: number) {
-  const date = new Date();
-  date.setDate(date.getDate() + days);
-  return date.toISOString();
-}
-
-/**
- * ЗАГЛУШКА №1
- * Замени это на реальный поиск оплаты:
- * - через Notion API
- * - или через Make webhook / internal endpoint
- */
-async function findPaymentByReference(
-  paymentRef: string,
-  src?: string
-): Promise<PaymentRecord | null> {
-  console.log("findPaymentByReference()", { paymentRef, src });
-
-  // ВРЕМЕННАЯ ЗАГЛУШКА ДЛЯ ТЕСТА
-  // Удалишь потом, когда подключишь реальное хранилище
-  if (!paymentRef) return null;
-
-  return {
-    payment_id: paymentRef,
-    plan: "playground",
-    source: src || "paypal",
-    payment_status: "confirmed",
-    access_token: undefined,
-    access_expires_at: undefined,
-    launch_count: 0,
-    launch_limit: 3,
-    status: "active",
-  };
-}
-
-/**
- * ЗАГЛУШКА №2
- * Замени это на реальное обновление записи:
- * - в Notion
- * - или через Make
- */
-async function attachAccessTokenToPayment(
-  paymentId: string,
-  payload: AttachAccessPayload
-): Promise<void> {
-  console.log("attachAccessTokenToPayment()", { paymentId, payload });
-
-  // Здесь потом будет реальный update
-  return;
 }
