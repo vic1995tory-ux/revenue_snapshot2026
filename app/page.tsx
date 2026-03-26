@@ -526,6 +526,8 @@ function StartCard({
   href: string;
   stats?: Array<{ label: string; value: string }>;
 }) {
+  const ctaLabel = title === "On Rec" ? "Выбрать слот" : "Попробовать Snapshot";
+
   return (
     <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
@@ -536,9 +538,9 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
-<a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="start-card-btn start-card-btn-floating">
-  Попробовать Snapshot
-</a>
+            <a href={href} className="start-card-btn start-card-btn-floating">
+              {ctaLabel}
+            </a>
           </div>
         </div>
       </div>
@@ -711,6 +713,7 @@ function StageCarousel() {
   const [rotation, setRotation] = useState(0);
   const [isDraggingState, setIsDraggingState] = useState(false);
   const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
+  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
   const dragStartX = useRef<number | null>(null);
   const dragStartRotation = useRef(0);
   const isDragging = useRef(false);
@@ -736,6 +739,28 @@ function StageCarousel() {
 
   const responsiveActiveIndex = typeof window !== "undefined" && window.innerWidth <= 767 ? mobileActiveIndex : activeIndex;
   const activeIndustries = new Set(items[responsiveActiveIndex].industries);
+
+  const goToStage = (index: number) => {
+    setRotation(-index * itemAngle);
+    setMobileActiveIndex(index);
+
+    const rail = mobileRailRef.current;
+    if (rail) {
+      const firstSlide = rail.querySelector<HTMLElement>(".stage-carousel-mobile-slide");
+      const slideWidth = (firstSlide?.offsetWidth ?? rail.clientWidth * 0.84) + 10;
+      rail.scrollTo({ left: index * Math.max(slideWidth, 1), behavior: "smooth" });
+    }
+  };
+
+  const handleIndustrySelect = (key: string) => {
+    const nextIndustry = selectedIndustry === key ? null : key;
+    setSelectedIndustry(nextIndustry);
+
+    if (!nextIndustry) return;
+
+    const firstMatchIndex = items.findIndex((item) => item.industries.includes(nextIndustry));
+    if (firstMatchIndex >= 0) goToStage(firstMatchIndex);
+  };
 
   const startDrag = (clientX: number) => {
     isDragging.current = true;
@@ -789,14 +814,20 @@ function StageCarousel() {
             ["industry-edtech", "EdTech"],
             ["industry-healthtech", "HealthTech"],
             ["industry-b2b", "B2B"],
-          ].map(([key, label]) => (
-            <span
-              key={key}
-              className={`industry-pill ${activeIndustries.has(key) ? "industry-pill-active" : "industry-pill-dim"}`}
-            >
-              {label}
-            </span>
-          ))}
+          ].map(([key, label]) => {
+            const isSelected = selectedIndustry === key;
+            const isParticipating = activeIndustries.has(key);
+            return (
+              <button
+                key={key}
+                type="button"
+                onClick={() => handleIndustrySelect(key)}
+                className={`industry-pill ${isParticipating ? "industry-pill-active" : "industry-pill-dim"} ${isSelected ? "industry-pill-selected" : ""}`}
+              >
+                {label}
+              </button>
+            );
+          })}
         </div>
 
         <div className="stage-rotate-cue stage-rotate-cue-right" aria-hidden="true">
@@ -836,7 +867,7 @@ function StageCarousel() {
             return (
               <div
                 key={item.stage}
-                className="stage-carousel-item stage-carousel-item-free"
+                className={`stage-carousel-item stage-carousel-item-free ${selectedIndustry && item.industries.includes(selectedIndustry) ? "is-industry-match" : ""} ${selectedIndustry && !item.industries.includes(selectedIndustry) ? "is-industry-dim" : ""}`}
                 style={{
                   transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) rotateY(${rotateY}deg) scale(${scale})`,
                   opacity,
@@ -853,7 +884,7 @@ function StageCarousel() {
 
       <div className="stage-carousel-mobile-rail" ref={mobileRailRef}>
         {items.map((item) => (
-          <div key={`${item.stage}-mobile`} className="stage-carousel-mobile-slide">
+          <div key={`${item.stage}-mobile`} className={`stage-carousel-mobile-slide ${selectedIndustry && item.industries.includes(selectedIndustry) ? "is-industry-match" : ""} ${selectedIndustry && !item.industries.includes(selectedIndustry) ? "is-industry-dim" : ""}`}>
             <StageCard item={item} isFront />
           </div>
         ))}
@@ -887,9 +918,31 @@ export default function Home() {
   const [cursor, setCursor] = useState({ x: -200, y: -200 });
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const payUrl = "#";
+  const [faqOpen, setFaqOpen] = useState(false);
+  const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
+  const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
+  const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
+
+  const faqItems = [
+    {
+      q: "Что такое Revenue Snapshot?",
+      a: "Это платформа стратегической диагностики бизнеса, которая показывает ключевое ограничение роста, точки потери денег и приоритетное направление усиления модели."
+    },
+    {
+      q: "Что входит в результат?",
+      a: "Вы получаете структурированный разбор экономики, ограничений роста, стратегических выводов и приоритетных направлений работы."
+    },
+    {
+      q: "On rec и Online-playground — в чем разница?",
+      a: "Online-playground — самостоятельное прохождение диагностики. On rec — формат со стратегической сессией и выбором слота для дальнейшей работы."
+    },
+    {
+      q: "Когда открывается доступ?",
+      a: "После оплаты пользователь переходит в платформу и получает доступ к следующему этапу прохождения."
+    }
+  ];
 
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
@@ -913,6 +966,17 @@ export default function Home() {
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  useEffect(() => {
+    if (!faqOpen) return;
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setFaqOpen(false);
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [faqOpen]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
@@ -1059,7 +1123,18 @@ export default function Home() {
           </nav>
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>
-            <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
+            <button
+              type="button"
+              className="header-faq-btn"
+              onClick={() => {
+                setFaqOpen(true);
+                setMobileMenuOpen(false);
+              }}
+            >
+              FAQ
+            </button>
+            <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Login</a>
+            <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Попробовать Snapshot</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1091,7 +1166,7 @@ export default function Home() {
               </div>
 
               <div className="hero-actions-row">
-                <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
+                <a href={payUrl} className="tg-gradient-btn inline-flex">Попробовать Snapshot</a>
                 <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Побаловаться</a>
               </div>
             </div>
@@ -1240,7 +1315,7 @@ export default function Home() {
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC" className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
+              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
             </aside>
           </div>
         </section>
@@ -1295,14 +1370,14 @@ export default function Home() {
                   icon="/stratsession.svg"
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
-                  href="https://www.paypal.com/ncp/payment/GQLFG3CYUHM82"
+                  href={onRecUrl}
                 />
                 <StartCard
                   title="Online-playground"
                   icon="/snapshot.svg"
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
-                  href="https://www.paypal.com/ncp/payment/J573NHRDCJQZC"
+                  href={payUrl}
                 />
               </div>
             </div>
@@ -1336,6 +1411,36 @@ export default function Home() {
         </footer>
       </div>
 
+      {faqOpen && (
+        <div className="faq-modal-root" role="dialog" aria-modal="true" aria-label="FAQ">
+          <button
+            type="button"
+            className="faq-backdrop"
+            aria-label="Закрыть FAQ"
+            onClick={() => setFaqOpen(false)}
+          />
+          <div className="faq-modal-card">
+            <div className="faq-modal-head">
+              <div>
+                <div className="faq-modal-kicker">FAQ</div>
+                <h3 className="faq-modal-title">Частые вопросы</h3>
+              </div>
+              <button type="button" className="faq-close-btn" onClick={() => setFaqOpen(false)}>
+                ✕
+              </button>
+            </div>
+
+            <div className="faq-modal-list">
+              {faqItems.map((item) => (
+                <div key={item.q} className="faq-item">
+                  <div className="faq-item-q">{item.q}</div>
+                  <div className="faq-item-a">{item.a}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
         body {
@@ -1428,6 +1533,103 @@ export default function Home() {
           padding: 0 18px;
           font-size: 13px;
           white-space: nowrap;
+        }
+        .header-faq-btn,
+        .header-login-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          padding: 0 16px;
+          border-radius: 999px;
+          text-decoration: none;
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .header-faq-btn { cursor: pointer; }
+        .header-faq-btn:hover,
+        .header-login-btn:hover {
+          transform: translateY(-1px);
+          background: rgba(255,255,255,.09);
+        }
+        .faq-modal-root {
+          position: fixed;
+          inset: 0;
+          z-index: 120;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+        }
+        .faq-backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(3,10,22,.72);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+          border: 0;
+          cursor: pointer;
+        }
+        .faq-modal-card {
+          position: relative;
+          z-index: 1;
+          width: min(760px, 100%);
+          max-height: min(82vh, 860px);
+          overflow: auto;
+          border-radius: 28px;
+          padding: 24px;
+          background: linear-gradient(180deg, rgba(16,27,49,.92), rgba(11,20,38,.88));
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: 0 30px 80px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .faq-modal-head {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 16px;
+          margin-bottom: 18px;
+        }
+        .faq-modal-kicker {
+          color: #f7d237;
+          font-size: 12px;
+          font-weight: 800;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+        }
+        .faq-modal-title {
+          margin: 8px 0 0;
+          font-size: clamp(28px, 4vw, 42px);
+          line-height: .95;
+          letter-spacing: -.05em;
+          font-weight: 700;
+        }
+        .faq-close-btn {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.14);
+          background: rgba(255,255,255,.06);
+          color: #fff;
+          cursor: pointer;
+          font-size: 18px;
+          line-height: 1;
+        }
+        .faq-modal-list { display: grid; gap: 12px; }
+        .faq-item {
+          border-radius: 20px;
+          padding: 16px 18px;
+          background: rgba(255,255,255,.05);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .faq-item-q { font-size: 16px; font-weight: 700; color: #fff; }
+        .faq-item-a {
+          margin-top: 8px;
+          color: rgba(255,255,255,.72);
+          font-size: 14px;
+          line-height: 1.55;
         }
         .header-burger {
           display: none;
@@ -1995,6 +2197,7 @@ export default function Home() {
           font-size: 12px; font-weight: 700; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.04); color: rgba(255,255,255,.48);
         }
         .industry-pill-active { color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88)); border-color: rgba(247,210,55,.28); }
+        .industry-pill-selected { box-shadow: 0 0 0 2px rgba(247,210,55,.18), 0 14px 30px rgba(247,210,55,.16); }
         .stage-carousel-scene {
           position: relative; perspective: 2200px; min-height: 550px; display: flex; flex-direction: column; align-items: center; justify-content: center;
           touch-action: pan-y; user-select: none; -webkit-user-select: none; cursor: grab; overflow: hidden;
@@ -2008,10 +2211,35 @@ export default function Home() {
         }
         .stage-card-analytics {
           position: relative; display: flex; flex-direction: column; min-height: 354px; border-radius: 30px; overflow: hidden;
-          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.36) 0%, rgba(11,20,38,.22) 100%);
+          border: 1px solid rgba(255,255,255,.11); background: linear-gradient(180deg, rgba(16,27,49,.46) 0%, rgba(11,20,38,.34) 100%);
           backdrop-filter: blur(68px) saturate(155%);
           -webkit-backdrop-filter: blur(68px) saturate(155%);
           box-shadow: 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.06);
+        }
+        .stage-card-analytics.is-front {
+          background: linear-gradient(180deg, rgba(16,27,49,.72) 0%, rgba(11,20,38,.58) 100%);
+          border-color: rgba(255,255,255,.18);
+          box-shadow: 0 30px 70px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .stage-card-analytics.is-front .stage-card-top-panel {
+          background: linear-gradient(135deg, rgba(255,255,255,.11) 0%, rgba(255,255,255,.05) 100%);
+        }
+        .stage-carousel-item.is-industry-match {
+          opacity: 1 !important;
+        }
+        .stage-carousel-item.is-industry-match .stage-card-analytics {
+          border-color: rgba(247,210,55,.22);
+          box-shadow: 0 24px 60px rgba(247,210,55,.08), 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .stage-carousel-item.is-industry-dim {
+          opacity: .2 !important;
+        }
+        .stage-carousel-mobile-slide.is-industry-match .stage-card-analytics {
+          border-color: rgba(247,210,55,.22);
+          box-shadow: 0 24px 60px rgba(247,210,55,.08), 0 24px 54px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .stage-carousel-mobile-slide.is-industry-dim {
+          opacity: .48;
         }
         .stage-card-analytics::after { display: none; }
         .stage-card-top-panel {
@@ -2402,6 +2630,10 @@ export default function Home() {
             gap: 10px;
             padding-top: 8px;
             justify-content: flex-start;
+          }
+          .header-faq-btn,
+          .header-login-btn {
+            min-height: 40px;
           }
           .header-pill { min-width: 52px; }
           .header-cta {
