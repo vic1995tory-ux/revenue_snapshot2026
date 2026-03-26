@@ -5,7 +5,6 @@ const MAKE_RESOLVE_WEBHOOK_URL =
   process.env.MAKE_RESOLVE_WEBHOOK_URL ||
   "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
-// нормальный токен (без коллизий)
 function generateFallbackToken() {
   return "rs_" + crypto.randomUUID().replace(/-/g, "");
 }
@@ -14,6 +13,14 @@ function addDays(date: Date, days: number) {
   const next = new Date(date);
   next.setDate(next.getDate() + days);
   return next;
+}
+
+function tryParseJson(raw: string) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -35,7 +42,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // универсальный парсинг (и с фронта, и от PayPal)
     const tx = String(body?.tx ?? body?.payment_id ?? "").trim();
     const st = String(body?.st ?? body?.payment_status ?? "").trim();
     const amt = String(body?.amt ?? body?.gross_amount ?? "").trim();
@@ -52,7 +58,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // нормализация статуса
     const normalizedStatus =
       st.toUpperCase() === "COMPLETED" ||
       st.toUpperCase() === "CONFIRMED"
@@ -95,15 +100,37 @@ export async function POST(req: NextRequest) {
       cache: "no-store",
     });
 
-    // защита от html-ответов Make
     const contentType = makeRes.headers.get("content-type") || "";
-
     let makeData: any = {};
+    let rawText = "";
+
     if (contentType.includes("application/json")) {
       makeData = await makeRes.json();
     } else {
-      const raw = await makeRes.text();
-      makeData = { raw };
+      rawText = await makeRes.text();
+
+      const parsed = tryParseJson(rawText);
+      if (parsed) {
+        makeData = parsed;
+      } else {
+        const looksLikeHtml =
+          rawText.trim().startsWith("<!DOCTYPE") ||
+          rawText.trim().startsWith("<html") ||
+          rawText.includes("<body");
+
+        return NextResponse.json(
+          {
+            ok: false,
+            error: looksLikeHtml
+              ? "Make returned HTML instead of JSON"
+              : "Make returned non-JSON response",
+            make_status: makeRes.status,
+            make_content_type: contentType || null,
+            make_response_preview: rawText.slice(0, 500),
+          },
+          { status: 502 }
+        );
+      }
     }
 
     if (!makeRes.ok) {
@@ -112,13 +139,13 @@ export async function POST(req: NextRequest) {
           ok: false,
           error: "Make webhook returned non-200 response",
           make_status: makeRes.status,
+          make_content_type: contentType || null,
           make_response: makeData,
         },
         { status: 502 }
       );
     }
 
-    // вытаскиваем ответ (или fallback)
     const resolvedToken =
       makeData?.access_token ||
       makeData?.data?.access_token ||
@@ -141,14 +168,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
-
       access_token: resolvedToken,
       launch_count: resolvedLaunchCount,
       launch_limit: resolvedLaunchLimit,
-
       created: makeData?.created ?? makeData?.data?.created ?? null,
       page_id: makeData?.page_id ?? makeData?.data?.page_id ?? null,
-
       payment_id: tx,
       payment_status: normalizedStatus,
       access_expires_at: expiresAtResolved,
