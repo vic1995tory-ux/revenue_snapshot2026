@@ -23,6 +23,27 @@ type CabinetData = {
   results: ResultRow[];
 };
 
+type AccountSessionResponse = {
+  ok: boolean;
+  error?: string;
+  data?: {
+    fullName?: string;
+    companyName?: string;
+    position?: string;
+    positionLocked?: boolean;
+    expiresAt?: string;
+    companySummary?: string;
+    results?: Array<{
+      id?: string | number;
+      date?: string;
+      executiveSummary?: string;
+      mainLever?: string;
+      riskZone?: string;
+      comment?: string;
+    }>;
+  };
+};
+
 const POSITION_WEBHOOK_URL =
   "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
 
@@ -36,6 +57,7 @@ export default function CabinetPage() {
   const [faqOpen, setFaqOpen] = useState(false);
   const [savingPosition, setSavingPosition] = useState(false);
   const [positionSaved, setPositionSaved] = useState(false);
+  const [loadingCabinet, setLoadingCabinet] = useState(true);
   const [error, setError] = useState("");
 
   const [data, setData] = useState<CabinetData>({
@@ -53,29 +75,67 @@ export default function CabinetPage() {
   useEffect(() => {
     async function loadCabinet() {
       try {
+        setLoadingCabinet(true);
         setError("");
 
-        const fallbackResults: ResultRow[] = [];
+        const res = await fetch(
+          `/api/account/session?token=${encodeURIComponent(token)}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+          throw new Error("Кабинет вернул не JSON.");
+        }
+
+        const payload: AccountSessionResponse = await res.json();
+
+        if (!res.ok || !payload?.ok || !payload?.data) {
+          throw new Error(payload?.error || "Не удалось загрузить кабинет.");
+        }
+
+        const cabinet = payload.data;
+
+        const normalizedResults: ResultRow[] = Array.isArray(cabinet.results)
+          ? cabinet.results.map((item, index) => ({
+              id: String(item?.id ?? index + 1),
+              date: String(item?.date ?? ""),
+              executiveSummary: String(item?.executiveSummary ?? ""),
+              mainLever: String(item?.mainLever ?? ""),
+              riskZone: String(item?.riskZone ?? ""),
+              comment: String(item?.comment ?? ""),
+            }))
+          : [];
 
         setData({
-          fullName: "Имя Фамилия",
-          companyName: "Название компании",
-          position: "",
-          positionLocked: false,
-          expiresAt: new Date(
-            Date.now() + 1000 * 60 * 60 * 24 * 365
-          ).toISOString(),
-          companySummary: "",
-          results: fallbackResults,
+          fullName: String(cabinet.fullName ?? "Имя Фамилия"),
+          companyName: String(cabinet.companyName ?? "Название компании"),
+          position: String(cabinet.position ?? ""),
+          positionLocked: Boolean(cabinet.positionLocked ?? false),
+          expiresAt: String(
+            cabinet.expiresAt ??
+              new Date(
+                Date.now() + 1000 * 60 * 60 * 24 * 365
+              ).toISOString()
+          ),
+          companySummary: String(cabinet.companySummary ?? ""),
+          results: normalizedResults,
         });
 
         setComments(
           Object.fromEntries(
-            fallbackResults.map((item) => [item.id, item.comment || ""])
+            normalizedResults.map((item) => [item.id, item.comment || ""])
           )
         );
-      } catch {
-        setError("Не удалось загрузить кабинет.");
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Не удалось загрузить кабинет."
+        );
+      } finally {
+        setLoadingCabinet(false);
       }
     }
 
@@ -141,8 +201,8 @@ export default function CabinetPage() {
         ...prev,
         positionLocked: true,
       }));
-      setPositionSaved(true);
 
+      setPositionSaved(true);
       window.setTimeout(() => setPositionSaved(false), 2200);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Ошибка сохранения.");
@@ -170,6 +230,8 @@ export default function CabinetPage() {
 
   return (
     <main style={styles.page}>
+      <div className="ambient-gradient-bg" />
+
       <header style={styles.header}>
         <div style={styles.headerLeft}>
           <Image
@@ -318,7 +380,9 @@ export default function CabinetPage() {
         <div style={styles.infoCard}>
           <div style={styles.cardHeading}>Company summary</div>
 
-          {data.companySummary ? (
+          {loadingCabinet ? (
+            <div style={styles.placeholderText}>Загрузка...</div>
+          ) : data.companySummary ? (
             <div style={styles.cardText}>{data.companySummary}</div>
           ) : (
             <div style={styles.placeholderText}>
@@ -386,7 +450,9 @@ export default function CabinetPage() {
           </div>
         </div>
 
-        {data.results.length === 0 ? (
+        {loadingCabinet ? (
+          <div style={styles.emptyResults}>Загружаем результаты...</div>
+        ) : data.results.length === 0 ? (
           <div style={styles.emptyResults}>
             Первый результат появится после первого запуска.
           </div>
@@ -481,13 +547,17 @@ export default function CabinetPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
+    position: "relative",
     minHeight: "100vh",
+    overflow: "hidden",
     background:
       "radial-gradient(circle at top, rgba(247,210,55,0.10), transparent 22%), #0b1d3a",
     color: "#fefefe",
     padding: "28px 22px 40px",
   },
   header: {
+    position: "relative",
+    zIndex: 1,
     maxWidth: "1320px",
     margin: "0 auto 22px",
     display: "flex",
@@ -536,6 +606,8 @@ const styles: Record<string, React.CSSProperties> = {
     cursor: "pointer",
   },
   hero: {
+    position: "relative",
+    zIndex: 1,
     maxWidth: "1320px",
     margin: "0 auto",
     display: "grid",
@@ -709,6 +781,8 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#d8dce7",
   },
   cardsSection: {
+    position: "relative",
+    zIndex: 1,
     maxWidth: "1320px",
     margin: "22px auto 0",
     display: "grid",
@@ -793,6 +867,8 @@ const styles: Record<string, React.CSSProperties> = {
     transition: "width 0.35s ease",
   },
   resultsSection: {
+    position: "relative",
+    zIndex: 1,
     maxWidth: "1320px",
     margin: "22px auto 0",
     borderRadius: "28px",
