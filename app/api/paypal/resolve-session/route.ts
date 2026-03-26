@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const MAKE_RESOLVE_WEBHOOK_URL =
+  process.env.MAKE_RESOLVE_WEBHOOK_URL ||
   "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
 function generateFallbackToken() {
@@ -34,25 +35,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    if (!MAKE_RESOLVE_WEBHOOK_URL) {
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "MAKE_RESOLVE_WEBHOOK_URL is not set",
-        },
-        { status: 500 }
-      );
-    }
-
     const body = await req.json();
 
-    const tx = body?.tx ?? body?.payment_id ?? "";
-    const st = body?.st ?? body?.payment_status ?? "";
-    const amt = body?.amt ?? body?.gross_amount ?? "";
-    const cc = body?.cc ?? body?.currency ?? "";
-    const firstName = body?.first_name ?? "";
-    const clientEmail = body?.client_email ?? "";
-    const source = "paypal";
+    const tx = String(body?.tx ?? body?.payment_id ?? "").trim();
+    const st = String(body?.st ?? body?.payment_status ?? "").trim();
+    const amt = String(body?.amt ?? body?.gross_amount ?? "").trim();
+    const cc = String(body?.cc ?? body?.currency ?? "").trim();
+    const currentUrl = String(body?.current_url ?? "").trim();
 
     if (!tx) {
       return NextResponse.json(
@@ -70,35 +59,23 @@ export async function POST(req: NextRequest) {
     const fallbackToken = generateFallbackToken();
     const expiresAt = addDays(new Date(), 365).toISOString();
 
-    /**
-     * Вот payload, который уйдет в Make.
-     * Ключи уже названы так, как тебе удобно дальше мапить в Notion.
-     */
     const makePayload = {
       action: "resolve_session",
 
-      // ключ оплаты
       payment_id: tx,
-
-      // paypal данные
       paypal_status_raw: st,
       payment_status: normalizedStatus,
       gross_amount: amt ? Number(amt) : null,
       currency: cc || null,
-      source,
+      source: "paypal",
 
-      // клиентские поля
-      "First Name": firstName || null,
-      client_email: clientEmail || null,
-
-      // доступ
       access_token: fallbackToken,
       access_expires_at: expiresAt,
       launch_count: 0,
       launch_limit: 3,
       status: "active",
 
-      // для отладки
+      start_page_link: currentUrl || null,
       raw_payload: body,
     };
 
@@ -128,17 +105,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    /**
-     * Ожидаем, что Make вернет уже итог:
-     * {
-     *   ok: true,
-     *   access_token: "...",
-     *   created: true/false,
-     *   page_id: "...",
-     *   launch_count: 0,
-     *   launch_limit: 3
-     * }
-     */
     const resolvedToken =
       makeData?.access_token ||
       makeData?.data?.access_token ||
@@ -154,6 +120,11 @@ export async function POST(req: NextRequest) {
       makeData?.data?.launch_limit ??
       3;
 
+    const expiresAtResolved =
+      makeData?.access_expires_at ??
+      makeData?.data?.access_expires_at ??
+      expiresAt;
+
     return NextResponse.json({
       ok: true,
       access_token: resolvedToken,
@@ -163,6 +134,7 @@ export async function POST(req: NextRequest) {
       page_id: makeData?.page_id ?? makeData?.data?.page_id ?? null,
       payment_id: tx,
       payment_status: normalizedStatus,
+      access_expires_at: expiresAtResolved,
     });
   } catch (error) {
     console.error("resolve-session error:", error);
