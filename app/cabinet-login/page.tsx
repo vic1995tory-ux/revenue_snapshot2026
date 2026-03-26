@@ -68,7 +68,7 @@ const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3
         <section style={styles.card}>
           <div style={styles.kicker}>
             <span className="pulse-dot" style={styles.kickerDot} />
-            <span>ЛИЧНЫЙ КАБИНЕТ</span>
+            <span>PERSONAL CABINET</span>
           </div>
 
           <h1 style={styles.title}>Вход по email</h1>
