@@ -13,6 +13,7 @@ type ResolveResponse = {
   page_id?: string | null;
   payment_id?: string;
   payment_status?: string;
+  access_expires_at?: string;
   error?: string;
 };
 
@@ -20,6 +21,25 @@ type StartActionResponse = {
   ok: boolean;
   error?: string;
 };
+
+function formatTimeLeft(expiresAt?: string) {
+  if (!expiresAt) return "—";
+
+  const now = new Date().getTime();
+  const end = new Date(expiresAt).getTime();
+  const diff = end - now;
+
+  if (Number.isNaN(end) || diff <= 0) return "Срок доступа истёк";
+
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  if (days > 0) return `${days} дн.`;
+
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours > 0) return `${hours} ч.`;
+
+  const minutes = Math.floor(diff / (1000 * 60));
+  return `${minutes} мин.`;
+}
 
 function StartPageContent() {
   const router = useRouter();
@@ -59,6 +79,9 @@ function StartPageContent() {
           throw new Error("Оплата не подтверждена.");
         }
 
+        const currentUrl =
+          typeof window !== "undefined" ? window.location.href : "";
+
         const res = await fetch("/api/paypal/resolve-session", {
           method: "POST",
           headers: {
@@ -69,6 +92,7 @@ function StartPageContent() {
             st,
             amt,
             cc,
+            current_url: currentUrl,
           }),
         });
 
@@ -154,12 +178,16 @@ function StartPageContent() {
         throw new Error("Введите WhatsApp.");
       }
 
+      const currentUrl =
+        typeof window !== "undefined" ? window.location.href : "";
+
       const payload = {
         payment_id: tx,
         access_token: resolved.access_token,
         full_name: fullName.trim(),
         company_name: companyName.trim(),
         whatsapp: whatsapp.trim(),
+        start_page_link: currentUrl,
       };
 
       const res = await fetch("/api/paypal/start-action", {
@@ -259,6 +287,13 @@ function StartPageContent() {
                 {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
               </span>
             </div>
+
+            <div style={styles.infoRow}>
+              <span style={styles.infoLabel}>Осталось времени</span>
+              <span style={styles.infoValue}>
+                {formatTimeLeft(resolved?.access_expires_at)}
+              </span>
+            </div>
           </div>
 
           {resolving && (
@@ -338,7 +373,7 @@ function StartPageContent() {
           {!resolving && resolved?.access_token && !error && (
             <p style={styles.smallText}>
               Доступ подготовлен. После нажатия «Начать» откроется персональная
-              страница.
+              страница с результатами и таймером доступа.
             </p>
           )}
         </div>
