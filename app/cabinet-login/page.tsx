@@ -75,6 +75,27 @@ export default function CabinetLoginPage() {
         {/* CARD */}
         <section style={styles.card}>
           {/* HERO SVG */}
+          <div style={styles.heroBg}>
+            heroBg: {
+  position: "absolute",
+  inset: 0,
+  zIndex: 0,
+  opacity: 0.35,
+},
+
+heroImage: {
+  objectFit: "cover",
+  objectPosition: "center",
+  filter: "blur(2px)",
+},
+  <Image
+    src="/hero.svg"
+    alt=""
+    fill
+    style={styles.heroImage}
+    priority
+  />
+</div>
           <div style={styles.heroBox}>
             <Image
               src="/hero.svg"
@@ -159,15 +180,16 @@ const styles: Record<string, React.CSSProperties> = {
     width: "auto",
   },
 
-  card: {
-    borderRadius: "28px",
-    padding: "32px",
-    background: "rgba(255,255,255,0.06)",
-    border: "1px solid rgba(255,255,255,0.1)",
-    backdropFilter: "blur(20px)",
-    boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-  },
-
+ card: {
+  position: "relative",
+  overflow: "hidden",
+  borderRadius: "28px",
+  padding: "32px",
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.1)",
+  backdropFilter: "blur(20px)",
+  boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+},
   heroBox: {
     display: "flex",
     justifyContent: "center",
