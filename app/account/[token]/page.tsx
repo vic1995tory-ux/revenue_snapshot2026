@@ -160,7 +160,7 @@ export default function CabinetPage() {
 
   function handleNewLaunch() {
     if (launchesUsed >= MAX_LAUNCHES) return;
-    router.push(`/snapshot-action?token=${encodeURIComponent(token)}`);
+    router.push(`/snapshot-action/${encodeURIComponent(token)}`);
   }
 
   const ringRadius = 76;
