@@ -212,7 +212,7 @@ function StartPageContent() {
         throw new Error(data?.error || "Не удалось сохранить данные.");
       }
 
-      router.push(`/start/${resolved.access_token}`);
+router.push(`/account/${resolved.access_token}`);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Что-то пошло не так.";
