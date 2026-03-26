@@ -1,35 +1,129 @@
-export async function POST(req: Request) {
-  const body = await req.json();
+import { NextResponse } from "next/server";
 
-  // достаёшь нужные поля
-  const payment_id = body.resource?.id;
-  const email = body.resource?.payer?.email_address;
-  const first_name = body.resource?.payer?.name?.given_name;
-  const amount = body.resource?.amount?.value;
+const MAKE_START_ACTION_WEBHOOK_URL =
+  process.env.MAKE_START_ACTION_WEBHOOK_URL ||
+  "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
-  // фильтр: только успешные платежи
-  const status = body.event_type;
-
-  if (status !== "PAYMENT.CAPTURE.COMPLETED") {
-    return new Response(JSON.stringify({ ok: false }));
-  }
-
-  // отправка в Make webhook
-  await fetch("https://hook.eu2.make.com/XXXXXXXX", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      payment_id,
-      payer_email: email,
-      first_name,
-      gross_amount: amount,
-      source: "paypal",
-      payment_status: "confirmed",
-      raw_payload: body,
-    }),
+export async function GET() {
+  return NextResponse.json({
+    ok: true,
+    route: "start-action is alive",
   });
+}
 
-  return new Response(JSON.stringify({ ok: true }));
+export async function POST(req: Request) {
+  try {
+    const body = await req.json();
+
+    const payment_id = String(body?.payment_id ?? "").trim();
+    const access_token = String(body?.access_token ?? "").trim();
+    const full_name = String(body?.full_name ?? "").trim();
+    const company_name = String(body?.company_name ?? "").trim();
+    const whatsapp = String(body?.whatsapp ?? "").trim();
+
+    if (!payment_id) {
+      return NextResponse.json(
+        { ok: false, error: "payment_id is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!access_token) {
+      return NextResponse.json(
+        { ok: false, error: "access_token is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!full_name) {
+      return NextResponse.json(
+        { ok: false, error: "full_name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!company_name) {
+      return NextResponse.json(
+        { ok: false, error: "company_name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!whatsapp) {
+      return NextResponse.json(
+        { ok: false, error: "whatsapp is required" },
+        { status: 400 }
+      );
+    }
+
+    const makePayload = {
+      action: "start_action",
+
+      payment_id,
+      access_token,
+
+      full_name,
+      company_name,
+      whatsapp,
+
+      // сразу удобные ключи под Notion/Make
+      client_name: full_name,
+      company: company_name,
+      client_whatsapp: whatsapp,
+    };
+
+    const makeRes = await fetch(MAKE_START_ACTION_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(makePayload),
+      cache: "no-store",
+    });
+
+    const contentType = makeRes.headers.get("content-type") || "";
+
+    if (!contentType.includes("application/json")) {
+      const raw = await makeRes.text();
+
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Make returned non-JSON response",
+          raw_response: raw.slice(0, 500),
+        },
+        { status: 502 }
+      );
+    }
+
+    const makeData = await makeRes.json();
+
+    if (!makeRes.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Make webhook returned non-200 response",
+          make_status: makeRes.status,
+          make_response: makeData,
+        },
+        { status: 502 }
+      );
+    }
+
+    return NextResponse.json({
+      ok: true,
+      updated: true,
+      make_response: makeData,
+    });
+  } catch (error) {
+    console.error("start-action error:", error);
+
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "start-action failed",
+      },
+      { status: 500 }
+    );
+  }
 }
