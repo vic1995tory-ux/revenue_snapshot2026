@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 
 const MAKE_RESOLVE_WEBHOOK_URL =
   process.env.MAKE_RESOLVE_WEBHOOK_URL ||
   "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
+// нормальный токен (без коллизий)
 function generateFallbackToken() {
-  return (
-    "rs_" +
-    Math.random().toString(36).slice(2) +
-    Date.now().toString(36)
-  );
+  return "rs_" + crypto.randomUUID().replace(/-/g, "");
 }
 
 function addDays(date: Date, days: number) {
@@ -37,6 +35,7 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
+    // универсальный парсинг (и с фронта, и от PayPal)
     const tx = String(body?.tx ?? body?.payment_id ?? "").trim();
     const st = String(body?.st ?? body?.payment_status ?? "").trim();
     const amt = String(body?.amt ?? body?.gross_amount ?? "").trim();
@@ -53,8 +52,12 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // нормализация статуса
     const normalizedStatus =
-      String(st).toUpperCase() === "COMPLETED" ? "confirmed" : "pending";
+      st.toUpperCase() === "COMPLETED" ||
+      st.toUpperCase() === "CONFIRMED"
+        ? "confirmed"
+        : "pending";
 
     const fallbackToken = generateFallbackToken();
     const expiresAt = addDays(new Date(), 365).toISOString();
@@ -65,17 +68,21 @@ export async function POST(req: NextRequest) {
       payment_id: tx,
       paypal_status_raw: st,
       payment_status: normalizedStatus,
+
       gross_amount: amt ? Number(amt) : null,
       currency: cc || null,
       source: "paypal",
 
       access_token: fallbackToken,
       access_expires_at: expiresAt,
+
       launch_count: 0,
       launch_limit: 3,
       status: "active",
 
       start_page_link: currentUrl || null,
+
+      created_at: new Date().toISOString(),
       raw_payload: body,
     };
 
@@ -88,10 +95,16 @@ export async function POST(req: NextRequest) {
       cache: "no-store",
     });
 
+    // защита от html-ответов Make
     const contentType = makeRes.headers.get("content-type") || "";
-    const makeData = contentType.includes("application/json")
-      ? await makeRes.json()
-      : { raw: await makeRes.text() };
+
+    let makeData: any = {};
+    if (contentType.includes("application/json")) {
+      makeData = await makeRes.json();
+    } else {
+      const raw = await makeRes.text();
+      makeData = { raw };
+    }
 
     if (!makeRes.ok) {
       return NextResponse.json(
@@ -105,6 +118,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // вытаскиваем ответ (или fallback)
     const resolvedToken =
       makeData?.access_token ||
       makeData?.data?.access_token ||
@@ -127,11 +141,14 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       ok: true,
+
       access_token: resolvedToken,
       launch_count: resolvedLaunchCount,
       launch_limit: resolvedLaunchLimit,
+
       created: makeData?.created ?? makeData?.data?.created ?? null,
       page_id: makeData?.page_id ?? makeData?.data?.page_id ?? null,
+
       payment_id: tx,
       payment_status: normalizedStatus,
       access_expires_at: expiresAtResolved,
