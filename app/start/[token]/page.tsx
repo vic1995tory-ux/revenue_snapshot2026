@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 type ResultRow = {
   id: string;
@@ -30,6 +30,7 @@ const MAX_LAUNCHES = 3;
 
 export default function CabinetPage() {
   const params = useParams<{ token: string }>();
+  const router = useRouter();
   const token = String(params?.token ?? "");
 
   const [faqOpen, setFaqOpen] = useState(false);
@@ -55,10 +56,7 @@ export default function CabinetPage() {
         setError("");
 
         /**
-         * Тут позже можно заменить на реальный route/API,
-         * который будет тянуть данные по token из Notion/Make.
-         *
-         * Например:
+         * Позже тут можно заменить на реальный route/API:
          * const res = await fetch(`/api/cabinet/session?token=${token}`, { cache: "no-store" });
          * const payload = await res.json();
          * setData(payload);
@@ -167,6 +165,11 @@ export default function CabinetPage() {
     }));
   }
 
+  function handleNewLaunch() {
+    if (launchesUsed >= MAX_LAUNCHES) return;
+    router.push(`/snapshot-action?token=${encodeURIComponent(token)}`);
+  }
+
   const ringRadius = 76;
   const ringCircumference = 2 * Math.PI * ringRadius;
   const ringOffset =
@@ -208,53 +211,65 @@ export default function CabinetPage() {
 
       <section style={styles.hero}>
         <div style={styles.heroLeft}>
-          <div style={styles.kicker}>
-            <span className="pulse-dot" style={styles.kickerDot} />
-            <span>PERSONAL CABINET</span>
+          <div style={styles.heroVisual}>
+            <Image
+              src="/hero.svg"
+              alt=""
+              fill
+              priority
+              style={styles.heroVisualImg}
+            />
           </div>
 
-          <h1 style={styles.h1}>{data.fullName}</h1>
-          <h2 style={styles.h2}>{data.companyName}</h2>
-
-          <div style={styles.positionBox}>
-            <div style={styles.positionLabelRow}>
-              <label style={styles.positionLabel}>Должность</label>
-              {positionSaved && <span style={styles.savedMark}>сохранено</span>}
+          <div style={styles.heroContent}>
+            <div style={styles.kicker}>
+              <span className="pulse-dot" style={styles.kickerDot} />
+              <span>PERSONAL CABINET</span>
             </div>
 
-            <div style={styles.positionInputRow}>
-              <input
-                type="text"
-                value={data.position}
-                onChange={(e) =>
-                  setData((prev) => ({ ...prev, position: e.target.value }))
-                }
-                placeholder="Необязательно к заполнению"
-                disabled={data.positionLocked || savingPosition}
-                style={{
-                  ...styles.positionInput,
-                  opacity: data.positionLocked ? 0.75 : 1,
-                }}
-              />
+            <h1 style={styles.h1}>{data.fullName}</h1>
+            <h2 style={styles.h2}>{data.companyName}</h2>
 
-              <button
-                type="button"
-                onClick={handleSavePosition}
-                disabled={data.positionLocked || savingPosition}
-                style={{
-                  ...styles.positionSaveButton,
-                  opacity: data.positionLocked || savingPosition ? 0.7 : 1,
-                  cursor:
-                    data.positionLocked || savingPosition ? "default" : "pointer",
-                }}
-                title="Сохранить должность для следующих сессий"
-              >
-                {data.positionLocked ? "✓" : savingPosition ? "..." : "✓"}
-              </button>
+            <div style={styles.positionBox}>
+              <div style={styles.positionLabelRow}>
+                <label style={styles.positionLabel}>Должность</label>
+                {positionSaved && <span style={styles.savedMark}>сохранено</span>}
+              </div>
+
+              <div style={styles.positionInputRow}>
+                <input
+                  type="text"
+                  value={data.position}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, position: e.target.value }))
+                  }
+                  placeholder="Необязательно к заполнению"
+                  disabled={data.positionLocked || savingPosition}
+                  style={{
+                    ...styles.positionInput,
+                    opacity: data.positionLocked ? 0.75 : 1,
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleSavePosition}
+                  disabled={data.positionLocked || savingPosition}
+                  style={{
+                    ...styles.positionSaveButton,
+                    opacity: data.positionLocked || savingPosition ? 0.7 : 1,
+                    cursor:
+                      data.positionLocked || savingPosition ? "default" : "pointer",
+                  }}
+                  title="Сохранить должность для следующих сессий"
+                >
+                  {data.positionLocked ? "✓" : savingPosition ? "..." : "✓"}
+                </button>
+              </div>
             </div>
+
+            {error ? <div style={styles.errorBox}>{error}</div> : null}
           </div>
-
-          {error ? <div style={styles.errorBox}>{error}</div> : null}
         </div>
 
         <div style={styles.heroRight}>
@@ -304,6 +319,21 @@ export default function CabinetPage() {
             <div style={styles.expirationDate}>{expiration.exactDate}</div>
           </div>
         </div>
+      </section>
+
+      <section style={styles.launchActionSection}>
+        <button
+          type="button"
+          style={{
+            ...styles.newLaunchButton,
+            opacity: launchesUsed >= MAX_LAUNCHES ? 0.55 : 1,
+            cursor: launchesUsed >= MAX_LAUNCHES ? "not-allowed" : "pointer",
+          }}
+          disabled={launchesUsed >= MAX_LAUNCHES}
+          onClick={handleNewLaunch}
+        >
+          Новый запуск
+        </button>
       </section>
 
       <section style={styles.cardsSection}>
@@ -392,18 +422,22 @@ export default function CabinetPage() {
               </div>
 
               <div style={styles.colActions}>
-                <div style={styles.actionTooltipWrap}>
+                <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
                   <button type="button" style={styles.actionButton}>
                     Открыть
                   </button>
-                  <div style={styles.tooltip}>Функция находится в разработке</div>
+                  <div className="action-tooltip" style={styles.tooltip}>
+                    Функция находится в разработке
+                  </div>
                 </div>
 
-                <div style={styles.actionTooltipWrap}>
+                <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
                   <button type="button" style={styles.actionGhostButton}>
                     Скачать PDF
                   </button>
-                  <div style={styles.tooltip}>Функция находится в разработке</div>
+                  <div className="action-tooltip" style={styles.tooltip}>
+                    Функция находится в разработке
+                  </div>
                 </div>
               </div>
             </div>
@@ -515,11 +549,29 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: "stretch",
   },
   heroLeft: {
+    position: "relative",
     borderRadius: "30px",
     padding: "34px 32px",
     background: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.08)",
     boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    overflow: "hidden",
+  },
+  heroVisual: {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    overflow: "hidden",
+    borderRadius: "30px",
+    opacity: 0.18,
+  },
+  heroVisualImg: {
+    objectFit: "cover",
+    objectPosition: "right center",
+  },
+  heroContent: {
+    position: "relative",
+    zIndex: 2,
   },
   heroRight: {
     borderRadius: "30px",
@@ -661,6 +713,25 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "15px",
     color: "#d8dce7",
   },
+  launchActionSection: {
+    maxWidth: "1320px",
+    margin: "22px auto 0",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  newLaunchButton: {
+    minWidth: "220px",
+    border: 0,
+    borderRadius: "18px",
+    padding: "18px 26px",
+    fontSize: "16px",
+    fontWeight: 800,
+    background:
+      "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
+    color: "#fff",
+    boxShadow: "0 16px 34px rgba(85,104,255,0.22)",
+  },
   cardsSection: {
     maxWidth: "1320px",
     margin: "22px auto 0",
@@ -777,6 +848,7 @@ const styles: Record<string, React.CSSProperties> = {
   actionTooltipWrap: {
     position: "relative",
     display: "inline-block",
+    width: "100%",
   },
   actionButton: {
     width: "100%",
