@@ -58,7 +58,6 @@ export default function CabinetLoginPage() {
       <div className="ambient-gradient-bg" />
 
       <div style={styles.wrap}>
-        {/* LOGO */}
         <div style={styles.logoBox}>
           <Link href="/" style={{ display: "inline-block", cursor: "pointer" }}>
             <Image
@@ -72,78 +71,57 @@ export default function CabinetLoginPage() {
           </Link>
         </div>
 
-        {/* CARD */}
         <section style={styles.card}>
-          {/* HERO SVG */}
           <div style={styles.heroBg}>
-            heroBg: {
-  position: "absolute",
-  inset: 0,
-  zIndex: 0,
-  opacity: 0.35,
-},
-
-heroImage: {
-  objectFit: "cover",
-  objectPosition: "center",
-  filter: "blur(2px)",
-},
-  <Image
-    src="/hero.svg"
-    alt=""
-    fill
-    style={styles.heroImage}
-    priority
-  />
-</div>
-          <div style={styles.heroBox}>
             <Image
               src="/hero.svg"
-              alt="Hero"
-              width={320}
-              height={200}
-              style={styles.hero}
+              alt=""
+              fill
+              style={styles.heroImage}
+              priority
             />
           </div>
 
-          <div style={styles.kicker}>
-            <span className="pulse-dot" style={styles.kickerDot} />
-            <span>PERSONAL CABINET</span>
+          <div style={styles.cardContent}>
+            <div style={styles.kicker}>
+              <span className="pulse-dot" style={styles.kickerDot} />
+              <span>PERSONAL CABINET</span>
+            </div>
+
+            <h1 style={styles.title}>Вход по email</h1>
+
+            <p style={styles.text}>
+              Введите email, который вы использовали для доступа. Мы отправим на
+              него код подтверждения.
+            </p>
+
+            <form onSubmit={handleSubmit} style={styles.form}>
+              <label style={styles.label}>Email</label>
+
+              <input
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={styles.input}
+                autoComplete="email"
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                style={{
+                  ...styles.button,
+                  opacity: loading ? 0.7 : 1,
+                }}
+              >
+                {loading ? "Отправляем..." : "Отправить код"}
+              </button>
+            </form>
+
+            {success ? <div style={styles.successBox}>{success}</div> : null}
+            {error ? <div style={styles.errorBox}>{error}</div> : null}
           </div>
-
-          <h1 style={styles.title}>Вход по email</h1>
-
-          <p style={styles.text}>
-            Введите email, который вы использовали для доступа. Мы отправим на
-            него код подтверждения.
-          </p>
-
-          <form onSubmit={handleSubmit} style={styles.form}>
-            <label style={styles.label}>Email</label>
-
-            <input
-              type="email"
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              style={styles.input}
-              autoComplete="email"
-            />
-
-            <button
-              type="submit"
-              disabled={loading}
-              style={{
-                ...styles.button,
-                opacity: loading ? 0.7 : 1,
-              }}
-            >
-              {loading ? "Отправляем..." : "Отправить код"}
-            </button>
-          </form>
-
-          {success ? <div style={styles.successBox}>{success}</div> : null}
-          {error ? <div style={styles.errorBox}>{error}</div> : null}
         </section>
       </div>
     </main>
@@ -161,12 +139,14 @@ const styles: Record<string, React.CSSProperties> = {
     justifyContent: "center",
     padding: "24px",
     color: "#fff",
+    overflow: "hidden",
   },
 
   wrap: {
     width: "100%",
     maxWidth: "560px",
     zIndex: 1,
+    position: "relative",
   },
 
   logoBox: {
@@ -180,26 +160,35 @@ const styles: Record<string, React.CSSProperties> = {
     width: "auto",
   },
 
- card: {
-  position: "relative",
-  overflow: "hidden",
-  borderRadius: "28px",
-  padding: "32px",
-  background: "rgba(255,255,255,0.06)",
-  border: "1px solid rgba(255,255,255,0.1)",
-  backdropFilter: "blur(20px)",
-  boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-},
-  heroBox: {
-    display: "flex",
-    justifyContent: "center",
-    marginBottom: "20px",
+  card: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: "28px",
+    padding: "32px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    backdropFilter: "blur(20px)",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
+    minHeight: "420px",
   },
 
-  hero: {
-    width: "100%",
-    maxWidth: "300px",
-    opacity: 0.9,
+  heroBg: {
+    position: "absolute",
+    inset: 0,
+    zIndex: 0,
+    opacity: 0.32,
+    pointerEvents: "none",
+  },
+
+  heroImage: {
+    objectFit: "cover",
+    objectPosition: "center",
+    filter: "blur(1px)",
+  },
+
+  cardContent: {
+    position: "relative",
+    zIndex: 2,
   },
 
   kicker: {
@@ -209,6 +198,9 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "12px",
     color: "#f7d237",
     marginBottom: "10px",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
   },
 
   kickerDot: {
@@ -216,35 +208,46 @@ const styles: Record<string, React.CSSProperties> = {
     height: "6px",
     borderRadius: "50%",
     background: "#f7d237",
+    boxShadow: "0 0 10px rgba(247,210,55,0.9)",
   },
 
   title: {
-    fontSize: "36px",
+    fontSize: "42px",
+    lineHeight: 1.05,
     margin: 0,
+    fontWeight: 700,
   },
 
   text: {
-    marginTop: "12px",
-    marginBottom: "20px",
-    color: "#cfd3e6",
+    marginTop: "16px",
+    marginBottom: "24px",
+    color: "#d8dce7",
+    fontSize: "16px",
+    lineHeight: 1.7,
+    maxWidth: "420px",
   },
 
   form: {
     display: "flex",
     flexDirection: "column",
     gap: "12px",
+    position: "relative",
+    zIndex: 2,
   },
 
   label: {
     fontSize: "14px",
+    color: "#dfe4f2",
   },
 
   input: {
-    padding: "14px",
-    borderRadius: "12px",
+    padding: "16px",
+    borderRadius: "14px",
     border: "1px solid rgba(255,255,255,0.15)",
     background: "rgba(255,255,255,0.05)",
     color: "#fff",
+    fontSize: "15px",
+    outline: "none",
   },
 
   button: {
@@ -252,24 +255,30 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "16px",
     borderRadius: "16px",
     border: "none",
-    fontWeight: 600,
+    fontWeight: 700,
+    fontSize: "16px",
     background:
       "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
     color: "#fff",
     cursor: "pointer",
+    boxShadow: "0 16px 34px rgba(85,104,255,0.22)",
   },
 
   successBox: {
     marginTop: "16px",
-    padding: "12px",
+    padding: "12px 14px",
     borderRadius: "12px",
     background: "rgba(0,255,150,0.1)",
+    border: "1px solid rgba(0,255,150,0.18)",
+    color: "#d8f5e6",
   },
 
   errorBox: {
     marginTop: "16px",
-    padding: "12px",
+    padding: "12px 14px",
     borderRadius: "12px",
     background: "rgba(255,0,0,0.1)",
+    border: "1px solid rgba(255,0,0,0.14)",
+    color: "#ffd7d7",
   },
 };
