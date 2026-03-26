@@ -21,16 +21,19 @@ export default function CabinetLoginPage() {
         throw new Error("Введите email.");
       }
 
-const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb", {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  body: JSON.stringify({
-    email: email.trim().toLowerCase(),
-    action: "send_code",
-  }),
-});
+      const res = await fetch(
+        "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            action: "send_code",
+          }),
+        }
+      );
 
       const contentType = res.headers.get("content-type") || "";
       const data = contentType.includes("application/json")
@@ -55,26 +58,40 @@ const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3
       <div className="ambient-gradient-bg" />
 
       <div style={styles.wrap}>
-<div style={styles.logoBox}>
-  <Image
-    src="/logo.svg"
-    alt="Growth Avenue"
-    width={180}
-    height={42}
-    style={styles.logo}
-    priority
-  />
-</div>
-        />
+        {/* LOGO */}
+        <div style={styles.logoBox}>
+          <Link href="/" style={{ display: "inline-block", cursor: "pointer" }}>
+            <Image
+              src="/logo.svg"
+              alt="Growth Avenue"
+              width={180}
+              height={42}
+              style={styles.logo}
+              priority
+            />
+          </Link>
         </div>
 
+        {/* CARD */}
         <section style={styles.card}>
+          {/* HERO SVG */}
+          <div style={styles.heroBox}>
+            <Image
+              src="/hero.svg"
+              alt="Hero"
+              width={320}
+              height={200}
+              style={styles.hero}
+            />
+          </div>
+
           <div style={styles.kicker}>
             <span className="pulse-dot" style={styles.kickerDot} />
             <span>PERSONAL CABINET</span>
           </div>
 
           <h1 style={styles.title}>Вход по email</h1>
+
           <p style={styles.text}>
             Введите email, который вы использовали для доступа. Мы отправим на
             него код подтверждения.
@@ -97,8 +114,7 @@ const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3
               disabled={loading}
               style={{
                 ...styles.button,
-                opacity: loading ? 0.75 : 1,
-                cursor: loading ? "wait" : "pointer",
+                opacity: loading ? 0.7 : 1,
               }}
             >
               {loading ? "Отправляем..." : "Отправить код"}
@@ -117,118 +133,121 @@ const styles: Record<string, React.CSSProperties> = {
   page: {
     position: "relative",
     minHeight: "100vh",
-    overflow: "hidden",
     background:
       "radial-gradient(circle at top, rgba(247,210,55,0.10), transparent 22%), #0b1d3a",
-    color: "#fefefe",
-    padding: "28px 22px 40px",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
+    padding: "24px",
+    color: "#fff",
   },
+
   wrap: {
-    position: "relative",
-    zIndex: 1,
     width: "100%",
     maxWidth: "560px",
+    zIndex: 1,
   },
+
   logoBox: {
     display: "flex",
     justifyContent: "center",
-    marginBottom: "18px",
+    marginBottom: "20px",
   },
+
   logo: {
-    width: "auto",
     height: "40px",
-    filter:
-      "drop-shadow(0 0 12px rgba(255,255,255,0.08)) drop-shadow(0 0 20px rgba(255,255,255,0.04))",
+    width: "auto",
   },
+
   card: {
-    borderRadius: "30px",
+    borderRadius: "28px",
     padding: "32px",
-    background: "rgba(255,255,255,0.07)",
-    border: "1px solid rgba(255,255,255,0.10)",
-    boxShadow: "0 18px 42px rgba(0,0,0,0.20)",
-    backdropFilter: "blur(18px)",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.1)",
+    backdropFilter: "blur(20px)",
+    boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
   },
+
+  heroBox: {
+    display: "flex",
+    justifyContent: "center",
+    marginBottom: "20px",
+  },
+
+  hero: {
+    width: "100%",
+    maxWidth: "300px",
+    opacity: 0.9,
+  },
+
   kicker: {
-    display: "inline-flex",
+    display: "flex",
     alignItems: "center",
     gap: "10px",
     fontSize: "12px",
-    fontWeight: 700,
-    letterSpacing: "0.08em",
-    textTransform: "uppercase",
     color: "#f7d237",
-    marginBottom: "14px",
+    marginBottom: "10px",
   },
+
   kickerDot: {
-    width: "7px",
-    height: "7px",
-    borderRadius: "999px",
+    width: "6px",
+    height: "6px",
+    borderRadius: "50%",
     background: "#f7d237",
-    boxShadow: "0 0 10px rgba(247,210,55,0.95)",
   },
+
   title: {
+    fontSize: "36px",
     margin: 0,
-    fontSize: "42px",
-    lineHeight: 1.05,
-    fontWeight: 700,
   },
+
   text: {
-    marginTop: "16px",
-    marginBottom: "24px",
-    fontSize: "16px",
-    lineHeight: 1.7,
-    color: "#d8dce7",
+    marginTop: "12px",
+    marginBottom: "20px",
+    color: "#cfd3e6",
   },
+
   form: {
-    display: "grid",
+    display: "flex",
+    flexDirection: "column",
     gap: "12px",
   },
+
   label: {
     fontSize: "14px",
-    color: "#dfe4f2",
   },
+
   input: {
-    width: "100%",
-    borderRadius: "16px",
-    border: "1px solid rgba(255,255,255,0.12)",
-    background: "rgba(255,255,255,0.06)",
+    padding: "14px",
+    borderRadius: "12px",
+    border: "1px solid rgba(255,255,255,0.15)",
+    background: "rgba(255,255,255,0.05)",
     color: "#fff",
-    padding: "16px",
-    fontSize: "15px",
-    outline: "none",
   },
+
   button: {
-    marginTop: "8px",
-    width: "100%",
-    border: 0,
-    borderRadius: "18px",
-    padding: "18px 20px",
-    fontSize: "16px",
-    fontWeight: 700,
+    marginTop: "10px",
+    padding: "16px",
+    borderRadius: "16px",
+    border: "none",
+    fontWeight: 600,
     background:
       "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
     color: "#fff",
-    boxShadow: "0 16px 34px rgba(85,104,255,0.22)",
+    cursor: "pointer",
   },
+
   successBox: {
-    marginTop: "18px",
-    padding: "14px 16px",
-    borderRadius: "16px",
-    background: "rgba(78, 201, 140, 0.10)",
-    border: "1px solid rgba(78, 201, 140, 0.24)",
-    color: "#d8f5e6",
-    fontSize: "14px",
+    marginTop: "16px",
+    padding: "12px",
+    borderRadius: "12px",
+    background: "rgba(0,255,150,0.1)",
   },
+
   errorBox: {
-    marginTop: "18px",
-    padding: "14px 16px",
-    borderRadius: "16px",
-    background: "rgba(255, 87, 87, 0.08)",
-    border: "1px solid rgba(255, 87, 87, 0.22)",
-    color: "#f4d8d8",
-    fontSize: "14px",
+    marginTop: "16px",
+    padding: "12px",
+    borderRadius: "12px",
+    background: "rgba(255,0,0,0.1)",
   },
 };
