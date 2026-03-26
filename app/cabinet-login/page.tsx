@@ -20,15 +20,16 @@ export default function CabinetLoginPage() {
         throw new Error("Введите email.");
       }
 
-      const res = await fetch("/api/auth/send-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email: email.trim().toLowerCase(),
-        }),
-      });
+const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    email: email.trim().toLowerCase(),
+    action: "send_code",
+  }),
+});
 
       const contentType = res.headers.get("content-type") || "";
       const data = contentType.includes("application/json")
