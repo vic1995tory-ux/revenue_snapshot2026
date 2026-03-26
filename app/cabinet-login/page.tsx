@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { FormEvent, useState } from "react";
 
 export default function CabinetLoginPage() {
@@ -54,15 +55,16 @@ const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3
       <div className="ambient-gradient-bg" />
 
       <div style={styles.wrap}>
-        <div style={styles.logoBox}>
-          <Image
-            src="/logo.svg"
-            alt="Growth Avenue"
-            width={180}
-            height={42}
-            style={styles.logo}
-            priority
-          />
+<div style={styles.logoBox}>
+  <Image
+    src="/logo.svg"
+    alt="Growth Avenue"
+    width={180}
+    height={42}
+    style={styles.logo}
+    priority
+  />
+</div>
         </div>
 
         <section style={styles.card}>
