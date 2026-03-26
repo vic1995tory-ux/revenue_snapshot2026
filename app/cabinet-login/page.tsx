@@ -65,6 +65,7 @@ const res = await fetch("https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3
     priority
   />
 </div>
+        />
         </div>
 
         <section style={styles.card}>
