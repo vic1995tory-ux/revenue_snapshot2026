@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { use, useEffect, useMemo, useRef, useState } from "react";
 
 type MetricItem = {
   label: string;
@@ -57,6 +56,12 @@ type ActivePanel =
       id?: string;
     }
   | null;
+
+type PageProps = {
+  params: Promise<{
+    token: string;
+  }>;
+};
 
 const WEBHOOK_URL =
   "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
@@ -463,12 +468,31 @@ function normalizeBlock(raw: unknown, index: number): InsightBlock {
   const fallback = FALLBACK_DATA.blocks[index] ?? FALLBACK_DATA.blocks[0];
   const item = (raw ?? {}) as Record<string, unknown>;
   const idSource = String(item.id ?? item.key ?? fallback.id).toLowerCase();
-  const id = idSource
-    .replace(/&/g, "and")
-    .replace(/\s+/g, "_")
-    .replace(/[^a-z0-9_]/g, "") || fallback.id;
+  const id =
+    idSource
+      .replace(/&/g, "and")
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "") || fallback.id;
 
-  const detailsRaw = (item.details ?? item.inner ?? {}) as Record<string, unknown>;
+  const detailsRaw = (item.details ?? item.inner ?? {}) as Record<
+    string,
+    unknown
+  >;
+
+  const shortPoints = toArray(
+    item.shortPoints ?? item.points ?? item.preview_points ?? item.card_points,
+  ).slice(0, 4);
+
+  const tags = toArray(item.tags ?? item.relations ?? item.logic_tags);
+  const links = normalizeLinks(
+    item.links ?? item.connected_blocks ?? item.related_blocks,
+  );
+  const strengths = toArray(detailsRaw.strengths ?? item.strengths);
+  const risks = toArray(detailsRaw.risks ?? item.risks ?? item.losses);
+  const actions = toArray(
+    detailsRaw.actions ?? item.actions ?? item.recommendations,
+  );
+  const metrics = normalizeMetrics(detailsRaw.metrics ?? item.metrics);
 
   return {
     id,
@@ -477,51 +501,32 @@ function normalizeBlock(raw: unknown, index: number): InsightBlock {
     icon: String(item.icon ?? ICON_BY_ID[id] ?? fallback.icon),
     score: clampScore(item.score ?? item.rate ?? item.rating, fallback.score),
     status: String(item.status ?? item.label ?? fallback.status),
-    shortPoints:
-      toArray(item.shortPoints ?? item.points ?? item.preview_points ?? item.card_points).slice(0, 4)
-        .length > 0
-        ? toArray(item.shortPoints ?? item.points ?? item.preview_points ?? item.card_points).slice(0, 4)
-        : fallback.shortPoints,
-    tags:
-      toArray(item.tags ?? item.relations ?? item.logic_tags).length > 0
-        ? toArray(item.tags ?? item.relations ?? item.logic_tags)
-        : fallback.tags,
-    links:
-      normalizeLinks(item.links ?? item.connected_blocks ?? item.related_blocks).length > 0
-        ? normalizeLinks(item.links ?? item.connected_blocks ?? item.related_blocks)
-        : fallback.links,
+    shortPoints: shortPoints.length > 0 ? shortPoints : fallback.shortPoints,
+    tags: tags.length > 0 ? tags : fallback.tags,
+    links: links.length > 0 ? links : fallback.links,
     details: {
-      summary: String(detailsRaw.summary ?? item.summary ?? fallback.details.summary),
-      strengths:
-        toArray(detailsRaw.strengths ?? item.strengths).length > 0
-          ? toArray(detailsRaw.strengths ?? item.strengths)
-          : fallback.details.strengths,
-      risks:
-        toArray(detailsRaw.risks ?? item.risks ?? item.losses).length > 0
-          ? toArray(detailsRaw.risks ?? item.risks ?? item.losses)
-          : fallback.details.risks,
-      actions:
-        toArray(detailsRaw.actions ?? item.actions ?? item.recommendations).length > 0
-          ? toArray(detailsRaw.actions ?? item.actions ?? item.recommendations)
-          : fallback.details.actions,
-      metrics:
-        normalizeMetrics(detailsRaw.metrics ?? item.metrics).length > 0
-          ? normalizeMetrics(detailsRaw.metrics ?? item.metrics)
-          : fallback.details.metrics,
+      summary: String(
+        detailsRaw.summary ?? item.summary ?? fallback.details.summary,
+      ),
+      strengths: strengths.length > 0 ? strengths : fallback.details.strengths,
+      risks: risks.length > 0 ? risks : fallback.details.risks,
+      actions: actions.length > 0 ? actions : fallback.details.actions,
+      metrics: metrics.length > 0 ? metrics : fallback.details.metrics,
     },
   };
 }
 
 function normalizePayload(raw: unknown): ResultsPayload {
-  const base = raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
+  const base =
+    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
   const payload = (base.data && typeof base.data === "object"
     ? (base.data as Record<string, unknown>)
     : base) as Record<string, unknown>;
 
-  const companyRaw = (payload.company ?? payload.hero ?? payload.summary ?? {}) as Record<
-    string,
-    unknown
-  >;
+  const companyRaw = (payload.company ??
+    payload.hero ??
+    payload.summary ??
+    {}) as Record<string, unknown>;
 
   const blocksRaw = Array.isArray(payload.blocks)
     ? payload.blocks
@@ -531,16 +536,26 @@ function normalizePayload(raw: unknown): ResultsPayload {
         ? payload.sections
         : FALLBACK_DATA.blocks;
 
-  const solutionRaw = (payload.solution ?? payload.solutions ?? {}) as Record<string, unknown>;
+  const solutionRaw = (payload.solution ??
+    payload.solutions ??
+    {}) as Record<string, unknown>;
 
   return {
     company: {
       name: String(
-        companyRaw.name ?? companyRaw.company_name ?? payload.company_name ?? FALLBACK_DATA.company.name,
+        companyRaw.name ??
+          companyRaw.company_name ??
+          payload.company_name ??
+          FALLBACK_DATA.company.name,
       ),
-      project: String(companyRaw.project ?? payload.project ?? FALLBACK_DATA.company.project),
+      project: String(
+        companyRaw.project ?? payload.project ?? FALLBACK_DATA.company.project,
+      ),
       summary: String(
-        companyRaw.summary ?? companyRaw.short_summary ?? payload.summary ?? FALLBACK_DATA.company.summary,
+        companyRaw.summary ??
+          companyRaw.short_summary ??
+          payload.summary ??
+          FALLBACK_DATA.company.summary,
       ),
       executive: String(
         companyRaw.executive ??
@@ -553,20 +568,34 @@ function normalizePayload(raw: unknown): ResultsPayload {
         FALLBACK_DATA.company.score,
       ),
       maturity: String(
-        companyRaw.maturity ?? companyRaw.model_label ?? payload.model_label ?? FALLBACK_DATA.company.maturity,
+        companyRaw.maturity ??
+          companyRaw.model_label ??
+          payload.model_label ??
+          FALLBACK_DATA.company.maturity,
       ),
       horizon: String(
-        companyRaw.horizon ?? companyRaw.primary_horizon ?? payload.primary_horizon ?? FALLBACK_DATA.company.horizon,
+        companyRaw.horizon ??
+          companyRaw.primary_horizon ??
+          payload.primary_horizon ??
+          FALLBACK_DATA.company.horizon,
       ),
       expires: String(
-        companyRaw.expires ?? companyRaw.expiration_date ?? payload.expiration_date ?? FALLBACK_DATA.company.expires,
+        companyRaw.expires ??
+          companyRaw.expiration_date ??
+          payload.expiration_date ??
+          FALLBACK_DATA.company.expires,
       ),
       resultLabel: String(
-        companyRaw.resultLabel ?? companyRaw.result_label ?? payload.result_label ?? FALLBACK_DATA.company.resultLabel,
+        companyRaw.resultLabel ??
+          companyRaw.result_label ??
+          payload.result_label ??
+          FALLBACK_DATA.company.resultLabel,
       ),
     },
     solution: {
-      title: String(solutionRaw.title ?? FALLBACK_DATA.solution?.title ?? "Solutions & Practice"),
+      title: String(
+        solutionRaw.title ?? FALLBACK_DATA.solution?.title ?? "Solutions & Practice",
+      ),
       subtitle: String(
         solutionRaw.subtitle ??
           solutionRaw.summary ??
@@ -582,18 +611,31 @@ function normalizePayload(raw: unknown): ResultsPayload {
   };
 }
 
-function Ring({ progress, size = 104 }: { progress: number; size?: number }) {
+function Ring({
+  progress,
+  size = 104,
+}: {
+  progress: number;
+  size?: number;
+}) {
   const radius = 44;
   const stroke = 7;
   const normalizedRadius = radius - stroke / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (progress / 100) * circumference;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
       <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
         <defs>
-          <linearGradient id={`grad-${size}-${progress}`} x1="0%" y1="0%" x2="100%" y2="100%">
+          <linearGradient
+            id={`grad-${size}-${progress}`}
+            x1="0%"
+            y1="0%"
+            x2="100%"
+            y2="100%"
+          >
             <stop offset="0%" stopColor="#47adff" />
             <stop offset="55%" stopColor="#7e84ff" />
             <stop offset="100%" stopColor="#f7d237" />
@@ -624,8 +666,12 @@ function Ring({ progress, size = 104 }: { progress: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[28px] font-semibold leading-none text-white">{progress}</div>
-        <div className="mt-1 text-[10px] uppercase tracking-[0.26em] text-white/45">score</div>
+        <div className="text-[28px] font-semibold leading-none text-white">
+          {progress}
+        </div>
+        <div className="mt-1 text-[10px] uppercase tracking-[0.26em] text-white/45">
+          score
+        </div>
       </div>
     </div>
   );
@@ -702,7 +748,8 @@ function TiltButton({
       style={{
         ...style,
         transformStyle: "preserve-3d",
-        transition: "transform 220ms cubic-bezier(0.22,1,0.36,1), filter 220ms ease",
+        transition:
+          "transform 220ms cubic-bezier(0.22,1,0.36,1), filter 220ms ease",
       }}
     >
       {children}
@@ -750,6 +797,7 @@ function RelationPills({
         {block.links.map((linkId) => {
           const target = allBlocks.find((item) => item.id === linkId);
           if (!target) return null;
+
           return (
             <button
               key={linkId}
@@ -769,16 +817,15 @@ function RelationPills({
   );
 }
 
-export default function ResultsPage() {
-  const searchParams = useSearchParams();
+export default function ResultsPage({ params }: PageProps) {
+  const { token } = use(params);
+
   const [data, setData] = useState<ResultsPayload>(FALLBACK_DATA);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [activeTag, setActiveTag] = useState<string | null>(null);
   const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  const token = searchParams.get("token") || searchParams.get("session") || searchParams.get("id") || "";
 
   useEffect(() => {
     let isMounted = true;
@@ -788,7 +835,6 @@ export default function ResultsPage() {
       setFetchError(null);
 
       try {
-        const paramsObject = Object.fromEntries(searchParams.entries());
         const response = await fetch(WEBHOOK_URL, {
           method: "POST",
           headers: {
@@ -798,7 +844,6 @@ export default function ResultsPage() {
             source: "vercel_results_page",
             page: "results",
             token,
-            params: paramsObject,
           }),
           cache: "no-store",
         });
@@ -827,16 +872,25 @@ export default function ResultsPage() {
       }
     }
 
-    loadResults();
+    if (token) {
+      loadResults();
+    } else {
+      setLoading(false);
+      setFetchError("Token was not provided.");
+    }
 
     return () => {
       isMounted = false;
     };
-  }, [searchParams, token]);
+  }, [token]);
 
   const relatedCards = useMemo(() => {
     if (!activeTag) return new Set<string>();
-    return new Set(data.blocks.filter((block) => block.tags.includes(activeTag)).map((block) => block.id));
+    return new Set(
+      data.blocks
+        .filter((block) => block.tags.includes(activeTag))
+        .map((block) => block.id),
+    );
   }, [activeTag, data.blocks]);
 
   function jumpToCard(id: string) {
@@ -875,21 +929,39 @@ export default function ResultsPage() {
         }
 
         @keyframes floatA {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(30px, -20px, 0) scale(1.05); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
+          0% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          50% {
+            transform: translate3d(30px, -20px, 0) scale(1.05);
+          }
+          100% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
         }
 
         @keyframes floatB {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(-40px, 30px, 0) scale(1.08); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
+          0% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          50% {
+            transform: translate3d(-40px, 30px, 0) scale(1.08);
+          }
+          100% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
         }
 
         @keyframes floatC {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(10px, 20px, 0) scale(0.98); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
+          0% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
+          50% {
+            transform: translate3d(10px, 20px, 0) scale(0.98);
+          }
+          100% {
+            transform: translate3d(0, 0, 0) scale(1);
+          }
         }
 
         @keyframes panelIn {
@@ -915,8 +987,12 @@ export default function ResultsPage() {
         }
 
         @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
+          0% {
+            background-position: 200% 0;
+          }
+          100% {
+            background-position: -200% 0;
+          }
         }
       `}</style>
 
@@ -939,7 +1015,11 @@ export default function ResultsPage() {
 
       <div className="relative mx-auto max-w-[1520px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
         <header className="mb-8 flex items-center justify-between gap-4">
-          <img src="/pic1res.svg" alt="growth avenue" className="h-10 w-auto md:h-12" />
+          <img
+            src="/pic1res.svg"
+            alt="growth avenue"
+            className="h-10 w-auto md:h-12"
+          />
 
           <div className="flex items-center gap-3">
             <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm text-white/65 md:block">
@@ -968,11 +1048,15 @@ export default function ResultsPage() {
                 </h1>
 
                 <p className="mt-5 max-w-4xl text-lg leading-8 text-[#d8dde7] md:text-[22px] md:leading-9">
-                  {loading ? "Собираем итоговую выдачу по блокам и связям между ними..." : data.company.summary}
+                  {loading
+                    ? "Собираем итоговую выдачу по блокам и связям между ними..."
+                    : data.company.summary}
                 </p>
 
                 <p className="mt-5 max-w-4xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                  {loading ? "Webhook response is loading from Make." : data.company.executive}
+                  {loading
+                    ? "Webhook response is loading from Make."
+                    : data.company.executive}
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-3">
@@ -992,14 +1076,18 @@ export default function ResultsPage() {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <GlassCard className="p-5">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">Overall score</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                    Overall score
+                  </div>
                   <div className="mt-4 flex items-center justify-center">
                     <Ring progress={data.company.score} size={156} />
                   </div>
                 </GlassCard>
 
                 <GlassCard className="p-5">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">Snapshot status</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                    Snapshot status
+                  </div>
                   <div className="mt-6 text-3xl font-semibold text-white">
                     {loading ? "Loading" : data.company.resultLabel}
                   </div>
@@ -1009,8 +1097,12 @@ export default function ResultsPage() {
                       : "Result page assembled. Key growth zone found. Cross-block links available."}
                   </div>
                   <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.04] p-4 text-sm text-white/70">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">Expiration</div>
-                    <div className="mt-2 text-xl text-white">{data.company.expires}</div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                      Expiration
+                    </div>
+                    <div className="mt-2 text-xl text-white">
+                      {data.company.expires}
+                    </div>
                   </div>
                 </GlassCard>
               </div>
@@ -1041,10 +1133,15 @@ export default function ResultsPage() {
                 </div>
 
                 <div className="mt-8 rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(71,173,255,0.18),rgba(189,95,234,0.16),rgba(247,210,55,0.12))] p-5">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/45">What will live here</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/45">
+                    What will live here
+                  </div>
                   <div className="mt-4 grid gap-3 text-sm text-white/80 sm:grid-cols-2">
                     {(data.solution?.sections ?? []).map((item) => (
-                      <div key={item} className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3">
+                      <div
+                        key={item}
+                        className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3"
+                      >
                         {item}
                       </div>
                     ))}
@@ -1059,10 +1156,15 @@ export default function ResultsPage() {
           <GlassCard className="p-5 md:p-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
-                <div className="text-[12px] uppercase tracking-[0.24em] text-[#f7d237]">Cross-block logic</div>
-                <h2 className="mt-2 text-3xl font-semibold text-white md:text-5xl">How the blocks interact</h2>
+                <div className="text-[12px] uppercase tracking-[0.24em] text-[#f7d237]">
+                  Cross-block logic
+                </div>
+                <h2 className="mt-2 text-3xl font-semibold text-white md:text-5xl">
+                  How the blocks interact
+                </h2>
                 <p className="mt-3 max-w-3xl text-sm leading-7 text-white/58 md:text-base">
-                  Нажмите на тег, чтобы подсветить связанные карточки. Так можно быстро увидеть, где один вывод влияет на соседние блоки.
+                  Нажмите на тег, чтобы подсветить связанные карточки. Так можно
+                  быстро увидеть, где один вывод влияет на соседние блоки.
                 </p>
               </div>
 
@@ -1071,7 +1173,9 @@ export default function ResultsPage() {
                   <button
                     key={tag}
                     type="button"
-                    onClick={() => setActiveTag((prev) => (prev === tag ? null : tag))}
+                    onClick={() =>
+                      setActiveTag((prev) => (prev === tag ? null : tag))
+                    }
                     className={cn(
                       "rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.2em] transition",
                       activeTag === tag
@@ -1091,7 +1195,8 @@ export default function ResultsPage() {
           <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {Array.from({ length: 7 }).map((_, index) => (
               <GlassCard key={index} className="h-[430px] p-5 md:p-6">
-                <div className="h-full animate-pulse rounded-[24px] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%]"
+                <div
+                  className="h-full animate-pulse rounded-[24px] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%]"
                   style={{ animation: "shimmer 1.8s linear infinite" }}
                 />
               </GlassCard>
@@ -1109,9 +1214,17 @@ export default function ResultsPage() {
                   ref={(el) => {
                     cardRefs.current[block.id] = el;
                   }}
-                  className={cn("transition duration-300", dimmed && "opacity-45 saturate-[0.8]")}
+                  className={cn(
+                    "transition duration-300",
+                    dimmed && "opacity-45 saturate-[0.8]",
+                  )}
                 >
-                  <TiltButton onClick={() => setActivePanel({ type: "block", id: block.id })} highlight={highlighted}>
+                  <TiltButton
+                    onClick={() =>
+                      setActivePanel({ type: "block", id: block.id })
+                    }
+                    highlight={highlighted}
+                  >
                     <GlassCard className="h-full p-5 md:p-6">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_24px_rgba(247,210,55,0.08)]">
@@ -1121,9 +1234,15 @@ export default function ResultsPage() {
                       </div>
 
                       <div className="mt-6">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">Block {index + 1}</div>
-                        <div className="mt-2 text-[32px] font-semibold leading-[1.02] text-[#fefefe]">{block.title}</div>
-                        <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">{block.subtitle}</div>
+                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
+                          Block {index + 1}
+                        </div>
+                        <div className="mt-2 text-[32px] font-semibold leading-[1.02] text-[#fefefe]">
+                          {block.title}
+                        </div>
+                        <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
+                          {block.subtitle}
+                        </div>
                         <div className="mt-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
                           {block.status}
                         </div>
@@ -1131,7 +1250,10 @@ export default function ResultsPage() {
 
                       <div className="mt-6 space-y-3">
                         {block.shortPoints.map((point, pointIndex) => (
-                          <div key={pointIndex} className="flex items-start gap-3 text-sm leading-7 text-white/70">
+                          <div
+                            key={pointIndex}
+                            className="flex items-start gap-3 text-sm leading-7 text-white/70"
+                          >
                             <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
                             <span>{point}</span>
                           </div>
@@ -1168,19 +1290,25 @@ export default function ResultsPage() {
         <>
           <div
             className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm"
-            style={{ animation: "overlayIn 280ms cubic-bezier(0.22,1,0.36,1)" }}
+            style={{
+              animation: "overlayIn 280ms cubic-bezier(0.22,1,0.36,1)",
+            }}
             onClick={() => setActivePanel(null)}
           />
 
           <div
             className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
-            style={{ animation: "panelIn 420ms cubic-bezier(0.22,1,0.36,1)" }}
+            style={{
+              animation: "panelIn 420ms cubic-bezier(0.22,1,0.36,1)",
+            }}
           >
             <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
-                    {activePanel.type === "solution" ? "full-screen layer" : "insight block"}
+                    {activePanel.type === "solution"
+                      ? "full-screen layer"
+                      : "insight block"}
                   </div>
                   <div className="mt-1 text-2xl font-semibold text-[#fefefe] md:text-3xl">
                     {activePanel.type === "solution"
@@ -1189,7 +1317,8 @@ export default function ResultsPage() {
                   </div>
                   <div className="mt-1 text-sm text-[#a5aeb2]">
                     {activePanel.type === "solution"
-                      ? data.solution?.subtitle ?? "Placeholder layer ready for later content"
+                      ? data.solution?.subtitle ??
+                        "Placeholder layer ready for later content"
                       : activeBlock?.subtitle}
                   </div>
                 </div>
@@ -1206,7 +1335,9 @@ export default function ResultsPage() {
             {activePanel.type === "solution" ? (
               <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
                 <GlassCard className="p-6 md:p-7">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Structure placeholder</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                    Structure placeholder
+                  </div>
                   <h3 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
                     {data.solution?.title ?? "Solution & Practice will live here"}
                   </h3>
@@ -1219,8 +1350,12 @@ export default function ResultsPage() {
                 <div className="grid gap-5 md:grid-cols-2">
                   {(data.solution?.sections ?? []).map((item) => (
                     <GlassCard key={item} className="min-h-[180px] p-5">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">Future section</div>
-                      <div className="mt-4 text-2xl font-semibold text-white">{item}</div>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                        Future section
+                      </div>
+                      <div className="mt-4 text-2xl font-semibold text-white">
+                        {item}
+                      </div>
                       <div className="mt-4 text-sm leading-7 text-white/50">
                         Empty placeholder card for later prompt-driven content.
                       </div>
@@ -1233,9 +1368,15 @@ export default function ResultsPage() {
                 <GlassCard className="p-6 md:p-7">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="max-w-3xl">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Summary</div>
-                      <h3 className="mt-3 text-3xl font-semibold text-white md:text-5xl">{activeBlock.status}</h3>
-                      <p className="mt-4 text-sm leading-7 text-white/65 md:text-base">{activeBlock.details.summary}</p>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                        Summary
+                      </div>
+                      <h3 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
+                        {activeBlock.status}
+                      </h3>
+                      <p className="mt-4 text-sm leading-7 text-white/65 md:text-base">
+                        {activeBlock.details.summary}
+                      </p>
                     </div>
                     <Ring progress={activeBlock.score} size={150} />
                   </div>
@@ -1244,18 +1385,27 @@ export default function ResultsPage() {
                 <div className="grid gap-5 md:grid-cols-3">
                   {activeBlock.details.metrics.map((metric) => (
                     <GlassCard key={metric.label} className="p-5">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">{metric.label}</div>
-                      <div className="mt-4 text-3xl font-semibold text-white">{metric.value}</div>
+                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
+                        {metric.label}
+                      </div>
+                      <div className="mt-4 text-3xl font-semibold text-white">
+                        {metric.value}
+                      </div>
                     </GlassCard>
                   ))}
                 </div>
 
                 <div className="grid gap-5 xl:grid-cols-3">
                   <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Strengths</div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                      Strengths
+                    </div>
                     <div className="mt-5 space-y-3">
                       {activeBlock.details.strengths.map((item, index) => (
-                        <div key={index} className="flex items-start gap-3 text-sm leading-7 text-white/75">
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
+                        >
                           <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300" />
                           <span>{item}</span>
                         </div>
@@ -1264,10 +1414,15 @@ export default function ResultsPage() {
                   </GlassCard>
 
                   <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Risks</div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                      Risks
+                    </div>
                     <div className="mt-5 space-y-3">
                       {activeBlock.details.risks.map((item, index) => (
-                        <div key={index} className="flex items-start gap-3 text-sm leading-7 text-white/75">
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
+                        >
                           <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
                           <span>{item}</span>
                         </div>
@@ -1276,10 +1431,15 @@ export default function ResultsPage() {
                   </GlassCard>
 
                   <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Priority actions</div>
+                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                      Priority actions
+                    </div>
                     <div className="mt-5 space-y-3">
                       {activeBlock.details.actions.map((item, index) => (
-                        <div key={index} className="flex items-start gap-3 text-sm leading-7 text-white/75">
+                        <div
+                          key={index}
+                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
+                        >
                           <span className="mt-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px] text-white/55">
                             {index + 1}
                           </span>
@@ -1291,7 +1451,9 @@ export default function ResultsPage() {
                 </div>
 
                 <GlassCard className="p-5 md:p-6">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">Cross-links</div>
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                    Cross-links
+                  </div>
                   <div className="mt-5">
                     <RelationPills
                       block={activeBlock}
