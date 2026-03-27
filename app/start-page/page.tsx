@@ -11,7 +11,6 @@ type ResolveResponse = {
   launch_limit?: number;
   created?: boolean | null;
   page_id?: string | null;
-  payment_id?: string;
   payment_status?: string;
   access_expires_at?: string;
   error?: string;
@@ -46,7 +45,7 @@ function StartPageContent() {
   const searchParams = useSearchParams();
 
   const [logoTransform, setLogoTransform] = useState(
-    "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
+    "perspective(1400px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
   );
 
   const [resolving, setResolving] = useState(true);
@@ -57,6 +56,8 @@ function StartPageContent() {
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
 
   const tx = useMemo(() => searchParams.get("tx") || "", [searchParams]);
   const st = useMemo(() => searchParams.get("st") || "", [searchParams]);
@@ -72,7 +73,7 @@ function StartPageContent() {
         setError("");
 
         if (!tx) {
-          throw new Error("Не найден Payment ID в ссылке.");
+          throw new Error("Не найден параметр оплаты в ссылке.");
         }
 
         if (String(st).toUpperCase() !== "COMPLETED") {
@@ -137,23 +138,23 @@ function StartPageContent() {
     const centerX = rect.width / 2;
     const centerY = rect.height / 2;
 
-    const rotateY = ((x - centerX) / centerX) * 6;
-    const rotateX = ((centerY - y) / centerY) * 6;
+    const rotateY = ((x - centerX) / centerX) * 10;
+    const rotateX = ((centerY - y) / centerY) * 10;
 
     setLogoTransform(
-      `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.03,1.03,1.03)`
+      `perspective(1400px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.045,1.045,1.045)`
     );
   }
 
   function handleLogoLeave() {
     setLogoTransform(
-      "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
+      "perspective(1400px) rotateX(0deg) rotateY(0deg) scale3d(1,1,1)"
     );
   }
 
   function handleLogoEnter() {
     setLogoTransform(
-      "perspective(1200px) rotateX(0deg) rotateY(0deg) scale3d(1.02,1.02,1.02)"
+      "perspective(1400px) rotateX(0deg) rotateY(0deg) scale3d(1.025,1.025,1.025)"
     );
   }
 
@@ -175,18 +176,31 @@ function StartPageContent() {
       }
 
       if (!whatsapp.trim()) {
-        throw new Error("Введите WhatsApp.");
+        throw new Error("Введите телефон в WhatsApp.");
+      }
+
+      if (!login.trim()) {
+        throw new Error("Придумайте логин.");
+      }
+
+      if (!password.trim()) {
+        throw new Error("Придумайте пароль.");
+      }
+
+      if (password.trim().length < 6) {
+        throw new Error("Пароль должен быть не короче 6 символов.");
       }
 
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
 
       const payload = {
-        payment_id: tx,
         access_token: resolved.access_token,
         full_name: fullName.trim(),
         company_name: companyName.trim(),
         whatsapp: whatsapp.trim(),
+        login: login.trim(),
+        password: password.trim(),
         start_page_link: currentUrl,
       };
 
@@ -199,6 +213,7 @@ function StartPageContent() {
       });
 
       const contentType = res.headers.get("content-type") || "";
+
       if (!contentType.includes("application/json")) {
         const raw = await res.text();
         throw new Error(
@@ -212,7 +227,7 @@ function StartPageContent() {
         throw new Error(data?.error || "Не удалось сохранить данные.");
       }
 
-router.push(`/account/${resolved.access_token}`);
+      router.push(`/account/${resolved.access_token}`);
     } catch (err) {
       const message =
         err instanceof Error ? err.message : "Что-то пошло не так.";
@@ -224,6 +239,13 @@ router.push(`/account/${resolved.access_token}`);
 
   return (
     <main style={styles.page}>
+      <div style={styles.animatedBg}>
+        <div style={styles.bgOrbOne} />
+        <div style={styles.bgOrbTwo} />
+        <div style={styles.bgOrbThree} />
+        <div style={styles.bgNoise} />
+      </div>
+
       <div style={styles.shell}>
         <div style={styles.logoOuter}>
           <div
@@ -236,6 +258,7 @@ router.push(`/account/${resolved.access_token}`);
             onMouseEnter={handleLogoEnter}
           >
             <div style={styles.logoGlow} />
+            <div style={styles.logoGlowSecondary} />
             <Image
               src="/logo.svg"
               alt="Growth Avenue"
@@ -248,134 +271,160 @@ router.push(`/account/${resolved.access_token}`);
         </div>
 
         <div style={styles.card}>
-          <div style={styles.badge}>
-            <span className="pulse-dot" style={styles.badgeDot} />
-            <span>REVENUE SNAPSHOT</span>
-          </div>
+          <div style={styles.cardGradient} />
 
-          <h1 style={styles.title}>
-            {resolving ? "Подготавливаем доступ" : "Завершите доступ"}
-          </h1>
-
-          <p style={styles.text}>
-            {resolving
-              ? "Мы проверяем оплату и подготавливаем ваш персональный доступ."
-              : "Оплата подтверждена. Заполните данные ниже, чтобы перейти в персональную страницу."}
-          </p>
-
-          <div style={styles.infoBox}>
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Payment ID</span>
-              <span style={styles.infoValue}>{tx || "—"}</span>
+          <div style={styles.cardContent}>
+            <div style={styles.badge}>
+              <span className="pulse-dot" style={styles.badgeDot} />
+              <span>REVENUE SNAPSHOT</span>
             </div>
 
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Status</span>
-              <span style={styles.infoValue}>{st || "—"}</span>
-            </div>
+            <h1 style={styles.title}>
+              {resolving ? "Подготавливаем доступ" : "Завершите доступ"}
+            </h1>
 
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Amount</span>
-              <span style={styles.infoValue}>
-                {amt ? `${amt} ${cc || ""}`.trim() : "—"}
-              </span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Launches</span>
-              <span style={styles.infoValue}>
-                {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
-              </span>
-            </div>
-
-            <div style={styles.infoRow}>
-              <span style={styles.infoLabel}>Осталось времени</span>
-              <span style={styles.infoValue}>
-                {formatTimeLeft(resolved?.access_expires_at)}
-              </span>
-            </div>
-          </div>
-
-          {resolving && (
-            <div style={styles.loaderWrap}>
-              <div style={styles.loader} />
-            </div>
-          )}
-
-          {!resolving && !error && (
-            <div style={styles.form}>
-              <div style={styles.field}>
-                <label style={styles.label}>Имя и фамилия</label>
-                <input
-                  style={styles.input}
-                  type="text"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Введите имя и фамилию"
-                />
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.label}>Название компании</label>
-                <input
-                  style={styles.input}
-                  type="text"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  placeholder="Введите название компании"
-                />
-              </div>
-
-              <div style={styles.field}>
-                <label style={styles.label}>Телефон в WhatsApp</label>
-                <input
-                  style={styles.input}
-                  type="text"
-                  value={whatsapp}
-                  onChange={(e) => setWhatsapp(e.target.value)}
-                  placeholder="+995..."
-                />
-              </div>
-
-              <button
-                type="button"
-                onClick={handleStart}
-                disabled={submitting}
-                style={{
-                  ...styles.button,
-                  opacity: submitting ? 0.75 : 1,
-                  cursor: submitting ? "wait" : "pointer",
-                }}
-              >
-                {submitting ? "Сохраняем..." : "Начать"}
-              </button>
-            </div>
-          )}
-
-          {!resolving && error && (
-            <>
-              <div style={styles.errorBox}>
-                <strong style={styles.errorTitle}>Ошибка доступа</strong>
-                <p style={styles.errorText}>{error}</p>
-                <div style={styles.manualBox}>{tx || "Нет payment ID"}</div>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => window.location.reload()}
-                style={styles.button}
-              >
-                Попробовать снова
-              </button>
-            </>
-          )}
-
-          {!resolving && resolved?.access_token && !error && (
-            <p style={styles.smallText}>
-              Доступ подготовлен. После нажатия «Начать» откроется персональная
-              страница с результатами и таймером доступа.
+            <p style={styles.text}>
+              {resolving
+                ? "Мы проверяем оплату и подготавливаем ваш персональный доступ."
+                : "Оплата подтверждена. Заполните данные ниже, чтобы перейти в персональную страницу."}
             </p>
-          )}
+
+            <div style={styles.infoBox}>
+              <div style={styles.infoRow}>
+                <span style={styles.infoLabel}>Status</span>
+                <span style={styles.infoValue}>{st || "—"}</span>
+              </div>
+
+              <div style={styles.infoRow}>
+                <span style={styles.infoLabel}>Amount</span>
+                <span style={styles.infoValue}>
+                  {amt ? `${amt} ${cc || ""}`.trim() : "—"}
+                </span>
+              </div>
+
+              <div style={styles.infoRow}>
+                <span style={styles.infoLabel}>Launches</span>
+                <span style={styles.infoValue}>
+                  {resolved?.launch_count ?? 0} / {resolved?.launch_limit ?? 3}
+                </span>
+              </div>
+
+              <div style={styles.infoRow}>
+                <span style={styles.infoLabel}>Осталось времени</span>
+                <span style={styles.infoValue}>
+                  {formatTimeLeft(resolved?.access_expires_at)}
+                </span>
+              </div>
+            </div>
+
+            {resolving && (
+              <div style={styles.loaderWrap}>
+                <div style={styles.loader} />
+              </div>
+            )}
+
+            {!resolving && !error && (
+              <div style={styles.form}>
+                <div style={styles.field}>
+                  <label style={styles.label}>Имя и фамилия</label>
+                  <input
+                    style={styles.input}
+                    type="text"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    placeholder="Введите имя и фамилию"
+                    autoComplete="name"
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Название компании</label>
+                  <input
+                    style={styles.input}
+                    type="text"
+                    value={companyName}
+                    onChange={(e) => setCompanyName(e.target.value)}
+                    placeholder="Введите название компании"
+                    autoComplete="organization"
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Телефон в WhatsApp</label>
+                  <input
+                    style={styles.input}
+                    type="tel"
+                    inputMode="tel"
+                    autoComplete="tel"
+                    value={whatsapp}
+                    onChange={(e) => setWhatsapp(e.target.value)}
+                    placeholder="+995 5XX XX XX XX"
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Придумайте логин</label>
+                  <input
+                    style={styles.input}
+                    type="text"
+                    value={login}
+                    onChange={(e) => setLogin(e.target.value)}
+                    placeholder="Например: anna.studio"
+                    autoComplete="username"
+                  />
+                </div>
+
+                <div style={styles.field}>
+                  <label style={styles.label}>Придумайте пароль</label>
+                  <input
+                    style={styles.input}
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Не менее 6 символов"
+                    autoComplete="new-password"
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStart}
+                  disabled={submitting}
+                  style={{
+                    ...styles.button,
+                    opacity: submitting ? 0.78 : 1,
+                    cursor: submitting ? "wait" : "pointer",
+                  }}
+                >
+                  {submitting ? "Сохраняем..." : "Начать"}
+                </button>
+              </div>
+            )}
+
+            {!resolving && error && (
+              <>
+                <div style={styles.errorBox}>
+                  <strong style={styles.errorTitle}>Ошибка доступа</strong>
+                  <p style={styles.errorText}>{error}</p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => window.location.reload()}
+                  style={styles.button}
+                >
+                  Попробовать снова
+                </button>
+              </>
+            )}
+
+            {!resolving && resolved?.access_token && !error && (
+              <p style={styles.smallText}>
+                После нажатия «Начать» данные будут сохранены, а затем откроется
+                ваша персональная страница.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </main>
@@ -385,10 +434,18 @@ router.push(`/account/${resolved.access_token}`);
 function StartPageFallback() {
   return (
     <main style={styles.page}>
+      <div style={styles.animatedBg}>
+        <div style={styles.bgOrbOne} />
+        <div style={styles.bgOrbTwo} />
+        <div style={styles.bgOrbThree} />
+        <div style={styles.bgNoise} />
+      </div>
+
       <div style={styles.shell}>
         <div style={styles.logoOuter}>
           <div style={styles.logoTilt}>
             <div style={styles.logoGlow} />
+            <div style={styles.logoGlowSecondary} />
             <Image
               src="/logo.svg"
               alt="Growth Avenue"
@@ -401,15 +458,18 @@ function StartPageFallback() {
         </div>
 
         <div style={styles.card}>
-          <div style={styles.badge}>
-            <span className="pulse-dot" style={styles.badgeDot} />
-            <span>REVENUE SNAPSHOT</span>
-          </div>
+          <div style={styles.cardGradient} />
+          <div style={styles.cardContent}>
+            <div style={styles.badge}>
+              <span className="pulse-dot" style={styles.badgeDot} />
+              <span>REVENUE SNAPSHOT</span>
+            </div>
 
-          <h1 style={styles.title}>Подготавливаем доступ</h1>
-          <p style={styles.text}>
-            Мы проверяем оплату и подготавливаем ваш персональный доступ.
-          </p>
+            <h1 style={styles.title}>Подготавливаем доступ</h1>
+            <p style={styles.text}>
+              Мы проверяем оплату и подготавливаем ваш персональный доступ.
+            </p>
+          </div>
         </div>
       </div>
     </main>
@@ -426,66 +486,171 @@ export default function StartPage() {
 
 const styles: Record<string, React.CSSProperties> = {
   page: {
+    position: "relative",
     minHeight: "100vh",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     padding: "24px",
-    background:
-      "radial-gradient(circle at top, rgba(247,210,55,0.14), transparent 30%), #0b1d3a",
+    background: "#08162f",
     color: "#fefefe",
+    overflow: "hidden",
   },
+
+  animatedBg: {
+    position: "absolute",
+    inset: 0,
+    overflow: "hidden",
+    pointerEvents: "none",
+    zIndex: 0,
+    background:
+      "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.08), transparent 24%), radial-gradient(circle at 80% 10%, rgba(247,210,55,0.12), transparent 18%), linear-gradient(180deg, #091833 0%, #0b1d3a 52%, #08162f 100%)",
+  },
+
+  bgOrbOne: {
+    position: "absolute",
+    width: "42vw",
+    height: "42vw",
+    minWidth: "320px",
+    minHeight: "320px",
+    top: "-10%",
+    left: "-8%",
+    borderRadius: "999px",
+    background:
+      "radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(154,197,255,0.10) 30%, rgba(154,197,255,0.00) 72%)",
+    filter: "blur(18px)",
+    animation: "gaFloatOne 18s ease-in-out infinite",
+  },
+
+  bgOrbTwo: {
+    position: "absolute",
+    width: "38vw",
+    height: "38vw",
+    minWidth: "280px",
+    minHeight: "280px",
+    right: "-6%",
+    top: "8%",
+    borderRadius: "999px",
+    background:
+      "radial-gradient(circle, rgba(247,210,55,0.16) 0%, rgba(255,255,255,0.08) 28%, rgba(255,255,255,0.00) 72%)",
+    filter: "blur(20px)",
+    animation: "gaFloatTwo 22s ease-in-out infinite",
+  },
+
+  bgOrbThree: {
+    position: "absolute",
+    width: "46vw",
+    height: "46vw",
+    minWidth: "340px",
+    minHeight: "340px",
+    left: "22%",
+    bottom: "-18%",
+    borderRadius: "999px",
+    background:
+      "radial-gradient(circle, rgba(114,169,255,0.14) 0%, rgba(255,255,255,0.06) 26%, rgba(255,255,255,0.00) 72%)",
+    filter: "blur(26px)",
+    animation: "gaFloatThree 26s ease-in-out infinite",
+  },
+
+  bgNoise: {
+    position: "absolute",
+    inset: 0,
+    opacity: 0.08,
+    backgroundImage:
+      "radial-gradient(rgba(255,255,255,0.5) 0.6px, transparent 0.6px)",
+    backgroundSize: "18px 18px",
+  },
+
   shell: {
     width: "100%",
-    maxWidth: "900px",
+    maxWidth: "920px",
     display: "flex",
     flexDirection: "column",
     alignItems: "center",
-    gap: "18px",
+    gap: "20px",
+    position: "relative",
+    zIndex: 1,
   },
+
   logoOuter: {
     width: "100%",
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    minHeight: "88px",
+    minHeight: "96px",
   },
-  card: {
-    width: "100%",
-    maxWidth: "760px",
-    borderRadius: "32px",
-    padding: "34px 32px",
-    background: "rgba(255,255,255,0.08)",
-    border: "1px solid rgba(255,255,255,0.12)",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.28)",
-    backdropFilter: "blur(18px)",
-  },
+
   logoTilt: {
     position: "relative",
     display: "inline-flex",
     alignItems: "center",
     justifyContent: "center",
     transformStyle: "preserve-3d",
-    transition: "transform 0.18s ease-out",
+    transition: "transform 0.12s ease-out",
     willChange: "transform",
   },
+
   logoGlow: {
     position: "absolute",
-    inset: "-18px -24px",
+    inset: "-22px -34px",
     borderRadius: "999px",
     background:
-      "radial-gradient(circle, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.05) 35%, rgba(255,255,255,0) 74%)",
+      "radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.08) 34%, rgba(255,255,255,0) 76%)",
     filter: "blur(16px)",
     pointerEvents: "none",
+    animation: "gaLogoPulse 5.5s ease-in-out infinite",
   },
+
+  logoGlowSecondary: {
+    position: "absolute",
+    inset: "-28px -42px",
+    borderRadius: "999px",
+    background:
+      "radial-gradient(circle, rgba(247,210,55,0.12) 0%, rgba(113,150,255,0.10) 42%, rgba(255,255,255,0) 80%)",
+    filter: "blur(24px)",
+    pointerEvents: "none",
+    animation: "gaLogoPulse 7.5s ease-in-out infinite reverse",
+  },
+
   logo: {
     width: "auto",
-    height: "48px",
+    height: "50px",
     position: "relative",
     zIndex: 2,
     filter:
-      "drop-shadow(0 0 10px rgba(255,255,255,0.08)) drop-shadow(0 0 20px rgba(255,255,255,0.04))",
+      "drop-shadow(0 0 10px rgba(255,255,255,0.18)) drop-shadow(0 0 28px rgba(255,255,255,0.08))",
   },
+
+  card: {
+    width: "100%",
+    maxWidth: "780px",
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: "34px",
+    padding: "0",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    boxShadow: "0 16px 56px rgba(0,0,0,0.30)",
+    backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
+  },
+
+  cardGradient: {
+    position: "absolute",
+    inset: 0,
+    background:
+      "linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(114,169,255,0.06) 28%, rgba(247,210,55,0.05) 54%, rgba(255,255,255,0.04) 100%)",
+    opacity: 0.95,
+    animation: "gaCardShift 16s ease-in-out infinite",
+    pointerEvents: "none",
+  },
+
+  cardContent: {
+    position: "relative",
+    zIndex: 2,
+    padding: "34px 32px",
+  },
+
   badge: {
     display: "inline-flex",
     alignItems: "center",
@@ -497,6 +662,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#f7d237",
     marginBottom: "14px",
   },
+
   badgeDot: {
     width: "7px",
     height: "7px",
@@ -504,12 +670,14 @@ const styles: Record<string, React.CSSProperties> = {
     background: "#f7d237",
     boxShadow: "0 0 10px rgba(247,210,55,0.95)",
   },
+
   title: {
     margin: 0,
     fontSize: "56px",
-    lineHeight: 1.05,
+    lineHeight: 1.04,
     fontWeight: 700,
   },
+
   text: {
     marginTop: "18px",
     marginBottom: "26px",
@@ -518,6 +686,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#d8dce7",
     maxWidth: "720px",
   },
+
   infoBox: {
     display: "grid",
     gap: "16px",
@@ -525,59 +694,72 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: "22px",
     background: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.06)",
   },
+
   infoRow: {
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
     gap: "18px",
   },
+
   infoLabel: {
     fontSize: "16px",
     color: "#b4bccf",
   },
+
   infoValue: {
     fontSize: "17px",
     fontWeight: 700,
     color: "#ffffff",
     textAlign: "right",
-    wordBreak: "break-all",
+    wordBreak: "break-word",
   },
+
   loaderWrap: {
     marginTop: "24px",
     display: "flex",
     justifyContent: "center",
   },
+
   loader: {
-    width: "40px",
-    height: "40px",
+    width: "42px",
+    height: "42px",
     borderRadius: "999px",
     border: "3px solid rgba(255,255,255,0.18)",
     borderTopColor: "#f7d237",
+    animation: "gaSpin 0.9s linear infinite",
   },
+
   form: {
     marginTop: "28px",
     display: "grid",
     gap: "16px",
   },
+
   field: {
     display: "grid",
     gap: "8px",
   },
+
   label: {
     fontSize: "14px",
     color: "#e0e1e3",
   },
+
   input: {
     width: "100%",
     borderRadius: "16px",
-    border: "1px solid rgba(255,255,255,0.12)",
+    border: "1px solid rgba(255,255,255,0.13)",
     background: "rgba(255,255,255,0.06)",
     color: "#fff",
     padding: "15px 16px",
     fontSize: "15px",
     outline: "none",
+    boxShadow: "inset 0 1px 0 rgba(255,255,255,0.04)",
   },
+
   errorBox: {
     marginTop: "26px",
     padding: "18px",
@@ -585,28 +767,21 @@ const styles: Record<string, React.CSSProperties> = {
     background: "rgba(255, 87, 87, 0.08)",
     border: "1px solid rgba(255, 87, 87, 0.22)",
   },
+
   errorTitle: {
     display: "block",
     marginBottom: "10px",
     fontSize: "16px",
     color: "#fff",
   },
+
   errorText: {
     margin: 0,
     fontSize: "16px",
     lineHeight: 1.55,
     color: "#f0d1d1",
   },
-  manualBox: {
-    marginTop: "14px",
-    padding: "14px 16px",
-    borderRadius: "14px",
-    background: "rgba(0,0,0,0.18)",
-    color: "#fff",
-    fontSize: "15px",
-    fontWeight: 700,
-    wordBreak: "break-all",
-  },
+
   button: {
     marginTop: "18px",
     width: "100%",
@@ -615,9 +790,12 @@ const styles: Record<string, React.CSSProperties> = {
     padding: "18px 20px",
     fontSize: "16px",
     fontWeight: 700,
-    background: "#f7d237",
+    background:
+      "linear-gradient(90deg, rgba(255,255,255,0.96) 0%, rgba(247,210,55,0.98) 52%, rgba(255,255,255,0.94) 100%)",
     color: "#0b1d3a",
+    boxShadow: "0 14px 34px rgba(247,210,55,0.18)",
   },
+
   smallText: {
     marginTop: "14px",
     fontSize: "13px",
