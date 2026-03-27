@@ -2742,37 +2742,6 @@ function renderInput(
       );
     }
 
-  case "map": {
-  const current = answers[question.id] ?? initialAnswers.geo;
-
-  return (
-    <div className="grid gap-3 md:grid-cols-2">
-      <input
-        className={compactInputClass}
-        placeholder='Где физически находится бизнес или "-"'
-        value={current.physical}
-        onChange={(e) =>
-          setAnswer(question.id, {
-            ...current,
-            physical: e.target.value,
-          })
-        }
-      />
-      <input
-        className={compactInputClass}
-        placeholder='В каком регионе продаёте или "-"'
-        value={current.sales}
-        onChange={(e) =>
-          setAnswer(question.id, {
-            ...current,
-            sales: e.target.value,
-          })
-        }
-      />
-    </div>
-  );
-}
-
     case "teamRoles":
       return (
         <TeamMembersBuilder
