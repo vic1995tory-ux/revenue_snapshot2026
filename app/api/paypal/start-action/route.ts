@@ -1,112 +1,107 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-const MAKE_START_ACTION_WEBHOOK_URL =
+const MAKE_WEBHOOK_URL =
   process.env.MAKE_START_ACTION_WEBHOOK_URL ||
-  "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
+  "https://hook.us2.make.com/PUT_YOUR_REAL_WEBHOOK_HERE";
 
-export async function GET() {
-  return NextResponse.json({
-    ok: true,
-    route: "start-action is alive",
-  });
-}
-
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    const payment_id = String(body?.payment_id ?? "").trim();
-    const access_token = String(body?.access_token ?? "").trim();
-    const full_name = String(body?.full_name ?? "").trim();
-    const company_name = String(body?.company_name ?? "").trim();
-    const whatsapp = String(body?.whatsapp ?? "").trim();
-    const start_page_link = String(body?.start_page_link ?? "").trim();
-
-    if (!payment_id) {
-      return NextResponse.json(
-        { ok: false, error: "payment_id is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!access_token) {
-      return NextResponse.json(
-        { ok: false, error: "access_token is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!full_name || !company_name || !whatsapp) {
-      return NextResponse.json(
-        { ok: false, error: "Все поля обязательны" },
-        { status: 400 }
-      );
-    }
-
-    const makePayload = {
-      action: "start_action",
-      payment_id,
-      access_token,
-      full_name,
-      company_name,
-      whatsapp,
-
-      client_name: full_name,
-      company: company_name,
-      client_whatsapp: whatsapp,
-      start_page_link: start_page_link || null,
+    const payload = {
+      payment_id: body?.payment_id ?? "",
+      access_token: body?.access_token ?? "",
+      full_name: body?.full_name ?? "",
+      company_name: body?.company_name ?? "",
+      whatsapp: body?.whatsapp ?? "",
+      login: body?.login ?? "",
+      password_hash: body?.password_hash ?? "",
+      password_version: body?.password_version ?? "sha256-v1",
+      start_page_link: body?.start_page_link ?? "",
     };
 
-    const makeRes = await fetch(MAKE_START_ACTION_WEBHOOK_URL, {
+    if (!payload.access_token) {
+      return NextResponse.json(
+        { ok: false, error: "Missing access token." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.full_name) {
+      return NextResponse.json(
+        { ok: false, error: "Missing full name." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.company_name) {
+      return NextResponse.json(
+        { ok: false, error: "Missing company name." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.whatsapp) {
+      return NextResponse.json(
+        { ok: false, error: "Missing whatsapp." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.login) {
+      return NextResponse.json(
+        { ok: false, error: "Missing login." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.password_hash) {
+      return NextResponse.json(
+        { ok: false, error: "Missing password hash." },
+        { status: 400 }
+      );
+    }
+
+    const webhookRes = await fetch(MAKE_WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(makePayload),
+      body: JSON.stringify(payload),
       cache: "no-store",
     });
 
-    const contentType = makeRes.headers.get("content-type") || "";
+    const contentType = webhookRes.headers.get("content-type") || "";
 
-    if (!contentType.includes("application/json")) {
-      const raw = await makeRes.text();
-
-      return NextResponse.json(
-        {
-          ok: false,
-          error: "Make returned non-JSON response",
-          raw_response: raw.slice(0, 500),
-        },
-        { status: 502 }
-      );
+    if (contentType.includes("application/json")) {
+      const data = await webhookRes.json();
+      return NextResponse.json(data, { status: webhookRes.status });
     }
 
-    const makeData = await makeRes.json();
+    const rawText = await webhookRes.text();
 
-    if (!makeRes.ok) {
+    if (!webhookRes.ok) {
       return NextResponse.json(
         {
           ok: false,
-          error: "Make webhook returned non-200 response",
-          make_status: makeRes.status,
-          make_response: makeData,
+          error: rawText || "Webhook returned an error.",
         },
-        { status: 502 }
+        { status: webhookRes.status || 500 }
       );
     }
 
     return NextResponse.json({
       ok: true,
-      updated: true,
-      make_response: makeData,
+      raw: rawText,
     });
   } catch (error) {
-    console.error("start-action error:", error);
+    const message =
+      error instanceof Error ? error.message : "Internal server error.";
 
     return NextResponse.json(
       {
         ok: false,
-        error: "start-action failed",
+        error: message,
       },
       { status: 500 }
     );
