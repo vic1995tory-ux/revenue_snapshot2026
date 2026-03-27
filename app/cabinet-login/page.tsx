@@ -56,28 +56,6 @@ export default function CabinetLoginPage() {
         );
       }
 
-      /**
-       * Ожидаемый ответ от Make webhook response:
-       *
-       * Успех:
-       * {
-       *   "ok": true,
-       *   "redirectUrl": "/account"
-       * }
-       *
-       * Пользователь не найден:
-       * {
-       *   "ok": false,
-       *   "error": "Пользователя с таким логином не существует."
-       * }
-       *
-       * Неверный пароль:
-       * {
-       *   "ok": false,
-       *   "error": "Пароль неверный."
-       * }
-       */
-
       if (!data?.ok) {
         throw new Error(
           data?.error ||
@@ -104,15 +82,27 @@ export default function CabinetLoginPage() {
 
       <div style={styles.wrap}>
         <div style={styles.logoBox}>
-          <Link href="/" style={{ display: "inline-block", cursor: "pointer" }}>
-            <Image
-              src="/logo.svg"
-              alt="Growth Avenue"
-              width={180}
-              height={42}
-              style={styles.logo}
-              priority
-            />
+          <Link
+            href="/"
+            style={styles.logoLink}
+            aria-label="Growth Avenue home"
+          >
+            <div className="score-logo-card">
+              <div className="score-logo-card__blur" />
+              <div className="score-logo-card__ring" />
+              <div className="score-logo-card__ring score-logo-card__ring--alt" />
+              <div className="score-logo-card__inner">
+                <Image
+                  src="/logo.svg"
+                  alt="Growth Avenue"
+                  width={180}
+                  height={42}
+                  priority
+                  className="score-logo-card__image"
+                  style={styles.logoImage}
+                />
+              </div>
+            </div>
           </Link>
         </div>
 
@@ -210,9 +200,18 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: "20px",
   },
 
-  logo: {
+  logoLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+    cursor: "pointer",
+  },
+
+  logoImage: {
     height: "40px",
     width: "auto",
+    display: "block",
   },
 
   card: {
@@ -223,6 +222,7 @@ const styles: Record<string, React.CSSProperties> = {
     background: "rgba(255,255,255,0.06)",
     border: "1px solid rgba(255,255,255,0.1)",
     backdropFilter: "blur(20px)",
+    WebkitBackdropFilter: "blur(20px)",
     boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
     minHeight: "460px",
   },
