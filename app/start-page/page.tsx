@@ -41,6 +41,37 @@ function formatTimeLeft(expiresAt?: string) {
   return `${minutes} мин.`;
 }
 
+async function sha256Hex(value: string) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(value);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function normalizeLogin(value: string) {
+  return value.trim().toLowerCase();
+}
+
+function validatePassword(value: string) {
+  const password = value.trim();
+
+  if (password.length < 8) {
+    return "Пароль должен быть не короче 8 символов.";
+  }
+
+  if (!/[A-Za-zА-Яа-я]/.test(password)) {
+    return "В пароле должна быть хотя бы одна буква.";
+  }
+
+  if (!/\d/.test(password)) {
+    return "В пароле должна быть хотя бы одна цифра.";
+  }
+
+  return "";
+}
+
 function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -182,20 +213,21 @@ function StartPageContent() {
         throw new Error("Введите телефон в WhatsApp.");
       }
 
-      if (!login.trim()) {
+      const cleanLogin = normalizeLogin(login);
+
+      if (!cleanLogin) {
         throw new Error("Придумайте логин.");
       }
 
-      if (!password.trim()) {
-        throw new Error("Придумайте пароль.");
-      }
-
-      if (password.trim().length < 6) {
-        throw new Error("Пароль должен быть не короче 6 символов.");
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        throw new Error(passwordError);
       }
 
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
+
+      const passwordHash = await sha256Hex(password.trim());
 
       const payload = {
         payment_id: tx,
@@ -203,8 +235,9 @@ function StartPageContent() {
         full_name: fullName.trim(),
         company_name: companyName.trim(),
         whatsapp: whatsapp.trim(),
-        login: login.trim(),
-        password: password.trim(),
+        login: cleanLogin,
+        password_hash: passwordHash,
+        password_version: "sha256-v1",
         start_page_link: currentUrl,
       };
 
@@ -480,9 +513,10 @@ function StartPageContent() {
                     <input
                       style={styles.input}
                       type="password"
+                      name="new-password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Не менее 6 символов"
+                      placeholder="Минимум 8 символов, буквы и цифры"
                       autoComplete="new-password"
                     />
                   </div>
