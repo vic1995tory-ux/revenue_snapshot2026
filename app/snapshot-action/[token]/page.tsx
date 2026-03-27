@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import {
   useEffect,
   useMemo,
@@ -17,7 +18,6 @@ type InputType =
   | "tripleMargin"
   | "cjm"
   | "seasonality"
-  | "map"
   | "teamRoles"
   | "departmentRelations"
   | "stressRange"
@@ -97,9 +97,8 @@ const BRAND = {
 };
 
 const SNAPSHOT_WEBHOOK_URL =
-  "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
+  "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
 
-const DRAFT_SAVE_DEBOUNCE_MS = 1200;
 const FINAL_BODY_DIVIDER =
   "==================== SNAPSHOT FINAL ANSWERS ====================";
 
@@ -227,7 +226,7 @@ const chapters: Chapter[] = [
         id: "geo",
         label:
           "В каком регионе вы продаёте и где физически находится ваш бизнес?",
-        type: "map",
+        type: "text",
       },
     ],
   },
@@ -424,10 +423,6 @@ function textLength(s: string | undefined | null) {
   return String(s ?? "").trim().length;
 }
 
-function isDashValue(value: unknown) {
-  return String(value ?? "").trim() === "-";
-}
-
 function isTextAnsweredWithOverride(
   value: unknown,
   minLength = 1,
@@ -570,56 +565,6 @@ function createTeamLinksFromMembers(members: TeamMember[]): TeamLink[] {
 function mergeTeamLinks(prev: TeamLink[], nextBase: TeamLink[]) {
   const prevMap = new Map(prev.map((item) => [item.id, item]));
   return nextBase.map((item) => prevMap.get(item.id) ?? item);
-}
-
-function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
-  const text = value.toLowerCase();
-
-  const presets = [
-    {
-      keys: ["тбилиси", "груз", "georgia", "tbilisi"],
-      point: { x: 604, y: 149 },
-    },
-    { keys: ["кипр", "cyprus"], point: { x: 577, y: 184 } },
-    { keys: ["герман", "berlin", "germany"], point: { x: 517, y: 124 } },
-    { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 121 } },
-    { keys: ["эстон", "tallinn", "estonia"], point: { x: 557, y: 92 } },
-    { keys: ["латв", "riga", "latvia"], point: { x: 553, y: 104 } },
-    { keys: ["литв", "vilnius", "lithuania"], point: { x: 550, y: 112 } },
-    { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
-    {
-      keys: ["португал", "lisbon", "portugal"],
-      point: { x: 430, y: 175 },
-    },
-    {
-      keys: ["нидерл", "amsterdam", "netherlands"],
-      point: { x: 500, y: 119 },
-    },
-    { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
-    { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
-    { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
-    {
-      keys: ["лондон", "uk", "united kingdom", "england"],
-      point: { x: 470, y: 113 },
-    },
-    {
-      keys: ["usa", "new york", "united states", "america"],
-      point: { x: 228, y: 145 },
-    },
-    { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
-    { keys: ["браз", "brazil"], point: { x: 314, y: 279 } },
-    { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
-    { keys: ["инд", "india", "delhi"], point: { x: 734, y: 189 } },
-    { keys: ["сингап", "singapore"], point: { x: 815, y: 275 } },
-    { keys: ["австра", "sydney", "australia"], point: { x: 930, y: 321 } },
-    { keys: ["япон", "tokyo", "japan"], point: { x: 900, y: 160 } },
-  ];
-
-  for (const preset of presets) {
-    if (preset.keys.some((key) => text.includes(key))) return preset.point;
-  }
-
-  return fallback;
 }
 
 function getQuestionProgress(question: Question, answers: Answers): number {
@@ -1172,10 +1117,7 @@ function buildPreparedAnswers(answers: any) {
 
 function buildFinalBodyText(preparedAnswers: Array<{ question: string; answer: string }>) {
   const body = preparedAnswers
-    .map(
-      (item) =>
-        `— ${item.question}\n${item.answer}`.trim(),
-    )
+    .map((item) => `— ${item.question}\n${item.answer}`.trim())
     .join("\n\n");
 
   return `${FINAL_BODY_DIVIDER}\n\n${body}`;
@@ -1293,9 +1235,6 @@ function TiltCardButton({
     </button>
   );
 }
-
-const inputClass =
-  "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
 
 const compactInputClass =
   "w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-[#f7d237]/35 focus:bg-white/[0.05]";
@@ -1877,7 +1816,7 @@ function TeamRelationsBuilder({
           <AutoTextarea
             className={textareaClass}
             minRows={3}
-            placeholder='Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год'
+            placeholder='Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год. Можно поставить "-"'
             value={note}
             onChange={(next) => onChange({ links, note: next })}
           />
@@ -2196,7 +2135,7 @@ function renderInput(
           />
 
           <AutoTextarea
-            placeholder='Комментарий или контекст…'
+            placeholder='Комментарий или контекст… Можно поставить "-"'
             className={textareaClass}
             minRows={2}
             value={note}
@@ -2319,38 +2258,6 @@ function renderInput(
                 {textLength(current.plan12 ?? "")}.
               </div>
             </div>
-          </div>
-        );
-      }
-
-
-      if (question.id === "geo") {
-        const current = answers[question.id] ?? initialAnswers.geo;
-
-        return (
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              className={compactInputClass}
-              placeholder='Где физически находится бизнес или "-"'
-              value={current.physical}
-              onChange={(e) =>
-                setAnswer(question.id, {
-                  ...current,
-                  physical: e.target.value,
-                })
-              }
-            />
-            <input
-              className={compactInputClass}
-              placeholder='В каком регионе продаёте или "-"'
-              value={current.sales}
-              onChange={(e) =>
-                setAnswer(question.id, {
-                  ...current,
-                  sales: e.target.value,
-                })
-              }
-            />
           </div>
         );
       }
@@ -2770,7 +2677,7 @@ function renderInput(
                     Проблемы (опционально)
                   </div>
                   <AutoTextarea
-                    placeholder='Где здесь возникают потери, трение или замедление'
+                    placeholder='Где здесь возникают потери, трение или замедление. Можно поставить "-"'
                     className={textareaClass}
                     minRows={2}
                     value={step.problems}
@@ -2803,6 +2710,37 @@ function renderInput(
         />
       );
     }
+
+  case "map": {
+  const current = answers[question.id] ?? initialAnswers.geo;
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <input
+        className={compactInputClass}
+        placeholder='Где физически находится бизнес или "-"'
+        value={current.physical}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            physical: e.target.value,
+          })
+        }
+      />
+      <input
+        className={compactInputClass}
+        placeholder='В каком регионе продаёте или "-"'
+        value={current.sales}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            sales: e.target.value,
+          })
+        }
+      />
+    </div>
+  );
+}
 
     case "teamRoles":
       return (
@@ -2935,7 +2873,7 @@ function renderInput(
 
           <div className="mt-4">
             <AutoTextarea
-              placeholder='Опишите, как именно аналитика участвует в принятии решений…'
+              placeholder='Опишите, как именно аналитика участвует в принятии решений… Можно поставить "-"'
               className={textareaClass}
               minRows={2}
               value={current.note ?? ""}
@@ -3129,8 +3067,65 @@ export default function DiagnosticIntakePage() {
   const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string>("");
   const [draftError, setDraftError] = useState("");
 
-  const didMountRef = useRef(false);
-  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const whatsappHref =
+    "https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0";
+
+  const saveDraftOnExit = useCallback(async () => {
+    if (!accessToken || !launchAttemptId || isSubmitting) return;
+    if (!hasUserInteracted) return;
+
+    try {
+      await postWebhook({
+        action: "save_draft",
+        source: "snapshot-action",
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft: true,
+        draft_checkbox: true,
+        draft_step: currentDraftStep,
+        draft_updated_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        answers: preparedAnswers,
+        answers_raw: answers,
+        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+        draft_payload: draftJsonPayload,
+      });
+
+      setLastDraftSavedAt(new Date().toISOString());
+    } catch (error) {
+      setDraftError(
+        error instanceof Error
+          ? error.message
+          : "Не удалось сохранить draft",
+      );
+    }
+  }, [
+    accessToken,
+    launchAttemptId,
+    isSubmitting,
+    hasUserInteracted,
+    mode,
+    currentDraftStep,
+    total,
+    totalQuestions,
+    sectionProgress,
+    preparedAnswers,
+    answers,
+    draftJsonPayload,
+  ]);
+
+  const handleGoProfile = useCallback(async () => {
+    await saveDraftOnExit();
+    router.push(`/account/${encodeURIComponent(accessToken)}`);
+  }, [saveDraftOnExit, router, accessToken]);
+
+
 
   const sectionProgress = useMemo(
     () =>
@@ -3200,6 +3195,7 @@ export default function DiagnosticIntakePage() {
 
   const setAnswer = useCallback((key: string, value: any) => {
     setHasUserInteracted(true);
+
     setAnswers((prev) => {
       const next = { ...prev, [key]: value };
 
@@ -3270,76 +3266,59 @@ export default function DiagnosticIntakePage() {
     draftJsonPayload,
   ]);
 
-  useEffect(() => {
-    if (!didMountRef.current) {
-      didMountRef.current = true;
-      return;
-    }
 
-    if (!hasUserInteracted || !accessToken || !launchAttemptId) return;
-    if (isSubmitting) return;
-
-    if (draftTimerRef.current) {
-      clearTimeout(draftTimerRef.current);
-    }
-
-    draftTimerRef.current = setTimeout(() => {
-      void saveDraft();
-    }, DRAFT_SAVE_DEBOUNCE_MS);
-
-    return () => {
-      if (draftTimerRef.current) {
-        clearTimeout(draftTimerRef.current);
-      }
-    };
-  }, [
-    answers,
-    active,
-    hasUserInteracted,
-    accessToken,
-    launchAttemptId,
-    isSubmitting,
-    saveDraft,
-  ]);
 
   useEffect(() => {
-    function handleBeforeUnload() {
+    function buildExitPayload() {
+      return {
+        action: "save_draft",
+        source: "snapshot-action",
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft: true,
+        draft_checkbox: true,
+        draft_step: currentDraftStep,
+        draft_updated_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        answers: preparedAnswers,
+        answers_raw: answers,
+        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+        draft_payload: draftJsonPayload,
+      };
+    }
+
+    function sendDraftBeacon() {
       if (!hasUserInteracted || !accessToken || !launchAttemptId || isSubmitting)
         return;
+
       navigator.sendBeacon?.(
         SNAPSHOT_WEBHOOK_URL,
-        new Blob(
-          [
-            JSON.stringify({
-              action: "save_draft",
-              source: "snapshot-action",
-              access_token: accessToken,
-              launch_attempt_id: launchAttemptId,
-              mode,
-              draft: true,
-              draft_checkbox: true,
-              draft_step: currentDraftStep,
-              draft_updated_at: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              progress: {
-                total,
-                totalQuestions,
-                sectionProgress,
-              },
-              answers: preparedAnswers,
-              answers_raw: answers,
-              notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-              draft_payload: draftJsonPayload,
-            }),
-          ],
-          { type: "application/json" },
-        ),
+        new Blob([JSON.stringify(buildExitPayload())], {
+          type: "application/json",
+        }),
       );
     }
 
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    function handleVisibilityChange() {
+      if (document.visibilityState === "hidden") {
+        sendDraftBeacon();
+      }
+    }
+
+    window.addEventListener("beforeunload", sendDraftBeacon);
+    window.addEventListener("pagehide", sendDraftBeacon);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("beforeunload", sendDraftBeacon);
+      window.removeEventListener("pagehide", sendDraftBeacon);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [
     hasUserInteracted,
@@ -3401,8 +3380,9 @@ export default function DiagnosticIntakePage() {
           draft_updated_at: null,
         });
       } catch {
-        // intentionally silent
+        // noop
       }
+
 
       setTimeout(() => {
         router.push(`/account/${encodeURIComponent(accessToken)}`);
@@ -3462,6 +3442,37 @@ export default function DiagnosticIntakePage() {
       <FullScreenLoader open={isSubmitting} />
 
       <div className="mx-auto max-w-[1500px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
+        <header className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-[24px] border border-white/10 bg-white/[0.04] px-4 py-3 backdrop-blur-2xl md:px-5">
+          <div className="flex items-center">
+            <Image
+              src="/logo.svg"
+              alt="Growth Avenue"
+              width={160}
+              height={36}
+              className="h-auto w-auto"
+              priority
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center rounded-full bg-[linear-gradient(90deg,#47b6f6_0%,#7c84ff_55%,#c25cf3_100%)] px-4 py-2.5 text-sm font-medium text-white shadow-[0_10px_24px_rgba(85,104,255,0.22)] transition hover:brightness-105"
+            >
+              Связаться с создателями
+            </a>
+
+            <button
+              type="button"
+              onClick={handleGoProfile}
+              className="inline-flex items-center justify-center rounded-full border border-white/12 bg-white/[0.05] px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/[0.08]"
+            >
+              Profile
+            </button>
+          </div>
+        </header>
         <GlassCard className="mb-8 p-5 md:p-7">
           <div className="grid gap-8 lg:grid-cols-[1.25fr_0.75fr] lg:items-center">
             <div>
@@ -3508,7 +3519,7 @@ export default function DiagnosticIntakePage() {
                 ) : null}
                 {lastDraftSavedAt ? (
                   <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-emerald-100">
-                    draft saved
+                    draft saved on exit
                   </span>
                 ) : null}
               </div>
@@ -3571,7 +3582,8 @@ export default function DiagnosticIntakePage() {
                 </div>
 
                 <div className="mt-4 text-xs text-white/42">
-                  Недозаполненные ответы автоматически сохраняются в draft.
+                  Недозаполненные ответы автоматически сохраняются в draft раз в
+                  5 минут.
                 </div>
               </div>
             </GlassCard>
