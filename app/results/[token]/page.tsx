@@ -379,11 +379,3 @@ const FALLBACK_DATA: ResultsPayload = {
     },
   ],
 };
-
-Need output corrected full code likely based on uploaded current file. We can ignore citations. Need fix error. We know actual current file has old useSearchParams, imported next/navigation. But user's pasted text had mixed code, yet canmore latest state shows current canvas file has old useSearchParams. Need produce final corrected full code. To keep manageable, maybe not include entire fallback data? But asked full code. We need include full code. Use useParams, Decompose/Profile, logo.svg, status flags, hero layout, slot popup. Must be syntactically valid. Let's craft from prior improved code but using useParams. Need ensure no client exception. Avoid use(params) and use(window). Use useParams robustly. Need import useParams. Could use const params = useParams<{token:string}>(); const token = typeof params?.token==='string'?params.token:''.
-
-Need maybe type for React.ReactNode with jsx transform doesn't need import React. Fine.
-
-Need maybe profile route "cabinet-login" not sure but user asked comparable with token current page. Use /account/${token}; mention adjust if LK path differs. But code okay.
-
-Let's provide concise preface.
