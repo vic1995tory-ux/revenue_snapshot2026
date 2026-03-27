@@ -4,12 +4,39 @@ const MAKE_ACCOUNT_SESSION_WEBHOOK_URL =
   process.env.MAKE_ACCOUNT_SESSION_WEBHOOK_URL ||
   "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
+const DEFAULT_LAUNCH_LIMIT = 3;
+
 function tryParseJson(raw: string) {
   try {
     return JSON.parse(raw);
   } catch {
     return null;
   }
+}
+
+function toStringSafe(value: unknown, fallback = "") {
+  if (value === null || value === undefined) return fallback;
+  return String(value);
+}
+
+function toBooleanSafe(value: unknown, fallback = false) {
+  if (typeof value === "boolean") return value;
+  if (typeof value === "string") {
+    const normalized = value.trim().toLowerCase();
+    if (normalized === "true") return true;
+    if (normalized === "false") return false;
+  }
+  if (typeof value === "number") return value !== 0;
+  return fallback;
+}
+
+function toNumberSafe(value: unknown, fallback = 0) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
 }
 
 export async function GET(req: NextRequest) {
@@ -54,10 +81,11 @@ export async function GET(req: NextRequest) {
       if (parsed) {
         makeData = parsed;
       } else {
+        const trimmed = rawText.trim();
         const looksLikeHtml =
-          rawText.trim().startsWith("<!DOCTYPE") ||
-          rawText.trim().startsWith("<html") ||
-          rawText.includes("<body");
+          trimmed.startsWith("<!DOCTYPE") ||
+          trimmed.startsWith("<html") ||
+          trimmed.includes("<body");
 
         return NextResponse.json(
           {
@@ -87,47 +115,82 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const source = makeData?.data ?? makeData;
+    const source = makeData?.data ?? makeData ?? {};
+
+    const normalizedResults = Array.isArray(source?.results)
+      ? source.results.map((item: any, index: number) => ({
+          id: toStringSafe(item?.id, String(index + 1)),
+          date: toStringSafe(item?.date, ""),
+          executiveSummary: toStringSafe(
+            item?.executiveSummary ??
+              item?.executive_summary ??
+              item?.summary,
+            ""
+          ),
+          mainLever: toStringSafe(
+            item?.mainLever ??
+              item?.main_lever,
+            ""
+          ),
+          riskZone: toStringSafe(
+            item?.riskZone ??
+              item?.risk_zone,
+            ""
+          ),
+          comment: toStringSafe(item?.comment, ""),
+          resultUrl: toStringSafe(
+            item?.resultUrl ??
+              item?.result_url ??
+              item?.url ??
+              item?.link,
+            ""
+          ),
+          status: toStringSafe(item?.status, "result_ready"),
+        }))
+      : [];
+
+    const launchCountRaw =
+      source?.launchCount ??
+      source?.launch_count ??
+      source?.results_count;
+
+    const launchLimitRaw =
+      source?.launchLimit ??
+      source?.launch_limit;
 
     const normalized = {
-      fullName: String(
+      fullName: toStringSafe(
         source?.fullName ??
           source?.full_name ??
           source?.client_name ??
-          source?.name ??
-          "Имя Фамилия"
+          source?.name,
+        "Имя Фамилия"
       ),
-      companyName: String(
+      companyName: toStringSafe(
         source?.companyName ??
           source?.company_name ??
-          source?.company ??
-          "Название компании"
+          source?.company,
+        "Название компании"
       ),
-      position: String(source?.position ?? ""),
-      positionLocked: Boolean(source?.positionLocked ?? source?.position_locked ?? false),
-      expiresAt: String(
+      position: toStringSafe(source?.position, ""),
+      positionLocked: toBooleanSafe(
+        source?.positionLocked ?? source?.position_locked,
+        false
+      ),
+      expiresAt: toStringSafe(
         source?.expiresAt ??
           source?.expires_at ??
-          source?.access_expires_at ??
-          new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString()
+          source?.access_expires_at,
+        new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString()
       ),
-      companySummary: String(
+      companySummary: toStringSafe(
         source?.companySummary ??
-          source?.company_summary ??
-          ""
+          source?.company_summary,
+        ""
       ),
-      results: Array.isArray(source?.results)
-        ? source.results.map((item: any, index: number) => ({
-            id: String(item?.id ?? index + 1),
-            date: String(item?.date ?? ""),
-            executiveSummary: String(
-              item?.executiveSummary ?? item?.executive_summary ?? ""
-            ),
-            mainLever: String(item?.mainLever ?? item?.main_lever ?? ""),
-            riskZone: String(item?.riskZone ?? item?.risk_zone ?? ""),
-            comment: String(item?.comment ?? ""),
-          }))
-        : [],
+      launchCount: toNumberSafe(launchCountRaw, normalizedResults.length),
+      launchLimit: toNumberSafe(launchLimitRaw, DEFAULT_LAUNCH_LIMIT),
+      results: normalizedResults,
     };
 
     return NextResponse.json({
