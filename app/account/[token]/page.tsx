@@ -11,6 +11,8 @@ type ResultRow = {
   mainLever: string;
   riskZone: string;
   comment: string;
+  resultUrl?: string;
+  status?: string;
 };
 
 type CabinetData = {
@@ -20,6 +22,8 @@ type CabinetData = {
   positionLocked: boolean;
   expiresAt: string;
   companySummary: string;
+  launchCount: number;
+  launchLimit: number;
   results: ResultRow[];
 };
 
@@ -33,6 +37,8 @@ type AccountSessionResponse = {
     positionLocked?: boolean;
     expiresAt?: string;
     companySummary?: string;
+    launchCount?: number;
+    launchLimit?: number;
     results?: Array<{
       id?: string | number;
       date?: string;
@@ -40,6 +46,8 @@ type AccountSessionResponse = {
       mainLever?: string;
       riskZone?: string;
       comment?: string;
+      resultUrl?: string;
+      status?: string;
     }>;
   };
 };
@@ -47,7 +55,7 @@ type AccountSessionResponse = {
 const POSITION_WEBHOOK_URL =
   "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
 
-const MAX_LAUNCHES = 3;
+const DEFAULT_MAX_LAUNCHES = 3;
 
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -84,6 +92,8 @@ export default function CabinetPage() {
     positionLocked: false,
     expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),
     companySummary: "",
+    launchCount: 0,
+    launchLimit: DEFAULT_MAX_LAUNCHES,
     results: [],
   });
 
@@ -124,8 +134,20 @@ export default function CabinetPage() {
               mainLever: String(item?.mainLever ?? ""),
               riskZone: String(item?.riskZone ?? ""),
               comment: String(item?.comment ?? ""),
+              resultUrl: String(item?.resultUrl ?? ""),
+              status: String(item?.status ?? "result_ready"),
             }))
           : [];
+
+        const launchLimit =
+          typeof cabinet.launchLimit === "number" && Number.isFinite(cabinet.launchLimit)
+            ? cabinet.launchLimit
+            : DEFAULT_MAX_LAUNCHES;
+
+        const launchCount =
+          typeof cabinet.launchCount === "number" && Number.isFinite(cabinet.launchCount)
+            ? cabinet.launchCount
+            : normalizedResults.length;
 
         setData({
           fullName: String(cabinet.fullName ?? "Имя Фамилия"),
@@ -134,11 +156,11 @@ export default function CabinetPage() {
           positionLocked: Boolean(cabinet.positionLocked ?? false),
           expiresAt: String(
             cabinet.expiresAt ??
-              new Date(
-                Date.now() + 1000 * 60 * 60 * 24 * 365
-              ).toISOString()
+              new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString()
           ),
           companySummary: String(cabinet.companySummary ?? ""),
+          launchCount,
+          launchLimit,
           results: normalizedResults,
         });
 
@@ -157,12 +179,13 @@ export default function CabinetPage() {
     }
 
     if (token) {
-      loadCabinet();
+      void loadCabinet();
     }
   }, [token]);
 
-  const launchesUsed = data.results.length;
-  const launchesLeft = Math.max(0, MAX_LAUNCHES - launchesUsed);
+  const launchesUsed = data.launchCount;
+  const maxLaunches = data.launchLimit || DEFAULT_MAX_LAUNCHES;
+  const launchesLeft = Math.max(0, maxLaunches - launchesUsed);
 
   const expiration = useMemo(() => {
     const now = Date.now();
@@ -200,6 +223,7 @@ export default function CabinetPage() {
         position: data.position.trim(),
         full_name: data.fullName,
         company_name: data.companyName,
+        position_locked: true,
       };
 
       const res = await fetch(POSITION_WEBHOOK_URL, {
@@ -216,6 +240,7 @@ export default function CabinetPage() {
 
       setData((prev) => ({
         ...prev,
+        position: prev.position.trim(),
         positionLocked: true,
       }));
 
@@ -236,7 +261,7 @@ export default function CabinetPage() {
   }
 
   async function handleNewLaunch() {
-    if (launchesUsed >= MAX_LAUNCHES || !token || startingLaunch) return;
+    if (launchesUsed >= maxLaunches || !token || startingLaunch) return;
 
     try {
       setStartingLaunch(true);
@@ -268,10 +293,20 @@ export default function CabinetPage() {
         position_locked: data.positionLocked,
         launches_used: launchesUsed,
         launches_left: launchesLeft,
-        launch_limit: MAX_LAUNCHES,
+        launch_limit: maxLaunches,
         expires_at: data.expiresAt,
         company_summary: data.companySummary,
         results_count: data.results.length,
+        results: data.results.map((item) => ({
+          id: item.id,
+          date: item.date,
+          executive_summary: item.executiveSummary,
+          main_lever: item.mainLever,
+          risk_zone: item.riskZone,
+          comment: comments[item.id] ?? item.comment ?? "",
+          result_url: item.resultUrl ?? "",
+          status: item.status ?? "result_ready",
+        })),
         cabinet_url: cabinetUrl,
         snapshot_url: snapshotUrl,
       };
@@ -474,7 +509,7 @@ export default function CabinetPage() {
               <div style={styles.cardHeading}>Launches</div>
 
               <div style={styles.launchesValue}>
-                {launchesUsed}/{MAX_LAUNCHES}
+                {launchesUsed}/{maxLaunches}
               </div>
 
               <div style={styles.launchesMeta}>
@@ -486,13 +521,13 @@ export default function CabinetPage() {
               type="button"
               style={{
                 ...styles.playButton,
-                opacity: launchesUsed >= MAX_LAUNCHES || startingLaunch ? 0.55 : 1,
+                opacity: launchesUsed >= maxLaunches || startingLaunch ? 0.55 : 1,
                 cursor:
-                  launchesUsed >= MAX_LAUNCHES || startingLaunch
+                  launchesUsed >= maxLaunches || startingLaunch
                     ? "not-allowed"
                     : "pointer",
               }}
-              disabled={launchesUsed >= MAX_LAUNCHES || startingLaunch}
+              disabled={launchesUsed >= maxLaunches || startingLaunch}
               onClick={handleNewLaunch}
               title="Начать запуск"
               aria-label="Начать запуск"
@@ -505,7 +540,7 @@ export default function CabinetPage() {
             <div
               style={{
                 ...styles.launchProgressFill,
-                width: `${(launchesUsed / MAX_LAUNCHES) * 100}%`,
+                width: `${(launchesUsed / maxLaunches) * 100}%`,
               }}
             />
           </div>
@@ -610,7 +645,9 @@ export default function CabinetPage() {
 
               <div style={styles.faqItem}>
                 <strong>Сколько запусков доступно?</strong>
-                <p style={styles.faqText}>Максимум 3 запуска на один доступ.</p>
+                <p style={styles.faqText}>
+                  Максимум {maxLaunches} запуска на один доступ.
+                </p>
               </div>
 
               <div style={styles.faqItem}>
