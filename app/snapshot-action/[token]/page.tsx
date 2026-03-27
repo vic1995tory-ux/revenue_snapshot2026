@@ -1,6 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 
 type InputType =
   | "rangePercent"
@@ -87,9 +94,14 @@ type TeamLink = {
 
 const BRAND = {
   yellow: "#f7d237",
-  bg: "#0b1d3a",
-  bg2: "#08162d",
 };
+
+const SNAPSHOT_WEBHOOK_URL =
+  "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
+
+const DRAFT_SAVE_DEBOUNCE_MS = 1200;
+const FINAL_BODY_DIVIDER =
+  "==================== SNAPSHOT FINAL ANSWERS ====================";
 
 const KPI_TAGS = [
   "Выручка",
@@ -182,8 +194,10 @@ const CJM_STAGES = [
 
 const CJM_STAGE_DESCRIPTIONS: Record<(typeof CJM_STAGES)[number], string> = {
   Acquisition: "Первый контакт клиента с вами",
-  Activation: "Момент, когда клиент начинает взаимодействие (первое действие)",
-  "Value Realization": "Когда клиент понимает ценность вашего продукта",
+  Activation:
+    "Момент, когда клиент начинает взаимодействие (первое действие)",
+  "Value Realization":
+    "Когда клиент понимает ценность вашего продукта",
   Conversion: "Этап оплаты или принятия решения о покупке",
   Retention: "Повторное взаимодействие или продолжение работы с вами",
 };
@@ -254,7 +268,8 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "clientProfile",
-        label: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+        label:
+          "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
         type: "text",
       },
       {
@@ -409,8 +424,26 @@ function textLength(s: string | undefined | null) {
   return String(s ?? "").trim().length;
 }
 
+function isDashValue(value: unknown) {
+  return String(value ?? "").trim() === "-";
+}
+
+function isTextAnsweredWithOverride(
+  value: unknown,
+  minLength = 1,
+  requireDigits = false,
+) {
+  const text = String(value ?? "").trim();
+  if (!text) return false;
+  if (text === "-") return true;
+  if (requireDigits) return /\d/.test(text);
+  return text.length >= minLength;
+}
+
 function hasAtSignEmail(value: string | undefined | null) {
-  return String(value ?? "").includes("@");
+  const normalized = String(value ?? "").trim();
+  if (normalized === "-") return true;
+  return normalized.includes("@");
 }
 
 function clamp(n: number, min: number, max: number) {
@@ -554,8 +587,14 @@ function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
     { keys: ["латв", "riga", "latvia"], point: { x: 553, y: 104 } },
     { keys: ["литв", "vilnius", "lithuania"], point: { x: 550, y: 112 } },
     { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
-    { keys: ["португал", "lisbon", "portugal"], point: { x: 430, y: 175 } },
-    { keys: ["нидерл", "amsterdam", "netherlands"], point: { x: 500, y: 119 } },
+    {
+      keys: ["португал", "lisbon", "portugal"],
+      point: { x: 430, y: 175 },
+    },
+    {
+      keys: ["нидерл", "amsterdam", "netherlands"],
+      point: { x: 500, y: 119 },
+    },
     { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
     { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
     { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
@@ -592,18 +631,21 @@ function getQuestionProgress(question: Question, answers: Answers): number {
 
     case "salesCount":
     case "revenue":
-      return /\d/.test(String(value ?? "")) ? 100 : 0;
+      return isTextAnsweredWithOverride(value, 1, true) ? 100 : 0;
 
     case "clientProfile":
     case "changesNeeded":
     case "implemented":
     case "decisions":
-      return textLength(value) >= 20 ? 100 : 0;
+      return isTextAnsweredWithOverride(value, 20) ? 100 : 0;
+
+    case "businessScale":
+      return isTextAnsweredWithOverride(value, 20) ? 100 : 0;
 
     case "horizons":
-      return textLength(value?.plan3) >= 20 &&
-        textLength(value?.plan6) >= 20 &&
-        textLength(value?.plan12) >= 20
+      return isTextAnsweredWithOverride(value?.plan3, 20) &&
+        isTextAnsweredWithOverride(value?.plan6, 20) &&
+        isTextAnsweredWithOverride(value?.plan12, 20)
         ? 100
         : 0;
 
@@ -636,7 +678,9 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "topProducts": {
       const items: ProductItem[] = value ?? [];
       if (items.length !== 3) return 0;
-      const allNamed = items.every((item) => textLength(item.name) > 0);
+      const allNamed = items.every((item) =>
+        isTextAnsweredWithOverride(item.name, 1),
+      );
       const allTouched = items.every((item) => item.touched);
       return allNamed && allTouched ? 100 : 0;
     }
@@ -645,10 +689,10 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       const stages: CjmStage[] = value?.stages ?? [];
       const ok = stages.every((stage) => {
         return (
-          textLength(stage.whatHappens) > 0 &&
-          textLength(stage.duration) > 0 &&
-          textLength(stage.clientGets) > 0 &&
-          textLength(stage.companyGets) > 0
+          isTextAnsweredWithOverride(stage.whatHappens, 1) &&
+          isTextAnsweredWithOverride(stage.duration, 1) &&
+          isTextAnsweredWithOverride(stage.clientGets, 1) &&
+          isTextAnsweredWithOverride(stage.companyGets, 1)
         );
       });
       return ok ? 100 : 0;
@@ -657,24 +701,20 @@ function getQuestionProgress(question: Question, answers: Answers): number {
     case "seasonality": {
       const points: SeasonalityPoint[] = value?.points ?? [];
       const hasMovement = points.some((p) => Math.abs(p.value) >= 6);
-      const peaksReason = textLength(value?.peaksReason) >= 20;
-      const lowsReason = textLength(value?.lowsReason) >= 20;
+      const peaksReason = isTextAnsweredWithOverride(value?.peaksReason, 20);
+      const lowsReason = isTextAnsweredWithOverride(value?.lowsReason, 20);
       return hasMovement && peaksReason && lowsReason ? 100 : 0;
     }
 
     case "positionText":
-      return (
-        textLength(value?.text) >= 50 &&
+      return isTextAnsweredWithOverride(value?.text, 50) &&
         ((value?.stages?.length ?? 0) + (value?.customStages?.length ?? 0) > 0)
-      )
         ? 100
         : 0;
 
-    case "businessScale":
-      return textLength(value) > 0 ? 100 : 0;
-
     case "geo":
-      return textLength(value?.physical) > 0 && textLength(value?.sales) > 0
+      return isTextAnsweredWithOverride(value?.physical, 1) &&
+        isTextAnsweredWithOverride(value?.sales, 1)
         ? 100
         : 0;
 
@@ -682,8 +722,8 @@ function getQuestionProgress(question: Question, answers: Answers): number {
       const members: TeamMember[] = value ?? [];
       const ok = members.every((member) => {
         return (
-          textLength(member.position) > 0 &&
-          textLength(member.responsibility) > 0 &&
+          isTextAnsweredWithOverride(member.position, 1) &&
+          isTextAnsweredWithOverride(member.responsibility, 1) &&
           member.isDecisionMaker !== "" &&
           member.participatesIn.length > 0
         );
@@ -710,16 +750,29 @@ function getQuestionProgress(question: Question, answers: Answers): number {
         ...STRESS_ZONES,
         ...((value?.customZones ?? []) as string[]),
       ];
-      return allZones.length > 0 && allZones.every((zone) => touched[zone]) ? 100 : 0;
+      return allZones.length > 0 &&
+        allZones.every((zone) => touched[zone])
+        ? 100
+        : 0;
     }
 
     case "lossZones": {
       const selected = value?.selected ?? [];
-      return selected.length > 0 && selected.every((zone: string) => textLength(value?.notes?.[zone]) > 0) ? 100 : 0;
+      return selected.length > 0 &&
+        selected.every((zone: string) =>
+          isTextAnsweredWithOverride(value?.notes?.[zone], 1),
+        )
+        ? 100
+        : 0;
     }
 
     case "analytics": {
-      return getAllTagValues({ selected: value.tags, custom: value.custom }).length > 0 ? 100 : 0;
+      return getAllTagValues({
+        selected: value?.tags,
+        custom: value?.custom,
+      }).length > 0
+        ? 100
+        : 0;
     }
 
     case "goal":
@@ -790,16 +843,12 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
   const stroke = 8;
   const normalizedRadius = radius - stroke / 2;
   const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
+  const strokeDashoffset =
+    circumference - (progress / 100) * circumference;
 
   return (
     <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 88 88"
-        className="-rotate-90"
-      >
+      <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
         <circle
           cx="44"
           cy="44"
@@ -836,7 +885,6 @@ function Ring({ progress, size = 110 }: { progress: number; size?: number }) {
   );
 }
 
-
 function getTagValues(value: any): string[] {
   if (!value) return [];
   if (Array.isArray(value)) return value.filter(Boolean);
@@ -848,8 +896,12 @@ function buildPreparedAnswers(answers: any) {
     {
       question: "Какая часть выручки остаётся после всех расходов?",
       answer: [
-        typeof answers.margin?.value === "number" ? `${answers.margin.value}%` : "",
-        answers.margin?.note?.trim() ? `Комментарий: ${answers.margin.note.trim()}` : "",
+        typeof answers.margin?.value === "number"
+          ? `${answers.margin.value}%`
+          : "",
+        answers.margin?.note?.trim()
+          ? `Комментарий: ${answers.margin.note.trim()}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n"),
@@ -863,15 +915,18 @@ function buildPreparedAnswers(answers: any) {
       answer: String(answers.revenue ?? "").trim(),
     },
     {
-      question: "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
+      question:
+        "Какие ключевые метрики, показатели и KPI вы регулярно отслеживаете?",
       answer: getTagValues(answers.kpis).join(", "),
     },
     {
-      question: "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
+      question:
+        "Кто ваши основные клиенты и какой сегмент самый прибыльный?",
       answer: String(answers.clientProfile ?? "").trim(),
     },
     {
-      question: "Сколько обращений вы получаете и сколько реально можете обработать?",
+      question:
+        "Сколько обращений вы получаете и сколько реально можете обработать?",
       answer: [
         `Обращения: ${answers.demandCapacity?.demand ?? 0}`,
         `Capacity: ${answers.demandCapacity?.capacity ?? 0}`,
@@ -882,16 +937,23 @@ function buildPreparedAnswers(answers: any) {
       answer: getTagValues(answers.acquisitionChannels).join(", "),
     },
     {
-      question: "Как распределяется входящий поток клиентов между выбранными каналами?",
+      question:
+        "Как распределяется входящий поток клиентов между выбранными каналами?",
       answer: getTagValues(answers.acquisitionChannels)
-        .map((channel) => `${channel} — ${answers.channelEfficiency?.values?.[channel] ?? 0}%`)
+        .map(
+          (channel) =>
+            `${channel} — ${answers.channelEfficiency?.values?.[channel] ?? 0}%`,
+        )
         .join("\n"),
     },
     {
       question: "Какие 1–3 продукта или услуги самые маржинальные?",
       answer: (answers.topProducts ?? [])
         .filter((item: any) => String(item?.name ?? "").trim())
-        .map((item: any, index: number) => `Продукт ${index + 1}: ${item.name} — ${item.value ?? 0}%`)
+        .map(
+          (item: any, index: number) =>
+            `Продукт ${index + 1}: ${item.name} — ${item.value ?? 0}%`,
+        )
         .join("\n"),
     },
     {
@@ -899,61 +961,84 @@ function buildPreparedAnswers(answers: any) {
       answer: getTagValues(answers.retention).join(", "),
     },
     {
-      question: "Как проходит путь клиента от первого обращения до положительного опыта?",
+      question:
+        "Как проходит путь клиента от первого обращения до положительного опыта?",
       answer: (answers.cjm?.stages ?? [])
         .map(
           (stage: any) =>
-            `${stage.stage}\nЧто происходит: ${stage.whatHappens || "-"}\nДлительность: ${stage.duration || "-"}\nЧто получает клиент: ${stage.clientGets || "-"}\nЧто получает компания: ${stage.companyGets || "-"}\nПроблемы: ${stage.problems || "-"}`
+            `${stage.stage}\nЧто происходит: ${
+              stage.whatHappens || "-"
+            }\nДлительность: ${stage.duration || "-"}\nЧто получает клиент: ${
+              stage.clientGets || "-"
+            }\nЧто получает компания: ${
+              stage.companyGets || "-"
+            }\nПроблемы: ${stage.problems || "-"}`,
         )
         .join("\n\n"),
     },
- {
-  question: "Есть ли пики и спады продаж и чем они объясняются?",
-  answer: [
-    (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
-      ? `Пики: ${(answers.seasonality.points ?? [])
-          .filter((p: any) => p.value >= 25)
-          .map((p: any) => `${p.month} (${p.value > 0 ? "+" : ""}${p.value}%)`)
-          .join(", ")}`
-      : "",
-    answers.seasonality?.peaksReason?.trim()
-      ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
-      : "",
-    (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
-      ? `Спады: ${(answers.seasonality.points ?? [])
-          .filter((p: any) => p.value <= -25)
-          .map((p: any) => `${p.month} (${p.value}%)`)
-          .join(", ")}`
-      : "",
-    answers.seasonality?.lowsReason?.trim()
-      ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n"),
-},
     {
-      question: "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+      question: "Есть ли пики и спады продаж и чем они объясняются?",
       answer: [
-        [...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].length
-          ? `Стадия бизнеса: ${[...(answers.positionText?.stages ?? []), ...(answers.positionText?.customStages ?? [])].join(", ")}`
+        (answers.seasonality?.points ?? []).some((p: any) => p.value >= 25)
+          ? `Пики: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value >= 25)
+              .map(
+                (p: any) =>
+                  `${p.month} (${p.value > 0 ? "+" : ""}${p.value}%)`,
+              )
+              .join(", ")}`
           : "",
-        answers.positionText?.text?.trim() ? `Описание: ${answers.positionText.text.trim()}` : "",
+        answers.seasonality?.peaksReason?.trim()
+          ? `Почему хорошо: ${answers.seasonality.peaksReason.trim()}`
+          : "",
+        (answers.seasonality?.points ?? []).some((p: any) => p.value <= -25)
+          ? `Спады: ${(answers.seasonality.points ?? [])
+              .filter((p: any) => p.value <= -25)
+              .map((p: any) => `${p.month} (${p.value}%)`)
+              .join(", ")}`
+          : "",
+        answers.seasonality?.lowsReason?.trim()
+          ? `Почему плохо: ${answers.seasonality.lowsReason.trim()}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n"),
     },
     {
-      question: "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+      question:
+        "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
       answer: [
-        answers.geo?.physical ? `Физическая локация: ${answers.geo.physical}` : "",
+        [
+          ...(answers.positionText?.stages ?? []),
+          ...(answers.positionText?.customStages ?? []),
+        ].length
+          ? `Стадия бизнеса: ${[
+              ...(answers.positionText?.stages ?? []),
+              ...(answers.positionText?.customStages ?? []),
+            ].join(", ")}`
+          : "",
+        answers.positionText?.text?.trim()
+          ? `Описание: ${answers.positionText.text.trim()}`
+          : "",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    },
+    {
+      question:
+        "В каком регионе вы продаёте и где физически находится ваш бизнес?",
+      answer: [
+        answers.geo?.physical
+          ? `Физическая локация: ${answers.geo.physical}`
+          : "",
         answers.geo?.sales ? `География продаж: ${answers.geo.sales}` : "",
       ]
         .filter(Boolean)
         .join("\n"),
     },
     {
-      question: "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
+      question:
+        "Какой этап развития проходит бизнес сейчас: сколько лет вы в рынке и какой у вас текущий размер команды?",
       answer: String(answers.businessScale ?? "").trim(),
     },
     {
@@ -961,28 +1046,45 @@ function buildPreparedAnswers(answers: any) {
       answer: (answers.team ?? [])
         .map(
           (member: any, index: number) =>
-            `Участник ${index + 1}\nДолжность: ${member.position || "-"}\nОтветственность: ${member.responsibility || "-"}\nЛПР: ${member.isDecisionMaker || "-"}\nУчаствует в: ${(member.participatesIn ?? []).join(", ") || "-"}`
+            `Участник ${index + 1}\nДолжность: ${
+              member.position || "-"
+            }\nОтветственность: ${member.responsibility || "-"}\nЛПР: ${
+              member.isDecisionMaker || "-"
+            }\nУчаствует в: ${
+              (member.participatesIn ?? []).join(", ") || "-"
+            }`,
         )
         .join("\n\n"),
     },
     {
-      question: "Как выстроено взаимодействие между ролями и что изменилось за год?",
+      question:
+        "Как выстроено взаимодействие между ролями и что изменилось за год?",
       answer: [
         ...(answers.interaction?.links ?? []).map(
           (link: any) =>
-            `${link.fromRole} ↔ ${link.toRole}\nСкорость: ${link.metrics?.speed ?? 0}/5\nКоммуникация: ${link.metrics?.communication ?? 0}/5\nКачество информации: ${link.metrics?.infoQuality ?? 0}/5`
+            `${link.fromRole} ↔ ${link.toRole}\nСкорость: ${
+              link.metrics?.speed ?? 0
+            }/5\nКоммуникация: ${
+              link.metrics?.communication ?? 0
+            }/5\nКачество информации: ${
+              link.metrics?.infoQuality ?? 0
+            }/5`,
         ),
-        answers.interaction?.note?.trim() ? `Комментарий: ${answers.interaction.note.trim()}` : "",
+        answers.interaction?.note?.trim()
+          ? `Комментарий: ${answers.interaction.note.trim()}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n\n"),
     },
     {
-      question: "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
+      question:
+        "Кто и как принимает решения о внедрении новых решений, подрядчиков или инструментов?",
       answer: String(answers.decisions ?? "").trim(),
     },
     {
-      question: "Где вы как руководитель сильнее всего ощущаете напряжение?",
+      question:
+        "Где вы как руководитель сильнее всего ощущаете напряжение?",
       answer: Object.entries(answers.stress?.values ?? {})
         .map(([key, value]) => `${key}: ${value}`)
         .join("\n"),
@@ -990,34 +1092,51 @@ function buildPreparedAnswers(answers: any) {
     {
       question: "В каких зонах бизнеса теряется эффективность?",
       answer: (answers.lossZones?.selected ?? [])
-        .map((key: string) => `${key}: ${answers.lossZones?.notes?.[key] ?? ""}`)
+        .map(
+          (key: string) =>
+            `${key}: ${answers.lossZones?.notes?.[key] ?? ""}`,
+        )
         .join("\n"),
     },
     {
-      question: "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
+      question:
+        "Какую аналитику по рынку, нише или сегментам вы используете при принятии решений?",
       answer: [
-        getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).length
-          ? `Используем: ${getTagValues({ selected: answers.analytics?.tags ?? [], custom: answers.analytics?.custom ?? [] }).join(", ")}`
+        getTagValues({
+          selected: answers.analytics?.tags ?? [],
+          custom: answers.analytics?.custom ?? [],
+        }).length
+          ? `Используем: ${getTagValues({
+              selected: answers.analytics?.tags ?? [],
+              custom: answers.analytics?.custom ?? [],
+            }).join(", ")}`
           : "",
-        answers.analytics?.note?.trim() ? `Комментарий: ${answers.analytics.note.trim()}` : "",
+        answers.analytics?.note?.trim()
+          ? `Комментарий: ${answers.analytics.note.trim()}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n"),
     },
     {
-      question: "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
+      question:
+        "Что сейчас больше всего требует изменений или улучшений в бизнесе?",
       answer: String(answers.changesNeeded ?? "").trim(),
     },
     {
-      question: "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
+      question:
+        "Какие инструменты, процессы или улучшения вы внедрили за последние 6 месяцев?",
       answer: String(answers.implemented ?? "").trim(),
     },
     {
-      question: "Какого результата бизнес должен достичь к концу года?",
+      question:
+        "Какого результата бизнес должен достичь к концу года?",
       answer: [
         `Цель по чистой прибыли: +${answers.goal?.profitTarget ?? 0}%`,
         answers.goal?.mode ? `Статус расходов: ${answers.goal.mode}` : "",
-        answers.goal?.costChange?.trim() ? `Изменение расходов: ${answers.goal.costChange.trim()}` : "",
+        answers.goal?.costChange?.trim()
+          ? `Изменение расходов: ${answers.goal.costChange.trim()}`
+          : "",
       ]
         .filter(Boolean)
         .join("\n"),
@@ -1033,7 +1152,8 @@ function buildPreparedAnswers(answers: any) {
         .join("\n"),
     },
     {
-      question: "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
+      question:
+        "Кому отправить развёрнутый отчёт и кого пригласить на онлайн-встречу?",
       answer: [
         answers.contacts?.reportEmail?.trim()
           ? `Email для отчёта: ${answers.contacts.reportEmail.trim()}`
@@ -1048,6 +1168,59 @@ function buildPreparedAnswers(answers: any) {
   ];
 
   return prepared.filter((item) => item.answer.trim().length > 0);
+}
+
+function buildFinalBodyText(preparedAnswers: Array<{ question: string; answer: string }>) {
+  const body = preparedAnswers
+    .map(
+      (item) =>
+        `— ${item.question}\n${item.answer}`.trim(),
+    )
+    .join("\n\n");
+
+  return `${FINAL_BODY_DIVIDER}\n\n${body}`;
+}
+
+function buildDraftJsonPayload(params: {
+  accessToken: string;
+  launchAttemptId: string;
+  answers: Answers;
+  preparedAnswers: Array<{ question: string; answer: string }>;
+  progress: {
+    total: number;
+    totalQuestions: number;
+    sectionProgress: Record<string, number>;
+  };
+  draftStep: number;
+}) {
+  return {
+    type: "snapshot_draft",
+    draft: true,
+    status: "draft",
+    access_token: params.accessToken,
+    launch_attempt_id: params.launchAttemptId,
+    draft_step: params.draftStep,
+    draft_updated_at: new Date().toISOString(),
+    progress: params.progress,
+    answers_raw: params.answers,
+    answers_prepared: params.preparedAnswers,
+  };
+}
+
+async function postWebhook(payload: Record<string, unknown>) {
+  const response = await fetch(SNAPSHOT_WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Webhook failed with status ${response.status}`);
+  }
+
+  return response;
 }
 
 function GlassCard({
@@ -1256,7 +1429,6 @@ function TagField({
   );
 }
 
-
 function CustomZoneComposer({
   zones,
   onChange,
@@ -1269,7 +1441,11 @@ function CustomZoneComposer({
   function addZone() {
     const next = draft.trim();
     if (!next) return;
-    if ([...STRESS_ZONES, ...zones].some((item) => item.toLowerCase() === next.toLowerCase())) {
+    if (
+      [...STRESS_ZONES, ...zones].some(
+        (item) => item.toLowerCase() === next.toLowerCase(),
+      )
+    ) {
       setDraft("");
       return;
     }
@@ -1334,7 +1510,9 @@ function LossZoneTagEditor({
   function toggleZone(zone: string) {
     const active = selected.includes(zone);
     onChange({
-      selected: active ? selected.filter((item) => item !== zone) : [...selected, zone],
+      selected: active
+        ? selected.filter((item) => item !== zone)
+        : [...selected, zone],
       notes,
     });
   }
@@ -1363,14 +1541,19 @@ function LossZoneTagEditor({
 
       <div className="space-y-3">
         {selected.map((zone) => (
-          <div key={zone} className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div
+            key={zone}
+            className="rounded-2xl border border-white/8 bg-white/[0.03] p-3"
+          >
             <div className="mb-2 text-sm text-[#fff3b2]">{zone}</div>
             <AutoTextarea
               className={textareaClass}
               minRows={2}
-              placeholder="Что именно не устраивает в этой зоне?"
+              placeholder='Что именно не устраивает в этой зоне? Можно поставить "-"'
               value={notes[zone] ?? ""}
-              onChange={(next) => onChange({ selected, notes: { ...notes, [zone]: next } })}
+              onChange={(next) =>
+                onChange({ selected, notes: { ...notes, [zone]: next } })
+              }
             />
           </div>
         ))}
@@ -1378,6 +1561,7 @@ function LossZoneTagEditor({
     </div>
   );
 }
+
 function RangeBlock({
   title,
   value,
@@ -1407,113 +1591,6 @@ function RangeBlock({
         onChange={(e) => onChange(Number(e.target.value))}
         className="w-full accent-[#f7d237]"
       />
-    </div>
-  );
-}
-
-function GeoMapPreview({
-  physical,
-  sales,
-}: {
-  physical: string;
-  sales: string;
-}) {
-  const physicalPoint = geoPointFromText(physical, { x: 575, y: 165 });
-  const salesPoint = geoPointFromText(sales, physicalPoint);
-  const salesIsWorld =
-    sales.toLowerCase().includes("весь мир") ||
-    sales.toLowerCase().includes("world") ||
-    sales.toLowerCase().includes("global");
-
-  const salesRadius = salesIsWorld ? 240 : 90;
-
-  return (
-    <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
-
-      <div className="relative h-[320px] w-full overflow-hidden rounded-[24px] bg-[#001233]">
-        <img
-          src="/worldmap_w.svg"
-          alt="world map"
-          className="absolute inset-0 h-full w-full object-contain opacity-28"
-        />
-
-        <svg viewBox="0 0 1100 420" className="absolute inset-0 h-full w-full">
-          <g opacity="0.1" stroke="rgba(255,255,255,0.12)">
-            <line x1="80" y1="70" x2="1020" y2="70" />
-            <line x1="80" y1="140" x2="1020" y2="140" />
-            <line x1="80" y1="210" x2="1020" y2="210" />
-            <line x1="80" y1="280" x2="1020" y2="280" />
-            <line x1="80" y1="350" x2="1020" y2="350" />
-          </g>
-
-          <circle
-            cx={salesPoint.x}
-            cy={salesPoint.y}
-            r={salesRadius}
-            stroke="rgba(111,211,255,0.40)"
-            strokeWidth="2"
-            strokeDasharray="8 8"
-            fill="rgba(111,211,255,0.07)"
-          />
-
-          <circle
-            cx={physicalPoint.x}
-            cy={physicalPoint.y}
-            r="10"
-            fill="#f7d237"
-            style={{ filter: "drop-shadow(0 0 16px rgba(247,210,55,0.75))" }}
-          />
-          <circle
-            cx={physicalPoint.x}
-            cy={physicalPoint.y}
-            r="22"
-            fill="rgba(247,210,55,0.12)"
-          />
-
-          <g
-            transform={`translate(${Math.max(physicalPoint.x - 90, 100)}, ${physicalPoint.y - 52})`}
-          >
-            <rect
-              width="180"
-              height="46"
-              rx="23"
-              fill="rgba(247,210,55,0.12)"
-              stroke="rgba(247,210,55,0.35)"
-            />
-            <text
-              x="90"
-              y="29"
-              textAnchor="middle"
-              fill="#fff3b2"
-              fontSize="14"
-            >
-              Физическая локация
-            </text>
-          </g>
-
-          <g
-            transform={`translate(${Math.max(salesPoint.x + 18, 120)}, ${salesPoint.y - 12})`}
-          >
-            <rect
-              width={salesIsWorld ? "126" : "158"}
-              height="44"
-              rx="22"
-              fill="rgba(77,194,255,0.12)"
-              stroke="rgba(77,194,255,0.35)"
-            />
-            <text
-              x={salesIsWorld ? "63" : "79"}
-              y="28"
-              textAnchor="middle"
-              fill="#c8f3ff"
-              fontSize="14"
-            >
-              {salesIsWorld ? "Весь мир" : "Радиус продаж"}
-            </text>
-          </g>
-        </svg>
-      </div>
     </div>
   );
 }
@@ -1572,7 +1649,7 @@ function TeamMembersBuilder({
                 <div className="mb-2 text-sm text-white/55">Должность</div>
                 <input
                   className={compactInputClass}
-                  placeholder="Например: COO / Head of Sales"
+                  placeholder='Например: COO / Head of Sales или "-"'
                   value={member.position}
                   onChange={(e) =>
                     updateMember(member.id, { position: e.target.value })
@@ -1586,10 +1663,12 @@ function TeamMembersBuilder({
                 </div>
                 <input
                   className={compactInputClass}
-                  placeholder="Например: рост продаж / операционка"
+                  placeholder='Например: рост продаж / операционка или "-"'
                   value={member.responsibility}
                   onChange={(e) =>
-                    updateMember(member.id, { responsibility: e.target.value })
+                    updateMember(member.id, {
+                      responsibility: e.target.value,
+                    })
                   }
                 />
               </div>
@@ -1708,7 +1787,9 @@ function TeamRelationsBuilder({
   const note = value?.note ?? "";
 
   useEffect(() => {
-    const currentIds = (value?.links ?? []).map((item) => item.id).join("|");
+    const currentIds = (value?.links ?? [])
+      .map((item) => item.id)
+      .join("|");
     const nextIds = links.map((item) => item.id).join("|");
     if (currentIds !== nextIds) {
       onChange({ links, note });
@@ -1796,7 +1877,7 @@ function TeamRelationsBuilder({
           <AutoTextarea
             className={textareaClass}
             minRows={3}
-            placeholder="Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год"
+            placeholder='Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год. Можно поставить "-"'
             value={note}
             onChange={(next) => onChange({ links, note: next })}
           />
@@ -1837,7 +1918,8 @@ function SeasonalityChart({
 
   function pointXY(index: number, v: number) {
     const x = paddingX + (chartWidth / 11) * index;
-    const y = paddingY + chartHeight / 2 - (v / 50) * (chartHeight / 2 - 10);
+    const y =
+      paddingY + chartHeight / 2 - (v / 50) * (chartHeight / 2 - 10);
     return { x, y };
   }
 
@@ -1970,7 +2052,9 @@ function SeasonalityChart({
               fill="none"
               stroke="#7dd3fc"
               strokeWidth="3"
-              style={{ filter: "drop-shadow(0 0 6px rgba(125,211,252,0.14))" }}
+              style={{
+                filter: "drop-shadow(0 0 6px rgba(125,211,252,0.14))",
+              }}
             />
 
             {points.map((point, index) => {
@@ -2038,14 +2122,15 @@ function SeasonalityChart({
           <AutoTextarea
             className={textareaClass}
             minRows={3}
-            placeholder="Что влияет и от чего зависит?"
+            placeholder='Что влияет и от чего зависит? Можно поставить "-"'
             value={peaksReason}
             onChange={(next) =>
               onChange({ points, peaksReason: next, lowsReason })
             }
           />
           <div className="mt-2 text-xs text-white/42">
-            Ответ засчитывается от 20 символов. Сейчас: {textLength(peaksReason)}.
+            Ответ засчитывается от 20 символов или "-" . Сейчас:{" "}
+            {textLength(peaksReason)}.
           </div>
         </div>
 
@@ -2059,14 +2144,15 @@ function SeasonalityChart({
           <AutoTextarea
             className={textareaClass}
             minRows={3}
-            placeholder="Что влияет и от чего зависит?"
+            placeholder='Что влияет и от чего зависит? Можно поставить "-"'
             value={lowsReason}
             onChange={(next) =>
               onChange({ points, peaksReason, lowsReason: next })
             }
           />
           <div className="mt-2 text-xs text-white/42">
-            Ответ засчитывается от 20 символов. Сейчас: {textLength(lowsReason)}.
+            Ответ засчитывается от 20 символов или "-" . Сейчас:{" "}
+            {textLength(lowsReason)}.
           </div>
         </div>
       </div>
@@ -2110,7 +2196,7 @@ function renderInput(
           />
 
           <AutoTextarea
-            placeholder="Комментарий или контекст…"
+            placeholder='Комментарий или контекст… Можно поставить "-"'
             className={textareaClass}
             minRows={2}
             value={note}
@@ -2128,7 +2214,11 @@ function renderInput(
 
     case "text": {
       if (question.id === "positionText") {
-        const current = answers[question.id] ?? { text: "", stages: [] };
+        const current = answers[question.id] ?? {
+          text: "",
+          stages: [],
+          customStages: [],
+        };
 
         return (
           <div className="space-y-4">
@@ -2151,7 +2241,7 @@ function renderInput(
 
             <div className="space-y-2.5">
               <AutoTextarea
-                placeholder="Опишите ваш бизнес"
+                placeholder='Опишите ваш бизнес. Можно поставить "-"'
                 className={textareaClass}
                 minRows={3}
                 value={current.text ?? ""}
@@ -2160,7 +2250,8 @@ function renderInput(
                 }
               />
               <div className="text-xs text-white/42">
-                Ответ засчитывается от 50 символов. Сейчас: {textLength(current.text ?? "")}.
+                Ответ засчитывается от 50 символов или "-" . Сейчас:{" "}
+                {textLength(current.text ?? "")}.
               </div>
             </div>
           </div>
@@ -2173,9 +2264,11 @@ function renderInput(
         return (
           <div className="space-y-4">
             <div>
-              <div className="mb-2 text-sm text-white/55">Следующие 3 месяца</div>
+              <div className="mb-2 text-sm text-white/55">
+                Следующие 3 месяца
+              </div>
               <AutoTextarea
-                placeholder="Чего вы ждете от следующих 3 месяцев"
+                placeholder='Чего вы ждете от следующих 3 месяцев. Можно поставить "-"'
                 className={textareaClass}
                 minRows={3}
                 value={current.plan3 ?? ""}
@@ -2184,7 +2277,8 @@ function renderInput(
                 }
               />
               <div className="mt-2 text-xs text-white/42">
-                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan3 ?? "")}.
+                Ответ засчитывается от 20 символов или "-" . Сейчас:{" "}
+                {textLength(current.plan3 ?? "")}.
               </div>
             </div>
 
@@ -2193,7 +2287,7 @@ function renderInput(
                 Следующие 6 месяцев
               </div>
               <AutoTextarea
-                placeholder="Чего вы ждете от следующих 6 месяцев"
+                placeholder='Чего вы ждете от следующих 6 месяцев. Можно поставить "-"'
                 className={textareaClass}
                 minRows={3}
                 value={current.plan6 ?? ""}
@@ -2202,7 +2296,8 @@ function renderInput(
                 }
               />
               <div className="mt-2 text-xs text-white/42">
-                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan6 ?? "")}.
+                Ответ засчитывается от 20 символов или "-" . Сейчас:{" "}
+                {textLength(current.plan6 ?? "")}.
               </div>
             </div>
 
@@ -2211,7 +2306,7 @@ function renderInput(
                 Следующие 12 месяцев
               </div>
               <AutoTextarea
-                placeholder="Чего вы ждете от следующих 12 месяцев"
+                placeholder='Чего вы ждете от следующих 12 месяцев. Можно поставить "-"'
                 className={textareaClass}
                 minRows={3}
                 value={current.plan12 ?? ""}
@@ -2220,7 +2315,8 @@ function renderInput(
                 }
               />
               <div className="mt-2 text-xs text-white/42">
-                Ответ засчитывается от 20 символов. Сейчас: {textLength(current.plan12 ?? "")}.
+                Ответ засчитывается от 20 символов или "-" . Сейчас:{" "}
+                {textLength(current.plan12 ?? "")}.
               </div>
             </div>
           </div>
@@ -2233,20 +2329,38 @@ function renderInput(
         changesNeeded: 20,
         implemented: 20,
         businessScale: 20,
+        salesCount: 1,
+        revenue: 1,
       };
 
       const minLength = minLengthByQuestion[question.id] ?? 0;
-      const currentLength = textLength(answers[question.id] ?? "");
+      const currentValue = answers[question.id] ?? "";
+      const currentLength = textLength(currentValue);
 
       return (
         <div className="space-y-2.5">
           <AutoTextarea
-            placeholder={question.id === "businessScale" ? "Например: 6 лет на рынке, команда 18 человек" : "Введите ответ…"}
+            placeholder={
+              question.id === "businessScale"
+                ? 'Например: 6 лет на рынке, команда 18 человек. Можно поставить "-"'
+                : 'Введите ответ… Можно поставить "-"'
+            }
             className={textareaClass}
             minRows={3}
-            value={answers[question.id] ?? ""}
+            value={currentValue}
             onChange={(next) => setAnswer(question.id, next)}
           />
+          {minLength > 1 ? (
+            <div className="text-xs text-white/42">
+              Ответ засчитывается от {minLength} символов или "-" . Сейчас:{" "}
+              {currentLength}.
+            </div>
+          ) : null}
+          {(question.id === "salesCount" || question.id === "revenue") && (
+            <div className="text-xs text-white/42">
+              Поле засчитывается, если есть цифры, либо если указан "-".
+            </div>
+          )}
         </div>
       );
     }
@@ -2272,10 +2386,11 @@ function renderInput(
 
             if (question.id === "acquisitionChannels") {
               const allChannels = [...next.selected, ...next.custom];
-              const prev: ChannelDistribution = answers.channelEfficiency ?? {
-                values: {},
-                touched: {},
-              };
+              const prev: ChannelDistribution =
+                answers.channelEfficiency ?? {
+                  values: {},
+                  touched: {},
+                };
 
               const nextValues: Record<string, number> = {};
               const nextTouched: Record<string, boolean> = {};
@@ -2337,10 +2452,11 @@ function renderInput(
 
     case "channelDistribution": {
       const selectedChannels = getAllTagValues(answers.acquisitionChannels);
-      const state: ChannelDistribution = answers.channelEfficiency ?? {
-        values: {},
-        touched: {},
-      };
+      const state: ChannelDistribution =
+        answers.channelEfficiency ?? {
+          values: {},
+          touched: {},
+        };
 
       if (selectedChannels.length === 0) {
         return (
@@ -2459,7 +2575,7 @@ function renderInput(
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <input
-                    placeholder={`Продукт ${i + 1}`}
+                    placeholder={`Продукт ${i + 1} или "-"`}
                     className={compactInputClass}
                     value={item.name}
                     onChange={(e) => {
@@ -2531,13 +2647,16 @@ function renderInput(
                     Что происходит
                   </div>
                   <AutoTextarea
-                    placeholder="Опишите, что происходит на этом этапе"
+                    placeholder='Опишите, что происходит на этом этапе. Можно поставить "-"'
                     className={textareaClass}
                     minRows={2}
                     value={step.whatHappens}
                     onChange={(next) => {
                       const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], whatHappens: next };
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        whatHappens: next,
+                      };
                       setAnswer(question.id, {
                         ...current,
                         stages: nextStages,
@@ -2547,9 +2666,11 @@ function renderInput(
                 </div>
 
                 <div>
-                  <div className="mb-2 text-sm text-white/55">Длительность</div>
+                  <div className="mb-2 text-sm text-white/55">
+                    Длительность
+                  </div>
                   <input
-                    placeholder="Например: 1 день / 2 недели"
+                    placeholder='Например: 1 день / 2 недели или "-"'
                     className={compactInputClass}
                     value={step.duration}
                     onChange={(e) => {
@@ -2571,13 +2692,16 @@ function renderInput(
                     Что получает клиент
                   </div>
                   <AutoTextarea
-                    placeholder="Ценность для клиента на этом этапе"
+                    placeholder='Ценность для клиента на этом этапе. Можно поставить "-"'
                     className={textareaClass}
                     minRows={2}
                     value={step.clientGets}
                     onChange={(next) => {
                       const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], clientGets: next };
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        clientGets: next,
+                      };
                       setAnswer(question.id, {
                         ...current,
                         stages: nextStages,
@@ -2591,13 +2715,16 @@ function renderInput(
                     Что получает компания
                   </div>
                   <AutoTextarea
-                    placeholder="Какой результат получает бизнес"
+                    placeholder='Какой результат получает бизнес. Можно поставить "-"'
                     className={textareaClass}
                     minRows={2}
                     value={step.companyGets}
                     onChange={(next) => {
                       const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], companyGets: next };
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        companyGets: next,
+                      };
                       setAnswer(question.id, {
                         ...current,
                         stages: nextStages,
@@ -2611,13 +2738,16 @@ function renderInput(
                     Проблемы (опционально)
                   </div>
                   <AutoTextarea
-                    placeholder="Где здесь возникают потери, трение или замедление"
+                    placeholder='Где здесь возникают потери, трение или замедление. Можно поставить "-"'
                     className={textareaClass}
                     minRows={2}
                     value={step.problems}
                     onChange={(next) => {
                       const nextStages = [...current.stages];
-                      nextStages[i] = { ...nextStages[i], problems: next };
+                      nextStages[i] = {
+                        ...nextStages[i],
+                        problems: next,
+                      };
                       setAnswer(question.id, {
                         ...current,
                         stages: nextStages,
@@ -2646,23 +2776,99 @@ function renderInput(
       const current = answers[question.id] ?? initialAnswers.geo;
 
       return (
-        <div className="grid gap-3 md:grid-cols-2">
-          <input
-            className={compactInputClass}
-            placeholder="Где физически находится бизнес"
-            value={current.physical}
-            onChange={(e) =>
-              setAnswer(question.id, { ...current, physical: e.target.value })
-            }
-          />
-          <input
-            className={compactInputClass}
-            placeholder="В каком регионе продаёте"
-            value={current.sales}
-            onChange={(e) =>
-              setAnswer(question.id, { ...current, sales: e.target.value })
-            }
-          />
+        <div className="grid gap-4">
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              className={compactInputClass}
+              placeholder='Где физически находится бизнес или "-"'
+              value={current.physical}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  physical: e.target.value,
+                })
+              }
+            />
+            <input
+              className={compactInputClass}
+              placeholder='В каком регионе продаёте или "-"'
+              value={current.sales}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  sales: e.target.value,
+                })
+              }
+            />
+          </div>
+          <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
+            <div className="relative h-[320px] w-full overflow-hidden rounded-[24px] bg-[#001233]">
+              <img
+                src="/worldmap_w.svg"
+                alt="world map"
+                className="absolute inset-0 h-full w-full object-contain opacity-28"
+              />
+              <svg
+                viewBox="0 0 1100 420"
+                className="absolute inset-0 h-full w-full"
+              >
+                <g opacity="0.1" stroke="rgba(255,255,255,0.12)">
+                  <line x1="80" y1="70" x2="1020" y2="70" />
+                  <line x1="80" y1="140" x2="1020" y2="140" />
+                  <line x1="80" y1="210" x2="1020" y2="210" />
+                  <line x1="80" y1="280" x2="1020" y2="280" />
+                  <line x1="80" y1="350" x2="1020" y2="350" />
+                </g>
+                {(() => {
+                  const physicalPoint = geoPointFromText(
+                    current.physical,
+                    { x: 575, y: 165 },
+                  );
+                  const salesPoint = geoPointFromText(
+                    current.sales,
+                    physicalPoint,
+                  );
+                  const salesIsWorld =
+                    current.sales.toLowerCase().includes("весь мир") ||
+                    current.sales.toLowerCase().includes("world") ||
+                    current.sales.toLowerCase().includes("global");
+                  const salesRadius = salesIsWorld ? 240 : 90;
+
+                  return (
+                    <>
+                      <circle
+                        cx={salesPoint.x}
+                        cy={salesPoint.y}
+                        r={salesRadius}
+                        stroke="rgba(111,211,255,0.40)"
+                        strokeWidth="2"
+                        strokeDasharray="8 8"
+                        fill="rgba(111,211,255,0.07)"
+                      />
+
+                      <circle
+                        cx={physicalPoint.x}
+                        cy={physicalPoint.y}
+                        r="10"
+                        fill="#f7d237"
+                        style={{
+                          filter:
+                            "drop-shadow(0 0 16px rgba(247,210,55,0.75))",
+                        }}
+                      />
+                      <circle
+                        cx={physicalPoint.x}
+                        cy={physicalPoint.y}
+                        r="22"
+                        fill="rgba(247,210,55,0.12)"
+                      />
+                    </>
+                  );
+                })()}
+              </svg>
+            </div>
+          </div>
         </div>
       );
     }
@@ -2711,10 +2917,14 @@ function renderInput(
                 key={zone}
                 className="rounded-2xl border border-white/8 bg-white/[0.03] p-4"
               >
-                <div className="mb-3 text-sm font-medium text-white">{zone}</div>
+                <div className="mb-3 text-sm font-medium text-white">
+                  {zone}
+                </div>
                 <div className="mb-3 flex items-center justify-between text-xs text-white/45">
                   <span>-10</span>
-                  <span className="text-[#fff3b2]">{current.values[zone] ?? 0}</span>
+                  <span className="text-[#fff3b2]">
+                    {current.values[zone] ?? 0}
+                  </span>
                   <span>10</span>
                 </div>
                 <input
@@ -2742,21 +2952,29 @@ function renderInput(
           </div>
 
           <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-            <div className="mb-3 text-sm text-white/55">Добавить свою зону</div>
+            <div className="mb-3 text-sm text-white/55">
+              Добавить свою зону
+            </div>
             <CustomZoneComposer
               zones={customZones}
               onChange={(nextZones) =>
                 setAnswer(question.id, {
                   ...current,
                   customZones: nextZones,
-                  values: nextZones.reduce((acc: Record<string, number>, zone: string) => ({
-                    ...acc,
-                    [zone]: current.values?.[zone] ?? 0,
-                  }), current.values ?? {}),
-                  touched: nextZones.reduce((acc: Record<string, boolean>, zone: string) => ({
-                    ...acc,
-                    [zone]: current.touched?.[zone] ?? false,
-                  }), current.touched ?? {}),
+                  values: nextZones.reduce(
+                    (acc: Record<string, number>, zone: string) => ({
+                      ...acc,
+                      [zone]: current.values?.[zone] ?? 0,
+                    }),
+                    current.values ?? {},
+                  ),
+                  touched: nextZones.reduce(
+                    (acc: Record<string, boolean>, zone: string) => ({
+                      ...acc,
+                      [zone]: current.touched?.[zone] ?? false,
+                    }),
+                    current.touched ?? {},
+                  ),
                 })
               }
             />
@@ -2786,7 +3004,7 @@ function renderInput(
 
           <div className="mt-4">
             <AutoTextarea
-              placeholder="Опишите, как именно аналитика участвует в принятии решений…"
+              placeholder='Опишите, как именно аналитика участвует в принятии решений… Можно поставить "-"'
               className={textareaClass}
               minRows={2}
               value={current.note ?? ""}
@@ -2855,10 +3073,13 @@ function renderInput(
 
           <input
             className={compactInputClass}
-            placeholder="Если применимо — укажите процент изменения расходов"
+            placeholder='Если применимо — укажите процент изменения расходов или "-"'
             value={current.costChange}
             onChange={(e) =>
-              setAnswer(question.id, { ...current, costChange: e.target.value })
+              setAnswer(question.id, {
+                ...current,
+                costChange: e.target.value,
+              })
             }
           />
         </div>
@@ -2872,7 +3093,7 @@ function renderInput(
           <div>
             <input
               className={compactInputClass}
-              placeholder="Email получателя отчёта"
+              placeholder='Email получателя отчёта или "-"'
               value={current.reportEmail}
               onChange={(e) =>
                 setAnswer(question.id, {
@@ -2882,14 +3103,14 @@ function renderInput(
               }
             />
             <div className="mt-2 text-xs text-white/42">
-              Поле засчитывается только если содержит символ @.
+              Поле засчитывается, если содержит символ @, либо если указан "-".
             </div>
           </div>
 
           <div>
             <input
               className={compactInputClass}
-              placeholder="Email / имя участника онлайн-встречи"
+              placeholder='Email / имя участника онлайн-встречи или "-"'
               value={current.meetingContact}
               onChange={(e) =>
                 setAnswer(question.id, {
@@ -2899,7 +3120,7 @@ function renderInput(
               }
             />
             <div className="mt-2 text-xs text-white/42">
-              Поле засчитывается только если содержит символ @.
+              Поле засчитывается, если содержит символ @, либо если указан "-".
             </div>
           </div>
 
@@ -2962,9 +3183,23 @@ function FullScreenLoader({ open }: { open: boolean }) {
 }
 
 export default function DiagnosticIntakePage() {
+  const router = useRouter();
+  const params = useParams<{ token: string }>();
+  const searchParams = useSearchParams();
+
+  const accessToken = String(params?.token ?? "");
+  const launchAttemptId = searchParams.get("launch") ?? "";
+  const mode = searchParams.get("mode") ?? "";
+
   const [active, setActive] = useState<Chapter | null>(null);
   const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [lastDraftSavedAt, setLastDraftSavedAt] = useState<string>("");
+  const [draftError, setDraftError] = useState("");
+
+  const didMountRef = useRef(false);
+  const draftTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const sectionProgress = useMemo(
     () =>
@@ -2991,7 +3226,49 @@ export default function DiagnosticIntakePage() {
 
   const allComplete = Math.round(total) === 100;
 
-  function setAnswer(key: string, value: any) {
+  const currentDraftStep = useMemo(() => {
+    if (active) {
+      return chapters.findIndex((chapter) => chapter.id === active.id) + 1;
+    }
+    const firstIncompleteIndex = chapters.findIndex(
+      (chapter) => Number(sectionProgress[chapter.id]) < 100,
+    );
+    return firstIncompleteIndex >= 0 ? firstIncompleteIndex + 1 : chapters.length;
+  }, [active, sectionProgress]);
+
+  const preparedAnswers = useMemo(
+    () => buildPreparedAnswers(answers),
+    [answers],
+  );
+
+  const draftJsonPayload = useMemo(
+    () =>
+      buildDraftJsonPayload({
+        accessToken,
+        launchAttemptId,
+        answers,
+        preparedAnswers,
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        draftStep: currentDraftStep,
+      }),
+    [
+      accessToken,
+      launchAttemptId,
+      answers,
+      preparedAnswers,
+      total,
+      totalQuestions,
+      sectionProgress,
+      currentDraftStep,
+    ],
+  );
+
+  const setAnswer = useCallback((key: string, value: any) => {
+    setHasUserInteracted(true);
     setAnswers((prev) => {
       const next = { ...prev, [key]: value };
 
@@ -3008,34 +3285,199 @@ export default function DiagnosticIntakePage() {
 
       return next;
     });
-  }
+  }, []);
+
+  const saveDraft = useCallback(async () => {
+    if (!accessToken || !launchAttemptId || isSubmitting) return;
+    if (!hasUserInteracted) return;
+
+    try {
+      setDraftError("");
+
+      await postWebhook({
+        action: "save_draft",
+        source: "snapshot-action",
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft: true,
+        draft_checkbox: true,
+        draft_step: currentDraftStep,
+        draft_updated_at: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        answers: preparedAnswers,
+        answers_raw: answers,
+        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+        draft_payload: draftJsonPayload,
+      });
+
+      setLastDraftSavedAt(new Date().toISOString());
+    } catch (error) {
+      setDraftError(
+        error instanceof Error
+          ? error.message
+          : "Не удалось сохранить draft",
+      );
+    }
+  }, [
+    accessToken,
+    launchAttemptId,
+    isSubmitting,
+    hasUserInteracted,
+    mode,
+    currentDraftStep,
+    total,
+    totalQuestions,
+    sectionProgress,
+    preparedAnswers,
+    answers,
+    draftJsonPayload,
+  ]);
+
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+
+    if (!hasUserInteracted || !accessToken || !launchAttemptId) return;
+    if (isSubmitting) return;
+
+    if (draftTimerRef.current) {
+      clearTimeout(draftTimerRef.current);
+    }
+
+    draftTimerRef.current = setTimeout(() => {
+      void saveDraft();
+    }, DRAFT_SAVE_DEBOUNCE_MS);
+
+    return () => {
+      if (draftTimerRef.current) {
+        clearTimeout(draftTimerRef.current);
+      }
+    };
+  }, [
+    answers,
+    active,
+    hasUserInteracted,
+    accessToken,
+    launchAttemptId,
+    isSubmitting,
+    saveDraft,
+  ]);
+
+  useEffect(() => {
+    function handleBeforeUnload() {
+      if (!hasUserInteracted || !accessToken || !launchAttemptId || isSubmitting)
+        return;
+      navigator.sendBeacon?.(
+        SNAPSHOT_WEBHOOK_URL,
+        new Blob(
+          [
+            JSON.stringify({
+              action: "save_draft",
+              source: "snapshot-action",
+              access_token: accessToken,
+              launch_attempt_id: launchAttemptId,
+              mode,
+              draft: true,
+              draft_checkbox: true,
+              draft_step: currentDraftStep,
+              draft_updated_at: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              progress: {
+                total,
+                totalQuestions,
+                sectionProgress,
+              },
+              answers: preparedAnswers,
+              answers_raw: answers,
+              notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+              draft_payload: draftJsonPayload,
+            }),
+          ],
+          { type: "application/json" },
+        ),
+      );
+    }
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [
+    hasUserInteracted,
+    accessToken,
+    launchAttemptId,
+    isSubmitting,
+    mode,
+    currentDraftStep,
+    total,
+    totalQuestions,
+    sectionProgress,
+    preparedAnswers,
+    answers,
+    draftJsonPayload,
+  ]);
 
   async function handleSubmit() {
     if (!allComplete || isSubmitting) return;
+    if (!accessToken || !launchAttemptId) return;
 
     try {
       setIsSubmitting(true);
+      setDraftError("");
 
-      const preparedAnswers = buildPreparedAnswers(answers);
+      const finalAnswers = buildPreparedAnswers(answers);
+      const finalBodyText = buildFinalBodyText(finalAnswers);
 
-      await fetch("https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+      await postWebhook({
+        action: "submit_snapshot_answers",
+        source: "snapshot-action",
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft: false,
+        draft_checkbox: false,
+        draft_step: null,
+        draft_updated_at: null,
+        createdAt: new Date().toISOString(),
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
         },
-        body: JSON.stringify({
-          source: "snapshot-action",
-          createdAt: new Date().toISOString(),
-          progress: {
-            total,
-            totalQuestions,
-            sectionProgress,
-          },
-          answers: preparedAnswers,
-        }),
+        answers: finalAnswers,
+        answers_raw: answers,
+        notion_body_text: finalBodyText,
+        final_body_divider: FINAL_BODY_DIVIDER,
       });
+
+      try {
+        await postWebhook({
+          action: "clear_draft_after_submit",
+          source: "snapshot-action",
+          access_token: accessToken,
+          launch_attempt_id: launchAttemptId,
+          draft: false,
+          draft_checkbox: false,
+          draft_step: null,
+          draft_updated_at: null,
+        });
+      } catch {
+        // intentionally silent
+      }
+
+      setTimeout(() => {
+        router.push(`/account/${encodeURIComponent(accessToken)}`);
+      }, 900);
     } catch {
-      // intentionally silent for current stage
+      setDraftError("Не удалось отправить вводные на результаты.");
     } finally {
       setTimeout(() => {
         setIsSubmitting(false);
@@ -3118,9 +3560,33 @@ export default function DiagnosticIntakePage() {
                   Формат: card → half-screen modal
                 </span>
                 <span className="rounded-full border border-white/10 px-3 py-1.5">
-                  Логика: adaptive input flow
+                  Draft step: {currentDraftStep}
                 </span>
               </div>
+
+              <div className="mt-4 flex flex-wrap gap-3 text-xs text-white/42">
+                {accessToken ? (
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">
+                    token: connected
+                  </span>
+                ) : null}
+                {launchAttemptId ? (
+                  <span className="rounded-full border border-white/10 px-3 py-1.5">
+                    launch: {launchAttemptId}
+                  </span>
+                ) : null}
+                {lastDraftSavedAt ? (
+                  <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1.5 text-emerald-100">
+                    draft saved
+                  </span>
+                ) : null}
+              </div>
+
+              {draftError ? (
+                <div className="mt-4 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
+                  {draftError}
+                </div>
+              ) : null}
             </div>
 
             <GlassCard className="p-6 md:p-7">
@@ -3172,6 +3638,10 @@ export default function DiagnosticIntakePage() {
                     </div>
                   )}
                 </div>
+
+                <div className="mt-4 text-xs text-white/42">
+                  Недозаполненные ответы автоматически сохраняются в draft.
+                </div>
               </div>
             </GlassCard>
           </div>
@@ -3208,7 +3678,8 @@ export default function DiagnosticIntakePage() {
 
                   <div className="mt-6 space-y-2.5">
                     {chapter.questions.map((question, i) => {
-                      const isDone = getQuestionProgress(question, answers) === 100;
+                      const isDone =
+                        getQuestionProgress(question, answers) === 100;
 
                       return (
                         <div
@@ -3311,7 +3782,9 @@ export default function DiagnosticIntakePage() {
                       </div>
 
                       <div className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] px-3 text-sm text-[#f7d237]">
-                        {getQuestionProgress(question, answers) === 100 ? "✓" : "○"}
+                        {getQuestionProgress(question, answers) === 100
+                          ? "✓"
+                          : "○"}
                       </div>
                     </div>
 
@@ -3334,7 +3807,10 @@ export default function DiagnosticIntakePage() {
 
                 <button
                   type="button"
-                  onClick={() => setActive(null)}
+                  onClick={async () => {
+                    await saveDraft();
+                    setActive(null);
+                  }}
                   className="inline-flex items-center gap-2 rounded-2xl bg-[#f7d237] px-5 py-3 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 hover:shadow-[0_0_24px_rgba(247,210,55,0.22)]"
                 >
                   Сохранить блок <span>✓</span>
