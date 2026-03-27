@@ -17,7 +17,6 @@ type InputType =
   | "tripleMargin"
   | "cjm"
   | "seasonality"
-  | "map"
   | "teamRoles"
   | "departmentRelations"
   | "stressRange"
@@ -227,7 +226,7 @@ const chapters: Chapter[] = [
         id: "geo",
         label:
           "В каком регионе вы продаёте и где физически находится ваш бизнес?",
-        type: "map",
+        type: "text",
       },
     ],
   },
@@ -566,56 +565,6 @@ function createTeamLinksFromMembers(members: TeamMember[]): TeamLink[] {
 function mergeTeamLinks(prev: TeamLink[], nextBase: TeamLink[]) {
   const prevMap = new Map(prev.map((item) => [item.id, item]));
   return nextBase.map((item) => prevMap.get(item.id) ?? item);
-}
-
-function geoPointFromText(value: string, fallback = { x: 580, y: 170 }) {
-  const text = value.toLowerCase();
-
-  const presets = [
-    {
-      keys: ["тбилиси", "груз", "georgia", "tbilisi"],
-      point: { x: 604, y: 149 },
-    },
-    { keys: ["кипр", "cyprus"], point: { x: 577, y: 184 } },
-    { keys: ["герман", "berlin", "germany"], point: { x: 517, y: 124 } },
-    { keys: ["поль", "poland", "warsaw"], point: { x: 545, y: 121 } },
-    { keys: ["эстон", "tallinn", "estonia"], point: { x: 557, y: 92 } },
-    { keys: ["латв", "riga", "latvia"], point: { x: 553, y: 104 } },
-    { keys: ["литв", "vilnius", "lithuania"], point: { x: 550, y: 112 } },
-    { keys: ["испан", "madrid", "spain"], point: { x: 455, y: 170 } },
-    {
-      keys: ["португал", "lisbon", "portugal"],
-      point: { x: 430, y: 175 },
-    },
-    {
-      keys: ["нидерл", "amsterdam", "netherlands"],
-      point: { x: 500, y: 119 },
-    },
-    { keys: ["финля", "helsinki", "finland"], point: { x: 568, y: 84 } },
-    { keys: ["серби", "belgrade", "serbia"], point: { x: 555, y: 145 } },
-    { keys: ["венгр", "budapest", "hungary"], point: { x: 551, y: 136 } },
-    {
-      keys: ["лондон", "uk", "united kingdom", "england"],
-      point: { x: 470, y: 113 },
-    },
-    {
-      keys: ["usa", "new york", "united states", "america"],
-      point: { x: 228, y: 145 },
-    },
-    { keys: ["канада", "canada", "toronto"], point: { x: 220, y: 105 } },
-    { keys: ["браз", "brazil"], point: { x: 314, y: 279 } },
-    { keys: ["дубай", "uae", "emirates"], point: { x: 625, y: 190 } },
-    { keys: ["инд", "india", "delhi"], point: { x: 734, y: 189 } },
-    { keys: ["сингап", "singapore"], point: { x: 815, y: 275 } },
-    { keys: ["австра", "sydney", "australia"], point: { x: 930, y: 321 } },
-    { keys: ["япон", "tokyo", "japan"], point: { x: 900, y: 160 } },
-  ];
-
-  for (const preset of presets) {
-    if (preset.keys.some((key) => text.includes(key))) return preset.point;
-  }
-
-  return fallback;
 }
 
 function getQuestionProgress(question: Question, answers: Answers): number {
@@ -2762,106 +2711,36 @@ function renderInput(
       );
     }
 
-    case "map": {
-      const current = answers[question.id] ?? initialAnswers.geo;
+  case "map": {
+  const current = answers[question.id] ?? initialAnswers.geo;
 
-      return (
-        <div className="grid gap-4">
-          <div className="grid gap-3 md:grid-cols-2">
-            <input
-              className={compactInputClass}
-              placeholder='Где физически находится бизнес или "-"'
-              value={current.physical}
-              onChange={(e) =>
-                setAnswer(question.id, {
-                  ...current,
-                  physical: e.target.value,
-                })
-              }
-            />
-            <input
-              className={compactInputClass}
-              placeholder='В каком регионе продаёте или "-"'
-              value={current.sales}
-              onChange={(e) =>
-                setAnswer(question.id, {
-                  ...current,
-                  sales: e.target.value,
-                })
-              }
-            />
-          </div>
-          <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#04122a] p-4">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(247,210,55,0.08),transparent_25%),radial-gradient(circle_at_30%_70%,rgba(255,255,255,0.06),transparent_20%)]" />
-            <div className="relative h-[320px] w-full overflow-hidden rounded-[24px] bg-[#001233]">
-              <img
-                src="/worldmap_w.svg"
-                alt="world map"
-                className="absolute inset-0 h-full w-full object-contain opacity-28"
-              />
-              <svg
-                viewBox="0 0 1100 420"
-                className="absolute inset-0 h-full w-full"
-              >
-                <g opacity="0.1" stroke="rgba(255,255,255,0.12)">
-                  <line x1="80" y1="70" x2="1020" y2="70" />
-                  <line x1="80" y1="140" x2="1020" y2="140" />
-                  <line x1="80" y1="210" x2="1020" y2="210" />
-                  <line x1="80" y1="280" x2="1020" y2="280" />
-                  <line x1="80" y1="350" x2="1020" y2="350" />
-                </g>
-                {(() => {
-                  const physicalPoint = geoPointFromText(
-                    current.physical,
-                    { x: 575, y: 165 },
-                  );
-                  const salesPoint = geoPointFromText(
-                    current.sales,
-                    physicalPoint,
-                  );
-                  const salesIsWorld =
-                    current.sales.toLowerCase().includes("весь мир") ||
-                    current.sales.toLowerCase().includes("world") ||
-                    current.sales.toLowerCase().includes("global");
-                  const salesRadius = salesIsWorld ? 240 : 90;
-
-                  return (
-                    <>
-                      <circle
-                        cx={salesPoint.x}
-                        cy={salesPoint.y}
-                        r={salesRadius}
-                        stroke="rgba(111,211,255,0.40)"
-                        strokeWidth="2"
-                        strokeDasharray="8 8"
-                        fill="rgba(111,211,255,0.07)"
-                      />
-
-                      <circle
-                        cx={physicalPoint.x}
-                        cy={physicalPoint.y}
-                        r="10"
-                        fill="#f7d237"
-                        style={{
-                          filter:
-                            "drop-shadow(0 0 16px rgba(247,210,55,0.75))",
-                        }}
-                      />
-                      <circle
-                        cx={physicalPoint.x}
-                        cy={physicalPoint.y}
-                        r="22"
-                        fill="rgba(247,210,55,0.12)"
-                      />
-                    </>
-                  );
-                })()}
-              </svg>
-            </div>
-          </div>
-        </div>
-      );
-    }
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <input
+        className={compactInputClass}
+        placeholder='Где физически находится бизнес или "-"'
+        value={current.physical}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            physical: e.target.value,
+          })
+        }
+      />
+      <input
+        className={compactInputClass}
+        placeholder='В каком регионе продаёте или "-"'
+        value={current.sales}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            sales: e.target.value,
+          })
+        }
+      />
+    </div>
+  );
+}
 
     case "teamRoles":
       return (
