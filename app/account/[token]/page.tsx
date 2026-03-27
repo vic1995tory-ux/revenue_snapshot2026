@@ -1,79 +1,53 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
-type Nullable<T> = T | null;
-
-type AccountUser = {
-  firstName?: string;
-  lastName?: string;
-  companyName?: string;
-  whatsapp?: string;
-  email?: string;
+type ResultRow = {
+  id: string;
+  date: string;
+  executiveSummary: string;
+  mainLever: string;
+  riskZone: string;
+  comment: string;
 };
 
-type AccountResult = {
-  id?: string;
-  title?: string;
-  createdAt?: string;
-  status?: string;
-  summary?: string;
-  resultUrl?: string;
-  lever?: string;
-  risk?: string;
+type CabinetData = {
+  fullName: string;
+  companyName: string;
+  position: string;
+  positionLocked: boolean;
+  expiresAt: string;
+  companySummary: string;
+  results: ResultRow[];
 };
 
 type AccountSessionResponse = {
-  ok?: boolean;
-  user?: AccountUser;
-  companySummary?: string;
-  launchCount?: number;
-  launchLimit?: number;
-  results?: AccountResult[];
+  ok: boolean;
   error?: string;
+  data?: {
+    fullName?: string;
+    companyName?: string;
+    position?: string;
+    positionLocked?: boolean;
+    expiresAt?: string;
+    companySummary?: string;
+    results?: Array<{
+      id?: string | number;
+      date?: string;
+      executiveSummary?: string;
+      mainLever?: string;
+      riskZone?: string;
+      comment?: string;
+    }>;
+  };
 };
 
-type DraftCheckResponse = {
-  ok?: boolean;
-  hasDraft?: boolean;
-  draftStep?: number;
-  draftUpdatedAt?: string;
-  launchAttemptId?: string;
-  error?: string;
-};
-
-const MAKE_WEBHOOK_URL =
+const POSITION_WEBHOOK_URL =
   "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
 
-const FALLBACK_MAX_LAUNCHES = 3;
-
-function cn(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function formatDate(value?: string) {
-  if (!value) return "—";
-  try {
-    return new Intl.DateTimeFormat("ru-RU", {
-      day: "2-digit",
-      month: "long",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(new Date(value));
-  } catch {
-    return value;
-  }
-}
-
-function getSafeArray<T>(value: T[] | undefined | null): T[] {
-  return Array.isArray(value) ? value : [];
-}
-
-function getLaunchAttemptStorageKey(token: string) {
-  return `rs_launch_attempt_${token}`;
-}
+const MAX_LAUNCHES = 3;
 
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -82,9 +56,8 @@ function makeAttemptId() {
   return `attempt_${Math.random().toString(36).slice(2)}_${Date.now()}`;
 }
 
-function readStoredAttemptId(token: string) {
-  if (typeof window === "undefined") return "";
-  return sessionStorage.getItem(getLaunchAttemptStorageKey(token)) ?? "";
+function getLaunchAttemptStorageKey(token: string) {
+  return `rs_launch_attempt_${token}`;
 }
 
 function storeAttemptId(token: string, attemptId: string) {
@@ -92,738 +65,1066 @@ function storeAttemptId(token: string, attemptId: string) {
   sessionStorage.setItem(getLaunchAttemptStorageKey(token), attemptId);
 }
 
-function clearStoredAttemptId(token: string) {
-  if (typeof window === "undefined") return;
-  sessionStorage.removeItem(getLaunchAttemptStorageKey(token));
-}
+export default function CabinetPage() {
+  const params = useParams<{ token: string }>();
+  const router = useRouter();
+  const token = String(params?.token ?? "");
 
-async function postToMake<T>(payload: Record<string, unknown>): Promise<T> {
-  const response = await fetch(MAKE_WEBHOOK_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-    cache: "no-store",
+  const [faqOpen, setFaqOpen] = useState(false);
+  const [savingPosition, setSavingPosition] = useState(false);
+  const [positionSaved, setPositionSaved] = useState(false);
+  const [loadingCabinet, setLoadingCabinet] = useState(true);
+  const [startingLaunch, setStartingLaunch] = useState(false);
+  const [error, setError] = useState("");
+
+  const [data, setData] = useState<CabinetData>({
+    fullName: "Имя Фамилия",
+    companyName: "Название компании",
+    position: "",
+    positionLocked: false,
+    expiresAt: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365).toISOString(),
+    companySummary: "",
+    results: [],
   });
 
-  if (!response.ok) {
-    throw new Error(`Make webhook error: ${response.status}`);
+  const [comments, setComments] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    async function loadCabinet() {
+      try {
+        setLoadingCabinet(true);
+        setError("");
+
+        const res = await fetch(
+          `/api/account/session?token=${encodeURIComponent(token)}`,
+          {
+            cache: "no-store",
+          }
+        );
+
+        const contentType = res.headers.get("content-type") || "";
+
+        if (!contentType.includes("application/json")) {
+          throw new Error("Кабинет вернул не JSON.");
+        }
+
+        const payload: AccountSessionResponse = await res.json();
+
+        if (!res.ok || !payload?.ok || !payload?.data) {
+          throw new Error(payload?.error || "Не удалось загрузить кабинет.");
+        }
+
+        const cabinet = payload.data;
+
+        const normalizedResults: ResultRow[] = Array.isArray(cabinet.results)
+          ? cabinet.results.map((item, index) => ({
+              id: String(item?.id ?? index + 1),
+              date: String(item?.date ?? ""),
+              executiveSummary: String(item?.executiveSummary ?? ""),
+              mainLever: String(item?.mainLever ?? ""),
+              riskZone: String(item?.riskZone ?? ""),
+              comment: String(item?.comment ?? ""),
+            }))
+          : [];
+
+        setData({
+          fullName: String(cabinet.fullName ?? "Имя Фамилия"),
+          companyName: String(cabinet.companyName ?? "Название компании"),
+          position: String(cabinet.position ?? ""),
+          positionLocked: Boolean(cabinet.positionLocked ?? false),
+          expiresAt: String(
+            cabinet.expiresAt ??
+              new Date(
+                Date.now() + 1000 * 60 * 60 * 24 * 365
+              ).toISOString()
+          ),
+          companySummary: String(cabinet.companySummary ?? ""),
+          results: normalizedResults,
+        });
+
+        setComments(
+          Object.fromEntries(
+            normalizedResults.map((item) => [item.id, item.comment || ""])
+          )
+        );
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Не удалось загрузить кабинет."
+        );
+      } finally {
+        setLoadingCabinet(false);
+      }
+    }
+
+    if (token) {
+      loadCabinet();
+    }
+  }, [token]);
+
+  const launchesUsed = data.results.length;
+  const launchesLeft = Math.max(0, MAX_LAUNCHES - launchesUsed);
+
+  const expiration = useMemo(() => {
+    const now = Date.now();
+    const end = new Date(data.expiresAt).getTime();
+    const diff = Math.max(0, end - now);
+
+    const daysLeft = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    const exactDate = new Date(data.expiresAt).toLocaleDateString("ru-RU", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    });
+
+    const progress = Math.min(100, Math.max(0, (daysLeft / 365) * 100));
+
+    return {
+      daysLeft,
+      exactDate,
+      progress,
+    };
+  }, [data.expiresAt]);
+
+  async function handleSavePosition() {
+    try {
+      setSavingPosition(true);
+      setError("");
+
+      if (!data.position.trim()) {
+        throw new Error("Введите должность.");
+      }
+
+      const payload = {
+        action: "save_position",
+        access_token: token,
+        position: data.position.trim(),
+        full_name: data.fullName,
+        company_name: data.companyName,
+      };
+
+      const res = await fetch(POSITION_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Не удалось сохранить должность.");
+      }
+
+      setData((prev) => ({
+        ...prev,
+        positionLocked: true,
+      }));
+
+      setPositionSaved(true);
+      window.setTimeout(() => setPositionSaved(false), 2200);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Ошибка сохранения.");
+    } finally {
+      setSavingPosition(false);
+    }
   }
 
-  const text = await response.text();
-
-  if (!text) {
-    return {} as T;
+  function handleCommentChange(id: string, value: string) {
+    setComments((prev) => ({
+      ...prev,
+      [id]: value,
+    }));
   }
 
-  try {
-    return JSON.parse(text) as T;
-  } catch {
-    return {} as T;
+  async function handleNewLaunch() {
+    if (launchesUsed >= MAX_LAUNCHES || !token || startingLaunch) return;
+
+    try {
+      setStartingLaunch(true);
+      setError("");
+
+      const launchAttemptId = makeAttemptId();
+      storeAttemptId(token, launchAttemptId);
+
+      const snapshotUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/snapshot-action/${encodeURIComponent(
+              token
+            )}?launch=${encodeURIComponent(launchAttemptId)}`
+          : `/snapshot-action/${encodeURIComponent(token)}?launch=${encodeURIComponent(
+              launchAttemptId
+            )}`;
+
+      const cabinetUrl =
+        typeof window !== "undefined" ? window.location.href : "";
+
+      const payload = {
+        action: "launch_started",
+        access_token: token,
+        launch_attempt_id: launchAttemptId,
+        started_at: new Date().toISOString(),
+        full_name: data.fullName,
+        company_name: data.companyName,
+        position: data.position,
+        position_locked: data.positionLocked,
+        launches_used: launchesUsed,
+        launches_left: launchesLeft,
+        launch_limit: MAX_LAUNCHES,
+        expires_at: data.expiresAt,
+        company_summary: data.companySummary,
+        results_count: data.results.length,
+        cabinet_url: cabinetUrl,
+        snapshot_url: snapshotUrl,
+      };
+
+      const res = await fetch(POSITION_WEBHOOK_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Не удалось зафиксировать запуск.");
+      }
+
+      router.push(
+        `/snapshot-action/${encodeURIComponent(
+          token
+        )}?launch=${encodeURIComponent(launchAttemptId)}`
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Не удалось начать запуск.");
+    } finally {
+      setStartingLaunch(false);
+    }
   }
-}
 
-function AmbientBackground() {
-  return (
-    <>
-      <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[#07152c]" />
-        <div className="absolute left-[-12%] top-[-10%] h-[520px] w-[520px] rounded-full bg-[#274d9f]/20 blur-3xl" />
-        <div className="absolute right-[-8%] top-[8%] h-[420px] w-[420px] rounded-full bg-[#f7d237]/10 blur-3xl" />
-        <div className="absolute bottom-[-12%] left-[24%] h-[520px] w-[520px] rounded-full bg-cyan-400/10 blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(255,255,255,0.18) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.18) 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
-        <div
-          className="absolute inset-0 opacity-[0.045]"
-          style={{
-            backgroundImage:
-              "radial-gradient(rgba(255,255,255,0.8) 0.55px, transparent 0.6px)",
-            backgroundSize: "14px 14px",
-          }}
-        />
-      </div>
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.06),transparent_35%),linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,0.36))]" />
-    </>
-  );
-}
+  const ringRadius = 76;
+  const ringCircumference = 2 * Math.PI * ringRadius;
+  const ringOffset =
+    ringCircumference - (expiration.progress / 100) * ringCircumference;
 
-function GlassCard({
-  className,
-  children,
-}: {
-  className?: string;
-  children: React.ReactNode;
-}) {
   return (
-    <div
-      className={cn(
-        "rounded-[30px] border border-white/10 bg-white/[0.06] shadow-[0_12px_40px_rgba(0,0,0,0.22)] backdrop-blur-xl",
-        className,
-      )}
-    >
-      {children}
-    </div>
-  );
-}
+    <main style={styles.page}>
+      <div className="ambient-gradient-bg" />
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: boolean;
-}) {
-  return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4 md:p-5">
-      <div className="text-[11px] uppercase tracking-[0.24em] text-white/45">
-        {label}
-      </div>
-      <div
-        className={cn(
-          "mt-2 text-2xl font-semibold",
-          accent ? "text-[#fff3b2]" : "text-white",
-        )}
-      >
-        {value}
-      </div>
-    </div>
-  );
-}
-
-function LoaderBlock({ label = "Загружаем кабинет..." }: { label?: string }) {
-  return (
-    <div className="flex min-h-[60vh] items-center justify-center">
-      <GlassCard className="w-full max-w-md p-8 text-center">
-        <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/15 border-t-[#f7d237]" />
-        <div className="mt-5 text-lg font-medium text-white">{label}</div>
-        <div className="mt-2 text-sm text-white/55">
-          Проверяем доступ, лимит запусков и текущий черновик.
+      <header style={styles.header}>
+        <div style={styles.headerLeft}>
+          <Image
+            src="/logo.svg"
+            alt="Growth Avenue"
+            width={170}
+            height={40}
+            style={styles.logo}
+            priority
+          />
         </div>
-      </GlassCard>
-    </div>
-  );
-}
 
-function EmptyResults() {
-  return (
-    <GlassCard className="p-6 md:p-7">
-      <div className="text-lg font-semibold text-white">Результатов пока нет</div>
-      <p className="mt-2 max-w-2xl text-sm leading-6 text-[#a5aeb2]">
-        Первый завершённый Snapshot появится здесь после генерации результата.
-        Черновики не списывают попытку и не считаются готовым запуском.
-      </p>
-    </GlassCard>
-  );
-}
+        <div style={styles.headerRight}>
+          <a
+            href="https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0"
+            target="_blank"
+            rel="noreferrer"
+            style={styles.headerButton}
+          >
+            Помощь от создателей
+          </a>
 
-function ResultCard({ item }: { item: AccountResult }) {
-  return (
-    <GlassCard className="p-5 md:p-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0">
-          <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
-            {item.status || "result_ready"}
+          <button
+            type="button"
+            onClick={() => setFaqOpen(true)}
+            style={styles.headerGhostButton}
+          >
+            FAQ
+          </button>
+        </div>
+      </header>
+
+      <section style={styles.hero}>
+        <div style={styles.heroLeft}>
+          <div style={styles.heroVisual}>
+            <Image
+              src="/hero.svg"
+              alt=""
+              fill
+              priority
+              style={styles.heroVisualImg}
+            />
           </div>
-          <div className="mt-2 text-xl font-semibold text-white">
-            {item.title || "Revenue Snapshot Result"}
-          </div>
-          <div className="mt-2 text-sm text-white/45">
-            {formatDate(item.createdAt)}
-          </div>
 
-          {item.summary ? (
-            <p className="mt-4 max-w-3xl text-sm leading-6 text-[#a5aeb2]">
-              {item.summary}
-            </p>
-          ) : null}
+          <div style={styles.heroContent}>
+            <div style={styles.kicker}>
+              <span className="pulse-dot" style={styles.kickerDot} />
+              <span>PERSONAL CABINET</span>
+            </div>
 
-          {(item.lever || item.risk) && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {item.lever ? (
-                <span className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-3 py-1.5 text-xs text-[#fff3b2]">
-                  Lever: {item.lever}
-                </span>
-              ) : null}
-              {item.risk ? (
-                <span className="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1.5 text-xs text-cyan-100">
-                  Risk: {item.risk}
-                </span>
-              ) : null}
+            <h1 style={styles.h1}>{data.fullName}</h1>
+            <h2 style={styles.h2}>{data.companyName}</h2>
+
+            <div style={styles.positionBox}>
+              <div style={styles.positionLabelRow}>
+                <label style={styles.positionLabel}>Должность</label>
+                {positionSaved && <span style={styles.savedMark}>сохранено</span>}
+              </div>
+
+              <div style={styles.positionInputRow}>
+                <input
+                  type="text"
+                  value={data.position}
+                  onChange={(e) =>
+                    setData((prev) => ({ ...prev, position: e.target.value }))
+                  }
+                  placeholder="Необязательно к заполнению"
+                  disabled={data.positionLocked || savingPosition}
+                  style={{
+                    ...styles.positionInput,
+                    opacity: data.positionLocked ? 0.75 : 1,
+                  }}
+                />
+
+                <button
+                  type="button"
+                  onClick={handleSavePosition}
+                  disabled={data.positionLocked || savingPosition}
+                  style={{
+                    ...styles.positionSaveButton,
+                    opacity: data.positionLocked || savingPosition ? 0.7 : 1,
+                    cursor:
+                      data.positionLocked || savingPosition ? "default" : "pointer",
+                  }}
+                  title="Сохранить должность для следующих сессий"
+                >
+                  {data.positionLocked ? "✓" : savingPosition ? "..." : "✓"}
+                </button>
+              </div>
+            </div>
+
+            {error ? <div style={styles.errorBox}>{error}</div> : null}
+          </div>
+        </div>
+
+        <div style={styles.heroRight}>
+          <div style={styles.expirationCard}>
+            <div style={styles.expirationTitle}>Expiration date</div>
+
+            <div style={styles.ringWrap}>
+              <svg width="210" height="210" viewBox="0 0 210 210">
+                <defs>
+                  <linearGradient id="expRing" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor="#47b6f6" />
+                    <stop offset="55%" stopColor="#7c84ff" />
+                    <stop offset="100%" stopColor="#f7d237" />
+                  </linearGradient>
+                </defs>
+
+                <circle
+                  cx="105"
+                  cy="105"
+                  r={ringRadius}
+                  fill="none"
+                  stroke="rgba(255,255,255,0.08)"
+                  strokeWidth="12"
+                />
+                <circle
+                  cx="105"
+                  cy="105"
+                  r={ringRadius}
+                  fill="none"
+                  stroke="url(#expRing)"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={ringCircumference}
+                  strokeDashoffset={ringOffset}
+                  transform="rotate(-90 105 105)"
+                  style={{ transition: "stroke-dashoffset 0.5s ease" }}
+                />
+              </svg>
+
+              <div style={styles.ringCenter}>
+                <div style={styles.ringDays}>{expiration.daysLeft}</div>
+                <div style={styles.ringSmall}>expires in</div>
+                <div style={styles.ringSmallBottom}>days</div>
+              </div>
+            </div>
+
+            <div style={styles.expirationDate}>{expiration.exactDate}</div>
+          </div>
+        </div>
+      </section>
+
+      <section style={styles.cardsSection}>
+        <div style={styles.infoCard}>
+          <div style={styles.cardHeading}>Company summary</div>
+
+          {loadingCabinet ? (
+            <div style={styles.placeholderText}>Загрузка...</div>
+          ) : data.companySummary ? (
+            <div style={styles.cardText}>{data.companySummary}</div>
+          ) : (
+            <div style={styles.placeholderText}>
+              Появится после первого запуска
             </div>
           )}
         </div>
 
-        <div className="flex shrink-0 gap-3">
-          {item.resultUrl ? (
-            <a
-              href={item.resultUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center justify-center rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-3 text-sm text-white transition hover:bg-white/[0.08]"
-            >
-              Открыть результат
-            </a>
-          ) : null}
-        </div>
-      </div>
-    </GlassCard>
-  );
-}
-
-function DraftModal({
-  open,
-  draftStep,
-  draftUpdatedAt,
-  loading,
-  onClose,
-  onContinue,
-  onRestart,
-}: {
-  open: boolean;
-  draftStep?: number;
-  draftUpdatedAt?: string;
-  loading?: boolean;
-  onClose: () => void;
-  onContinue: () => void;
-  onRestart: () => void;
-}) {
-  if (!open) return null;
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#020816]/70 p-4 backdrop-blur-md">
-      <div className="w-full max-w-xl rounded-[32px] border border-white/10 bg-[#0b1d3a]/95 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)] md:p-7">
-        <div className="mb-3 text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-          Draft detected
-        </div>
-
-        <h3 className="text-2xl font-semibold text-white md:text-3xl">
-          Есть незавершённый запуск
-        </h3>
-
-        <p className="mt-4 text-sm leading-7 text-[#a5aeb2]">
-          Мы нашли сохранённый черновик анкеты. Можно продолжить с того места,
-          где пользователь остановился, или очистить его и начать новый запуск.
-        </p>
-
-        <div className="mt-5 grid gap-3 sm:grid-cols-2">
-          <div className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-white/40">
-              Последний шаг
-            </div>
-            <div className="mt-2 text-xl font-semibold text-white">
-              {typeof draftStep === "number" ? draftStep : "—"}
-            </div>
-          </div>
-
-          <div className="rounded-[22px] border border-white/10 bg-white/[0.05] p-4">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-white/40">
-              Обновлён
-            </div>
-            <div className="mt-2 text-base font-medium text-white">
-              {formatDate(draftUpdatedAt)}
-            </div>
-          </div>
-        </div>
-
-        <div className="mt-6 grid gap-3 sm:grid-cols-2">
-          <button
-            type="button"
-            onClick={onContinue}
-            disabled={loading}
-            className="rounded-2xl bg-[#f7d237] px-5 py-3.5 text-sm font-medium text-[#0b1d3a] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Загрузка..." : "Восстановить"}
-          </button>
-
-          <button
-            type="button"
-            onClick={onRestart}
-            disabled={loading}
-            className="rounded-2xl border border-white/12 bg-white/[0.05] px-5 py-3.5 text-sm font-medium text-white transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Подготовка..." : "Начать сначала"}
-          </button>
-        </div>
-
-        <button
-          type="button"
-          onClick={onClose}
-          disabled={loading}
-          className="mt-3 w-full rounded-2xl px-4 py-3 text-sm text-white/55 transition hover:bg-white/[0.04] hover:text-white"
-        >
-          Закрыть
-        </button>
-      </div>
-    </div>
-  );
-}
-
-export default function AccountPage() {
-  const params = useParams();
-  const router = useRouter();
-
-  const tokenParam = params?.token;
-  const token = Array.isArray(tokenParam) ? tokenParam[0] : tokenParam || "";
-
-  const [session, setSession] = useState<AccountSessionResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLaunchLoading, setIsLaunchLoading] = useState(false);
-  const [isDraftLoading, setIsDraftLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const [hasDraft, setHasDraft] = useState(false);
-  const [draftStep, setDraftStep] = useState<number | undefined>(undefined);
-  const [draftUpdatedAt, setDraftUpdatedAt] = useState<string | undefined>(
-    undefined,
-  );
-  const [draftLaunchAttemptId, setDraftLaunchAttemptId] = useState("");
-  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
-
-  const user = session?.user || {};
-  const results = useMemo(() => getSafeArray(session?.results), [session?.results]);
-  const launchLimit = session?.launchLimit ?? FALLBACK_MAX_LAUNCHES;
-  const launchesUsed = session?.launchCount ?? 0;
-  const launchesLeft = Math.max(launchLimit - launchesUsed, 0);
-  const reachedLimit = launchesLeft <= 0;
-
-  const displayName = useMemo(() => {
-    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ").trim();
-    return fullName || user.companyName || "Account";
-  }, [user.firstName, user.lastName, user.companyName]);
-
-  const fetchAccountSession = useCallback(async () => {
-    if (!token) return null;
-
-    const data = await postToMake<AccountSessionResponse>({
-      action: "account_session",
-      access_token: token,
-    });
-
-    if (data?.ok === false) {
-      throw new Error(data.error || "Не удалось загрузить кабинет");
-    }
-
-    return data;
-  }, [token]);
-
-  const fetchDraftState = useCallback(async () => {
-    if (!token) return null;
-
-    const data = await postToMake<DraftCheckResponse>({
-      action: "check_draft",
-      access_token: token,
-    });
-
-    if (data?.ok === false) {
-      throw new Error(data.error || "Не удалось проверить черновик");
-    }
-
-    return data;
-  }, [token]);
-
-  const syncPage = useCallback(async () => {
-    if (!token) {
-      setError("Токен пользователя не найден в URL.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setError("");
-      setIsLoading(true);
-
-      const [sessionData, draftData] = await Promise.all([
-        fetchAccountSession(),
-        fetchDraftState(),
-      ]);
-
-      if (sessionData) {
-        setSession(sessionData);
-      }
-
-      setHasDraft(Boolean(draftData?.hasDraft));
-      setDraftStep(draftData?.draftStep);
-      setDraftUpdatedAt(draftData?.draftUpdatedAt);
-      setDraftLaunchAttemptId(draftData?.launchAttemptId || "");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Ошибка загрузки кабинета");
-    } finally {
-      setIsLoading(false);
-    }
-  }, [fetchAccountSession, fetchDraftState, token]);
-
-  useEffect(() => {
-    void syncPage();
-  }, [syncPage]);
-
-  const createOrReuseAttemptId = useCallback(
-    (preferred?: string) => {
-      const nextAttemptId =
-        preferred || readStoredAttemptId(token) || makeAttemptId();
-
-      storeAttemptId(token, nextAttemptId);
-      return nextAttemptId;
-    },
-    [token],
-  );
-
-  const sendLaunchStarted = useCallback(
-    async (attemptId: string) => {
-      const payload = {
-        action: "launch_started",
-        access_token: token,
-        launch_attempt_id: attemptId,
-        started_at: new Date().toISOString(),
-        launch_count_before: launchesUsed,
-        launch_limit: launchLimit,
-        cabinet_url:
-          typeof window !== "undefined" ? window.location.href : "",
-        snapshot_url:
-          typeof window !== "undefined"
-            ? `${window.location.origin}/snapshot-action/${encodeURIComponent(token)}`
-            : "",
-      };
-
-      const data = await postToMake<{ ok?: boolean; error?: string }>(payload);
-
-      if (data?.ok === false) {
-        throw new Error(data.error || "Не удалось зафиксировать старт запуска");
-      }
-    },
-    [launchLimit, launchesUsed, token],
-  );
-
-  const goToSnapshot = useCallback(
-    (attemptId: string, mode?: "restore" | "fresh") => {
-      const params = new URLSearchParams();
-
-      if (attemptId) {
-        params.set("launch", attemptId);
-      }
-
-      if (mode) {
-        params.set("mode", mode);
-      }
-
-      const queryString = params.toString();
-      router.push(
-        `/snapshot-action/${encodeURIComponent(token)}${
-          queryString ? `?${queryString}` : ""
-        }`,
-      );
-    },
-    [router, token],
-  );
-
-  const handlePlay = useCallback(async () => {
-    if (reachedLimit || !token) return;
-
-    try {
-      setError("");
-      setIsDraftLoading(true);
-
-      const draftData = await fetchDraftState();
-
-      const nextHasDraft = Boolean(draftData?.hasDraft);
-      setHasDraft(nextHasDraft);
-      setDraftStep(draftData?.draftStep);
-      setDraftUpdatedAt(draftData?.draftUpdatedAt);
-      setDraftLaunchAttemptId(draftData?.launchAttemptId || "");
-
-      if (nextHasDraft) {
-        setIsDraftModalOpen(true);
-        return;
-      }
-
-      setIsLaunchLoading(true);
-      const attemptId = createOrReuseAttemptId();
-      await sendLaunchStarted(attemptId);
-      goToSnapshot(attemptId, "fresh");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Не удалось начать запуск");
-    } finally {
-      setIsDraftLoading(false);
-      setIsLaunchLoading(false);
-    }
-  }, [
-    createOrReuseAttemptId,
-    fetchDraftState,
-    goToSnapshot,
-    reachedLimit,
-    sendLaunchStarted,
-    token,
-  ]);
-
-  const handleRestoreDraft = useCallback(async () => {
-    if (!token) return;
-
-    try {
-      setError("");
-      setIsDraftLoading(true);
-
-      const attemptId = createOrReuseAttemptId(draftLaunchAttemptId);
-      await sendLaunchStarted(attemptId);
-      setIsDraftModalOpen(false);
-      goToSnapshot(attemptId, "restore");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Не удалось восстановить черновик",
-      );
-    } finally {
-      setIsDraftLoading(false);
-    }
-  }, [
-    createOrReuseAttemptId,
-    draftLaunchAttemptId,
-    goToSnapshot,
-    sendLaunchStarted,
-    token,
-  ]);
-
-  const handleRestartDraft = useCallback(async () => {
-    if (!token) return;
-
-    try {
-      setError("");
-      setIsDraftLoading(true);
-
-      const data = await postToMake<{ ok?: boolean; error?: string }>({
-        action: "clear_draft",
-        access_token: token,
-      });
-
-      if (data?.ok === false) {
-        throw new Error(data.error || "Не удалось очистить черновик");
-      }
-
-      clearStoredAttemptId(token);
-      const freshAttemptId = createOrReuseAttemptId();
-      await sendLaunchStarted(freshAttemptId);
-
-      setHasDraft(false);
-      setDraftStep(undefined);
-      setDraftUpdatedAt(undefined);
-      setDraftLaunchAttemptId("");
-      setIsDraftModalOpen(false);
-
-      goToSnapshot(freshAttemptId, "fresh");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Не удалось начать новый запуск",
-      );
-    } finally {
-      setIsDraftLoading(false);
-    }
-  }, [createOrReuseAttemptId, goToSnapshot, sendLaunchStarted, token]);
-
-  if (isLoading) {
-    return (
-      <main className="relative min-h-screen overflow-hidden bg-[#07152c] text-white">
-        <AmbientBackground />
-        <div className="relative z-10 mx-auto max-w-[1400px] px-5 py-6 md:px-8 lg:px-10">
-          <LoaderBlock />
-        </div>
-      </main>
-    );
-  }
-
-  return (
-    <main className="relative min-h-screen overflow-hidden bg-[#07152c] text-white">
-      <AmbientBackground />
-
-      <DraftModal
-        open={isDraftModalOpen}
-        draftStep={draftStep}
-        draftUpdatedAt={draftUpdatedAt}
-        loading={isDraftLoading}
-        onClose={() => setIsDraftModalOpen(false)}
-        onContinue={handleRestoreDraft}
-        onRestart={handleRestartDraft}
-      />
-
-      <div className="relative z-10 mx-auto max-w-[1400px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
-        <GlassCard className="mb-8 overflow-hidden p-5 md:p-7">
-          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
+        <div style={styles.launchesCard}>
+          <div style={styles.launchesTop}>
             <div>
-              <div className="mb-4 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-[0.28em] text-white/45">
-                <span className="text-[#f7d237]">●</span>
-                Revenue Snapshot — Account
+              <div style={styles.cardHeading}>Launches</div>
+
+              <div style={styles.launchesValue}>
+                {launchesUsed}/{MAX_LAUNCHES}
               </div>
 
-              <h1 className="max-w-4xl text-3xl font-semibold leading-tight text-[#fefefe] md:text-5xl">
-                Личный кабинет Snapshot
-              </h1>
-
-              <p className="mt-4 max-w-3xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                Здесь отображаются доступные попытки, сохранённые результаты и
-                состояние незавершённого запуска.
-              </p>
-
-              <div className="mt-7 flex flex-wrap gap-3">
-                <span className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/55">
-                  User: {displayName}
-                </span>
-                {user.companyName ? (
-                  <span className="rounded-full border border-white/10 px-3 py-1.5 text-xs text-white/55">
-                    Company: {user.companyName}
-                  </span>
-                ) : null}
-                {hasDraft ? (
-                  <span className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-3 py-1.5 text-xs text-[#fff3b2]">
-                    Есть незавершённый draft
-                  </span>
-                ) : null}
+              <div style={styles.launchesMeta}>
+                Осталось запусков: {launchesLeft}
               </div>
-
-              {error ? (
-                <div className="mt-5 rounded-2xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-100">
-                  {error}
-                </div>
-              ) : null}
             </div>
 
-            <GlassCard className="p-5 md:p-6">
-              <div className="grid gap-3 sm:grid-cols-2">
-                <StatCard
-                  label="Использовано запусков"
-                  value={`${launchesUsed}/${launchLimit}`}
-                />
-                <StatCard
-                  label="Осталось"
-                  value={String(launchesLeft)}
-                  accent
-                />
-                <StatCard
-                  label="Результатов"
-                  value={String(results.length)}
-                />
-                <StatCard
-                  label="Draft status"
-                  value={hasDraft ? "active" : "empty"}
-                />
-              </div>
-
-              <div className="mt-5">
-                <button
-                  type="button"
-                  onClick={handlePlay}
-                  disabled={reachedLimit || isLaunchLoading || isDraftLoading}
-                  className={cn(
-                    "w-full rounded-[22px] px-5 py-4 text-sm font-medium transition",
-                    reachedLimit
-                      ? "cursor-not-allowed bg-white/10 text-white/35"
-                      : "bg-[#f7d237] text-[#0b1d3a] hover:brightness-105 hover:shadow-[0_0_28px_rgba(247,210,55,0.18)]",
-                  )}
-                >
-                  {isLaunchLoading || isDraftLoading
-                    ? "Подготовка запуска..."
-                    : reachedLimit
-                    ? "Лимит запусков исчерпан"
-                    : hasDraft
-                    ? "Play / продолжить или начать заново"
-                    : "Play"}
-                </button>
-
-                {hasDraft ? (
-                  <div className="mt-3 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-[#a5aeb2]">
-                    Найден незавершённый запуск. При нажатии откроется выбор:
-                    восстановить черновик или очистить его и начать заново.
-                  </div>
-                ) : null}
-              </div>
-            </GlassCard>
+            <button
+              type="button"
+              style={{
+                ...styles.playButton,
+                opacity: launchesUsed >= MAX_LAUNCHES || startingLaunch ? 0.55 : 1,
+                cursor:
+                  launchesUsed >= MAX_LAUNCHES || startingLaunch
+                    ? "not-allowed"
+                    : "pointer",
+              }}
+              disabled={launchesUsed >= MAX_LAUNCHES || startingLaunch}
+              onClick={handleNewLaunch}
+              title="Начать запуск"
+              aria-label="Начать запуск"
+            >
+              {startingLaunch ? "..." : "▶"}
+            </button>
           </div>
-        </GlassCard>
 
-        <div className="grid gap-8 xl:grid-cols-[0.95fr_1.05fr]">
-          <GlassCard className="p-5 md:p-7">
-            <div className="text-[11px] uppercase tracking-[0.26em] text-white/40">
-              Profile
+          <div style={styles.launchProgressTrack}>
+            <div
+              style={{
+                ...styles.launchProgressFill,
+                width: `${(launchesUsed / MAX_LAUNCHES) * 100}%`,
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
+      <section style={styles.resultsSection}>
+        <div style={styles.resultsHeader}>
+          <div style={{ ...styles.colDate, ...styles.resultHeaderCell }}>Date</div>
+          <div style={{ ...styles.colSummary, ...styles.resultHeaderCell }}>
+            Executive summary
+          </div>
+          <div style={{ ...styles.colLever, ...styles.resultHeaderCell }}>
+            Main lever
+          </div>
+          <div style={{ ...styles.colRisk, ...styles.resultHeaderCell }}>
+            Risk zone
+          </div>
+          <div style={{ ...styles.colComment, ...styles.resultHeaderCell }}>
+            Comment
+          </div>
+          <div style={{ ...styles.colActions, ...styles.resultHeaderCell }}>
+            Actions
+          </div>
+        </div>
+
+        {loadingCabinet ? (
+          <div style={styles.emptyResults}>Загружаем результаты...</div>
+        ) : data.results.length === 0 ? (
+          <div style={styles.emptyResults}>
+            Первый результат появится после первого запуска.
+          </div>
+        ) : (
+          data.results.map((item) => (
+            <div key={item.id} style={styles.resultRow}>
+              <div style={styles.colDate}>{item.date}</div>
+
+              <div style={styles.colSummary}>
+                <div style={styles.resultTextClamp}>{item.executiveSummary}</div>
+              </div>
+
+              <div style={styles.colLever}>
+                <div style={styles.resultTextClamp}>{item.mainLever}</div>
+              </div>
+
+              <div style={styles.colRisk}>
+                <div style={styles.resultTextClamp}>{item.riskZone}</div>
+              </div>
+
+              <div style={styles.colComment}>
+                <textarea
+                  value={comments[item.id] ?? ""}
+                  onChange={(e) => handleCommentChange(item.id, e.target.value)}
+                  placeholder="Например: предполагаемый MVP"
+                  style={styles.commentInput}
+                />
+              </div>
+
+              <div style={styles.colActions}>
+                <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
+                  <button type="button" style={styles.actionButton}>
+                    Открыть
+                  </button>
+                  <div className="action-tooltip" style={styles.tooltip}>
+                    Функция находится в разработке
+                  </div>
+                </div>
+
+                <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
+                  <button type="button" style={styles.actionGhostButton}>
+                    Скачать PDF
+                  </button>
+                  <div className="action-tooltip" style={styles.tooltip}>
+                    Функция находится в разработке
+                  </div>
+                </div>
+              </div>
             </div>
+          ))
+        )}
+      </section>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-sm text-white/45">Имя</div>
-                <div className="mt-2 text-lg font-medium text-white">
-                  {[user.firstName, user.lastName].filter(Boolean).join(" ") || "—"}
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-sm text-white/45">Компания</div>
-                <div className="mt-2 text-lg font-medium text-white">
-                  {user.companyName || "—"}
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-sm text-white/45">WhatsApp</div>
-                <div className="mt-2 text-lg font-medium text-white">
-                  {user.whatsapp || "—"}
-                </div>
-              </div>
-
-              <div className="rounded-[24px] border border-white/10 bg-white/[0.04] p-4">
-                <div className="text-sm text-white/45">Email</div>
-                <div className="mt-2 text-lg font-medium text-white">
-                  {user.email || "—"}
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-[24px] border border-white/10 bg-white/[0.04] p-4 md:p-5">
-              <div className="text-sm text-white/45">Company summary</div>
-              <p className="mt-3 text-sm leading-7 text-[#a5aeb2]">
-                {session?.companySummary ||
-                  "После первого завершённого Snapshot здесь можно показывать короткую выжимку по бизнесу и текущей динамике."}
-              </p>
-            </div>
-          </GlassCard>
-
-          <div className="space-y-5">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <div className="text-[11px] uppercase tracking-[0.26em] text-white/40">
-                  Results history
-                </div>
-                <div className="mt-2 text-2xl font-semibold text-white">
-                  История результатов
-                </div>
-              </div>
-
+      {faqOpen && (
+        <div style={styles.modalOverlay} onClick={() => setFaqOpen(false)}>
+          <div style={styles.modalCard} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.modalTop}>
+              <h3 style={styles.modalTitle}>FAQ</h3>
               <button
                 type="button"
-                onClick={() => void syncPage()}
-                className="rounded-2xl border border-white/12 bg-white/[0.05] px-4 py-3 text-sm text-white transition hover:bg-white/[0.08]"
+                onClick={() => setFaqOpen(false)}
+                style={styles.modalClose}
               >
-                Обновить
+                ×
               </button>
             </div>
 
-            {results.length ? (
-              <div className="space-y-4">
-                {results.map((item, index) => (
-                  <ResultCard
-                    key={item.id || `${item.createdAt || "result"}-${index}`}
-                    item={item}
-                  />
-                ))}
+            <div style={styles.faqList}>
+              <div style={styles.faqItem}>
+                <strong>Сколько действует ссылка?</strong>
+                <p style={styles.faqText}>Ссылка активна 1 год с момента создания.</p>
               </div>
-            ) : (
-              <EmptyResults />
-            )}
+
+              <div style={styles.faqItem}>
+                <strong>Сколько запусков доступно?</strong>
+                <p style={styles.faqText}>Максимум 3 запуска на один доступ.</p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong>Куда писать, если нужен созвон или помощь?</strong>
+                <p style={styles.faqText}>
+                  Используй кнопку «Помощь от создателей» в шапке.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      )}
     </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    position: "relative",
+    minHeight: "100vh",
+    overflow: "hidden",
+    background:
+      "radial-gradient(circle at top, rgba(247,210,55,0.10), transparent 22%), #0b1d3a",
+    color: "#fefefe",
+    padding: "28px 22px 40px",
+  },
+  header: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "0 auto 22px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "18px",
+  },
+  headerLeft: {
+    display: "flex",
+    alignItems: "center",
+  },
+  headerRight: {
+    display: "flex",
+    alignItems: "center",
+    gap: "12px",
+    flexWrap: "wrap",
+  },
+  logo: {
+    width: "auto",
+    height: "38px",
+    filter:
+      "drop-shadow(0 0 12px rgba(255,255,255,0.08)) drop-shadow(0 0 20px rgba(255,255,255,0.04))",
+  },
+  headerButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "999px",
+    padding: "12px 16px",
+    background:
+      "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: "14px",
+    textDecoration: "none",
+    boxShadow: "0 10px 24px rgba(85,104,255,0.22)",
+  },
+  headerGhostButton: {
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    borderRadius: "999px",
+    padding: "12px 16px",
+    fontWeight: 700,
+    fontSize: "14px",
+    cursor: "pointer",
+  },
+  hero: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "0 auto",
+    display: "grid",
+    gridTemplateColumns: "1.2fr 0.8fr",
+    gap: "22px",
+    alignItems: "stretch",
+  },
+  heroLeft: {
+    position: "relative",
+    borderRadius: "30px",
+    padding: "34px 32px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    overflow: "hidden",
+  },
+  heroVisual: {
+    position: "absolute",
+    inset: 0,
+    pointerEvents: "none",
+    overflow: "hidden",
+    borderRadius: "30px",
+    opacity: 0.18,
+  },
+  heroVisualImg: {
+    objectFit: "cover",
+    objectPosition: "right center",
+  },
+  heroContent: {
+    position: "relative",
+    zIndex: 2,
+  },
+  heroRight: {
+    borderRadius: "30px",
+    padding: "28px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  kicker: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "10px",
+    fontSize: "12px",
+    fontWeight: 700,
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "#f7d237",
+    marginBottom: "14px",
+  },
+  kickerDot: {
+    width: "7px",
+    height: "7px",
+    borderRadius: "999px",
+    background: "#f7d237",
+    boxShadow: "0 0 10px rgba(247,210,55,0.95)",
+  },
+  h1: {
+    margin: 0,
+    fontSize: "54px",
+    lineHeight: 1.02,
+    fontWeight: 700,
+  },
+  h2: {
+    margin: "10px 0 0",
+    fontSize: "24px",
+    lineHeight: 1.25,
+    fontWeight: 500,
+    color: "rgba(255,255,255,0.82)",
+  },
+  positionBox: {
+    marginTop: "28px",
+    padding: "18px",
+    borderRadius: "22px",
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.04)",
+  },
+  positionLabelRow: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginBottom: "10px",
+  },
+  positionLabel: {
+    fontSize: "14px",
+    color: "#dfe4f2",
+  },
+  savedMark: {
+    fontSize: "12px",
+    color: "#f7d237",
+    textTransform: "uppercase",
+    letterSpacing: "0.06em",
+  },
+  positionInputRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "10px",
+  },
+  positionInput: {
+    width: "100%",
+    borderRadius: "16px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    padding: "15px 16px",
+    fontSize: "15px",
+    outline: "none",
+  },
+  positionSaveButton: {
+    width: "54px",
+    borderRadius: "16px",
+    border: 0,
+    background: "#f7d237",
+    color: "#0b1d3a",
+    fontWeight: 800,
+    fontSize: "18px",
+  },
+  expirationCard: {
+    width: "100%",
+    display: "grid",
+    justifyItems: "center",
+    gap: "10px",
+  },
+  expirationTitle: {
+    fontSize: "16px",
+    fontWeight: 700,
+    color: "#fefefe",
+    marginBottom: "4px",
+  },
+  ringWrap: {
+    position: "relative",
+    width: "210px",
+    height: "210px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  ringCenter: {
+    position: "absolute",
+    inset: 0,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    pointerEvents: "none",
+  },
+  ringDays: {
+    fontSize: "48px",
+    fontWeight: 800,
+    lineHeight: 1,
+    color: "#fff",
+  },
+  ringSmall: {
+    marginTop: "6px",
+    fontSize: "12px",
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+    color: "#aab3c7",
+  },
+  ringSmallBottom: {
+    marginTop: "2px",
+    fontSize: "12px",
+    color: "#aab3c7",
+  },
+  expirationDate: {
+    fontSize: "15px",
+    color: "#d8dce7",
+  },
+  cardsSection: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "22px auto 0",
+    display: "grid",
+    gridTemplateColumns: "1fr 0.52fr",
+    gap: "22px",
+  },
+  infoCard: {
+    borderRadius: "28px",
+    padding: "26px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    minHeight: "170px",
+  },
+  launchesCard: {
+    borderRadius: "28px",
+    padding: "26px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    minHeight: "170px",
+    display: "grid",
+    alignContent: "space-between",
+  },
+  launchesTop: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "18px",
+    alignItems: "end",
+  },
+  playButton: {
+    minWidth: "110px",
+    height: "64px",
+    border: 0,
+    borderRadius: "22px",
+    padding: "0 24px",
+    fontSize: "28px",
+    fontWeight: 800,
+    background:
+      "linear-gradient(135deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
+    color: "#fff",
+    boxShadow: "0 18px 34px rgba(85,104,255,0.24)",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cardHeading: {
+    fontSize: "16px",
+    fontWeight: 700,
+    marginBottom: "16px",
+  },
+  cardText: {
+    fontSize: "16px",
+    lineHeight: 1.7,
+    color: "rgba(255,255,255,0.82)",
+  },
+  placeholderText: {
+    fontSize: "15px",
+    color: "rgba(255,255,255,0.52)",
+  },
+  launchesValue: {
+    fontSize: "46px",
+    fontWeight: 800,
+    lineHeight: 1,
+    color: "#fff",
+  },
+  launchesMeta: {
+    marginTop: "10px",
+    fontSize: "14px",
+    color: "#d8dce7",
+  },
+  launchProgressTrack: {
+    marginTop: "18px",
+    height: "10px",
+    width: "100%",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.08)",
+    overflow: "hidden",
+  },
+  launchProgressFill: {
+    height: "100%",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #f7d237 100%)",
+    transition: "width 0.35s ease",
+  },
+  resultsSection: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "22px auto 0",
+    borderRadius: "28px",
+    background: "rgba(255,255,255,0.06)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    overflow: "hidden",
+  },
+  resultsHeader: {
+    display: "grid",
+    gridTemplateColumns: "0.85fr 1.45fr 1fr 1fr 1.1fr 0.8fr",
+    gap: "14px",
+    padding: "18px 20px",
+    borderBottom: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.03)",
+  },
+  resultHeaderCell: {
+    fontSize: "12px",
+    letterSpacing: "0.08em",
+    textTransform: "uppercase",
+    color: "#aab3c7",
+    fontWeight: 700,
+  },
+  resultRow: {
+    display: "grid",
+    gridTemplateColumns: "0.85fr 1.45fr 1fr 1fr 1.1fr 0.8fr",
+    gap: "14px",
+    padding: "18px 20px",
+    borderBottom: "1px solid rgba(255,255,255,0.06)",
+    alignItems: "start",
+  },
+  colDate: {},
+  colSummary: {},
+  colLever: {},
+  colRisk: {},
+  colComment: {},
+  colActions: {
+    display: "grid",
+    gap: "10px",
+  },
+  resultTextClamp: {
+    fontSize: "14px",
+    lineHeight: 1.6,
+    color: "#eef2fb",
+  },
+  commentInput: {
+    width: "100%",
+    minHeight: "82px",
+    resize: "vertical",
+    borderRadius: "14px",
+    border: "1px solid rgba(255,255,255,0.10)",
+    background: "rgba(255,255,255,0.04)",
+    color: "#fff",
+    padding: "12px 13px",
+    fontSize: "14px",
+    outline: "none",
+  },
+  actionTooltipWrap: {
+    position: "relative",
+    display: "inline-block",
+    width: "100%",
+  },
+  actionButton: {
+    width: "100%",
+    border: 0,
+    borderRadius: "14px",
+    padding: "12px 14px",
+    background:
+      "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #c25cf3 100%)",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: "14px",
+    cursor: "not-allowed",
+  },
+  actionGhostButton: {
+    width: "100%",
+    borderRadius: "14px",
+    padding: "12px 14px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.04)",
+    color: "#fff",
+    fontWeight: 700,
+    fontSize: "14px",
+    cursor: "not-allowed",
+  },
+  tooltip: {
+    position: "absolute",
+    left: "50%",
+    bottom: "calc(100% + 8px)",
+    transform: "translateX(-50%)",
+    background: "#101a35",
+    color: "#fff",
+    border: "1px solid rgba(255,255,255,0.08)",
+    borderRadius: "10px",
+    padding: "8px 10px",
+    fontSize: "12px",
+    whiteSpace: "nowrap",
+    boxShadow: "0 14px 30px rgba(0,0,0,0.25)",
+    opacity: 0,
+    pointerEvents: "none",
+  },
+  emptyResults: {
+    padding: "28px 22px",
+    fontSize: "15px",
+    color: "rgba(255,255,255,0.58)",
+  },
+  errorBox: {
+    marginTop: "18px",
+    padding: "14px 16px",
+    borderRadius: "16px",
+    background: "rgba(255, 87, 87, 0.08)",
+    border: "1px solid rgba(255, 87, 87, 0.22)",
+    color: "#f4d8d8",
+    fontSize: "14px",
+  },
+  modalOverlay: {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(3,8,20,0.68)",
+    backdropFilter: "blur(10px)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: "24px",
+    zIndex: 40,
+  },
+  modalCard: {
+    width: "100%",
+    maxWidth: "620px",
+    borderRadius: "26px",
+    padding: "24px",
+    background: "#0f1d42",
+    border: "1px solid rgba(255,255,255,0.10)",
+    boxShadow: "0 28px 80px rgba(0,0,0,0.34)",
+  },
+  modalTop: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: "12px",
+    marginBottom: "18px",
+  },
+  modalTitle: {
+    margin: 0,
+    fontSize: "22px",
+    fontWeight: 700,
+  },
+  modalClose: {
+    width: "40px",
+    height: "40px",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.10)",
+    background: "rgba(255,255,255,0.04)",
+    color: "#fff",
+    fontSize: "22px",
+    cursor: "pointer",
+  },
+  faqList: {
+    display: "grid",
+    gap: "14px",
+  },
+  faqItem: {
+    padding: "16px",
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+  },
+  faqText: {
+    margin: "8px 0 0",
+    color: "#d8dce7",
+    lineHeight: 1.6,
+    fontSize: "15px",
+  },
+};
