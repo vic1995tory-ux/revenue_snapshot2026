@@ -3,22 +3,31 @@
 import Image from "next/image";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function CabinetLoginPage() {
-  const [email, setEmail] = useState("");
+  const router = useRouter();
+
+  const [login, setLogin] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError("");
-    setSuccess("");
 
     try {
-      if (!email.trim()) {
-        throw new Error("Введите email.");
+      const cleanLogin = login.trim();
+      const cleanPassword = password.trim();
+
+      if (!cleanLogin) {
+        throw new Error("Введите логин.");
+      }
+
+      if (!cleanPassword) {
+        throw new Error("Введите пароль.");
       }
 
       const res = await fetch(
@@ -29,8 +38,9 @@ export default function CabinetLoginPage() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email: email.trim().toLowerCase(),
-            action: "send_code",
+            action: "login",
+            login: cleanLogin,
+            password: cleanPassword,
           }),
         }
       );
@@ -40,12 +50,47 @@ export default function CabinetLoginPage() {
         ? await res.json()
         : null;
 
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || "Не удалось отправить код.");
+      if (!res.ok) {
+        throw new Error(
+          data?.error || "Не удалось выполнить вход. Попробуйте снова."
+        );
       }
 
-      setSuccess("Код доступа отправлен на email.");
-      setEmail("");
+      /**
+       * Ожидаемый ответ от Make webhook response:
+       *
+       * Успех:
+       * {
+       *   "ok": true,
+       *   "redirectUrl": "/account"
+       * }
+       *
+       * Пользователь не найден:
+       * {
+       *   "ok": false,
+       *   "error": "Пользователя с таким логином не существует."
+       * }
+       *
+       * Неверный пароль:
+       * {
+       *   "ok": false,
+       *   "error": "Пароль неверный."
+       * }
+       */
+
+      if (!data?.ok) {
+        throw new Error(
+          data?.error ||
+            "Либо пользователя с таким логином не существует, либо пароль неверный."
+        );
+      }
+
+      const redirectUrl =
+        typeof data?.redirectUrl === "string" && data.redirectUrl.trim()
+          ? data.redirectUrl.trim()
+          : "/account";
+
+      router.push(redirectUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Что-то пошло не так.");
     } finally {
@@ -88,23 +133,34 @@ export default function CabinetLoginPage() {
               <span>PERSONAL CABINET</span>
             </div>
 
-            <h1 style={styles.title}>Вход по email</h1>
+            <h1 style={styles.title}>Вход в кабинет</h1>
 
             <p style={styles.text}>
-              Введите email, который вы использовали для доступа. Мы отправим на
-              него код подтверждения.
+              Введите логин и пароль. После проверки данных вы автоматически
+              попадёте в личный кабинет.
             </p>
 
             <form onSubmit={handleSubmit} style={styles.form}>
-              <label style={styles.label}>Email</label>
+              <label style={styles.label}>Логин</label>
 
               <input
-                type="email"
-                placeholder="name@company.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                type="text"
+                placeholder="Введите логин"
+                value={login}
+                onChange={(e) => setLogin(e.target.value)}
                 style={styles.input}
-                autoComplete="email"
+                autoComplete="username"
+              />
+
+              <label style={styles.label}>Пароль</label>
+
+              <input
+                type="password"
+                placeholder="Введите пароль"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={styles.input}
+                autoComplete="current-password"
               />
 
               <button
@@ -115,11 +171,10 @@ export default function CabinetLoginPage() {
                   opacity: loading ? 0.7 : 1,
                 }}
               >
-                {loading ? "Отправляем..." : "Отправить код"}
+                {loading ? "Проверяем..." : "Войти"}
               </button>
             </form>
 
-            {success ? <div style={styles.successBox}>{success}</div> : null}
             {error ? <div style={styles.errorBox}>{error}</div> : null}
           </div>
         </section>
@@ -169,7 +224,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid rgba(255,255,255,0.1)",
     backdropFilter: "blur(20px)",
     boxShadow: "0 20px 50px rgba(0,0,0,0.25)",
-    minHeight: "420px",
+    minHeight: "460px",
   },
 
   heroBg: {
@@ -238,6 +293,7 @@ const styles: Record<string, React.CSSProperties> = {
   label: {
     fontSize: "14px",
     color: "#dfe4f2",
+    marginTop: "2px",
   },
 
   input: {
@@ -262,15 +318,6 @@ const styles: Record<string, React.CSSProperties> = {
     color: "#fff",
     cursor: "pointer",
     boxShadow: "0 16px 34px rgba(85,104,255,0.22)",
-  },
-
-  successBox: {
-    marginTop: "16px",
-    padding: "12px 14px",
-    borderRadius: "12px",
-    background: "rgba(0,255,150,0.1)",
-    border: "1px solid rgba(0,255,150,0.18)",
-    color: "#d8f5e6",
   },
 
   errorBox: {
