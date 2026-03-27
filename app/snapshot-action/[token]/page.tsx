@@ -1816,7 +1816,7 @@ function TeamRelationsBuilder({
           <AutoTextarea
             className={textareaClass}
             minRows={3}
-            placeholder='Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год. Можно поставить "-"'
+            placeholder='Опишите, как именно выстроено взаимодействие между ролями и что изменилось за год.'
             value={note}
             onChange={(next) => onChange({ links, note: next })}
           />
@@ -2135,7 +2135,7 @@ function renderInput(
           />
 
           <AutoTextarea
-            placeholder='Комментарий или контекст… Можно поставить "-"'
+            placeholder='Комментарий или контекст…'
             className={textareaClass}
             minRows={2}
             value={note}
@@ -2258,6 +2258,37 @@ function renderInput(
                 {textLength(current.plan12 ?? "")}.
               </div>
             </div>
+          </div>
+        );
+      }
+
+      if (question.id === "geo") {
+        const current = answers[question.id] ?? initialAnswers.geo;
+
+        return (
+          <div className="grid gap-3 md:grid-cols-2">
+            <input
+              className={compactInputClass}
+              placeholder='Где физически находится бизнес или "-"'
+              value={current.physical}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  physical: e.target.value,
+                })
+              }
+            />
+            <input
+              className={compactInputClass}
+              placeholder='В каком регионе продаёте или "-"'
+              value={current.sales}
+              onChange={(e) =>
+                setAnswer(question.id, {
+                  ...current,
+                  sales: e.target.value,
+                })
+              }
+            />
           </div>
         );
       }
@@ -2677,7 +2708,7 @@ function renderInput(
                     Проблемы (опционально)
                   </div>
                   <AutoTextarea
-                    placeholder='Где здесь возникают потери, трение или замедление. Можно поставить "-"'
+                    placeholder='Где здесь возникают потери, трение или замедление.'
                     className={textareaClass}
                     minRows={2}
                     value={step.problems}
@@ -2710,6 +2741,37 @@ function renderInput(
         />
       );
     }
+
+  case "map": {
+  const current = answers[question.id] ?? initialAnswers.geo;
+
+  return (
+    <div className="grid gap-3 md:grid-cols-2">
+      <input
+        className={compactInputClass}
+        placeholder='Где физически находится бизнес или "-"'
+        value={current.physical}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            physical: e.target.value,
+          })
+        }
+      />
+      <input
+        className={compactInputClass}
+        placeholder='В каком регионе продаёте или "-"'
+        value={current.sales}
+        onChange={(e) =>
+          setAnswer(question.id, {
+            ...current,
+            sales: e.target.value,
+          })
+        }
+      />
+    </div>
+  );
+}
 
     case "teamRoles":
       return (
@@ -2842,7 +2904,7 @@ function renderInput(
 
           <div className="mt-4">
             <AutoTextarea
-              placeholder='Опишите, как именно аналитика участвует в принятии решений… Можно поставить "-"'
+              placeholder='Опишите, как именно аналитика участвует в принятии решений…'
               className={textareaClass}
               minRows={2}
               value={current.note ?? ""}
@@ -3039,63 +3101,6 @@ export default function DiagnosticIntakePage() {
   const whatsappHref =
     "https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0";
 
-  const saveDraftOnExit = useCallback(async () => {
-    if (!accessToken || !launchAttemptId || isSubmitting) return;
-    if (!hasUserInteracted) return;
-
-    try {
-      await postWebhook({
-        action: "save_draft",
-        source: "snapshot-action",
-        access_token: accessToken,
-        launch_attempt_id: launchAttemptId,
-        mode,
-        draft: true,
-        draft_checkbox: true,
-        draft_step: currentDraftStep,
-        draft_updated_at: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        progress: {
-          total,
-          totalQuestions,
-          sectionProgress,
-        },
-        answers: preparedAnswers,
-        answers_raw: answers,
-        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-        draft_payload: draftJsonPayload,
-      });
-
-      setLastDraftSavedAt(new Date().toISOString());
-    } catch (error) {
-      setDraftError(
-        error instanceof Error
-          ? error.message
-          : "Не удалось сохранить draft",
-      );
-    }
-  }, [
-    accessToken,
-    launchAttemptId,
-    isSubmitting,
-    hasUserInteracted,
-    mode,
-    currentDraftStep,
-    total,
-    totalQuestions,
-    sectionProgress,
-    preparedAnswers,
-    answers,
-    draftJsonPayload,
-  ]);
-
-  const handleGoProfile = useCallback(async () => {
-    await saveDraftOnExit();
-    router.push(`/account/${encodeURIComponent(accessToken)}`);
-  }, [saveDraftOnExit, router, accessToken]);
-
-
-
   const sectionProgress = useMemo(
     () =>
       Object.fromEntries(
@@ -3236,6 +3241,15 @@ export default function DiagnosticIntakePage() {
   ]);
 
 
+
+  const saveDraftOnExit = useCallback(async () => {
+    await saveDraft();
+  }, [saveDraft]);
+
+  const handleGoProfile = useCallback(async () => {
+    await saveDraftOnExit();
+    router.push(`/account/${encodeURIComponent(accessToken)}`);
+  }, [saveDraftOnExit, router, accessToken]);
 
   useEffect(() => {
     function buildExitPayload() {
@@ -3551,8 +3565,7 @@ export default function DiagnosticIntakePage() {
                 </div>
 
                 <div className="mt-4 text-xs text-white/42">
-                  Недозаполненные ответы автоматически сохраняются в draft раз в
-                  5 минут.
+                  Недозаполненные ответы сохраняются в draft при выходе со страницы и переходе в Profile.
                 </div>
               </div>
             </GlassCard>
