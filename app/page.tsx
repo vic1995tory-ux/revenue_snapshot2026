@@ -673,7 +673,7 @@ function StartCard({
   buttonMobile?: OverlayBox;
   stats?: Array<{ label: string; value: string }>;
 }) {
-  const ctaLabel = title === "On Rec" ? "Выбрать слот" : "Попробовать Snapshot";
+  const ctaLabel = title === "On Rec" ? "Оплатить" : "Оплатить";
 
   const styleVars = {
     ["--price-top" as any]: priceDesktop.top ?? "auto",
@@ -1508,7 +1508,7 @@ export default function Home() {
             <div className="results-roadmap-note">
               После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
-            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать путь со Snapshot</a>
+            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать</a>
           </div>
         </section>
 
@@ -1538,9 +1538,9 @@ export default function Home() {
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
-                  priceDesktop={{ top: "18%", right: "6%" }}
+                  priceDesktop={{ top: "18%", right: "6.6%" }}
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "16.6%", width: "35%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "20.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
                 <StartCard
@@ -1549,10 +1549,10 @@ export default function Home() {
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={onRecUrl}
-                  priceDesktop={{ top: "14.8%", right: "7.4%" }}
-                  priceMobile={{ top: "18.5%", right: "7.8%" }}
-                  buttonDesktop={{ left: "6.2%", bottom: "12.6%", width: "33%" }}
-                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "42%" }}
+      priceDesktop={{ top: "18%", right: "6.6%" }}
+                  priceMobile={{ top: "18.5%", right: "8.5%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "20.6%", width: "35%" }}
+                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
               </div>
               <TariffDetailsComparison />
