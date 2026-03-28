@@ -1367,14 +1367,14 @@ export default function Home() {
               <div className="start-cards-row">
                 <StartCard
                   title="On Rec"
-                  icon="/stratsession.svg"
+                  icon="/onrec_desc.svg"
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={onRecUrl}
                 />
                 <StartCard
                   title="Online-playground"
-                  icon="/snapshot.svg"
+                  icon="/online_playground_desc.svg"
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
