@@ -410,33 +410,195 @@ function HeroEconomyChart() {
   );
 }
 
+function AttentionIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.25 18 16.1a1.2 1.2 0 0 1-1.04 1.8H3.04A1.2 1.2 0 0 1 2 16.1l8-13.85Z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 7v4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="10" cy="14.25" r="0.95" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ChipIcon({ kind }: { kind: "sync" | "team" | "chat" | "solo" | "online" | "custom" | "rate" | "limit" | "swot" | "segment" | "practice" | "jtbd" }) {
+  if (kind === "team") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="2.2" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="13.2" cy="7.6" r="1.8" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3.8 14c.7-2.1 2.3-3.2 4.7-3.2 2.4 0 4 1.1 4.7 3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "chat") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 5.6A2.6 2.6 0 0 1 6.6 3h6.8A2.6 2.6 0 0 1 16 5.6v4.1a2.6 2.6 0 0 1-2.6 2.6H9l-3.3 2.7v-2.7H6.6A2.6 2.6 0 0 1 4 9.7V5.6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "solo") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="6.5" r="2.3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M5.4 15c.75-2.25 2.28-3.37 4.6-3.37 2.33 0 3.86 1.12 4.6 3.37" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "online") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3" y="4" width="14" height="9.5" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M7.1 16h5.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "custom") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 10.2 8 14l8-8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "rate") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 14.8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M6 12.5V9.2M10 12.5V6.3M14 12.5V7.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "limit") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M5 15 15 5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        <path d="M6.2 5h8.8v8.8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "swot") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="13" height="13" rx="2.4" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M10 3.8v12.4M3.8 10h12.4" stroke="currentColor" strokeWidth="1.3" />
+      </svg>
+    );
+  }
+  if (kind === "segment") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M10 10V3.5A6.5 6.5 0 1 1 3.5 10H10Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M11.2 3.7a6.35 6.35 0 0 1 5.1 5.1h-5.1V3.7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "practice") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M5 10.4 8.1 13.5 15 6.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "jtbd") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 5.5h12M4 10h8M4 14.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M4 10h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M10 4v12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function TagList({
+  items,
+  variant = "soft",
+  icon = "custom",
+}: {
+  items: string[];
+  variant?: "soft" | "yellow-outline" | "icon-solid";
+  icon?: React.ComponentProps<typeof ChipIcon>["kind"];
+}) {
+  return (
+    <div className={`tariff-tag-list tariff-tag-list-${variant}`}>
+      {items.map((item) => (
+        <div key={item} className={`tariff-tag tariff-tag-${variant}`}>
+          <span className="tariff-tag-icon"><ChipIcon kind={icon} /></span>
+          <span>{item}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TariffColumn({
   title,
   sections,
+  disclaimer,
 }: {
   title: string;
   sections: Array<{
     label: string;
     items?: string[];
     notes?: string[];
+    render?: "list" | "tags" | "icon-tags" | "yellow-outline-tags";
+    iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   }>;
+  disclaimer?: string[];
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <article className="tariff-column glare-card">
-      <div className="tariff-column-title">{title}</div>
+      <div className="tariff-column-head">
+        <div className="tariff-column-title">{title}</div>
+        {disclaimer?.length ? (
+          <button
+            type="button"
+            className="tariff-attention"
+            aria-label="Show disclaimer"
+            aria-expanded={open}
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <AttentionIcon />
+            <span className={`tariff-disclaimer-pop ${open ? "is-open" : ""}`}>
+              {disclaimer.map((note) => (
+                <span key={note} className="tariff-disclaimer-line">{note}</span>
+              ))}
+            </span>
+          </button>
+        ) : null}
+      </div>
+
       <div className="tariff-column-sections">
         {sections.map((section) => (
           <div key={section.label} className="tariff-section">
             <div className="tariff-section-label">{section.label}</div>
             {section.items?.length ? (
-              <div className="tariff-check-list">
-                {section.items.map((item) => (
-                  <div key={item} className="tariff-check-item">
-                    <span className="tariff-check-mark">✔</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
+              section.render === "tags" ? (
+                <TagList items={section.items} variant="soft" />
+              ) : section.render === "icon-tags" ? (
+                <TagList items={section.items} variant="icon-solid" icon={section.iconKind ?? "custom"} />
+              ) : section.render === "yellow-outline-tags" ? (
+                <TagList items={section.items} variant="yellow-outline" icon={section.iconKind ?? "custom"} />
+              ) : (
+                <div className="tariff-check-list">
+                  {section.items.map((item) => (
+                    <div key={item} className="tariff-check-item">
+                      <span className="tariff-check-mark">✔</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )
             ) : null}
             {section.notes?.length ? (
               <div className="tariff-note-list">
@@ -456,9 +618,21 @@ function TariffColumn({
 }
 
 function TariffDetailsComparison() {
+  const playgroundDisclaimer = [
+    "Инструмент не заменяет глубокую операционную работу.",
+    "Рекомендации требуют адаптации под конкретный бизнес.",
+  ];
+
+  const onRecDisclaimer = [
+    "Результат формируется на основе совместной работы и предоставленной информации.",
+    "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса.",
+    "Рекомендации требуют внедрения и управленческих решений.",
+  ];
+
   const playgroundSections = [
     {
-      label: "Что входит",
+      label: "Input Data",
+      render: "tags" as const,
       items: [
         "Сбор данных",
         "Позиционирование",
@@ -488,6 +662,8 @@ function TariffDetailsComparison() {
     },
     {
       label: "Финальный результат",
+      render: "yellow-outline-tags" as const,
+      iconKind: "rate" as const,
       items: [
         "Economic Rate (оценка модели на основе вводных)",
         "Главный фактор, сдерживающий рост (гипотеза)",
@@ -506,14 +682,9 @@ function TariffDetailsComparison() {
     },
     {
       label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "solo" as const,
       items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
-    },
-    {
-      label: "Disclaimer",
-      notes: [
-        "Инструмент не заменяет глубокую операционную работу",
-        "Рекомендации требуют адаптации под конкретный бизнес",
-      ],
     },
     {
       label: "Результат",
@@ -528,7 +699,8 @@ function TariffDetailsComparison() {
 
   const onRecSections = [
     {
-      label: "Что входит",
+      label: "Input Data",
+      render: "tags" as const,
       items: [
         "Персональный сбор данных",
         "Позиционирование",
@@ -568,6 +740,8 @@ function TariffDetailsComparison() {
     },
     {
       label: "Финальный результат",
+      render: "yellow-outline-tags" as const,
+      iconKind: "swot" as const,
       items: [
         "Economic Rate",
         "Главный фактор, сдерживающий рост",
@@ -580,6 +754,8 @@ function TariffDetailsComparison() {
     },
     {
       label: "Рабочий процесс",
+      render: "icon-tags" as const,
+      iconKind: "team" as const,
       items: [
         "Личный брифинг с командой",
         "Дополнительные уточнения в процессе",
@@ -588,18 +764,12 @@ function TariffDetailsComparison() {
     },
     {
       label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "online" as const,
       items: [
         "Работа с участием команды",
         "Онлайн-коммуникация",
         "Индивидуальная проработка",
-      ],
-    },
-    {
-      label: "Disclaimer",
-      notes: [
-        "Результат формируется на основе совместной работы и предоставленной информации",
-        "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса",
-        "Рекомендации требуют внедрения и управленческих решений",
       ],
     },
     {
@@ -615,8 +785,12 @@ function TariffDetailsComparison() {
 
   return (
     <div className="tariff-comparison-grid">
-      <TariffColumn title="ONLINE PLAYGROUND" sections={playgroundSections} />
-      <TariffColumn title="ON REC" sections={onRecSections} />
+      <TariffColumn
+        title="ONLINE PLAYGROUND"
+        sections={playgroundSections}
+        disclaimer={playgroundDisclaimer}
+      />
+      <TariffColumn title="ON REC" sections={onRecSections} disclaimer={onRecDisclaimer} />
     </div>
   );
 }
@@ -643,61 +817,24 @@ function ResultDocCard({
   );
 }
 
-type OverlayBox = {
-  top?: string;
-  right?: string;
-  bottom?: string;
-  left?: string;
-  width?: string;
-};
-
 function StartCard({
   title,
   icon,
   mobileIcon,
   price,
   href,
-  priceDesktop,
-  priceMobile,
-  buttonDesktop,
-  buttonMobile,
 }: {
   title: string;
   icon: string;
   mobileIcon?: string;
   price: string;
   href: string;
-  priceDesktop: OverlayBox;
-  priceMobile?: OverlayBox;
-  buttonDesktop: OverlayBox;
-  buttonMobile?: OverlayBox;
   stats?: Array<{ label: string; value: string }>;
 }) {
-  const ctaLabel = title === "On Rec" ? "Оплатить" : "Оплатить";
-
-  const styleVars = {
-    ["--price-top" as any]: priceDesktop.top ?? "auto",
-    ["--price-right" as any]: priceDesktop.right ?? "auto",
-    ["--price-bottom" as any]: priceDesktop.bottom ?? "auto",
-    ["--price-left" as any]: priceDesktop.left ?? "auto",
-    ["--button-top" as any]: buttonDesktop.top ?? "auto",
-    ["--button-right" as any]: buttonDesktop.right ?? "auto",
-    ["--button-bottom" as any]: buttonDesktop.bottom ?? "auto",
-    ["--button-left" as any]: buttonDesktop.left ?? "auto",
-    ["--button-width" as any]: buttonDesktop.width ?? "auto",
-    ["--price-top-mobile" as any]: priceMobile?.top ?? priceDesktop.top ?? "auto",
-    ["--price-right-mobile" as any]: priceMobile?.right ?? priceDesktop.right ?? "auto",
-    ["--price-bottom-mobile" as any]: priceMobile?.bottom ?? priceDesktop.bottom ?? "auto",
-    ["--price-left-mobile" as any]: priceMobile?.left ?? priceDesktop.left ?? "auto",
-    ["--button-top-mobile" as any]: buttonMobile?.top ?? buttonDesktop.top ?? "auto",
-    ["--button-right-mobile" as any]: buttonMobile?.right ?? buttonDesktop.right ?? "auto",
-    ["--button-bottom-mobile" as any]: buttonMobile?.bottom ?? buttonDesktop.bottom ?? "auto",
-    ["--button-left-mobile" as any]: buttonMobile?.left ?? buttonDesktop.left ?? "auto",
-    ["--button-width-mobile" as any]: buttonMobile?.width ?? buttonDesktop.width ?? "auto",
-  } as CSSProperties;
+  const ctaLabel = title === "On Rec" ? "Выбрать слот" : "Попробовать Snapshot";
 
   return (
-    <div className="start-card tilt-card" style={styleVars}>
+    <div className="start-card tilt-card">
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <picture>
           <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
@@ -1508,7 +1645,7 @@ export default function Home() {
             <div className="results-roadmap-note">
               После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
-            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать</a>
+            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать путь со Snapshot</a>
           </div>
         </section>
 
@@ -1525,7 +1662,7 @@ export default function Home() {
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
             <p className="section-copy">
-              Вам предоставляется Личный кабинет на 365 дней, где хранятся ваши результаты, и будут добавляться инстурменты по спец условиям
+              Ниже — два тарифа без дополнительного деления блока. Сверху остаются карточки форматов, а под ними — детальное сравнение состава и глубины работы.
             </p>
           </div>
 
@@ -1538,10 +1675,6 @@ export default function Home() {
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
-                  priceDesktop={{ top: "18%", right: "6.6%" }}
-                  priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
                 <StartCard
                   title="On Rec"
@@ -1549,10 +1682,6 @@ export default function Home() {
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={onRecUrl}
-      priceDesktop={{ top: "18%", right: "6.6%" }}
-                  priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
               </div>
               <TariffDetailsComparison />
@@ -2533,10 +2662,8 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: var(--price-top, auto);
-          right: var(--price-right, auto);
-          bottom: var(--price-bottom, auto);
-          left: var(--price-left, auto);
+          top: 29%;
+          right: 6.67%;
           font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
           letter-spacing: -.06em;
@@ -2545,11 +2672,8 @@ export default function Home() {
         }
         .start-card-btn {
           position: absolute;
-          top: var(--button-top, auto);
-          right: var(--button-right, auto);
-          bottom: var(--button-bottom, auto);
-          left: var(--button-left, auto);
-          width: var(--button-width, auto);
+          left: 4.35%;
+          bottom: -17%;
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -2565,13 +2689,12 @@ export default function Home() {
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
           animation: tgGradientFlow 6s ease-in-out infinite;
           pointer-events: auto;
-          white-space: nowrap;
         }
         .tariff-comparison-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 28px;
-          margin-top: 20px;
+          margin-top: 0;
           align-items: start;
         }
         .tariff-column {
@@ -2584,14 +2707,57 @@ export default function Home() {
           backdrop-filter: blur(28px) saturate(135%);
           -webkit-backdrop-filter: blur(28px) saturate(135%);
         }
-        .tariff-column-title {
+        .tariff-column-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 16px;
           margin-bottom: 16px;
+        }
+        .tariff-column-title {
           color: #f7d237;
           font-size: 18px;
           line-height: 1;
           letter-spacing: -.03em;
           font-weight: 800;
         }
+        .tariff-attention {
+          position: relative;
+          width: 34px;
+          height: 34px;
+          flex: 0 0 34px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 999px;
+          border: 1px solid rgba(247,210,55,.34);
+          background: rgba(247,210,55,.08);
+          color: #f7d237;
+          cursor: pointer;
+        }
+        .tariff-attention svg { width: 16px; height: 16px; }
+        .tariff-disclaimer-pop {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: 320px;
+          padding: 12px 14px;
+          border-radius: 16px;
+          border: 1px solid rgba(247,210,55,.22);
+          background: rgba(7,18,39,.96);
+          color: rgba(255,255,255,.8);
+          font-size: 12px;
+          line-height: 1.55;
+          box-shadow: 0 18px 40px rgba(0,0,0,.28);
+          opacity: 0;
+          pointer-events: none;
+          transform: translateY(6px);
+          transition: opacity .18s ease, transform .18s ease;
+          z-index: 5;
+        }
+        .tariff-disclaimer-pop.is-open { opacity: 1; transform: translateY(0); }
+        .tariff-disclaimer-line { display: block; }
+        .tariff-disclaimer-line + .tariff-disclaimer-line { margin-top: 6px; }
         .tariff-column-sections {
           display: grid;
           gap: 14px;
@@ -2617,6 +2783,48 @@ export default function Home() {
           display: grid;
           gap: 8px;
         }
+        .tariff-tag-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .tariff-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 38px;
+          border-radius: 999px;
+          font-size: 13px;
+          line-height: 1.2;
+          color: rgba(255,255,255,.9);
+        }
+        .tariff-tag-soft {
+          padding: 0 14px;
+          background: rgba(255,255,255,.05);
+          border: 1px solid rgba(255,255,255,.1);
+        }
+        .tariff-tag-yellow-outline {
+          padding: 0 14px;
+          border: 1px solid rgba(247,210,55,.34);
+          background: rgba(247,210,55,.04);
+          color: #f7d237;
+        }
+        .tariff-tag-icon-solid {
+          padding: 0 14px 0 10px;
+          background: rgba(255,255,255,.05);
+          border: 1px solid rgba(255,255,255,.1);
+        }
+        .tariff-tag-icon {
+          width: 18px;
+          height: 18px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          color: #f7d237;
+          flex: 0 0 18px;
+        }
+        .tariff-tag-icon svg { width: 18px; height: 18px; }
+        .tariff-tag-yellow-outline .tariff-tag-icon { color: #f7d237; }
         .tariff-check-item,
         .tariff-note-item {
           display: grid;
@@ -2636,6 +2844,7 @@ export default function Home() {
           color: rgba(255,255,255,.56);
           line-height: 1.2;
         }
+        .analysis-copy-accent { color: #f7d237; }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
         }
@@ -2733,7 +2942,10 @@ export default function Home() {
           }
           .tariff-column-title {
             font-size: 16px;
-            margin-bottom: 12px;
+          }
+          .tariff-disclaimer-pop {
+            width: min(280px, 78vw);
+            right: -4px;
           }
           .tariff-section {
             padding-top: 12px;
@@ -2767,19 +2979,18 @@ export default function Home() {
           }
           .start-card-title-chip { display: none; }
           .start-card-price-float {
-            top: var(--price-top-mobile, var(--price-top, auto));
-            right: var(--price-right-mobile, var(--price-right, auto));
-            bottom: var(--price-bottom-mobile, var(--price-bottom, auto));
-            left: var(--price-left-mobile, var(--price-left, auto));
+            top: 19.72%;
+            right: 6.67%;
+            left: auto;
+            bottom: auto;
             font-size: clamp(28px, 10vw, 40px);
           }
           .start-card-btn {
-            top: var(--button-top-mobile, var(--button-top, auto));
-            right: var(--button-right-mobile, var(--button-right, auto));
-            bottom: var(--button-bottom-mobile, var(--button-bottom, auto));
-            left: var(--button-left-mobile, var(--button-left, auto));
-            width: var(--button-width-mobile, var(--button-width, auto));
+            left: 14px;
+            right: 14px;
+            bottom: 10%;
             min-height: 38px;
+            width: auto;
             padding: 0 14px;
             font-size: 12px;
           }
