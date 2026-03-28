@@ -2405,11 +2405,10 @@ export default function Home() {
         .stage-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96)); }
         .stage-bar-fill-plan { background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82)); }
         .stage-card-watermark-icon { display: none; }
-        .analysis-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
-          gap: 28px;
-          align-items: start;
+        .analysis-stack {
+          display: flex;
+          flex-direction: column;
+          gap: 22px;
         }
         .analysis-single-column {
           display: block;
@@ -2426,10 +2425,13 @@ export default function Home() {
           width: 100%;
         }
         .start-cards-row {
-          display: flex;
-          flex-direction: column;
-          gap: 22px;
-          justify-content: flex-start;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 28px;
+          align-items: start;
+        }
+        .start-cards-row-top {
+          margin-bottom: 0;
         }
         .start-cards-row-horizontal {
           display: grid;
@@ -2437,7 +2439,11 @@ export default function Home() {
           gap: 22px;
           align-items: start;
         }
-        .start-card { flex: 1 1 0; }
+        .start-card {
+          flex: 1 1 0;
+          position: relative;
+          z-index: 2;
+        }
         .start-card-inner {
           position: relative;
           border-radius: 32px;
@@ -2462,6 +2468,8 @@ export default function Home() {
           opacity: 1;
           border-radius: 32px;
           display: block;
+          position: relative;
+          z-index: 2;
         }
         .start-card-overlay {
           position: absolute;
@@ -2511,8 +2519,9 @@ export default function Home() {
         .tariff-comparison-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 16px;
-          margin-top: 18px;
+          gap: 28px;
+          margin-top: 0;
+          align-items: start;
         }
         .tariff-column {
           position: relative;
@@ -2655,7 +2664,7 @@ export default function Home() {
             width: 100%;
             justify-content: center;
           }
-          .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
