@@ -643,24 +643,61 @@ function ResultDocCard({
   );
 }
 
+type OverlayBox = {
+  top?: string;
+  right?: string;
+  bottom?: string;
+  left?: string;
+  width?: string;
+};
+
 function StartCard({
   title,
   icon,
   mobileIcon,
   price,
   href,
+  priceDesktop,
+  priceMobile,
+  buttonDesktop,
+  buttonMobile,
 }: {
   title: string;
   icon: string;
   mobileIcon?: string;
   price: string;
   href: string;
+  priceDesktop: OverlayBox;
+  priceMobile?: OverlayBox;
+  buttonDesktop: OverlayBox;
+  buttonMobile?: OverlayBox;
   stats?: Array<{ label: string; value: string }>;
 }) {
   const ctaLabel = title === "On Rec" ? "Выбрать слот" : "Попробовать Snapshot";
 
+  const styleVars = {
+    ["--price-top" as any]: priceDesktop.top ?? "auto",
+    ["--price-right" as any]: priceDesktop.right ?? "auto",
+    ["--price-bottom" as any]: priceDesktop.bottom ?? "auto",
+    ["--price-left" as any]: priceDesktop.left ?? "auto",
+    ["--button-top" as any]: buttonDesktop.top ?? "auto",
+    ["--button-right" as any]: buttonDesktop.right ?? "auto",
+    ["--button-bottom" as any]: buttonDesktop.bottom ?? "auto",
+    ["--button-left" as any]: buttonDesktop.left ?? "auto",
+    ["--button-width" as any]: buttonDesktop.width ?? "auto",
+    ["--price-top-mobile" as any]: priceMobile?.top ?? priceDesktop.top ?? "auto",
+    ["--price-right-mobile" as any]: priceMobile?.right ?? priceDesktop.right ?? "auto",
+    ["--price-bottom-mobile" as any]: priceMobile?.bottom ?? priceDesktop.bottom ?? "auto",
+    ["--price-left-mobile" as any]: priceMobile?.left ?? priceDesktop.left ?? "auto",
+    ["--button-top-mobile" as any]: buttonMobile?.top ?? buttonDesktop.top ?? "auto",
+    ["--button-right-mobile" as any]: buttonMobile?.right ?? buttonDesktop.right ?? "auto",
+    ["--button-bottom-mobile" as any]: buttonMobile?.bottom ?? buttonDesktop.bottom ?? "auto",
+    ["--button-left-mobile" as any]: buttonMobile?.left ?? buttonDesktop.left ?? "auto",
+    ["--button-width-mobile" as any]: buttonMobile?.width ?? buttonDesktop.width ?? "auto",
+  } as CSSProperties;
+
   return (
-    <div className="start-card tilt-card">
+    <div className="start-card tilt-card" style={styleVars}>
       <div className="start-card-inner start-card-inner-plain tilt-inner premium-glass">
         <picture>
           <source media="(max-width: 767px)" srcSet={mobileIcon ?? icon} />
@@ -1501,6 +1538,10 @@ export default function Home() {
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
+                  priceDesktop={{ top: "14.8%", right: "11.2%" }}
+                  priceMobile={{ top: "18.5%", right: "8.5%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "12.6%", width: "35%" }}
+                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
                 <StartCard
                   title="On Rec"
@@ -1508,6 +1549,10 @@ export default function Home() {
                   mobileIcon="/on-rec_mobile.svg"
                   price="$770"
                   href={onRecUrl}
+                  priceDesktop={{ top: "14.8%", right: "7.4%" }}
+                  priceMobile={{ top: "18.5%", right: "7.8%" }}
+                  buttonDesktop={{ left: "6.2%", bottom: "12.6%", width: "33%" }}
+                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "42%" }}
                 />
               </div>
               <TariffDetailsComparison />
@@ -2488,8 +2533,10 @@ export default function Home() {
         .start-card-title-chip { display: none; }
         .start-card-price-float {
           position: absolute;
-          top: 29%;
-          right: 6.67%;
+          top: var(--price-top, auto);
+          right: var(--price-right, auto);
+          bottom: var(--price-bottom, auto);
+          left: var(--price-left, auto);
           font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
           letter-spacing: -.06em;
@@ -2498,8 +2545,11 @@ export default function Home() {
         }
         .start-card-btn {
           position: absolute;
-          left: 4.35%;
-          bottom: -17%;
+          top: var(--button-top, auto);
+          right: var(--button-right, auto);
+          bottom: var(--button-bottom, auto);
+          left: var(--button-left, auto);
+          width: var(--button-width, auto);
           display: inline-flex;
           align-items: center;
           justify-content: center;
@@ -2515,6 +2565,7 @@ export default function Home() {
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
           animation: tgGradientFlow 6s ease-in-out infinite;
           pointer-events: auto;
+          white-space: nowrap;
         }
         .tariff-comparison-grid {
           display: grid;
@@ -2716,18 +2767,19 @@ export default function Home() {
           }
           .start-card-title-chip { display: none; }
           .start-card-price-float {
-            top: 19.72%;
-            right: 6.67%;
-            left: auto;
-            bottom: auto;
+            top: var(--price-top-mobile, var(--price-top, auto));
+            right: var(--price-right-mobile, var(--price-right, auto));
+            bottom: var(--price-bottom-mobile, var(--price-bottom, auto));
+            left: var(--price-left-mobile, var(--price-left, auto));
             font-size: clamp(28px, 10vw, 40px);
           }
           .start-card-btn {
-            left: 14px;
-            right: 14px;
-            bottom: 10%;
+            top: var(--button-top-mobile, var(--button-top, auto));
+            right: var(--button-right-mobile, var(--button-right, auto));
+            bottom: var(--button-bottom-mobile, var(--button-bottom, auto));
+            left: var(--button-left-mobile, var(--button-left, auto));
+            width: var(--button-width-mobile, var(--button-width, auto));
             min-height: 38px;
-            width: auto;
             padding: 0 14px;
             font-size: 12px;
           }
@@ -2820,4 +2872,3 @@ export default function Home() {
       `}</style>
     </main>
   );
-}
