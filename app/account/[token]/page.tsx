@@ -57,6 +57,13 @@ const POSITION_WEBHOOK_URL =
 
 const DEFAULT_MAX_LAUNCHES = 3;
 
+const WHATSAPP_HELP_URL =
+  "https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0";
+
+const WHATSAPP_DELETE_URL = `https://api.whatsapp.com/send/?phone=995555163833&text=${encodeURIComponent(
+  "Прошу очистить данные в моем аккаунте"
+)}&type=phone_number&app_absent=0`;
+
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -71,6 +78,40 @@ function getLaunchAttemptStorageKey(token: string) {
 function storeAttemptId(token: string, attemptId: string) {
   if (typeof window === "undefined") return;
   sessionStorage.setItem(getLaunchAttemptStorageKey(token), attemptId);
+}
+
+function FaqActionButton({
+  label,
+  href,
+  tooltip = "Функция находится в разработке",
+}: {
+  label: string;
+  href?: string;
+  tooltip?: string;
+}) {
+  if (href) {
+    return (
+      <a
+        href={href}
+        target="_blank"
+        rel="noreferrer"
+        style={styles.faqActionButton}
+      >
+        {label}
+      </a>
+    );
+  }
+
+  return (
+    <div className="action-tooltip-wrap" style={styles.faqActionWrap}>
+      <button type="button" style={styles.faqActionButton} aria-label={label}>
+        {label}
+      </button>
+      <div className="action-tooltip" style={styles.tooltip}>
+        {tooltip}
+      </div>
+    </div>
+  );
 }
 
 export default function CabinetPage() {
@@ -140,12 +181,14 @@ export default function CabinetPage() {
           : [];
 
         const launchLimit =
-          typeof cabinet.launchLimit === "number" && Number.isFinite(cabinet.launchLimit)
+          typeof cabinet.launchLimit === "number" &&
+          Number.isFinite(cabinet.launchLimit)
             ? cabinet.launchLimit
             : DEFAULT_MAX_LAUNCHES;
 
         const launchCount =
-          typeof cabinet.launchCount === "number" && Number.isFinite(cabinet.launchCount)
+          typeof cabinet.launchCount === "number" &&
+          Number.isFinite(cabinet.launchCount)
             ? cabinet.launchCount
             : normalizedResults.length;
 
@@ -275,9 +318,9 @@ export default function CabinetPage() {
           ? `${window.location.origin}/snapshot-action/${encodeURIComponent(
               token
             )}?launch=${encodeURIComponent(launchAttemptId)}`
-          : `/snapshot-action/${encodeURIComponent(token)}?launch=${encodeURIComponent(
-              launchAttemptId
-            )}`;
+          : `/snapshot-action/${encodeURIComponent(
+              token
+            )}?launch=${encodeURIComponent(launchAttemptId)}`;
 
       const cabinetUrl =
         typeof window !== "undefined" ? window.location.href : "";
@@ -358,7 +401,7 @@ export default function CabinetPage() {
 
         <div style={styles.headerRight}>
           <a
-            href="https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0"
+            href={WHATSAPP_HELP_URL}
             target="_blank"
             rel="noreferrer"
             style={styles.headerButton}
@@ -639,27 +682,228 @@ export default function CabinetPage() {
 
             <div style={styles.faqList}>
               <div style={styles.faqItem}>
-                <strong>Сколько действует ссылка?</strong>
-                <p style={styles.faqText}>Ссылка активна 1 год с момента создания.</p>
-              </div>
-
-              <div style={styles.faqItem}>
-                <strong>Сколько запусков доступно?</strong>
+                <strong style={styles.faqQuestion}>
+                  1. Можно ли использовать разные бизнесы в разных попытках?
+                </strong>
                 <p style={styles.faqText}>
-                  Максимум {maxLaunches} запуска на один доступ.
+                  Да, каждая попытка может быть использована для анализа
+                  отдельного бизнеса или направления.
                 </p>
               </div>
 
               <div style={styles.faqItem}>
-                <strong>Куда писать, если нужен созвон или помощь?</strong>
+                <strong style={styles.faqQuestion}>
+                  2. Можно ли купить дополнительные попытки?
+                </strong>
                 <p style={styles.faqText}>
-                  Используй кнопку «Помощь от создателей» в шапке.
+                  Да, вы можете приобрести дополнительные попытки отдельно, без
+                  необходимости повторной покупки основного доступа.
                 </p>
+                <div style={styles.faqActionsRow}>
+                  <FaqActionButton label="Купить за $30" />
+                </div>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  3. Можно ли отредактировать уже отправленные данные?
+                </strong>
+                <p style={styles.faqText}>
+                  Нет, после отправки данные фиксируются. Для внесения изменений
+                  потребуется использовать новую попытку.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  4. Что происходит, если я не закончил заполнение?
+                </strong>
+                <p style={styles.faqText}>
+                  Ваш прогресс сохраняется. Вы можете продолжить с того же места
+                  при следующем входе.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  5. Где хранятся мои результаты?
+                </strong>
+                <p style={styles.faqText}>
+                  Все результаты сохраняются в личном кабинете и доступны в
+                  любое время в рамках срока доступа.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  6. Можно ли удалить свои данные или результаты?
+                </strong>
+                <p style={styles.faqText}>
+                  Да, вы можете запросить удаление данных или результатов.
+                </p>
+                <div style={styles.faqActionsRow}>
+                  <FaqActionButton
+                    label="Написать в WhatsApp"
+                    href={WHATSAPP_DELETE_URL}
+                  />
+                </div>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  7. Используются ли мои данные для анализа или кейсов?
+                </strong>
+                <p style={styles.faqText}>
+                  Данные используются исключительно для формирования вашего
+                  результата. Любое использование в кейсах или примерах возможно
+                  только с вашего предварительного согласия.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  8. Можно ли пройти Snapshot вместе с командой?
+                </strong>
+                <p style={styles.faqText}>
+                  Да, вы можете заполнять данные совместно с командой,
+                  используя один аккаунт.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  9. Что будет, если у меня закончились попытки, но доступ ещё
+                  активен?
+                </strong>
+                <p style={styles.faqText}>
+                  Вы сохраняете доступ ко всем ранее полученным результатам.
+                </p>
+                <div style={styles.faqSubList}>
+                  <div style={styles.faqSubBullet}>
+                    • в личном кабинете могут появляться новые инструменты и
+                    возможности
+                  </div>
+                  <div style={styles.faqSubBullet}>
+                    • для них могут предоставляться специальные условия
+                  </div>
+                </div>
+                <p style={styles.faqText}>
+                  Для получения новых результатов потребуется приобрести
+                  дополнительные попытки.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  10. Можно ли экспортировать результат?
+                </strong>
+                <p style={styles.faqText}>
+                  Да, результат доступен для просмотра в личном кабинете и может
+                  быть сохранён или экспортирован.
+                </p>
+                <div style={styles.faqActionsRow}>
+                  <FaqActionButton label="Запросить экспорт" />
+                </div>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  11. Как понять, какую попытку лучше использовать сейчас?
+                </strong>
+                <p style={styles.faqText}>
+                  Рекомендуется использовать попытку, когда у вас есть
+                  максимально полные и актуальные данные по бизнесу — это
+                  напрямую влияет на качество результата.
+                </p>
+              </div>
+
+              <div style={styles.faqItem}>
+                <strong style={styles.faqQuestion}>
+                  12. Можно ли использовать Snapshot повторно для того же
+                  бизнеса?
+                </strong>
+                <p style={styles.faqText}>
+                  Да, это один из основных сценариев — вы можете отслеживать
+                  изменения и проверять гипотезы через повторные прохождения.
+                </p>
+                <p style={styles.faqText}>
+                  В разработке находится экосистема, которая позволит
+                  отслеживать прогресс гипотез в реальном времени.
+                </p>
+                <div style={styles.faqActionsRow}>
+                  <FaqActionButton label="Проинвестировать" />
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      <style jsx global>{`
+        .action-tooltip-wrap:hover .action-tooltip,
+        .action-tooltip-wrap:focus-within .action-tooltip {
+          opacity: 1;
+        }
+
+        @keyframes yellowSheen {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
+        }
+
+        @media (max-width: 1180px) {
+          main {
+            overflow-x: hidden;
+          }
+        }
+
+        @media (max-width: 1080px) {
+          .ambient-gradient-bg {
+            display: none;
+          }
+        }
+
+        @media (max-width: 980px) {
+          main {
+            padding: 20px 16px 34px;
+          }
+        }
+
+        @media (max-width: 920px) {
+          section[style*="grid-template-columns: 1.2fr 0.8fr"] {
+            grid-template-columns: 1fr !important;
+          }
+
+          section[style*="grid-template-columns: 1fr 0.52fr"] {
+            grid-template-columns: 1fr !important;
+          }
+
+          div[style*="grid-template-columns: 0.85fr 1.45fr 1fr 1fr 1.1fr 0.8fr"] {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 720px) {
+          .action-tooltip {
+            display: none;
+          }
+        }
+
+        @media (max-width: 640px) {
+          input,
+          textarea,
+          button,
+          a {
+            font-size: 16px;
+          }
+        }
+      `}</style>
     </main>
   );
 }
@@ -1119,7 +1363,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   modalCard: {
     width: "100%",
-    maxWidth: "620px",
+    maxWidth: "860px",
+    maxHeight: "calc(100vh - 48px)",
+    overflowY: "auto",
     borderRadius: "26px",
     padding: "24px",
     background: "#0f1d42",
@@ -1153,13 +1399,62 @@ const styles: Record<string, React.CSSProperties> = {
     gap: "14px",
   },
   faqItem: {
-    padding: "16px",
+    padding: "18px",
     borderRadius: "18px",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.08)",
   },
+  faqQuestion: {
+    display: "block",
+    fontSize: "16px",
+    lineHeight: 1.5,
+    color: "#fefefe",
+  },
   faqText: {
-    margin: "8px 0 0",
+    margin: "10px 0 0",
+    color: "#d8dce7",
+    lineHeight: 1.7,
+    fontSize: "15px",
+  },
+  faqActionsRow: {
+    display: "flex",
+    flexWrap: "wrap",
+    gap: "10px",
+    marginTop: "14px",
+  },
+  faqActionWrap: {
+    position: "relative",
+    display: "inline-flex",
+    width: "fit-content",
+    maxWidth: "100%",
+  },
+  faqActionButton: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: "42px",
+    borderRadius: "999px",
+    padding: "10px 18px",
+    border: "1px solid rgba(247,210,55,0.45)",
+    background:
+      "linear-gradient(110deg, rgba(247,210,55,0.96) 0%, rgba(255,232,122,0.98) 38%, rgba(247,210,55,0.96) 54%, rgba(255,240,166,0.98) 70%, rgba(247,210,55,0.96) 100%)",
+    backgroundSize: "220% 220%",
+    animation: "yellowSheen 7s ease-in-out infinite",
+    color: "#0b1d3a",
+    textDecoration: "none",
+    fontWeight: 800,
+    fontSize: "14px",
+    letterSpacing: "0.01em",
+    boxShadow:
+      "0 8px 22px rgba(247,210,55,0.16), inset 0 1px 0 rgba(255,255,255,0.28)",
+    cursor: "pointer",
+  },
+  faqSubList: {
+    marginTop: "10px",
+    display: "grid",
+    gap: "6px",
+  },
+  faqSubBullet: {
     color: "#d8dce7",
     lineHeight: 1.6,
     fontSize: "15px",
