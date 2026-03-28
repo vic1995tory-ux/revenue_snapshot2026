@@ -1540,7 +1540,7 @@ export default function Home() {
                   href={payUrl}
                   priceDesktop={{ top: "18%", right: "6.6%" }}
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "20.6%", width: "35%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
                 <StartCard
@@ -1551,7 +1551,7 @@ export default function Home() {
                   href={onRecUrl}
       priceDesktop={{ top: "18%", right: "6.6%" }}
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "20.6%", width: "35%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
               </div>
