@@ -368,36 +368,12 @@ body {
 /* DISCLAIMER TOOLTIP */
 /* ----------------------------- */
 
-.attention-tooltip {
+.tariff-disclaimer-pop {
   background: #0c111f !important;
   color: #fff !important;
-  opacity: 1 !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   background-image: none !important;
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
-}
-.attention-tooltip {
-  position: absolute;
-
-  background: #0c111f !important;
-  color: #fff !important;
-
-  opacity: 1 !important;
-
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-
-  filter: none !important;
-
-  background-image: none !important;
-
-  mix-blend-mode: normal !important;
-
-  border: 1px solid rgba(255,255,255,0.08);
-
-  box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-
-  z-index: 9999;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45) !important;
 }
