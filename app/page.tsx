@@ -1538,9 +1538,9 @@ export default function Home() {
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
-                  priceDesktop={{ top: "14.8%", right: "11.2%" }}
+                  priceDesktop={{ top: "18%", right: "6%" }}
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "12.6%", width: "35%" }}
+                  buttonDesktop={{ left: "5.8%", bottom: "16.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                 />
                 <StartCard
