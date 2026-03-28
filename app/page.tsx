@@ -410,70 +410,6 @@ function HeroEconomyChart() {
   );
 }
 
-function SnapshotStructure() {
-  const layers = [
-    {
-      title: "Позиционирование",
-      weight: "27%",
-      hint: "точка входа",
-      points: ["что обещание делает понятным", "какой сегмент готов реагировать первым"],
-      level: 27,
-      tone: "violet",
-    },
-    {
-      title: "Структура компании",
-      weight: "27%",
-      hint: "ресурсы и роли",
-      points: ["кто удерживает выручку в системе", "где ручное управление тормозит рост"],
-      level: 27,
-      tone: "blue",
-    },
-    {
-      title: "Клиенты",
-      weight: "14%",
-      hint: "спрос и поведение",
-      points: ["кто приносит деньги сейчас", "где теряется конверсия по пути"],
-      level: 14,
-      tone: "slate",
-    },
-  ];
-
-  return (
-    <div className="signal-board">
-      {layers.map((layer, index) => (
-        <article
-          key={layer.title}
-          className={`signal-card signal-card-${layer.tone} signal-card-layout-${index + 1}`}
-          style={{ ["--signal-weight" as any]: layer.level } as CSSProperties}
-        >
-          <div className="signal-card-top">
-            <span className="signal-card-hint">{layer.hint}</span>
-            <span className="signal-card-weight">{layer.weight}</span>
-          </div>
-
-          <div className="signal-card-title">{layer.title}</div>
-
-          <div className="signal-card-points">
-            {layer.points.map((point) => (
-              <div key={point} className="signal-card-point">
-                <span className="signal-card-dot" />
-                <span>{point}</span>
-              </div>
-            ))}
-          </div>
-
-          <div className="signal-card-bottom">
-            <div className="signal-meter">
-              <span style={{ width: `${layer.level * 3}%` }} />
-            </div>
-            <div className="signal-caption">вес слоя в гипотезе</div>
-          </div>
-        </article>
-      ))}
-    </div>
-  );
-}
-
 function TariffColumn({
   title,
   sections,
@@ -1552,27 +1488,26 @@ export default function Home() {
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
             <p className="section-copy">
-              Мы собираем ключевые сигналы и сразу сопоставляем их с форматами работы, чтобы визуально сравнить глубину двух тарифов.
+              Ниже — два тарифа без дополнительного деления блока. Сверху остаются карточки форматов, а под ними — детальное сравнение состава и глубины работы.
             </p>
           </div>
 
-          <div className="analysis-grid">
-            <SnapshotStructure />
-            <div className="analysis-right-card analysis-right-card-plain">
-              <div className="start-cards-row">
-                <StartCard
-                  title="On Rec"
-                  icon="/onrec_desc.svg"
-                  mobileIcon="/on-rec_mobile.svg"
-                  price="$770"
-                  href={onRecUrl}
-                />
+          <div className="analysis-single-column">
+            <div className="analysis-right-card analysis-right-card-plain analysis-right-card-full">
+              <div className="start-cards-row start-cards-row-horizontal">
                 <StartCard
                   title="Online-playground"
                   icon="/online_playground_desc.svg"
                   mobileIcon="/online-playground_mobile.svg"
                   price="$114"
                   href={payUrl}
+                />
+                <StartCard
+                  title="On Rec"
+                  icon="/onrec_desc.svg"
+                  mobileIcon="/on-rec_mobile.svg"
+                  price="$770"
+                  href={onRecUrl}
                 />
               </div>
               <TariffDetailsComparison />
@@ -2476,144 +2411,31 @@ export default function Home() {
           gap: 28px;
           align-items: start;
         }
+        .analysis-single-column {
+          display: block;
+        }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
-        .signal-board {
-          display: grid;
-          grid-template-columns: repeat(6, minmax(0, 1fr));
-          grid-template-rows: minmax(260px, auto) minmax(260px, auto);
-          grid-template-areas:
-            "pos pos pos struct struct struct"
-            "clients clients clients clients clients clients";
-          gap: 16px;
-          align-items: stretch;
-          height: auto;
-        }
-        .signal-card {
-          position: relative;
-          min-height: 0;
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          padding: 18px;
-          border-radius: 28px;
-          overflow: hidden;
-          background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-          border: 1px solid rgba(255,255,255,.13);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(0,0,0,.16);
-          backdrop-filter: blur(42px) saturate(145%);
-          -webkit-backdrop-filter: blur(42px) saturate(145%);
-        }
-        .signal-card-layout-1 { grid-area: pos; }
-        .signal-card-layout-2 { grid-area: struct; }
-        .signal-card-layout-3 { grid-area: clients; }
-        .signal-card-layout-4 { grid-area: auto; }
-        .signal-card-layout-5 { grid-area: auto; }
-        .signal-card::before {
-          content: "";
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          background: radial-gradient(circle at 20% 18%, rgba(255,255,255,.12), transparent 28%);
-          opacity: .85;
-        }
-        .signal-card-blue::after,
-        .signal-card-violet::after,
-        .signal-card-gold::after,
-        .signal-card-slate::after,
-        .signal-card-indigo::after {
-          content: "";
-          position: absolute;
-          left: 16px;
-          right: 16px;
-          bottom: 14px;
-          height: 1px;
-          opacity: .9;
-          background: linear-gradient(90deg, rgba(255,255,255,.06), rgba(255,255,255,.24), rgba(255,255,255,.06));
-        }
-        .signal-card-blue { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(35,88,255,.08); }
-        .signal-card-violet { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(109,76,255,.08); }
-        .signal-card-gold { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(247,210,55,.08); }
-        .signal-card-slate { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(120,136,190,.08); }
-        .signal-card-indigo { box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 18px 44px rgba(98,112,255,.08); }
-        .signal-card-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          color: rgba(255,255,255,.54);
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: .14em;
-        }
-        .signal-card-weight {
-          color: #f7d237;
-          font-weight: 700;
-          font-size: 12px;
-        }
-        .signal-card-title {
-          margin-top: 14px;
-          font-size: clamp(22px, 2vw, 34px);
-          line-height: .98;
-          letter-spacing: -.05em;
-          font-weight: 700;
-          max-width: 12ch;
-        }
-        .signal-card-points {
-          margin-top: 18px;
-          display: grid;
-          gap: 10px;
-        }
-        .signal-card-point {
-          display: grid;
-          grid-template-columns: 10px 1fr;
-          gap: 10px;
-          align-items: start;
-          color: rgba(255,255,255,.72);
-          font-size: 13px;
-          line-height: 1.45;
-        }
-        .signal-card-dot {
-          width: 6px;
-          height: 6px;
-          margin-top: 6px;
-          border-radius: 999px;
-          background: #f7d237;
-          box-shadow: 0 0 0 4px rgba(247,210,55,.08);
-        }
-        .signal-card-bottom { margin-top: 18px; }
-        .signal-meter {
-          height: 7px;
-          border-radius: 999px;
-          overflow: hidden;
-          background: rgba(255,255,255,.06);
-          border: 1px solid rgba(255,255,255,.04);
-        }
-        .signal-meter span {
-          display: block;
-          height: 100%;
-          border-radius: inherit;
-          background: linear-gradient(90deg, rgba(247,210,55,.94), rgba(145,120,255,.84));
-        }
-        .signal-caption {
-          margin-top: 8px;
-          color: rgba(255,255,255,.46);
-          font-size: 11px;
-          text-transform: uppercase;
-          letter-spacing: .12em;
-        }
         .analysis-right-card-plain {
           min-height: 100%;
           height: auto;
           overflow: visible;
           max-width: none;
         }
+        .analysis-right-card-full {
+          width: 100%;
+        }
         .start-cards-row {
           display: flex;
           flex-direction: column;
           gap: 22px;
           justify-content: flex-start;
+        }
+        .start-cards-row-horizontal {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 22px;
+          align-items: start;
         }
         .start-card { flex: 1 1 0; }
         .start-card-inner {
@@ -2834,232 +2656,10 @@ export default function Home() {
             justify-content: center;
           }
           .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
           .stage-carousel-item-free { width: min(680px, 78vw); }
-          .signal-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
-        }
-        @media (max-width: 1023px) {
-          .content-wrap { padding-top: 150px; }
-          .industries-pills-carousel { align-items: flex-start; }
-          .industries-pills-left { width: 100%; }
-          .stage-rotate-cue-right { margin-left: 0; }
-          .hero-section { min-height: auto; padding: 24px 18px; }
-          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom { grid-template-columns: 1fr 1fr; }
-          .start-cards-row { grid-template-columns: 1fr; }
-          .stage-carousel-scene { min-height: 520px; }
-          .stage-carousel-drum { height: 440px; }
-          .stage-carousel-item-free { width: min(700px, 82vw); }
-          .stage-card-top-panel,.stage-card-bottom-inner { grid-template-columns: 1fr; }
-          .stage-card-heading { align-items: flex-start; }
-        }
-        @media (max-width: 767px) {
-          .cursor-glow,
-          .page-background,
-          .glass-card::before,
-          .glass-card::after,
-          .glare-card::before,
-          .glare-card-lite::before,
-          .premium-glass::before,
-          .premium-glass::after { display: none !important; }
-          .content-wrap {
-            width: 100%;
-            max-width: 100%;
-            padding: 138px 14px 28px;
-          }
-          .header-fixed {
-            left: 0;
-            right: 0;
-            width: 100%;
-            background: rgba(4,16,39,.94);
-            backdrop-filter: none;
-            -webkit-backdrop-filter: none;
-          }
-          .header-inner {
-            width: 100%;
-            max-width: 100%;
-            padding: 12px 14px;
-            border-radius: 0;
-          }
-          .logo-link { min-width: 0; }
-          .logo-main { width: 168px; height: auto; }
-          .header-nav,
-          .header-actions {
-            width: 100%;
-            max-width: 100%;
-          }
-          .header-link { font-size: 14px; }
-          .header-actions {
-            gap: 10px;
-            padding-top: 8px;
-            justify-content: flex-start;
-          }
-          .header-faq-btn,
-          .header-login-btn {
-            min-height: 40px;
-          }
-          .header-pill { min-width: 52px; }
-          .header-cta {
-            width: 100%;
-            justify-content: center;
-          }
-          .section-head { margin-bottom: 18px; }
-          .section-title { font-size: clamp(30px, 10vw, 42px); }
-          .section-copy { font-size: 15px; line-height: 1.5; }
-          .hero-section {
-            min-height: auto;
-            padding: 14px;
-            border-radius: 28px;
-            overflow: hidden;
-          }
-          .hero-section::before,
-          .hero-section::after { display: none; }
-          .hero-grid { gap: 14px; }
-          .hero-left {
-            position: relative;
-            overflow: hidden;
-            border-radius: 24px;
-            padding: 18px 14px 18px;
-            background: linear-gradient(180deg, rgba(11,29,58,.84) 0%, rgba(11,29,58,.58) 100%);
-            border: 1px solid rgba(255,255,255,.08);
-          }
-         .hero-left::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(180deg, rgba(4,16,39,.10) 0%, rgba(4,16,39,.16) 42%, rgba(4,16,39,.52) 100%),
-    url("/hero_mobile.svg");
-  background-repeat: no-repeat;
-  background-size: cover, cover;
-  background-position: center, center;
-  opacity: .92;
-  z-index: 0;
-}
-          .hero-left > * { position: relative; z-index: 1; }
-          .hero-main-title { font-size: clamp(46px, 15vw, 72px); }
-          .hero-main-subtitle { margin-top: 14px; font-size: 22px; }
-          .hero-main-copy { margin-top: 16px; font-size: 16px; line-height: 1.45; max-width: 100%; }
-          .hero-highlights-row { margin-top: 18px; gap: 8px; }
-          .hero-highlight-chip { min-height: 30px; padding: 0 12px; font-size: 11px; }
-          .hero-actions-row { margin-top: 18px; gap: 10px; }
-          .hero-chart-float-title { margin-bottom: 10px; font-size: 11px; }
-          .hero-levers-inline {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap: 8px;
-            margin-bottom: 10px;
-          }
-          .hero-tag { width: 100%; min-height: 38px; padding: 0 10px; font-size: 12px; }
-          .hero-chart-box { padding: 12px; border-radius: 22px; }
-          .hero-chart-metrics-row { display: none; }
-          .bar-chart-scale span:nth-child(2),
-          .bar-chart-scale span:nth-child(4) { display: none; }
-          .bar-chart-scale { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
-          .bar-chart-scale span { font-size: 11px; }
-          .bar-chart-grid { inset: 38px 14px 14px; background-size: 50% 100%; }
-          .hero-chart-bottom { grid-template-columns: 1fr; gap: 8px; }
-          .hero-money-card { padding: 12px; }
-          .journey-compact { grid-template-columns: 1fr; gap: 12px; }
-          .journey-compact-card { min-height: unset; padding: 18px 16px 16px; border-radius: 22px; }
-          .journey-compact-top { grid-template-columns: 42px minmax(0,1fr); column-gap: 10px; margin-bottom: 10px; }
-          .journey-compact-title { max-width: none; font-size: 18px; }
-          .journey-compact-text { padding-left: 52px; font-size: 13px; line-height: 1.48; }
-          .preview-grid { grid-template-columns: 1fr; gap: 14px; }
-          .preview-input-intro { font-size: 14px; }
-          .preview-example-row { gap: 8px; }
-          .preview-example-chip { width: 100%; justify-content: center; min-height: 46px; padding: 0 16px; border: 1px solid rgba(247,210,55,.52); color: #0b1d3a; background: linear-gradient(135deg, rgba(247,210,55,1), rgba(255,229,122,.98)); box-shadow: inset 0 1px 0 rgba(255,255,255,.28), 0 10px 24px rgba(247,210,55,.22); font-weight: 800; }
-          .hero-chart-metrics-row,.dashboard-grid,.input-grid,.hero-chart-bottom,.compact-metrics-grid { grid-template-columns: 1fr; }
-          .input-shell { padding: 12px; border-radius: 18px; }
-          .glass-input { height: 46px; }
-          .dashboard-grid { gap: 10px; }
-          .metric-card,.model-card,.slider-card { min-height: auto; padding: 14px; border-radius: 20px; }
-          .metric-main-value,.model-main-value,.reserve-amount { font-size: 22px; }
-          .preview-side { position: static; padding: 16px; border-radius: 22px; }
-          .preview-actions-inline { gap: 12px; }
-          .preview-grid .mt-5 .grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; }
-          .preview-grid .mt-6 + .mt-3 {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0,1fr));
-            gap: 10px;
-          }
-          .results-grid-2x2 { grid-template-columns: 1fr; gap: 12px; }
-          .result-doc-card, .result-doc-card-inner { min-height: unset; }
-          .result-doc-card-inner { padding: 18px; border-radius: 22px; }
-          .result-doc-title { font-size: 22px; }
-          .result-doc-text { max-width: 100%; font-size: 14px; }
-          .industries-pills-carousel { gap: 12px; }
-          .industries-pills-left {
-            width: 100%;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0,1fr));
-            gap: 8px;
-          }
-          .industry-pill { min-height: 32px; padding: 0 8px; font-size: 11px; }
-          .stage-rotate-cue,
-          .stage-carousel-scene { display: none; }
-          .stage-carousel-mobile-rail {
-            display: flex;
-            gap: 10px;
-            width: 100%;
-            max-width: 100%;
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding: 2px 0 10px;
-            scroll-snap-type: x mandatory;
-            -webkit-overflow-scrolling: touch;
-          }
-          .stage-carousel-mobile-rail::-webkit-scrollbar { display: none; }
-          .stage-carousel-mobile-slide {
-            flex: 0 0 84%;
-            min-width: 84%;
-            width: 84%;
-            scroll-snap-align: start;
-          }
-          .stage-card-analytics { min-height: auto; border-radius: 22px; width: 100%; }
-          .stage-card-top-panel { padding: 14px; min-height: auto; gap: 10px; }
-          .stage-copy-block { display: grid; gap: 6px; }
-          .stage-copy-block h4 { font-size: 14px; }
-          .stage-copy-block p { font-size: 11px; line-height: 1.4; }
-          .stage-card-heading { min-width: 0; align-items: flex-start; }
-          .stage-card-heading span { font-size: 10px; }
-          .stage-card-heading strong { font-size: 28px; }
-          .stage-card-bottom-panel { padding: 12px; }
-          .stage-card-bottom-inner { grid-template-columns: 1fr; gap: 10px; }
-          .compact-metrics-grid { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
-          .stage-inline-metric { padding: 7px 8px; border-radius: 14px; min-height: 0; }
-          .stage-ring-label { font-size: 9px; letter-spacing: .08em; }
-          .stage-inline-metric-value { margin-top: 4px; font-size: 14px; }
-          .stage-bars-title { font-size: 16px; }
-          .stage-bars-wrap { margin-top: 10px; gap: 10px; }
-          .stage-bar-label { margin-bottom: 6px; font-size: 10px; }
-          .stage-bar-track { height: 12px; }
-          .stage-bar-track-thin { height: 8px; }
-          .analysis-grid { grid-template-columns: 1fr; gap: 18px; }
-          .signal-board {
-            grid-template-columns: 1fr;
-            grid-template-rows: auto;
-            grid-template-areas: none;
-            height: auto;
-            gap: 12px;
-          }
-          .signal-card,
-          .signal-card-layout-1,
-          .signal-card-layout-2,
-          .signal-card-layout-3,
-          .signal-card-layout-4,
-          .signal-card-layout-5 {
-            grid-area: auto;
-          }
-          .signal-card {
-            min-height: unset;
-            height: auto;
-            padding: 16px;
-            border-radius: 22px;
-          }
-          .signal-card-title { font-size: 22px; max-width: 100%; }
-          .signal-card-points { gap: 8px; }
-          .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; }
           .start-cards-row { gap: 14px; }
           .tariff-comparison-grid {
