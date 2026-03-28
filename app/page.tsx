@@ -2571,7 +2571,7 @@ export default function Home() {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
           gap: 28px;
-          margin-top: 0;
+          margin-top: 20;
           align-items: start;
         }
         .tariff-column {
