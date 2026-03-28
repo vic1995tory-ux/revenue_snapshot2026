@@ -410,33 +410,187 @@ function HeroEconomyChart() {
   );
 }
 
+function AttentionIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.25 18 16.1a1.2 1.2 0 0 1-1.04 1.8H3.04A1.2 1.2 0 0 1 2 16.1l8-13.85Z" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M10 7v4.4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      <circle cx="10" cy="14.25" r="0.95" fill="currentColor" />
+    </svg>
+  );
+}
+
+function ChipIcon({ kind }: { kind: "team" | "chat" | "solo" | "online" | "custom" | "rate" | "swot" | "segment" | "practice" | "jtbd" | "brief" }) {
+  if (kind === "team") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="7" cy="7" r="2.2" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="13.2" cy="7.6" r="1.8" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M3.8 14c.7-2.1 2.3-3.2 4.7-3.2 2.4 0 4 1.1 4.7 3.2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "chat") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 5.6A2.6 2.6 0 0 1 6.6 3h6.8A2.6 2.6 0 0 1 16 5.6v4.1a2.6 2.6 0 0 1-2.6 2.6H9l-3.3 2.7v-2.7H6.6A2.6 2.6 0 0 1 4 9.7V5.6Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "solo") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <circle cx="10" cy="6.5" r="2.3" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M5.4 15c.75-2.25 2.28-3.37 4.6-3.37 2.33 0 3.86 1.12 4.6 3.37" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "online") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3" y="4" width="14" height="9.5" rx="2" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M7.1 16h5.8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "rate") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 14.8h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+        <path d="M6 12.5V9.2M10 12.5V6.3M14 12.5V7.8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "swot") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <rect x="3.5" y="3.5" width="13" height="13" rx="2.4" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M10 3.8v12.4M3.8 10h12.4" stroke="currentColor" strokeWidth="1.3" />
+      </svg>
+    );
+  }
+  if (kind === "segment") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M10 10V3.5A6.5 6.5 0 1 1 3.5 10H10Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+        <path d="M11.2 3.7a6.35 6.35 0 0 1 5.1 5.1h-5.1V3.7Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "practice") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M5 10.4 8.1 13.5 15 6.5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    );
+  }
+  if (kind === "jtbd") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M4 5.5h12M4 10h8M4 14.5h10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (kind === "brief") {
+    return (
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M6 4.5h8a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H6A1.5 1.5 0 0 1 4.5 15V6A1.5 1.5 0 0 1 6 4.5Z" stroke="currentColor" strokeWidth="1.5"/>
+        <path d="M7 8h6M7 11h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M4 10.2 8 14l8-8" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TagList({
+  items,
+  variant = "soft",
+  icon = "custom",
+}: {
+  items: string[];
+  variant?: "soft" | "yellow" | "icon-solid";
+  icon?: React.ComponentProps<typeof ChipIcon>["kind"];
+}) {
+  return (
+    <div className={`tariff-tag-list tariff-tag-list-${variant}`}>
+      {items.map((item) => (
+        <div key={item} className={`tariff-tag tariff-tag-${variant}`}>
+          <span className="tariff-tag-icon"><ChipIcon kind={icon} /></span>
+          <span>{item}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function TariffColumn({
   title,
   sections,
+  disclaimer,
 }: {
   title: string;
   sections: Array<{
     label: string;
     items?: string[];
     notes?: string[];
+    render?: "list" | "tags" | "icon-tags" | "yellow-tags";
+    iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   }>;
+  disclaimer?: string[];
 }) {
+  const [open, setOpen] = useState(false);
+
   return (
     <article className="tariff-column glare-card">
-      <div className="tariff-column-title">{title}</div>
+      <div className="tariff-column-head">
+        <div className="tariff-column-title">{title}</div>
+        {disclaimer?.length ? (
+          <button
+            type="button"
+            className="tariff-attention"
+            aria-label="Show disclaimer"
+            aria-expanded={open}
+            onMouseEnter={() => setOpen(true)}
+            onMouseLeave={() => setOpen(false)}
+            onFocus={() => setOpen(true)}
+            onBlur={() => setOpen(false)}
+            onClick={() => setOpen((v) => !v)}
+          >
+            <AttentionIcon />
+            <span className={`tariff-disclaimer-pop ${open ? "is-open" : ""}`}>
+              {disclaimer.map((note) => (
+                <span key={note} className="tariff-disclaimer-line">{note}</span>
+              ))}
+            </span>
+          </button>
+        ) : null}
+      </div>
+
       <div className="tariff-column-sections">
         {sections.map((section) => (
           <div key={section.label} className="tariff-section">
             <div className="tariff-section-label">{section.label}</div>
             {section.items?.length ? (
-              <div className="tariff-check-list">
-                {section.items.map((item) => (
-                  <div key={item} className="tariff-check-item">
-                    <span className="tariff-check-mark">✔</span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
+              section.render === "tags" ? (
+                <TagList items={section.items} variant="soft" icon={section.iconKind ?? "custom"} />
+              ) : section.render === "icon-tags" ? (
+                <TagList items={section.items} variant="icon-solid" icon={section.iconKind ?? "custom"} />
+              ) : section.render === "yellow-tags" ? (
+                <TagList items={section.items} variant="yellow" icon={section.iconKind ?? "custom"} />
+              ) : (
+                <div className="tariff-check-list">
+                  {section.items.map((item) => (
+                    <div key={item} className="tariff-check-item">
+                      <span className="tariff-check-mark"><ChipIcon kind={section.iconKind ?? "custom"} /></span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )
             ) : null}
             {section.notes?.length ? (
               <div className="tariff-note-list">
@@ -456,9 +610,22 @@ function TariffColumn({
 }
 
 function TariffDetailsComparison() {
+  const playgroundDisclaimer = [
+    "Инструмент не заменяет глубокую операционную работу.",
+    "Рекомендации требуют адаптации под конкретный бизнес.",
+  ];
+
+  const onRecDisclaimer = [
+    "Результат формируется на основе совместной работы и предоставленной информации.",
+    "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса.",
+    "Рекомендации требуют внедрения и управленческих решений.",
+  ];
+
   const playgroundSections = [
     {
-      label: "Что входит",
+      label: "Input Data",
+      render: "tags" as const,
+      iconKind: "custom" as const,
       items: [
         "Сбор данных",
         "Позиционирование",
@@ -472,6 +639,7 @@ function TariffDetailsComparison() {
     },
     {
       label: "Экономическая модель и анализ",
+      iconKind: "rate" as const,
       items: [
         "Сборка модели на основе введенных данных",
         "Оценка текущей эффективности",
@@ -480,6 +648,7 @@ function TariffDetailsComparison() {
     },
     {
       label: "Рычаги роста и сценарии",
+      iconKind: "rate" as const,
       items: [
         "Определение потенциальных драйверов роста",
         "Приоритизация по предполагаемому влиянию",
@@ -488,6 +657,8 @@ function TariffDetailsComparison() {
     },
     {
       label: "Финальный результат",
+      render: "yellow-tags" as const,
+      iconKind: "jtbd" as const,
       items: [
         "Economic Rate (оценка модели на основе вводных)",
         "Главный фактор, сдерживающий рост (гипотеза)",
@@ -497,6 +668,7 @@ function TariffDetailsComparison() {
     },
     {
       label: "Decompose (разбор с командой)",
+      iconKind: "chat" as const,
       items: [
         "Онлайн-встреча 60 минут",
         "Обсуждение результатов и допущений",
@@ -506,17 +678,13 @@ function TariffDetailsComparison() {
     },
     {
       label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "solo" as const,
       items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
     },
     {
-      label: "Disclaimer",
-      notes: [
-        "Инструмент не заменяет глубокую операционную работу",
-        "Рекомендации требуют адаптации под конкретный бизнес",
-      ],
-    },
-    {
       label: "Результат",
+      iconKind: "practice" as const,
       items: [
         "Структурированное понимание текущей ситуации",
         "Набор гипотез для роста",
@@ -528,7 +696,9 @@ function TariffDetailsComparison() {
 
   const onRecSections = [
     {
-      label: "Что входит",
+      label: "Input Data",
+      render: "tags" as const,
+      iconKind: "custom" as const,
       items: [
         "Персональный сбор данных",
         "Позиционирование",
@@ -538,11 +708,11 @@ function TariffDetailsComparison() {
         "Структура и процессы",
         "Аналитика и управление",
         "Стратегия",
-        "Личный брифинг с командой",
       ],
     },
     {
       label: "Экономическая модель и анализ",
+      iconKind: "rate" as const,
       items: [
         "Сборка модели на основе интервью и уточнений",
         "Углубленная оценка эффективности",
@@ -551,6 +721,7 @@ function TariffDetailsComparison() {
     },
     {
       label: "Рычаги роста и сценарии",
+      iconKind: "rate" as const,
       items: [
         "Определение ключевых драйверов роста",
         "Приоритизация с учетом реальной операционной ситуации",
@@ -558,16 +729,29 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Дополнительная проработка",
+      label: "Рабочий процесс",
+      render: "icon-tags" as const,
+      iconKind: "team" as const,
       items: [
-        "SWOT-анализ бизнеса",
-        "Сегментация аудитории",
-        "Позиционирование под каждый сегмент",
-        "Best practices по рынку и модели",
+        "Личный брифинг с командой",
+        "Дополнительные уточнения в процессе",
+        "Связь во время подготовки результата",
+      ],
+    },
+    {
+      label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "online" as const,
+      items: [
+        "Работа с участием команды",
+        "Онлайн-коммуникация",
+        "Индивидуальная проработка",
       ],
     },
     {
       label: "Финальный результат",
+      render: "yellow-tags" as const,
+      iconKind: "swot" as const,
       items: [
         "Economic Rate",
         "Главный фактор, сдерживающий рост",
@@ -579,31 +763,18 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Рабочий процесс",
+      label: "Дополнительная проработка",
+      iconKind: "segment" as const,
       items: [
-        "Личный брифинг с командой",
-        "Дополнительные уточнения в процессе",
-        "Связь во время подготовки результата",
-      ],
-    },
-    {
-      label: "Формат работы",
-      items: [
-        "Работа с участием команды",
-        "Онлайн-коммуникация",
-        "Индивидуальная проработка",
-      ],
-    },
-    {
-      label: "Disclaimer",
-      notes: [
-        "Результат формируется на основе совместной работы и предоставленной информации",
-        "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса",
-        "Рекомендации требуют внедрения и управленческих решений",
+        "SWOT-анализ бизнеса",
+        "Сегментация аудитории",
+        "Позиционирование под каждый сегмент",
+        "Best practices по рынку и модели",
       ],
     },
     {
       label: "Результат",
+      iconKind: "practice" as const,
       items: [
         "Более точная картина бизнеса с учетом контекста",
         "Проверенные гипотезы роста",
@@ -615,8 +786,16 @@ function TariffDetailsComparison() {
 
   return (
     <div className="tariff-comparison-grid">
-      <TariffColumn title="ONLINE PLAYGROUND" sections={playgroundSections} />
-      <TariffColumn title="ON REC" sections={onRecSections} />
+      <TariffColumn
+        title="ONLINE PLAYGROUND"
+        sections={playgroundSections}
+        disclaimer={playgroundDisclaimer}
+      />
+      <TariffColumn
+        title="ON REC"
+        sections={onRecSections}
+        disclaimer={onRecDisclaimer}
+      />
     </div>
   );
 }
@@ -2677,14 +2856,63 @@ On Rec:
           backdrop-filter: blur(28px) saturate(135%);
           -webkit-backdrop-filter: blur(28px) saturate(135%);
         }
-        .tariff-column-title {
+        .tariff-column-head {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
           margin-bottom: 16px;
+        }
+        .tariff-column-title {
           color: #f7d237;
           font-size: 18px;
           line-height: 1;
           letter-spacing: -.03em;
           font-weight: 800;
         }
+        .tariff-attention {
+          position: relative;
+          flex: none;
+          width: 34px;
+          height: 34px;
+          border-radius: 999px;
+          border: 1px solid rgba(247,210,55,.35);
+          background: rgba(247,210,55,.08);
+          color: #f7d237;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .tariff-attention svg { width: 16px; height: 16px; }
+        .tariff-disclaimer-pop {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: min(280px, 72vw);
+          padding: 12px 14px;
+          border-radius: 16px;
+          background: rgba(7,15,32,.97);
+          border: 1px solid rgba(247,210,55,.24);
+          box-shadow: 0 18px 34px rgba(0,0,0,.38);
+          color: rgba(255,255,255,.84);
+          font-size: 12px;
+          line-height: 1.5;
+          text-align: left;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(6px);
+          transition: .18s ease;
+          z-index: 20;
+          pointer-events: none;
+        }
+        .tariff-disclaimer-pop.is-open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        .tariff-disclaimer-line { display: block; }
+        .tariff-disclaimer-line + .tariff-disclaimer-line { margin-top: 6px; }
         .tariff-column-sections {
           display: grid;
           gap: 14px;
@@ -2713,8 +2941,8 @@ On Rec:
         .tariff-check-item,
         .tariff-note-item {
           display: grid;
-          grid-template-columns: 16px 1fr;
-          gap: 8px;
+          grid-template-columns: 18px 1fr;
+          gap: 10px;
           align-items: start;
           color: rgba(255,255,255,.76);
           font-size: 13px;
@@ -2722,13 +2950,60 @@ On Rec:
         }
         .tariff-check-mark {
           color: #f7d237;
-          font-weight: 800;
-          line-height: 1.2;
+          width: 18px;
+          height: 18px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
+        .tariff-check-mark svg,
+        .tariff-tag-icon svg { width: 16px; height: 16px; }
         .tariff-note-bullet {
           color: rgba(255,255,255,.56);
           line-height: 1.2;
         }
+        .tariff-tag-list {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .tariff-tag {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 34px;
+          padding: 7px 12px;
+          border-radius: 999px;
+          font-size: 12px;
+          line-height: 1.3;
+        }
+        .tariff-tag-icon {
+          width: 16px;
+          height: 16px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          flex: none;
+        }
+        .tariff-tag-soft {
+          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(255,255,255,.12);
+          color: rgba(255,255,255,.82);
+        }
+        .tariff-tag-soft .tariff-tag-icon { color: #f7d237; }
+        .tariff-tag-icon-solid {
+          background: rgba(247,210,55,.08);
+          border: 1px solid rgba(247,210,55,.22);
+          color: #fff4bf;
+        }
+        .tariff-tag-icon-solid .tariff-tag-icon { color: #f7d237; }
+        .tariff-tag-yellow {
+          background: rgba(247,210,55,.96);
+          border: 1px solid rgba(247,210,55,1);
+          color: #1a2133;
+          font-weight: 600;
+        }
+        .tariff-tag-yellow .tariff-tag-icon { color: #1a2133; }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
         }
@@ -2824,9 +3099,15 @@ On Rec:
             padding: 16px 14px;
             border-radius: 22px;
           }
+          .tariff-column-head {
+            margin-bottom: 12px;
+          }
           .tariff-column-title {
             font-size: 16px;
-            margin-bottom: 12px;
+          }
+          .tariff-attention {
+            width: 30px;
+            height: 30px;
           }
           .tariff-section {
             padding-top: 12px;
