@@ -545,7 +545,7 @@ function TariffColumn({
   const [open, setOpen] = useState(false);
 
   return (
-<article className="tariff-column glare-card-lite">
+<article className="tariff-column">
       <div className="tariff-column-head">
         <div className="tariff-column-title">{title}</div>
         {disclaimer?.length ? (
