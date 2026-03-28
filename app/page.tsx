@@ -429,28 +429,12 @@ function SnapshotStructure() {
       tone: "blue",
     },
     {
-      title: "Экономика",
-      weight: "18%",
-      hint: "unit-логика",
-      points: ["что происходит с маржой и cost stack", "какой рычаг даёт главный финансовый сдвиг"],
-      level: 18,
-      tone: "gold",
-    },
-    {
       title: "Клиенты",
       weight: "14%",
       hint: "спрос и поведение",
       points: ["кто приносит деньги сейчас", "где теряется конверсия по пути"],
       level: 14,
       tone: "slate",
-    },
-    {
-      title: "Продукт",
-      weight: "14%",
-      hint: "ценность и упаковка",
-      points: ["что продаётся легче всего", "какая версия оффера масштабируется"],
-      level: 14,
-      tone: "indigo",
     },
   ];
 
@@ -486,6 +470,217 @@ function SnapshotStructure() {
           </div>
         </article>
       ))}
+    </div>
+  );
+}
+
+function TariffColumn({
+  title,
+  sections,
+}: {
+  title: string;
+  sections: Array<{
+    label: string;
+    items?: string[];
+    notes?: string[];
+  }>;
+}) {
+  return (
+    <article className="tariff-column glare-card">
+      <div className="tariff-column-title">{title}</div>
+      <div className="tariff-column-sections">
+        {sections.map((section) => (
+          <div key={section.label} className="tariff-section">
+            <div className="tariff-section-label">{section.label}</div>
+            {section.items?.length ? (
+              <div className="tariff-check-list">
+                {section.items.map((item) => (
+                  <div key={item} className="tariff-check-item">
+                    <span className="tariff-check-mark">✔</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            {section.notes?.length ? (
+              <div className="tariff-note-list">
+                {section.notes.map((note) => (
+                  <div key={note} className="tariff-note-item">
+                    <span className="tariff-note-bullet">•</span>
+                    <span>{note}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ))}
+      </div>
+    </article>
+  );
+}
+
+function TariffDetailsComparison() {
+  const playgroundSections = [
+    {
+      label: "Что входит",
+      items: [
+        "Сбор данных",
+        "Позиционирование",
+        "Экономика бизнеса",
+        "Клиенты и поток",
+        "Продукт и продажи",
+        "Структура и процессы",
+        "Аналитика и управление",
+        "Стратегия",
+      ],
+    },
+    {
+      label: "Экономическая модель и анализ",
+      items: [
+        "Сборка модели на основе введенных данных",
+        "Оценка текущей эффективности",
+        "Выявление возможных точек потерь",
+      ],
+    },
+    {
+      label: "Рычаги роста и сценарии",
+      items: [
+        "Определение потенциальных драйверов роста",
+        "Приоритизация по предполагаемому влиянию",
+        "Связка с текущей бизнес-моделью",
+      ],
+    },
+    {
+      label: "Финальный результат",
+      items: [
+        "Economic Rate (оценка модели на основе вводных)",
+        "Главный фактор, сдерживающий рост (гипотеза)",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
+      ],
+    },
+    {
+      label: "Decompose (разбор с командой)",
+      items: [
+        "Онлайн-встреча 60 минут",
+        "Обсуждение результатов и допущений",
+        "Пояснение логики выводов",
+        "Ответы на вопросы",
+      ],
+    },
+    {
+      label: "Формат работы",
+      items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
+    },
+    {
+      label: "Disclaimer",
+      notes: [
+        "Инструмент не заменяет глубокую операционную работу",
+        "Рекомендации требуют адаптации под конкретный бизнес",
+      ],
+    },
+    {
+      label: "Результат",
+      items: [
+        "Структурированное понимание текущей ситуации",
+        "Набор гипотез для роста",
+        "Возможные направления для изменений",
+        "Основа для дальнейшей проработки",
+      ],
+    },
+  ];
+
+  const onRecSections = [
+    {
+      label: "Что входит",
+      items: [
+        "Персональный сбор данных",
+        "Позиционирование",
+        "Экономика бизнеса",
+        "Клиенты и поток",
+        "Продукт и продажи",
+        "Структура и процессы",
+        "Аналитика и управление",
+        "Стратегия",
+        "Личный брифинг с командой",
+      ],
+    },
+    {
+      label: "Экономическая модель и анализ",
+      items: [
+        "Сборка модели на основе интервью и уточнений",
+        "Углубленная оценка эффективности",
+        "Выявление точек потерь с учетом контекста",
+      ],
+    },
+    {
+      label: "Рычаги роста и сценарии",
+      items: [
+        "Определение ключевых драйверов роста",
+        "Приоритизация с учетом реальной операционной ситуации",
+        "Связка с текущими ограничениями бизнеса",
+      ],
+    },
+    {
+      label: "Дополнительная проработка",
+      items: [
+        "SWOT-анализ бизнеса",
+        "Сегментация аудитории",
+        "Позиционирование под каждый сегмент",
+        "Best practices по рынку и модели",
+      ],
+    },
+    {
+      label: "Финальный результат",
+      items: [
+        "Economic Rate",
+        "Главный фактор, сдерживающий рост",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
+        "SWOT-анализ",
+        "Сегментация и позиционирование",
+        "Практики для внедрения",
+      ],
+    },
+    {
+      label: "Рабочий процесс",
+      items: [
+        "Личный брифинг с командой",
+        "Дополнительные уточнения в процессе",
+        "Связь во время подготовки результата",
+      ],
+    },
+    {
+      label: "Формат работы",
+      items: [
+        "Работа с участием команды",
+        "Онлайн-коммуникация",
+        "Индивидуальная проработка",
+      ],
+    },
+    {
+      label: "Disclaimer",
+      notes: [
+        "Результат формируется на основе совместной работы и предоставленной информации",
+        "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса",
+        "Рекомендации требуют внедрения и управленческих решений",
+      ],
+    },
+    {
+      label: "Результат",
+      items: [
+        "Более точная картина бизнеса с учетом контекста",
+        "Проверенные гипотезы роста",
+        "Конкретные направления изменений",
+        "Основа для внедрения и масштабирования",
+      ],
+    },
+  ];
+
+  return (
+    <div className="tariff-comparison-grid">
+      <TariffColumn title="ONLINE PLAYGROUND" sections={playgroundSections} />
+      <TariffColumn title="ON REC" sections={onRecSections} />
     </div>
   );
 }
@@ -1357,7 +1552,7 @@ export default function Home() {
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">Что вас ждет</h2>
             <p className="section-copy">
-              Мы собираем сигналы по пяти направлениям, чтобы увидеть не просто набор ответов, а карту решений.
+              Мы собираем ключевые сигналы и сразу сопоставляем их с форматами работы, чтобы визуально сравнить глубину двух тарифов.
             </p>
           </div>
 
@@ -1380,6 +1575,7 @@ export default function Home() {
                   href={payUrl}
                 />
               </div>
+              <TariffDetailsComparison />
             </div>
           </div>
         </section>
@@ -2276,22 +2472,22 @@ export default function Home() {
         .stage-card-watermark-icon { display: none; }
         .analysis-grid {
           display: grid;
-          grid-template-columns: minmax(0, 1.24fr) minmax(400px, .76fr);
+          grid-template-columns: minmax(0, 1.02fr) minmax(0, .98fr);
           gap: 28px;
-          align-items: stretch;
+          align-items: start;
         }
         .analysis-left-title { margin: 0; font-size: clamp(30px, 2.8vw, 44px); line-height: .98; letter-spacing: -.05em; font-weight: 700; max-width: 680px; }
         .snapshot-builder-copy { margin: 14px 0 18px; max-width: 680px; color: rgba(255,255,255,.7); font-size: 16px; line-height: 1.58; }
         .signal-board {
           display: grid;
           grid-template-columns: repeat(6, minmax(0, 1fr));
-          grid-template-rows: 1fr 1fr;
+          grid-template-rows: minmax(260px, auto) minmax(260px, auto);
           grid-template-areas:
             "pos pos pos struct struct struct"
-            "econ econ clients clients product product";
+            "clients clients clients clients clients clients";
           gap: 16px;
           align-items: stretch;
-          height: 790px;
+          height: auto;
         }
         .signal-card {
           position: relative;
@@ -2311,9 +2507,9 @@ export default function Home() {
         }
         .signal-card-layout-1 { grid-area: pos; }
         .signal-card-layout-2 { grid-area: struct; }
-        .signal-card-layout-3 { grid-area: econ; }
-        .signal-card-layout-4 { grid-area: clients; }
-        .signal-card-layout-5 { grid-area: product; }
+        .signal-card-layout-3 { grid-area: clients; }
+        .signal-card-layout-4 { grid-area: auto; }
+        .signal-card-layout-5 { grid-area: auto; }
         .signal-card::before {
           content: "";
           position: absolute;
@@ -2409,7 +2605,7 @@ export default function Home() {
         }
         .analysis-right-card-plain {
           min-height: 100%;
-          height: 790px;
+          height: auto;
           overflow: visible;
           max-width: none;
         }
@@ -2417,8 +2613,7 @@ export default function Home() {
           display: flex;
           flex-direction: column;
           gap: 22px;
-          height: 100%;
-          justify-content: space-between;
+          justify-content: flex-start;
         }
         .start-card { flex: 1 1 0; }
         .start-card-inner {
@@ -2490,6 +2685,74 @@ export default function Home() {
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
           animation: tgGradientFlow 6s ease-in-out infinite;
           pointer-events: auto;
+        }
+        .tariff-comparison-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+          margin-top: 18px;
+        }
+        .tariff-column {
+          position: relative;
+          border-radius: 28px;
+          padding: 20px 18px;
+          background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 42px rgba(0,0,0,.14);
+          backdrop-filter: blur(28px) saturate(135%);
+          -webkit-backdrop-filter: blur(28px) saturate(135%);
+        }
+        .tariff-column-title {
+          margin-bottom: 16px;
+          color: #f7d237;
+          font-size: 18px;
+          line-height: 1;
+          letter-spacing: -.03em;
+          font-weight: 800;
+        }
+        .tariff-column-sections {
+          display: grid;
+          gap: 14px;
+        }
+        .tariff-section {
+          padding-top: 14px;
+          border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .tariff-section:first-child {
+          padding-top: 0;
+          border-top: none;
+        }
+        .tariff-section-label {
+          margin-bottom: 10px;
+          color: #ffffff;
+          font-size: 14px;
+          line-height: 1.25;
+          font-weight: 700;
+          letter-spacing: -.01em;
+        }
+        .tariff-check-list,
+        .tariff-note-list {
+          display: grid;
+          gap: 8px;
+        }
+        .tariff-check-item,
+        .tariff-note-item {
+          display: grid;
+          grid-template-columns: 16px 1fr;
+          gap: 8px;
+          align-items: start;
+          color: rgba(255,255,255,.76);
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .tariff-check-mark {
+          color: #f7d237;
+          font-weight: 800;
+          line-height: 1.2;
+        }
+        .tariff-note-bullet {
+          color: rgba(255,255,255,.56);
+          line-height: 1.2;
         }
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
@@ -2572,7 +2835,7 @@ export default function Home() {
           }
           .preview-grid,.analysis-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-side { position: static; }
-          .journey-compact,.results-grid-2x2 { grid-template-columns: 1fr; }
+          .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
           .stage-carousel-item-free { width: min(680px, 78vw); }
           .signal-board { grid-template-columns: repeat(2, minmax(0,1fr)); }
         }
@@ -2799,6 +3062,30 @@ export default function Home() {
           .signal-card-point { font-size: 13px; }
           .analysis-right-card-plain { height: auto; }
           .start-cards-row { gap: 14px; }
+          .tariff-comparison-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 14px;
+          }
+          .tariff-column {
+            padding: 16px 14px;
+            border-radius: 22px;
+          }
+          .tariff-column-title {
+            font-size: 16px;
+            margin-bottom: 12px;
+          }
+          .tariff-section {
+            padding-top: 12px;
+          }
+          .tariff-section-label {
+            font-size: 13px;
+          }
+          .tariff-check-item,
+          .tariff-note-item {
+            font-size: 12px;
+            line-height: 1.45;
+          }
           .start-card { flex: none; }
           .start-card-inner {
             min-height: 0;
