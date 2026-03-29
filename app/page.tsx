@@ -1103,8 +1103,6 @@ export default function Home() {
     }>
   >([]);
 
-  const [cursor, setCursor] = useState({ x: -200, y: -200 });
-  const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
   const journeySectionRef = useRef<HTMLElement | null>(null);
@@ -1267,19 +1265,6 @@ AI не придумывает выводы произвольно — он ра
     },
   ];
 
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-      frameRef.current = requestAnimationFrame(() => {
-        setCursor({ x: e.clientX, y: e.clientY });
-      });
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => {
-      window.removeEventListener("mousemove", onMove);
-      if (frameRef.current) cancelAnimationFrame(frameRef.current);
-    };
-  }, []);
 
   useEffect(() => {
     const onResize = () => {
@@ -1440,7 +1425,7 @@ AI не придумывает выводы произвольно — он ра
 
   return (
     <main className="page-shell" id="top">
-      <div className="cursor-glow" style={{ transform: `translate(${cursor.x - 54}px, ${cursor.y - 54}px)` }} />
+   
 
       <div className="page-background" aria-hidden="true">
         <div className="aurora aurora-1" />
@@ -2063,21 +2048,6 @@ AI не придумывает выводы произвольно — он ра
           object-position: left center;
           display: block;
           flex-shrink: 0;
-        }
-        .cursor-glow {
-          position: fixed;
-          left: 0;
-          top: 0;
-          width: 108px;
-          height: 108px;
-          border-radius: 9999px;
-          pointer-events: none;
-          z-index: 1;
-          background: radial-gradient(circle, rgba(247,210,55,0.18) 0%, rgba(247,210,55,0.08) 35%, rgba(247,210,55,0.02) 62%, transparent 80%);
-          filter: blur(16px);
-          opacity: 0.62;
-          mix-blend-mode: screen;
-          transition: transform 0.08s linear;
         }
         .aurora {
           position: absolute;
