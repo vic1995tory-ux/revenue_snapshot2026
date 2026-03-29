@@ -1471,7 +1471,7 @@ AI не придумывает выводы произвольно — он ра
             >
               FAQ
             </button>
-            <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Login</a>
+            <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Profile</a>
             <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Выбрать способ прохождения</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
