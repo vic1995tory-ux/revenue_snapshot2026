@@ -1795,7 +1795,7 @@ On Rec:
         <section id="analysis" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
-            <h2 className="section-title analysis-section-title">Что вас ждет</h2>
+            <h2 className="section-title analysis-section-title">С чего начать?</h2>
             <p className="section-copy">
               Вам предоставляется <span className="accent-word">Личный кабинет на 365 дней</span>, где хранятся ваши результаты, и будут добавляться <span className="accent-word">инструменты по спец условиям</span>
             </p>
