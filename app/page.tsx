@@ -1241,8 +1241,8 @@ function StageCarousel() {
 }
 
 export default function Home() {
-  const [clientsInput, setClientsInput] = useState("");
-  const [checkInput, setCheckInput] = useState("");
+  const [clientsInput, setClientsInput] = useState("20");
+  const [checkInput, setCheckInput] = useState("2000");
   const clientsBase = parseNumeric(clientsInput, 0);
   const checkBase = parseNumeric(checkInput, 0);
 
@@ -1266,6 +1266,42 @@ export default function Home() {
   const frameRef = useRef<number | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
+  const journeySectionRef = useRef<HTMLElement | null>(null);
+  const [journeyActiveIndex, setJourneyActiveIndex] = useState(0);
+  const journeySteps = [
+    {
+      number: "01",
+      title: "Выбор варианта прохождения",
+      text: "Online Playground — самостоятельный формат. On Rec — формат с участием команды.",
+      linkLabel: "Подробнее",
+      linkHref: "#tariffs",
+    },
+    {
+      number: "02",
+      title: "Сбор данных",
+      text: "Фиксируются ключевые параметры бизнеса: экономика, продажи, клиенты, структура и ограничения.",
+    },
+    {
+      number: "03",
+      title: "Генерация результата",
+      text: "Система собирает Revenue Snapshot и связывает данные в единую аналитическую модель.",
+    },
+    {
+      number: "04",
+      title: "Изучение текущих возможностей",
+      text: "Вы видите точки потерь, текущее ограничение роста и главный рычаг, дающий максимальный эффект.",
+    },
+    {
+      number: "05",
+      title: "60-минутная декомпозиция",
+      text: "Результаты можно разобрать с C-level специалистами Growth Avenue в сфере маркетинга и продаж.",
+    },
+    {
+      number: "06",
+      title: "Личный кабинет и дальнейшие возможности",
+      text: "3 запуска, разные бизнесы, доступ к результатам и интерактивной статистике, управление рычагами, PDF-скачивание и спецусловия на новые инструменты Growth Avenue.",
+    },
+  ] as const;
   const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
   const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
@@ -1417,6 +1453,36 @@ AI не придумывает выводы произвольно — он ра
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [faqOpen]);
+
+  useEffect(() => {
+    const handleJourneyScroll = () => {
+      const section = journeySectionRef.current;
+      if (!section || window.innerWidth <= 1180) {
+        setJourneyActiveIndex(0);
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const rawProgress = (window.innerHeight * 0.2 - rect.top) / sectionHeight;
+      const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
+      const nextIndex = Math.min(
+        journeySteps.length - 1,
+        Math.floor(progress * journeySteps.length)
+      );
+
+      setJourneyActiveIndex(nextIndex);
+    };
+
+    handleJourneyScroll();
+    window.addEventListener("scroll", handleJourneyScroll, { passive: true });
+    window.addEventListener("resize", handleJourneyScroll);
+
+    return () => {
+      window.removeEventListener("scroll", handleJourneyScroll);
+      window.removeEventListener("resize", handleJourneyScroll);
+    };
+  }, [journeySteps.length]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
@@ -1574,7 +1640,7 @@ AI не придумывает выводы произвольно — он ра
               FAQ
             </button>
             <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Login</a>
-            <a href={payUrl} className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Выбрать способ прохождения</a>
+            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Выбрать способ прохождения</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1606,7 +1672,7 @@ AI не придумывает выводы произвольно — он ра
               </div>
 
               <div className="hero-actions-row">
-                <a href={payUrl} className="tg-gradient-btn inline-flex">Выбрать способ прохождения</a>
+                <a href="#tariffs" className="tg-gradient-btn inline-flex">Выбрать способ прохождения</a>
                 <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
               </div>
             </div>
@@ -1615,64 +1681,55 @@ AI не придумывает выводы произвольно — он ра
           </div>
         </section>
 
-        <section id="how-it-works" className="mb-16">
-          <div className="section-head">
-            <div className="section-kicker">Как это работает</div>
-            <h2 className="section-title">Путь от базовых параметров к полной картине экономики бизнеса</h2>
-            <p className="section-copy">
-              Revenue Snapshot показывает, что является результатом, как он формируется и в каком формате его можно получить.
-            </p>
-          </div>
+        <section id="how-it-works" className="mb-16 journey-scroll-shell" ref={journeySectionRef}>
+          <div className="journey-scroll-sticky">
+            <div className="section-head">
+              <div className="section-kicker">Как это работает</div>
+              <h2 className="section-title">Путь от базовых параметров к полной картине экономики бизнеса</h2>
+              <p className="section-copy">
+                Revenue Snapshot показывает путь клиента: от выбора формата прохождения до доступа к результатам и возможностям личного кабинета.
+              </p>
+            </div>
 
-          <div className="journey-compact">
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">1</div>
-                <div className="journey-compact-title">Фиксация параметров бизнеса</div>
-              </div>
-              <div className="journey-compact-text">
-                Фиксируются ключевые параметры текущей модели: экономика, структура продаж, клиенты и ограничения. Это формирует основу для анализа.
+            <div className="journey-scroll-grid">
+              {journeySteps.map((step, index) => (
+                <article
+                  key={step.number}
+                  className={`journey-stage-card ${index <= journeyActiveIndex ? "is-active" : "is-muted"}`}
+                >
+                  <div className="journey-stage-number">{step.number}</div>
+                  <div className="journey-stage-title">{step.title}</div>
+                  <div className="journey-stage-text">{step.text}</div>
+                  {step.linkHref ? (
+                    <a href={step.linkHref} className="journey-stage-link">
+                      {step.linkLabel}
+                    </a>
+                  ) : null}
+                </article>
+              ))}
+            </div>
+
+            <div className="journey-progress-wrap" aria-hidden="true">
+              <div
+                className="journey-progress-fill"
+                style={{ width: `${((journeyActiveIndex + 1) / journeySteps.length) * 100}%` }}
+              />
+              <div className="journey-progress-dots">
+                {journeySteps.map((step, index) => (
+                  <span
+                    key={step.number}
+                    className={`journey-progress-dot ${index <= journeyActiveIndex ? "is-active" : ""}`}
+                  />
+                ))}
               </div>
             </div>
 
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">2</div>
-                <div className="journey-compact-title">Сборка аналитической<br />модели</div>
+            <div className="journey-demo-bridge">
+              <div className="journey-demo-copy">
+                Чтобы понять логику модели до полного анализа — попробуйте упрощённую демо-версию ниже.
               </div>
-              <div className="journey-compact-text">
-                Данные собираются в единую модель: выявляются ограничения, точки роста и взаимосвязи между показателями.
-                Анализ проходит автоматически или с участием команды.
-              </div>
+              <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
             </div>
-
-            <div className="journey-compact-card glare-card">
-              <div className="journey-compact-top">
-                <div className="journey-compact-badge">3</div>
-                <div className="journey-compact-title">Revenue Snapshot</div>
-              </div>
-              <div className="journey-compact-text">
-                Вы получаете целостный аналитический срез бизнеса:
-                <br />• где теряется выручка
-                <br />• какой рычаг даст максимальный рост
-                <br />• как изменится экономика при изменениях
-              </div>
-            </div>
-          </div>
-
-          <div className="journey-meta-card glare-card-lite">
-            <div className="journey-meta-title">Получить Revenue Snapshot можно в двух форматах:</div>
-            <div className="journey-meta-list">
-              <div className="journey-meta-item">• самостоятельно (Online Playground)</div>
-              <div className="journey-meta-item">• с участием команды (On Rec)</div>
-            </div>
-          </div>
-
-          <div className="journey-demo-bridge">
-            <div className="journey-demo-copy">
-              Чтобы понять логику модели до полного анализа — попробуйте упрощённую демо-версию ниже.
-            </div>
-            <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
           </div>
         </section>
 
@@ -1817,6 +1874,7 @@ AI не придумывает выводы произвольно — он ра
         </section>
 
         <section id="analysis" className="mb-16">
+          <div id="tariffs" />
           <div className="section-head">
             <div className="section-kicker">Как проходит анализ</div>
             <h2 className="section-title analysis-section-title">С чего начать?</h2>
@@ -1867,8 +1925,16 @@ AI не придумывает выводы произвольно — он ра
             </div>
 
             <div className="cta-box glare-card-lite">
-              <div className="text-sm text-white/55">Следующий шаг</div>
-              <div className="mt-2 text-2xl font-semibold text-white">Узнать больше</div>
+              <div className="cta-box-top">
+                <button
+                  type="button"
+                  className="cta-faq-square"
+                  onClick={() => setFaqOpen(true)}
+                >
+                  FAQ
+                </button>
+              </div>
+              <div className="mt-3 text-2xl font-semibold text-white">Узнать больше</div>
               <a href="https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0" className="tg-gradient-btn mt-5 inline-flex">Связаться с нами</a>
             </div>
           </div>
@@ -2527,57 +2593,128 @@ AI не придумывает выводы произвольно — он ра
           background: rgba(10,18,36,.58) !important;
           box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
         }
-        .journey-compact { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
-        .journey-compact-card {
+        .journey-scroll-shell {
           position: relative;
-          min-height: 214px;
-          border-radius: 28px;
-          padding: 20px 20px 18px;
-          overflow: hidden;
-          background: linear-gradient(180deg, rgba(224,225,227,.1), rgba(224,225,227,.07));
-          border: 1px solid rgba(255,255,255,.12);
-          backdrop-filter: blur(18px) saturate(130%);
+          min-height: 220vh;
         }
-        .journey-compact-top { display: grid; grid-template-columns: 54px minmax(0,1fr); align-items: flex-start; column-gap: 14px; margin-bottom: 14px; }
-        .journey-compact-badge {
-          width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center; flex-shrink: 0;
-          background: transparent; color: #f7d237; font-size: 13px; font-weight: 700;
-          border: 1px solid rgba(247,210,55,.34);
+        .journey-scroll-sticky {
+          position: sticky;
+          top: 92px;
+          padding-bottom: 12px;
         }
-        .journey-compact-arrow { display: none; }
-        .journey-compact-title { padding-top: 2px; font-size: 22px; line-height: 1.04; letter-spacing: -.03em; font-weight: 600; max-width: 240px; }
-        .journey-compact-text { margin-top: 0; padding-left: 68px; color: rgba(255,255,255,.7); line-height: 1.52; font-size: 14px; }
-        .journey-meta-card {
-          margin-top: 16px;
-          border-radius: 24px;
-          padding: 18px 20px;
-          background: rgba(255,255,255,.045);
-          border: 1px solid rgba(255,255,255,.1);
+        .journey-scroll-grid {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          gap: 0;
+          margin-top: 26px;
+          border-bottom: 1px solid rgba(255,255,255,.08);
         }
-        .journey-meta-title {
+        .journey-stage-card {
+          position: relative;
+          min-height: 420px;
+          padding: 22px 28px 44px;
+          border-left: 1px solid rgba(255,255,255,.08);
+          transition: opacity .32s ease, filter .32s ease, transform .32s ease;
+        }
+        .journey-stage-card:first-child {
+          border-left: none;
+        }
+        .journey-stage-card.is-muted {
+          opacity: .28;
+          filter: blur(7px);
+          transform: translateY(8px);
+        }
+        .journey-stage-card.is-active {
+          opacity: 1;
+          filter: blur(0);
+          transform: translateY(0);
+        }
+        .journey-stage-number {
+          color: rgba(255,255,255,.72);
+          font-size: clamp(34px, 2.8vw, 56px);
+          line-height: .9;
+          letter-spacing: -.05em;
+          font-weight: 500;
+        }
+        .journey-stage-title {
+          margin-top: 150px;
           color: #ffffff;
-          font-size: 16px;
-          line-height: 1.25;
-          font-weight: 700;
-          letter-spacing: -.02em;
+          font-size: clamp(26px, 2.7vw, 42px);
+          line-height: .94;
+          letter-spacing: -.05em;
+          font-weight: 600;
+          max-width: 250px;
         }
-        .journey-meta-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 12px 18px;
-          margin-top: 10px;
+        .journey-stage-text {
+          margin-top: 18px;
+          max-width: 260px;
+          color: rgba(255,255,255,.62);
+          font-size: 15px;
+          line-height: 1.6;
         }
-        .journey-meta-item {
-          color: rgba(255,255,255,.76);
+        .journey-stage-link {
+          display: inline-flex;
+          align-items: center;
+          margin-top: 14px;
+          color: #f7d237;
           font-size: 14px;
-          line-height: 1.5;
+          font-weight: 700;
+          text-decoration: none;
+        }
+        .journey-progress-wrap {
+          position: relative;
+          height: 26px;
+          margin-top: -2px;
+          border-top: 1px solid rgba(255,255,255,.08);
+        }
+        .journey-progress-wrap::before {
+          content: "";
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 11px;
+          height: 4px;
+          border-radius: 999px;
+          background: rgba(255,255,255,.08);
+        }
+        .journey-progress-fill {
+          position: absolute;
+          left: 0;
+          top: 11px;
+          height: 4px;
+          border-radius: 999px;
+          background: linear-gradient(90deg, rgba(130,120,255,.95), rgba(188,125,255,.95));
+          box-shadow: 0 0 26px rgba(130,120,255,.5);
+          transition: width .32s ease;
+        }
+        .journey-progress-dots {
+          position: relative;
+          display: grid;
+          grid-template-columns: repeat(6, minmax(0, 1fr));
+          height: 100%;
+        }
+        .journey-progress-dot {
+          width: 18px;
+          height: 18px;
+          border-radius: 999px;
+          background: #3f325f;
+          border: 3px solid #6e5fa2;
+          justify-self: center;
+          align-self: center;
+          box-shadow: 0 0 0 6px rgba(111,96,166,.08);
+          transition: background .24s ease, border-color .24s ease, box-shadow .24s ease;
+        }
+        .journey-progress-dot.is-active {
+          background: #8d79e6;
+          border-color: #5e4f98;
+          box-shadow: 0 0 0 6px rgba(141,121,230,.18);
         }
         .journey-demo-bridge {
           display: flex;
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          margin-top: 16px;
+          margin-top: 28px;
           padding: 0 2px;
         }
         .journey-demo-copy {
@@ -3070,6 +3207,24 @@ AI не придумывает выводы произвольно — он ра
         .cta-card {
           display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
         }
+        .cta-box-top {
+          display: flex;
+          justify-content: flex-start;
+        }
+        .cta-faq-square {
+          width: 64px;
+          height: 64px;
+          border-radius: 20px;
+          border: 1px solid rgba(255,255,255,.16);
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%;
+          box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+          color: #fff;
+          font-size: 14px;
+          font-weight: 800;
+          cursor: pointer;
+        }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
         .page-footer {
@@ -3150,13 +3305,44 @@ AI не придумывает выводы произвольно — он ра
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
+          .journey-scroll-shell {
+            min-height: auto;
+          }
+          .journey-scroll-sticky {
+            position: static;
+          }
+          .journey-scroll-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+            border-bottom: none;
+          }
+          .journey-stage-card {
+            min-height: 0;
+            padding: 20px 18px 20px;
+            border: 1px solid rgba(255,255,255,.1);
+            border-radius: 24px;
+            background: linear-gradient(180deg, rgba(224,225,227,.09), rgba(224,225,227,.05));
+            opacity: 1 !important;
+            filter: none !important;
+            transform: none !important;
+          }
+          .journey-stage-card:first-child {
+            border-left: 1px solid rgba(255,255,255,.1);
+          }
+          .journey-stage-title {
+            margin-top: 28px;
+            max-width: none;
+            font-size: 28px;
+          }
+          .journey-stage-text {
+            max-width: none;
+          }
+          .journey-progress-wrap {
+            margin-top: 16px;
+          }
           .journey-demo-bridge {
             flex-direction: column;
             align-items: flex-start;
-          }
-          .journey-meta-list {
-            flex-direction: column;
-            gap: 8px;
           }
           .stage-carousel-item-free { width: min(680px, 78vw); }
           .analysis-right-card-plain { height: auto; }
@@ -3312,6 +3498,7 @@ AI не придумывает выводы произвольно — он ра
           .input-grid,
           .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
+          .cta-faq-square { width: 58px; height: 58px; border-radius: 18px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
