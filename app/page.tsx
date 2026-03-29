@@ -1538,7 +1538,7 @@ AI не придумывает выводы произвольно — он ра
               </p>
             </div>
 
-            <div className={`journey-scroll-grid ${journeyActiveIndex >= 3 ? "journey-scroll-grid-shifted" : ""}`}>
+            <div className="journey-scroll-grid">
               {journeySteps.map((step, index) => (
                 <article
                   key={step.number}
@@ -2440,18 +2440,13 @@ AI не придумывает выводы произвольно — он ра
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0;
-          margin-top: 26px;
+          margin-top: 18px;
           border-bottom: 1px solid rgba(255,255,255,.08);
-          transition: transform .55s ease;
-          will-change: transform;
-        }
-        .journey-scroll-grid.journey-scroll-grid-shifted {
-          transform: translateY(-160px);
         }
         .journey-stage-card {
           position: relative;
-          min-height: 320px;
-          padding: 22px 28px 38px;
+          min-height: 252px;
+          padding: 16px 24px 24px;
           border-left: 1px solid rgba(255,255,255,.08);
           border-top: 1px solid rgba(255,255,255,.08);
           transition: opacity .38s ease, filter .38s ease, transform .38s ease;
@@ -2480,20 +2475,20 @@ AI не придумывает выводы произвольно — он ра
           font-weight: 500;
         }
         .journey-stage-title {
-          margin-top: 88px;
+          margin-top: 52px;
           color: #ffffff;
-          font-size: clamp(22px, 2.2vw, 38px);
-          line-height: .94;
+          font-size: clamp(20px, 2vw, 34px);
+          line-height: .96;
           letter-spacing: -.05em;
           font-weight: 600;
           max-width: 260px;
         }
         .journey-stage-text {
-          margin-top: 18px;
-          max-width: 270px;
+          margin-top: 14px;
+          max-width: 286px;
           color: rgba(255,255,255,.68);
-          font-size: 17px;
-          line-height: 1.6;
+          font-size: 15px;
+          line-height: 1.5;
         }
         .journey-stage-link {
           display: inline-flex;
@@ -2557,14 +2552,14 @@ AI не придумывает выводы произвольно — он ра
           align-items: center;
           justify-content: space-between;
           gap: 16px;
-          margin-top: 28px;
+          margin-top: 18px;
           padding: 0 2px;
         }
         .journey-demo-copy {
           max-width: 760px;
           color: rgba(255,255,255,.68);
-          font-size: 17px;
-          line-height: 1.5;
+          font-size: 16px;
+          line-height: 1.45;
         }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
