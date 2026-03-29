@@ -897,8 +897,8 @@ function StartCard({
 }
 
 type StageItem = {
+  niche: string;
   stage: string;
-  industries: string[];
   summary: string;
   focus: string;
   metrics: Array<{ label: string; value: string }>;
@@ -908,8 +908,8 @@ type StageItem = {
 function StageCarousel() {
   const items: StageItem[] = [
     {
+      niche: "SaaS",
       stage: "Early Stage",
-      industries: ["SaaS", "HealthTech", "B2B"],
       summary: "Подходит бизнесам, которые уже видят спрос, но еще не собрали устойчивую модель роста.",
       focus: "Фокус на первом рабочем оффере, сборке экономики и выборе главного рычага.",
       metrics: [
@@ -924,10 +924,26 @@ function StageCarousel() {
       ],
     },
     {
+      niche: "HealthTech",
+      stage: "Growth",
+      summary: "Полезен компаниям, где уже есть сложный спрос, но требуется лучше увязать продажи, цикл сделки и unit-экономику.",
+      focus: "Фокус на воронке, приоритетах роста и удержании маржи при расширении.",
+      metrics: [
+        { label: "Leads", value: "62 / 90" },
+        { label: "Qual leads", value: "18 / 30" },
+        { label: "Demo", value: "9 / 14" },
+        { label: "Deals", value: "4 / 7" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 10, plan: 7 },
+        { label: "CAC payback", fact: 8, plan: 5 },
+      ],
+    },
+    {
+      niche: "B2B",
       stage: "Startup",
-      industries: ["FinTech", "EdTech", "E-com"],
-      summary: "Есть активные продажи, но рост зависит от ручного управления и не превращается в систему.",
-      focus: "Фокус на ограничениях масштаба, качестве каналов и предсказуемости экономики.",
+      summary: "Актуален для сервисных и проектных B2B-команд, где продажи уже идут, но модель пока держится на ручном управлении.",
+      focus: "Фокус на длине цикла сделки, структуре спроса и точке главного ограничения роста.",
       metrics: [
         { label: "Leads", value: "70 / 95" },
         { label: "Qual leads", value: "22 / 30" },
@@ -940,10 +956,10 @@ function StageCarousel() {
       ],
     },
     {
+      niche: "FinTech",
       stage: "Growth",
-      industries: ["SaaS", "B2B", "HealthTech"],
-      summary: "Рост уже есть, но компания упирается в связку позиционирования, продаж и cost stack.",
-      focus: "Фокус на перераспределении усилий между спросом, conversion и моделью расходов.",
+      summary: "Подходит продуктам с уже работающим спросом, где особенно важны экономика привлечения и скорость возврата инвестиций в канал.",
+      focus: "Фокус на CAC payback, качестве сегментов и управлении рычагами роста без размывания модели.",
       metrics: [
         { label: "Leads", value: "180 / 230" },
         { label: "Qual leads", value: "62 / 80" },
@@ -956,10 +972,26 @@ function StageCarousel() {
       ],
     },
     {
+      niche: "EdTech",
       stage: "Expansion",
-      industries: ["B2B", "EdTech", "E-com"],
-      summary: "Компания масштабирует новые направления и должна удержать качество экономики при расширении.",
-      focus: "Фокус на сохранении маржи, контроле каналов и росте без размытия прибыльности.",
+      summary: "Полезен в момент, когда компания масштабирует новые направления и должна удержать качество экономики при расширении.",
+      focus: "Фокус на сохранении маржи, точках потерь и управлении ростом через правильные сценарии расширения.",
+      metrics: [
+        { label: "Leads", value: "140 / 190" },
+        { label: "Qual leads", value: "46 / 60" },
+        { label: "Demo", value: "21 / 28" },
+        { label: "Deals", value: "8 / 11" },
+      ],
+      bars: [
+        { label: "Deal cycle", fact: 9, plan: 6 },
+        { label: "Margin", fact: 29, plan: 37 },
+      ],
+    },
+    {
+      niche: "E-com",
+      stage: "Expansion",
+      summary: "Подходит бизнесам, где уже есть объем, но важно понять, что сильнее всего влияет на прибыльность: каналы, средний чек или структура расходов.",
+      focus: "Фокус на росте без потери маржи, переоценке экономики каналов и выборе главного сценария усиления.",
       metrics: [
         { label: "Leads", value: "340 / 420" },
         { label: "Qual leads", value: "120 / 150" },
@@ -978,31 +1010,19 @@ function StageCarousel() {
 
   return (
     <div className="stage-lite-wrap">
-      <div className="stage-lite-controls">
-        {items.map((item, index) => (
-          <button
-            key={item.stage}
-            type="button"
-            onClick={() => setActiveIndex(index)}
-            className={`stage-lite-pill ${index === activeIndex ? "is-active" : ""}`}
-          >
-            {item.stage}
-          </button>
-        ))}
-      </div>
-
-      <div className="stage-lite-card glare-card">
+      <div className="stage-lite-card glare-card" key={active.niche}>
         <div className="stage-lite-head">
           <div>
-            <div className="stage-lite-kicker">Стадия бизнеса</div>
-            <h3 className="stage-lite-title">{active.stage}</h3>
+            <div className="stage-lite-kicker">Ниша</div>
+            <h3 className="stage-lite-title">{active.niche}</h3>
+            <div className="stage-lite-stage-chip">{active.stage}</div>
           </div>
           <div className="stage-lite-nav">
             <button
               type="button"
               className="stage-lite-arrow"
               onClick={() => setActiveIndex((activeIndex - 1 + items.length) % items.length)}
-              aria-label="Предыдущая стадия"
+              aria-label="Предыдущая карточка"
             >
               ←
             </button>
@@ -1010,18 +1030,11 @@ function StageCarousel() {
               type="button"
               className="stage-lite-arrow"
               onClick={() => setActiveIndex((activeIndex + 1) % items.length)}
-              aria-label="Следующая стадия"
+              aria-label="Следующая карточка"
             >
               →
             </button>
           </div>
-        </div>
-
-        <div className="stage-lite-industries-label">Ниши</div>
-        <div className="stage-lite-industries">
-          {active.industries.map((industry) => (
-            <span key={industry} className="stage-lite-industry-chip">{industry}</span>
-          ))}
         </div>
 
         <div className="stage-lite-copy-grid">
@@ -1749,24 +1762,13 @@ AI не придумывает выводы произвольно — он ра
         </section>
 
         <section id="try" className="pb-8">
-          <div className="glass-card glare-card cta-card">
+          <div className="glass-card glare-card cta-card cta-card-single">
             <div>
               <div className="section-kicker">CTA</div>
               <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Revenue Snapshot – платформа детальной диагностики бизнеса</h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
                 После оплаты пользователь попадает внутрь нашей платформы, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
               </p>
-            </div>
-
-            <div className="cta-box glare-card-lite cta-box-minimal">
-              <button
-                type="button"
-                className="cta-faq-square"
-                onClick={() => setFaqOpen(true)}
-              >
-                FAQ
-              </button>
-              <a href="https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0" className="tg-gradient-btn inline-flex">Связаться с нами</a>
             </div>
           </div>
         </section>
@@ -2435,25 +2437,29 @@ AI не придумывает выводы произвольно — он ра
         }
         .journey-scroll-grid {
           display: grid;
-          grid-template-columns: repeat(6, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0;
           margin-top: 26px;
           border-bottom: 1px solid rgba(255,255,255,.08);
         }
         .journey-stage-card {
           position: relative;
-          min-height: 420px;
-          padding: 22px 28px 44px;
+          min-height: 320px;
+          padding: 22px 28px 38px;
           border-left: 1px solid rgba(255,255,255,.08);
-          transition: opacity .32s ease, filter .32s ease, transform .32s ease;
+          border-top: 1px solid rgba(255,255,255,.08);
+          transition: opacity .38s ease, filter .38s ease, transform .38s ease;
         }
-        .journey-stage-card:first-child {
+        .journey-stage-card:nth-child(-n+3) {
+          border-top: none;
+        }
+        .journey-stage-card:nth-child(3n+1) {
           border-left: none;
         }
         .journey-stage-card.is-muted {
-          opacity: .28;
-          filter: blur(7px);
-          transform: translateY(8px);
+          opacity: .24;
+          filter: blur(8px);
+          transform: translateY(10px);
         }
         .journey-stage-card.is-active {
           opacity: 1;
@@ -2468,27 +2474,27 @@ AI не придумывает выводы произвольно — он ра
           font-weight: 500;
         }
         .journey-stage-title {
-          margin-top: 150px;
+          margin-top: 88px;
           color: #ffffff;
-          font-size: clamp(26px, 2.7vw, 42px);
+          font-size: clamp(22px, 2.2vw, 38px);
           line-height: .94;
           letter-spacing: -.05em;
           font-weight: 600;
-          max-width: 250px;
+          max-width: 260px;
         }
         .journey-stage-text {
           margin-top: 18px;
-          max-width: 260px;
-          color: rgba(255,255,255,.62);
-          font-size: 15px;
+          max-width: 270px;
+          color: rgba(255,255,255,.68);
+          font-size: 17px;
           line-height: 1.6;
         }
         .journey-stage-link {
           display: inline-flex;
           align-items: center;
-          margin-top: 14px;
+          margin-top: 16px;
           color: #f7d237;
-          font-size: 14px;
+          font-size: 16px;
           font-weight: 700;
           text-decoration: none;
         }
@@ -2604,14 +2610,6 @@ AI не придумывает выводы произвольно — он ра
         .side-note-card,
         .cta-box {
           border-radius: 20px; padding: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-        }
-        .cta-box-minimal {
-          display: flex;
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 18px;
-          justify-content: center;
-          min-height: 190px;
         }
         .reserve-amount {
           font-size: clamp(22px, 2vw, 30px);
@@ -2766,38 +2764,16 @@ AI не придумывает выводы произвольно — он ра
           flex-direction: column;
           gap: 18px;
         }
-        .stage-lite-controls {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-        }
-        .stage-lite-pill {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 38px;
-          padding: 0 16px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.04);
-          color: rgba(255,255,255,.7);
-          font-size: 13px;
-          font-weight: 700;
-        }
-        .stage-lite-pill.is-active {
-          color: #0b1d3a;
-          background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88));
-          border-color: rgba(247,210,55,.24);
-        }
         .stage-lite-card {
           border-radius: 30px;
           padding: 24px;
           background: linear-gradient(180deg, rgba(16,27,49,.58), rgba(11,20,38,.42));
           border: 1px solid rgba(255,255,255,.12);
+          transition: opacity .3s ease, transform .3s ease;
         }
         .stage-lite-head {
           display: flex;
-          align-items: center;
+          align-items: flex-start;
           justify-content: space-between;
           gap: 16px;
         }
@@ -2809,39 +2785,15 @@ AI не придумывает выводы произвольно — он ра
         }
         .stage-lite-title {
           margin: 8px 0 0;
-          font-size: clamp(34px, 4vw, 54px);
+          font-size: clamp(44px, 5vw, 64px);
           line-height: .95;
           letter-spacing: -.05em;
         }
-        .stage-lite-nav {
-          display: flex;
-          gap: 10px;
-        }
-        .stage-lite-arrow {
-          width: 40px;
-          height: 40px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.05);
-          color: #fff;
-        }
-        .stage-lite-industries-label {
-          margin-top: 18px;
-          color: rgba(255,255,255,.56);
-          font-size: 12px;
-          letter-spacing: .14em;
-          text-transform: uppercase;
-        }
-        .stage-lite-industries {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 10px;
-          margin-top: 10px;
-        }
-        .stage-lite-industry-chip {
+        .stage-lite-stage-chip {
           display: inline-flex;
           align-items: center;
           min-height: 34px;
+          margin-top: 14px;
           padding: 0 14px;
           border-radius: 999px;
           background: rgba(247,210,55,.12);
@@ -2850,11 +2802,23 @@ AI не придумывает выводы произвольно — он ра
           font-size: 12px;
           font-weight: 700;
         }
+        .stage-lite-nav {
+          display: flex;
+          gap: 10px;
+        }
+        .stage-lite-arrow {
+          width: 44px;
+          height: 44px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.05);
+          color: #fff;
+        }
         .stage-lite-copy-grid {
           display: grid;
           grid-template-columns: repeat(2, minmax(0,1fr));
           gap: 16px;
-          margin-top: 18px;
+          margin-top: 22px;
         }
         .stage-lite-copy-card {
           border-radius: 22px;
@@ -3232,25 +3196,13 @@ AI не придумывает выводы произвольно — он ра
         }
         .tariff-tag-yellow .tariff-tag-icon { color: #1a2133; }
         .cta-card {
-          display: grid; grid-template-columns: minmax(0,1fr) 320px; gap: 18px; align-items: center;
+          display: grid;
+          grid-template-columns: minmax(0,1fr);
+          gap: 18px;
+          align-items: center;
         }
-        .cta-box-top {
-          display: flex;
-          justify-content: flex-start;
-        }
-        .cta-faq-square {
-          width: 64px;
-          height: 64px;
-          border-radius: 20px;
-          border: 1px solid rgba(255,255,255,.16);
-          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
-          background-size: 220% 220%;
-          box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          color: #fff;
-          font-size: 14px;
-          font-weight: 800;
-          cursor: pointer;
+        .cta-card-single {
+          padding-right: 28px;
         }
         .footer-mini-links,.page-footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
         .footer-mini-links a,.page-footer-links a { color: rgba(255,255,255,.5); text-decoration: none; font-size: 12px; }
@@ -3521,6 +3473,9 @@ AI не придумывает выводы произвольно — он ра
           .start-card-overlay {
             background: none;
           }
+          .stage-lite-copy-grid,
+          .stage-lite-bottom { grid-template-columns: 1fr; }
+          .stage-lite-title { font-size: clamp(34px, 12vw, 52px); }
           .analysis-grid,
           .preview-grid,
           .results-grid-2x2,
@@ -3529,7 +3484,6 @@ AI не придумывает выводы произвольно — он ра
           .input-grid,
           .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
-          .cta-faq-square { width: 58px; height: 58px; border-radius: 18px; }
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
