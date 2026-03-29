@@ -561,6 +561,7 @@ function TariffColumn({
             onClick={() => setOpen((v) => !v)}
           >
             <AttentionIcon />
+            <span className="tariff-attention-label">disclaimer</span>
             <span className={`tariff-disclaimer-pop ${open ? "is-open" : ""}`}>
               {disclaimer.map((note) => (
                 <span key={note} className="tariff-disclaimer-line">{note}</span>
@@ -897,89 +898,20 @@ function StartCard({
 
 type StageItem = {
   stage: string;
-  icon: string;
   industries: string[];
-  setup: string;
-  direction: string;
+  summary: string;
+  focus: string;
   metrics: Array<{ label: string; value: string }>;
   bars: Array<{ label: string; fact: number; plan: number }>;
 };
 
-function StageCard({ item, isFront }: { item: StageItem; isFront: boolean }) {
-  return (
-    <div className={`stage-card-analytics glare-card ${isFront ? "is-front" : ""}`}>
-      <div className="stage-card-top-panel">
-        <div className="stage-card-copy">
-          <div className="stage-copy-block">
-            <h4>Starting Position</h4>
-            <p>{item.setup}</p>
-          </div>
-          <div className="stage-copy-block">
-            <h4>Strategic Direction</h4>
-            <p>{item.direction}</p>
-          </div>
-        </div>
-
-        <div className="stage-card-heading">
-          <span>Stage</span>
-          <strong>{item.stage}</strong>
-        </div>
-      </div>
-
-      <div className="stage-card-bottom-panel">
-        <div className="stage-card-bottom-inner">
-          <div className="stage-rings-grid compact-metrics-grid">
-            {item.metrics.map((metric) => (
-              <div key={metric.label} className="stage-inline-metric">
-                <div className="stage-ring-label">{metric.label}</div>
-                <div className="stage-inline-metric-value">{metric.value}</div>
-              </div>
-            ))}
-          </div>
-
-          <div className="stage-bars-area">
-            <div className="stage-bars-title">fact / plan</div>
-            <div className="stage-bars-wrap">
-              {item.bars.map((bar) => {
-                const max = Math.max(bar.fact, bar.plan, 1);
-                return (
-                  <div className="stage-bar-group" key={bar.label}>
-                    <div className="stage-bar-label">{bar.label}</div>
-                    <div className="stage-bar-stack">
-                      <div className="stage-bar-track">
-                        <div
-                          className="stage-bar-fill stage-bar-fill-fact"
-                          style={{ width: `${(bar.fact / max) * 100}%` }}
-                        />
-                      </div>
-                      <div className="stage-bar-track stage-bar-track-thin">
-                        <div
-                          className="stage-bar-fill stage-bar-fill-plan"
-                          style={{ width: `${(bar.plan / max) * 100}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 function StageCarousel() {
   const items: StageItem[] = [
     {
-      stage: "Seed",
-      icon: "/seed.svg",
-      industries: ["industry-saas", "industry-healthtech"],
-      setup:
-        "Есть ранний спрос и подтверждённая ценность, но модель ещё не собрана в устойчивый контур продаж.",
-      direction:
-        "Snapshot помогает найти первый входной продукт и выстроить опорную логику monetization без лишнего масштаба.",
+      stage: "Early Stage",
+      industries: ["SaaS", "HealthTech", "B2B"],
+      summary: "Подходит бизнесам, которые уже видят спрос, но еще не собрали устойчивую модель роста.",
+      focus: "Фокус на первом рабочем оффере, сборке экономики и выборе главного рычага.",
       metrics: [
         { label: "Leads", value: "25 / 40" },
         { label: "Qual leads", value: "6 / 15" },
@@ -993,12 +925,9 @@ function StageCarousel() {
     },
     {
       stage: "Startup",
-      icon: "/startup.svg",
-      industries: ["industry-fintech", "industry-ecom"],
-      setup:
-        "Продукт уже продаётся, но рост держится на ручных усилиях и не превращается в предсказуемую систему.",
-      direction:
-        "Snapshot выделяет главный ограничитель роста и показывает, где усилие даст максимальный сдвиг в unit-экономике.",
+      industries: ["FinTech", "EdTech", "E-com"],
+      summary: "Есть активные продажи, но рост зависит от ручного управления и не превращается в систему.",
+      focus: "Фокус на ограничениях масштаба, качестве каналов и предсказуемости экономики.",
       metrics: [
         { label: "Leads", value: "70 / 95" },
         { label: "Qual leads", value: "22 / 30" },
@@ -1012,19 +941,9 @@ function StageCarousel() {
     },
     {
       stage: "Growth",
-      icon: "/growth.svg",
-      industries: [
-        "industry-saas",
-        "industry-ecom",
-        "industry-fintech",
-        "industry-edtech",
-        "industry-healthtech",
-        "industry-b2b",
-      ],
-      setup:
-        "Рост уже есть, но он начинает упираться в связку positioning, cost stack и качество каналов.",
-      direction:
-        "Snapshot помогает перераспределить фокус между продажами, маркетингом и моделью расходов без потери темпа.",
+      industries: ["SaaS", "B2B", "HealthTech"],
+      summary: "Рост уже есть, но компания упирается в связку позиционирования, продаж и cost stack.",
+      focus: "Фокус на перераспределении усилий между спросом, conversion и моделью расходов.",
       metrics: [
         { label: "Leads", value: "180 / 230" },
         { label: "Qual leads", value: "62 / 80" },
@@ -1038,12 +957,9 @@ function StageCarousel() {
     },
     {
       stage: "Expansion",
-      icon: "/expansion.svg",
-      industries: ["industry-b2b", "industry-edtech", "industry-ecom"],
-      setup:
-        "Компания масштабируется, но экономика новых направлений и каналов может размывать прибыльность.",
-      direction:
-        "Snapshot показывает, какие элементы системы можно расширять, а где требуется удержать дисциплину модели.",
+      industries: ["B2B", "EdTech", "E-com"],
+      summary: "Компания масштабирует новые направления и должна удержать качество экономики при расширении.",
+      focus: "Фокус на сохранении маржи, контроле каналов и росте без размытия прибыльности.",
       metrics: [
         { label: "Leads", value: "340 / 420" },
         { label: "Qual leads", value: "120 / 150" },
@@ -1057,184 +973,96 @@ function StageCarousel() {
     },
   ];
 
-  const [rotation, setRotation] = useState(0);
-  const [isDraggingState, setIsDraggingState] = useState(false);
-  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
-  const [selectedIndustry, setSelectedIndustry] = useState<string | null>(null);
-  const dragStartX = useRef<number | null>(null);
-  const dragStartRotation = useRef(0);
-  const isDragging = useRef(false);
-  const mobileRailRef = useRef<HTMLDivElement | null>(null);
-
-  const itemAngle = 360 / items.length;
-  const radius = 300;
-
-  const activeIndex = useMemo(() => {
-    let frontIndex = 0;
-    let maxZ = -Infinity;
-    items.forEach((_, index) => {
-      const angle = rotation + index * itemAngle;
-      const radians = (angle * Math.PI) / 180;
-      const z = Math.cos(radians) * radius;
-      if (z > maxZ) {
-        maxZ = z;
-        frontIndex = index;
-      }
-    });
-    return frontIndex;
-  }, [rotation, itemAngle]);
-
-  const responsiveActiveIndex = typeof window !== "undefined" && window.innerWidth <= 767 ? mobileActiveIndex : activeIndex;
-  const activeIndustries = new Set(items[responsiveActiveIndex].industries);
-
-  const goToStage = (index: number) => {
-    setRotation(-index * itemAngle);
-    setMobileActiveIndex(index);
-
-    const rail = mobileRailRef.current;
-    if (rail) {
-      const firstSlide = rail.querySelector<HTMLElement>(".stage-carousel-mobile-slide");
-      const slideWidth = (firstSlide?.offsetWidth ?? rail.clientWidth * 0.84) + 10;
-      rail.scrollTo({ left: index * Math.max(slideWidth, 1), behavior: "smooth" });
-    }
-  };
-
-  const handleIndustrySelect = (key: string) => {
-    const nextIndustry = selectedIndustry === key ? null : key;
-    setSelectedIndustry(nextIndustry);
-
-    if (!nextIndustry) return;
-
-    const firstMatchIndex = items.findIndex((item) => item.industries.includes(nextIndustry));
-    if (firstMatchIndex >= 0) goToStage(firstMatchIndex);
-  };
-
-  const startDrag = (clientX: number) => {
-    isDragging.current = true;
-    setIsDraggingState(true);
-    dragStartX.current = clientX;
-    dragStartRotation.current = rotation;
-  };
-
-  const moveDrag = (clientX: number) => {
-    if (!isDragging.current || dragStartX.current === null) return;
-    const deltaX = clientX - dragStartX.current;
-    const sensitivity = 0.22;
-    setRotation(dragStartRotation.current + deltaX * sensitivity);
-  };
-
-  const endDrag = () => {
-    isDragging.current = false;
-    setIsDraggingState(false);
-    dragStartX.current = null;
-  };
-
-
-  useEffect(() => {
-    const rail = mobileRailRef.current;
-    if (!rail) return;
-
-    const handleScroll = () => {
-      const firstSlide = rail.querySelector<HTMLElement>(".stage-carousel-mobile-slide");
-      const slideWidth = (firstSlide?.offsetWidth ?? rail.clientWidth * 0.84) + 10;
-      const index = Math.round(rail.scrollLeft / Math.max(slideWidth, 1));
-      setMobileActiveIndex(Math.max(0, Math.min(items.length - 1, index)));
-    };
-
-    handleScroll();
-    rail.addEventListener("scroll", handleScroll, { passive: true });
-    window.addEventListener("resize", handleScroll);
-    return () => {
-      rail.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("resize", handleScroll);
-    };
-  }, [items.length]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const active = items[activeIndex];
 
   return (
-    <div className="stage-carousel-wrap">
-      <div className="industries-pills industries-pills-carousel">
-        <div className="industries-pills-left">
-          {[
-            ["industry-saas", "SaaS"],
-            ["industry-ecom", "E-com"],
-            ["industry-fintech", "FinTech"],
-            ["industry-edtech", "EdTech"],
-            ["industry-healthtech", "HealthTech"],
-            ["industry-b2b", "B2B"],
-          ].map(([key, label]) => {
-            const isSelected = selectedIndustry === key;
-            const isParticipating = activeIndustries.has(key);
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => handleIndustrySelect(key)}
-                className={`industry-pill ${isParticipating ? "industry-pill-active" : "industry-pill-dim"} ${isSelected ? "industry-pill-selected" : ""}`}
-              >
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="stage-rotate-cue stage-rotate-cue-right" aria-hidden="true">
-          <span className="stage-rotate-cue-label">drag</span>
-          <svg viewBox="0 0 56 32" fill="none">
-            <path d="M20 7H6M6 7l4-4M6 7l4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M36 25h14m0 0-4-4m4 4-4 4" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M22 8.5c1.8-2.6 4.1-3.9 7-3.9 4.8 0 8.2 3.6 8.2 8.1 0 1.9-.6 3.4-1.8 4.9" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
-            <path d="M34 23.5c-1.7 2.6-4.1 3.9-7 3.9-4.8 0-8.2-3.6-8.2-8.1 0-1.8.6-3.4 1.8-4.8" stroke="currentColor" strokeWidth="2.1" strokeLinecap="round"/>
-          </svg>
-        </div>
-      </div>
-
-      <div
-        className={`stage-carousel-scene ${isDraggingState ? "is-dragging" : ""}`}
-        onMouseDown={(e) => startDrag(e.clientX)}
-        onMouseMove={(e) => moveDrag(e.clientX)}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
-        onTouchStart={(e) => startDrag(e.touches[0].clientX)}
-        onTouchMove={(e) => moveDrag(e.touches[0].clientX)}
-        onTouchEnd={endDrag}
-      >
-        <div className="stage-carousel-drum">
-          {items.map((item, index) => {
-            const angle = rotation + index * itemAngle;
-            const radians = (angle * Math.PI) / 180;
-            const x = Math.sin(radians) * radius;
-            const z = Math.cos(radians) * radius;
-            const scale = 0.72 + ((z + radius) / (radius * 2)) * 0.28;
-            const depthProgress = (z + radius) / (radius * 2);
-            const opacity = 0.18 + depthProgress * 0.82;
-            const blur = Math.max(0, (1 - scale) * 14);
-            const brightness = 0.64 + depthProgress * 0.36;
-            const rotateY = Math.sin(radians) * -10;
-
-            return (
-              <div
-                key={item.stage}
-                className={`stage-carousel-item stage-carousel-item-free ${selectedIndustry && item.industries.includes(selectedIndustry) ? "is-industry-match" : ""} ${selectedIndustry && !item.industries.includes(selectedIndustry) ? "is-industry-dim" : ""}`}
-                style={{
-                  transform: `translateX(calc(-50% + ${x}px)) translateZ(${z}px) rotateY(${rotateY}deg) scale(${scale})`,
-                  opacity,
-                  filter: `blur(${blur}px) brightness(${brightness})`,
-                  zIndex: Math.round(z + radius),
-                }}
-              >
-                <StageCard item={item} isFront={activeIndex === index} />
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <div className="stage-carousel-mobile-rail" ref={mobileRailRef}>
-        {items.map((item) => (
-          <div key={`${item.stage}-mobile`} className={`stage-carousel-mobile-slide ${selectedIndustry && item.industries.includes(selectedIndustry) ? "is-industry-match" : ""} ${selectedIndustry && !item.industries.includes(selectedIndustry) ? "is-industry-dim" : ""}`}>
-            <StageCard item={item} isFront />
-          </div>
+    <div className="stage-lite-wrap">
+      <div className="stage-lite-controls">
+        {items.map((item, index) => (
+          <button
+            key={item.stage}
+            type="button"
+            onClick={() => setActiveIndex(index)}
+            className={`stage-lite-pill ${index === activeIndex ? "is-active" : ""}`}
+          >
+            {item.stage}
+          </button>
         ))}
+      </div>
+
+      <div className="stage-lite-card glare-card">
+        <div className="stage-lite-head">
+          <div>
+            <div className="stage-lite-kicker">Стадия бизнеса</div>
+            <h3 className="stage-lite-title">{active.stage}</h3>
+          </div>
+          <div className="stage-lite-nav">
+            <button
+              type="button"
+              className="stage-lite-arrow"
+              onClick={() => setActiveIndex((activeIndex - 1 + items.length) % items.length)}
+              aria-label="Предыдущая стадия"
+            >
+              ←
+            </button>
+            <button
+              type="button"
+              className="stage-lite-arrow"
+              onClick={() => setActiveIndex((activeIndex + 1) % items.length)}
+              aria-label="Следующая стадия"
+            >
+              →
+            </button>
+          </div>
+        </div>
+
+        <div className="stage-lite-industries-label">Ниши</div>
+        <div className="stage-lite-industries">
+          {active.industries.map((industry) => (
+            <span key={industry} className="stage-lite-industry-chip">{industry}</span>
+          ))}
+        </div>
+
+        <div className="stage-lite-copy-grid">
+          <div className="stage-lite-copy-card">
+            <div className="stage-lite-copy-title">Где полезен Snapshot</div>
+            <p>{active.summary}</p>
+          </div>
+          <div className="stage-lite-copy-card">
+            <div className="stage-lite-copy-title">На чем фокус</div>
+            <p>{active.focus}</p>
+          </div>
+        </div>
+
+        <div className="stage-lite-bottom">
+          <div className="stage-lite-metrics">
+            {active.metrics.map((metric) => (
+              <div key={metric.label} className="stage-lite-metric">
+                <div className="stage-lite-metric-label">{metric.label}</div>
+                <div className="stage-lite-metric-value">{metric.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="stage-lite-bars">
+            <div className="stage-lite-bars-title">fact / plan</div>
+            {active.bars.map((bar) => {
+              const max = Math.max(bar.fact, bar.plan, 1);
+              return (
+                <div key={bar.label} className="stage-lite-bar-group">
+                  <div className="stage-lite-bar-label">{bar.label}</div>
+                  <div className="stage-lite-bar-track">
+                    <div className="stage-lite-bar-fill stage-lite-bar-fill-fact" style={{ width: `${(bar.fact / max) * 100}%` }} />
+                  </div>
+                  <div className="stage-lite-bar-track stage-lite-bar-track-thin">
+                    <div className="stage-lite-bar-fill stage-lite-bar-fill-plan" style={{ width: `${(bar.plan / max) * 100}%` }} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1285,27 +1113,27 @@ export default function Home() {
     {
       number: "02",
       title: "Сбор данных",
-      text: "Фиксируются ключевые параметры бизнеса: экономика, продажи, клиенты, структура и ограничения.",
+      text: "Фиксируем экономику, клиентов, продукт, процессы и стратегию бизнеса.",
     },
     {
       number: "03",
       title: "Генерация результата",
-      text: "Система собирает Revenue Snapshot и связывает данные в единую аналитическую модель.",
+      text: "Система собирает Revenue Snapshot и формирует единую аналитическую модель.",
     },
     {
       number: "04",
       title: "Изучение текущих возможностей",
-      text: "Вы видите точки потерь, текущее ограничение роста и главный рычаг, дающий максимальный эффект.",
+      text: "Показываем точки потерь, ограничение роста и главный рычаг усиления.",
     },
     {
       number: "05",
       title: "60-минутная декомпозиция",
-      text: "Результаты можно разобрать с C-level специалистами Growth Avenue в сфере маркетинга и продаж.",
+      text: "Результат можно разобрать с C-level специалистами по маркетингу и продажам.",
     },
     {
       number: "06",
-      title: "Личный кабинет и дальнейшие возможности",
-      text: "3 запуска, разные бизнесы, доступ к результатам и интерактивной статистике, управление рычагами, PDF-скачивание и спецусловия на новые инструменты Growth Avenue.",
+      title: "Личный кабинет и бонусы",
+      text: "3 запуска, разные бизнесы, интерактивные результаты, PDF и спецусловия на новые инструменты.",
     },
   ];
   const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
@@ -1930,18 +1758,15 @@ AI не придумывает выводы произвольно — он ра
               </p>
             </div>
 
-            <div className="cta-box glare-card-lite">
-              <div className="cta-box-top">
-                <button
-                  type="button"
-                  className="cta-faq-square"
-                  onClick={() => setFaqOpen(true)}
-                >
-                  FAQ
-                </button>
-              </div>
-              <div className="mt-3 text-2xl font-semibold text-white">Узнать больше</div>
-              <a href="https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0" className="tg-gradient-btn mt-5 inline-flex">Связаться с нами</a>
+            <div className="cta-box glare-card-lite cta-box-minimal">
+              <button
+                type="button"
+                className="cta-faq-square"
+                onClick={() => setFaqOpen(true)}
+              >
+                FAQ
+              </button>
+              <a href="https://api.whatsapp.com/send/?phone=995555163833&text=%D0%BF%D1%80%D0%B8%D0%B2%D0%B5%D1%82!%20%D0%A5%D0%BE%D1%87%D1%83%20%D0%BF%D0%BE%D0%BD%D1%8F%D1%82%D1%8C%20%D0%BD%D1%83%D0%B6%D0%B5%D0%BD%20%D0%BB%D0%B8%20%D0%BC%D0%BD%D0%B5%20Snapshot&type=phone_number&app_absent=0" className="tg-gradient-btn inline-flex">Связаться с нами</a>
             </div>
           </div>
         </section>
@@ -2726,8 +2551,8 @@ AI не придумывает выводы произвольно — он ра
         .journey-demo-copy {
           max-width: 760px;
           color: rgba(255,255,255,.68);
-          font-size: 15px;
-          line-height: 1.55;
+          font-size: 17px;
+          line-height: 1.5;
         }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
@@ -2779,6 +2604,14 @@ AI не придумывает выводы произвольно — он ра
         .side-note-card,
         .cta-box {
           border-radius: 20px; padding: 16px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+        }
+        .cta-box-minimal {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 18px;
+          justify-content: center;
+          min-height: 190px;
         }
         .reserve-amount {
           font-size: clamp(22px, 2vw, 30px);
@@ -2928,6 +2761,186 @@ AI не придумывает выводы произвольно — он ра
         .stage-bar-fill-fact { background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96)); }
         .stage-bar-fill-plan { background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82)); }
         .stage-card-watermark-icon { display: none; }
+        .stage-lite-wrap {
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .stage-lite-controls {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .stage-lite-pill {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 38px;
+          padding: 0 16px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.04);
+          color: rgba(255,255,255,.7);
+          font-size: 13px;
+          font-weight: 700;
+        }
+        .stage-lite-pill.is-active {
+          color: #0b1d3a;
+          background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88));
+          border-color: rgba(247,210,55,.24);
+        }
+        .stage-lite-card {
+          border-radius: 30px;
+          padding: 24px;
+          background: linear-gradient(180deg, rgba(16,27,49,.58), rgba(11,20,38,.42));
+          border: 1px solid rgba(255,255,255,.12);
+        }
+        .stage-lite-head {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+        }
+        .stage-lite-kicker {
+          color: rgba(255,255,255,.56);
+          font-size: 12px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+        }
+        .stage-lite-title {
+          margin: 8px 0 0;
+          font-size: clamp(34px, 4vw, 54px);
+          line-height: .95;
+          letter-spacing: -.05em;
+        }
+        .stage-lite-nav {
+          display: flex;
+          gap: 10px;
+        }
+        .stage-lite-arrow {
+          width: 40px;
+          height: 40px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.05);
+          color: #fff;
+        }
+        .stage-lite-industries-label {
+          margin-top: 18px;
+          color: rgba(255,255,255,.56);
+          font-size: 12px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+        }
+        .stage-lite-industries {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 10px;
+        }
+        .stage-lite-industry-chip {
+          display: inline-flex;
+          align-items: center;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          background: rgba(247,210,55,.12);
+          border: 1px solid rgba(247,210,55,.24);
+          color: #f7d237;
+          font-size: 12px;
+          font-weight: 700;
+        }
+        .stage-lite-copy-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          gap: 16px;
+          margin-top: 18px;
+        }
+        .stage-lite-copy-card {
+          border-radius: 22px;
+          padding: 18px;
+          background: rgba(255,255,255,.05);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .stage-lite-copy-title {
+          margin-bottom: 8px;
+          font-size: 20px;
+          line-height: 1;
+          font-weight: 700;
+        }
+        .stage-lite-copy-card p {
+          margin: 0;
+          color: rgba(255,255,255,.74);
+          font-size: 15px;
+          line-height: 1.55;
+        }
+        .stage-lite-bottom {
+          display: grid;
+          grid-template-columns: 1.1fr .9fr;
+          gap: 18px;
+          margin-top: 18px;
+        }
+        .stage-lite-metrics {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          gap: 12px;
+        }
+        .stage-lite-metric {
+          border-radius: 18px;
+          padding: 14px;
+          background: rgba(255,255,255,.055);
+          border: 1px solid rgba(255,255,255,.08);
+        }
+        .stage-lite-metric-label {
+          color: rgba(255,255,255,.56);
+          font-size: 11px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .stage-lite-metric-value {
+          margin-top: 8px;
+          font-size: 24px;
+          line-height: 1;
+          font-weight: 700;
+          letter-spacing: -.04em;
+        }
+        .stage-lite-bars-title {
+          font-size: 24px;
+          line-height: 1;
+          letter-spacing: -.05em;
+          font-weight: 700;
+          margin-bottom: 14px;
+        }
+        .stage-lite-bar-group + .stage-lite-bar-group {
+          margin-top: 12px;
+        }
+        .stage-lite-bar-label {
+          margin-bottom: 8px;
+          color: rgba(255,255,255,.56);
+          font-size: 11px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .stage-lite-bar-track {
+          height: 16px;
+          border-radius: 999px;
+          background: rgba(255,255,255,.06);
+          overflow: hidden;
+        }
+        .stage-lite-bar-track-thin {
+          height: 10px;
+          margin-top: 8px;
+        }
+        .stage-lite-bar-fill {
+          height: 100%;
+          border-radius: inherit;
+        }
+        .stage-lite-bar-fill-fact {
+          background: linear-gradient(90deg, rgba(247,210,55,.96), rgba(255,231,138,.96));
+        }
+        .stage-lite-bar-fill-plan {
+          background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82));
+        }
         .analysis-stack {
           display: flex;
           flex-direction: column;
@@ -3079,7 +3092,8 @@ AI не придумывает выводы произвольно — он ра
         .tariff-attention {
           position: relative;
           flex: none;
-          width: 34px;
+          min-height: 34px;
+          padding: 0 12px;
           height: 34px;
           border-radius: 999px;
           border: 1px solid rgba(247,210,55,.35);
@@ -3091,6 +3105,13 @@ AI не придумывает выводы произвольно — он ра
           cursor: pointer;
         }
         .tariff-attention svg { width: 16px; height: 16px; }
+        .tariff-attention-label {
+          margin-left: 6px;
+          font-size: 11px;
+          line-height: 1;
+          letter-spacing: .08em;
+          text-transform: uppercase;
+        }
         .tariff-disclaimer-pop {
           position: absolute;
           top: calc(100% + 10px);
@@ -3121,10 +3142,10 @@ AI не придумывает выводы произвольно — он ра
         .tariff-disclaimer-line + .tariff-disclaimer-line { margin-top: 6px; }
         .tariff-column-sections {
           display: grid;
-          gap: 14px;
+          gap: 18px;
         }
         .tariff-section {
-          padding-top: 14px;
+          padding-top: 18px;
           border-top: 1px solid rgba(255,255,255,.08);
         }
         .tariff-section:first-child {
@@ -3132,9 +3153,9 @@ AI не придумывает выводы произвольно — он ра
           border-top: none;
         }
         .tariff-section-label {
-          margin-bottom: 10px;
+          margin-bottom: 12px;
           color: #ffffff;
-          font-size: 14px;
+          font-size: 16px;
           line-height: 1.25;
           font-weight: 700;
           letter-spacing: -.01em;
@@ -3148,11 +3169,11 @@ AI не придумывает выводы произвольно — он ра
         .tariff-note-item {
           display: grid;
           grid-template-columns: 18px 1fr;
-          gap: 10px;
+          gap: 12px;
           align-items: start;
-          color: rgba(255,255,255,.76);
-          font-size: 13px;
-          line-height: 1.5;
+          color: rgba(255,255,255,.8);
+          font-size: 14px;
+          line-height: 1.55;
         }
         .tariff-check-mark {
           color: #f7d237;
@@ -3177,10 +3198,10 @@ AI не придумывает выводы произвольно — он ра
           display: inline-flex;
           align-items: center;
           gap: 8px;
-          min-height: 34px;
-          padding: 7px 12px;
+          min-height: 36px;
+          padding: 8px 13px;
           border-radius: 999px;
-          font-size: 12px;
+          font-size: 13px;
           line-height: 1.3;
         }
         .tariff-tag-icon {
@@ -3311,6 +3332,10 @@ AI не придумывает выводы произвольно — он ра
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
+          .journey-scroll-grid { grid-template-columns: 1fr; }
+          .journey-stage-card { min-height: 0; border-right: none !important; border-bottom: 1px solid rgba(255,255,255,.08); }
+          .journey-stage-card:last-child { border-bottom: none; }
+          .stage-lite-copy-grid, .stage-lite-bottom { grid-template-columns: 1fr; }
           .journey-scroll-shell {
             min-height: auto;
           }
