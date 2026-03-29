@@ -1538,7 +1538,7 @@ AI не придумывает выводы произвольно — он ра
               </p>
             </div>
 
-            <div className="journey-scroll-grid">
+            <div className={`journey-scroll-grid ${journeyActiveIndex >= 3 ? "journey-scroll-grid-shifted" : ""}`}>
               {journeySteps.map((step, index) => (
                 <article
                   key={step.number}
@@ -2428,12 +2428,13 @@ AI не придумывает выводы произвольно — он ра
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 220vh;
+          min-height: 250vh;
         }
         .journey-scroll-sticky {
           position: sticky;
           top: 92px;
           padding-bottom: 12px;
+          overflow: hidden;
         }
         .journey-scroll-grid {
           display: grid;
@@ -2441,6 +2442,11 @@ AI не придумывает выводы произвольно — он ра
           gap: 0;
           margin-top: 26px;
           border-bottom: 1px solid rgba(255,255,255,.08);
+          transition: transform .55s ease;
+          will-change: transform;
+        }
+        .journey-scroll-grid.journey-scroll-grid-shifted {
+          transform: translateY(-160px);
         }
         .journey-stage-card {
           position: relative;
@@ -3326,6 +3332,17 @@ AI не придумывает выводы произвольно — он ра
           .journey-demo-bridge {
             flex-direction: column;
             align-items: flex-start;
+          }
+          .journey-scroll-shell {
+            min-height: auto;
+          }
+          .journey-scroll-sticky {
+            position: static;
+            overflow: visible;
+          }
+          .journey-scroll-grid,
+          .journey-scroll-grid.journey-scroll-grid-shifted {
+            transform: none;
           }
           .stage-carousel-item-free { width: min(680px, 78vw); }
           .analysis-right-card-plain { height: auto; }
