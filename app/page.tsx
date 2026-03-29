@@ -1268,7 +1268,13 @@ export default function Home() {
   const [faqOpen, setFaqOpen] = useState(false);
   const journeySectionRef = useRef<HTMLElement | null>(null);
   const [journeyActiveIndex, setJourneyActiveIndex] = useState(0);
-  const journeySteps = [
+  const journeySteps: Array<{
+    number: string;
+    title: string;
+    text: string;
+    linkLabel?: string;
+    linkHref?: string;
+  }> = [
     {
       number: "01",
       title: "Выбор варианта прохождения",
@@ -1301,7 +1307,7 @@ export default function Home() {
       title: "Личный кабинет и дальнейшие возможности",
       text: "3 запуска, разные бизнесы, доступ к результатам и интерактивной статистике, управление рычагами, PDF-скачивание и спецусловия на новые инструменты Growth Avenue.",
     },
-  ] as const;
+  ];
   const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
   const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
