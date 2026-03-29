@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 function fmtMoney(n: number) {
@@ -831,6 +832,8 @@ type OverlayBox = {
   width?: string;
 };
 
+type PaymentState = "idle" | "waiting" | "success" | "timeout";
+
 function StartCard({
   title,
   icon,
@@ -841,6 +844,7 @@ function StartCard({
   priceMobile,
   buttonDesktop,
   buttonMobile,
+  onPay,
 }: {
   title: string;
   icon: string;
@@ -851,6 +855,7 @@ function StartCard({
   priceMobile?: OverlayBox;
   buttonDesktop: OverlayBox;
   buttonMobile?: OverlayBox;
+  onPay?: (url: string) => void;
   stats?: Array<{ label: string; value: string }>;
 }) {
   const ctaLabel = title === "On Rec" ? "Оплатить" : "Оплатить";
@@ -886,7 +891,15 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
-            <a href={href} className="start-card-btn start-card-btn-floating">
+            <a
+              href={href}
+              className="start-card-btn start-card-btn-floating"
+              onClick={(e) => {
+                if (!onPay) return;
+                e.preventDefault();
+                onPay(href);
+              }}
+            >
               {ctaLabel}
             </a>
           </div>
@@ -1152,6 +1165,9 @@ export default function Home() {
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
+  const router = useRouter();
+  const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const [paymentStartedAt, setPaymentStartedAt] = useState<number | null>(null);
 
   const faqItems = [
     {
@@ -1266,6 +1282,27 @@ AI не придумывает выводы произвольно — он ра
   ];
 
 
+  const handlePay = (paypalUrl: string) => {
+    window.open(paypalUrl, "_blank", "noopener,noreferrer");
+    setPaymentState("waiting");
+    setPaymentStartedAt(Date.now());
+  };
+
+  const handlePaymentSuccess = (delay = 1500) => {
+    setPaymentState("success");
+    window.setTimeout(() => {
+      router.push("/thank-you");
+    }, delay);
+  };
+
+  const checkPayment = () => {
+    const flag = localStorage.getItem("rs_payment_completed");
+
+    if (flag) {
+      handlePaymentSuccess(1000);
+    }
+  };
+
   useEffect(() => {
     const onResize = () => {
       if (window.innerWidth > 860) setMobileMenuOpen(false);
@@ -1285,6 +1322,27 @@ AI не придумывает выводы произвольно — он ра
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [faqOpen]);
+
+  useEffect(() => {
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "rs_payment_completed" && e.newValue) {
+        handlePaymentSuccess(1500);
+      }
+    };
+
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
+  }, [router]);
+
+  useEffect(() => {
+    if (paymentState !== "waiting") return;
+
+    const timer = window.setTimeout(() => {
+      setPaymentState("timeout");
+    }, 4 * 60 * 1000);
+
+    return () => window.clearTimeout(timer);
+  }, [paymentState]);
 
   useEffect(() => {
     const handleJourneyScroll = () => {
@@ -1668,7 +1726,7 @@ AI не придумывает выводы произвольно — он ра
                 <Row label="Прибыль" delta={profitDelta} />
               </div>
 
-              <a href={payUrl} className="tg-gradient-btn mt-5 block text-center">Попробовать Snapshot</a>
+              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>Попробовать Snapshot</button>
             </aside>
           </div>
         </section>
@@ -1693,7 +1751,7 @@ AI не придумывает выводы произвольно — он ра
             <div className="results-roadmap-note">
               После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
-            <a href={payUrl} className="result-doc-start-btn results-start-btn">Начать</a>
+            <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
           </div>
         </section>
 
@@ -1728,6 +1786,7 @@ AI не придумывает выводы произвольно — он ра
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
                   buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                  onPay={handlePay}
                 />
                 <StartCard
                   title="On Rec"
@@ -1739,6 +1798,7 @@ AI не придумывает выводы произвольно — он ра
                   priceMobile={{ top: "18.5%", right: "8.5%" }}
                   buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                   buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                  onPay={handlePay}
                 />
               </div>
               <TariffDetailsComparison />
@@ -1766,6 +1826,72 @@ AI не придумывает выводы произвольно — он ра
           </div>
         </footer>
       </div>
+
+
+      {paymentState !== "idle" && (
+        <div className="payment-overlay-root" role="dialog" aria-modal="true" aria-label="Ожидание оплаты">
+          <div className="payment-overlay-backdrop" />
+          <div className="payment-overlay-card">
+            <div className="payment-overlay-status-row">
+              <div className={`payment-status-pill ${paymentState === "success" ? "is-success" : paymentState === "timeout" ? "is-timeout" : "is-waiting"}`}>
+                <span className="payment-status-dot" />
+                <span>
+                  {paymentState === "success"
+                    ? "Подтверждено"
+                    : paymentState === "timeout"
+                      ? "Ожидание истекло"
+                      : "Ожидание"}
+                </span>
+              </div>
+            </div>
+
+            {paymentState === "waiting" && (
+              <>
+                <h2 className="payment-overlay-title">Открыто окно оплаты</h2>
+                <p className="payment-overlay-copy">
+                  Завершите оплату в новой вкладке. После этого вы автоматически продолжите.
+                </p>
+                <div className="payment-overlay-note">
+                  Ожидаем подтверждение оплаты… Это занимает обычно до 10–30 секунд.
+                  {paymentStartedAt ? "" : ""}
+                </div>
+                <div className="payment-overlay-actions">
+                  <button type="button" className="payment-overlay-btn payment-overlay-btn-primary" onClick={checkPayment}>
+                    Я уже оплатил
+                  </button>
+                  <button type="button" className="payment-overlay-btn payment-overlay-btn-secondary" onClick={() => setPaymentState("idle")}>
+                    Отменить
+                  </button>
+                </div>
+              </>
+            )}
+
+            {paymentState === "success" && (
+              <>
+                <h2 className="payment-overlay-title">Оплата подтверждена</h2>
+                <p className="payment-overlay-copy">Перенаправляем...</p>
+              </>
+            )}
+
+            {paymentState === "timeout" && (
+              <>
+                <h2 className="payment-overlay-title">Время ожидания истекло</h2>
+                <p className="payment-overlay-copy">
+                  Если оплата уже завершена, нажмите «Я уже оплатил». Иначе вернитесь и попробуйте снова.
+                </p>
+                <div className="payment-overlay-actions">
+                  <button type="button" className="payment-overlay-btn payment-overlay-btn-primary" onClick={checkPayment}>
+                    Я уже оплатил
+                  </button>
+                  <button type="button" className="payment-overlay-btn payment-overlay-btn-secondary" onClick={() => setPaymentState("idle")}>
+                    Отменить
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
 
       {faqOpen && (
         <div className="faq-modal-root" role="dialog" aria-modal="true" aria-label="FAQ">
@@ -3185,6 +3311,129 @@ AI не придумывает выводы произвольно — он ра
         }
         .page-footer-links { position: relative; z-index: 13; }
         .page-footer-links a { pointer-events: auto; }
+
+        .payment-overlay-root {
+          position: fixed;
+          inset: 0;
+          z-index: 140;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+        }
+        .payment-overlay-backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(3,10,22,.78);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
+        }
+        .payment-overlay-card {
+          position: relative;
+          z-index: 1;
+          width: min(560px, 100%);
+          border-radius: 28px;
+          padding: 24px;
+          background: linear-gradient(180deg, rgba(16,27,49,.94), rgba(11,20,38,.92));
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: 0 30px 80px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .payment-overlay-status-row {
+          display: flex;
+          justify-content: flex-start;
+          margin-bottom: 18px;
+        }
+        .payment-status-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          min-height: 34px;
+          padding: 0 14px;
+          border-radius: 999px;
+          font-size: 12px;
+          font-weight: 700;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.06);
+          color: rgba(255,255,255,.84);
+        }
+        .payment-status-pill.is-waiting {
+          border-color: rgba(247,210,55,.26);
+          background: rgba(247,210,55,.1);
+          color: #fff2b2;
+        }
+        .payment-status-pill.is-success {
+          border-color: rgba(110,231,183,.24);
+          background: rgba(16,185,129,.12);
+          color: #bbf7d0;
+        }
+        .payment-status-pill.is-timeout {
+          border-color: rgba(251,113,133,.24);
+          background: rgba(244,63,94,.12);
+          color: #fecdd3;
+        }
+        .payment-status-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 999px;
+          background: currentColor;
+          box-shadow: 0 0 14px currentColor;
+          flex: none;
+        }
+        .payment-overlay-title {
+          margin: 0;
+          font-size: clamp(28px, 4vw, 42px);
+          line-height: .98;
+          letter-spacing: -.05em;
+          font-weight: 700;
+          color: #fff;
+        }
+        .payment-overlay-copy {
+          margin-top: 12px;
+          color: rgba(255,255,255,.76);
+          font-size: 16px;
+          line-height: 1.55;
+        }
+        .payment-overlay-note {
+          margin-top: 16px;
+          border-radius: 18px;
+          padding: 14px 16px;
+          background: rgba(255,255,255,.05);
+          border: 1px solid rgba(255,255,255,.08);
+          color: rgba(255,255,255,.68);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .payment-overlay-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        .payment-overlay-btn {
+          min-height: 44px;
+          padding: 0 18px;
+          border-radius: 999px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: transform .2s ease, background .2s ease, border-color .2s ease;
+        }
+        .payment-overlay-btn:hover {
+          transform: translateY(-1px);
+        }
+        .payment-overlay-btn-primary {
+          border: 1px solid rgba(255,255,255,.16);
+          color: #ffffff;
+          background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+          background-size: 220% 220%;
+          box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+          animation: tgGradientFlow 6s ease-in-out infinite;
+        }
+        .payment-overlay-btn-secondary {
+          color: #ffffff;
+          background: rgba(255,255,255,.06);
+          border: 1px solid rgba(255,255,255,.14);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
         .accent-word { color: #f7d237; }
         .text-emerald-300 { color: #a7f3d0; }
         .text-rose-300 { color: #fda4af; }
