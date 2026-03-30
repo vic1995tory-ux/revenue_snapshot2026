@@ -157,34 +157,53 @@ function Row({
   );
 }
 
-function Slider({
+function ControlSlider({
   title,
   subtitle,
   value,
+  min,
+  max,
+  step = 1,
+  suffix = "%",
   set,
   onStart,
 }: {
   title: string;
   subtitle: string;
   value: number;
+  min: number;
+  max: number;
+  step?: number;
+  suffix?: string;
   set: (v: number) => void;
   onStart: () => void;
 }) {
   const [started, setStarted] = useState(false);
 
+  const tone =
+    value > 0 ? "text-emerald-300" : value < 0 ? "text-rose-300" : "text-white/50";
+
+  const formatted = value > 0 ? `+${value}${suffix}` : `${value}${suffix}`;
+
   return (
-    <div className="glass-card soft-glow glare-card slider-card">
+    <div className="glass-card soft-glow glare-card slider-card slider-card-advanced">
       <div>
         <div className="slider-title">{title}</div>
         <div className="slider-subtitle">{subtitle}</div>
       </div>
 
       <div className="mt-auto">
+        <div className="slider-scale-row">
+          <span>{min}{suffix}</span>
+          <span>0{suffix}</span>
+          <span>{max > 0 ? `+${max}${suffix}` : `${max}${suffix}`}</span>
+        </div>
+
         <input
           type="range"
-          min="-0.3"
-          max="0.3"
-          step="0.01"
+          min={min}
+          max={max}
+          step={step}
           value={value}
           onMouseDown={() => {
             if (!started) {
@@ -203,11 +222,12 @@ function Slider({
           onChange={(e) => set(Number(e.target.value))}
           className="range-input mt-4 w-full accent-[#f7d237]"
         />
-        <div className="slider-percent">{Math.round(value * 100)}%</div>
+        <div className={`slider-percent ${tone}`}>{formatted}</div>
       </div>
     </div>
   );
 }
+
 
 
 function HeroEconomyChart() {
@@ -1156,24 +1176,29 @@ function StageCarousel() {
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
+  const [marginInput, setMarginInput] = useState("30");
+
   const clientsBase = parseNumeric(clientsInput, 0);
   const checkBase = parseNumeric(checkInput, 0);
+  const marginBase = Math.min(95, Math.max(1, parseNumeric(marginInput, 0)));
 
-  const [sales, setSales] = useState(0);
-  const [retention, setRetention] = useState(0);
-  const [upsell, setUpsell] = useState(0);
-  const [opexEff, setOpexEff] = useState(0);
+  const [marketing, setMarketing] = useState(0);
+  const [avgCheckShift, setAvgCheckShift] = useState(0);
+  const [efficiency, setEfficiency] = useState(0);
+  const [ltv, setLtv] = useState(0);
 
   const [history, setHistory] = useState<
     Array<{
       clientsInput: string;
       checkInput: string;
-      sales: number;
-      retention: number;
-      upsell: number;
-      opexEff: number;
+      marginInput: string;
+      marketing: number;
+      avgCheckShift: number;
+      efficiency: number;
+      ltv: number;
     }>
   >([]);
+
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
@@ -1472,7 +1497,15 @@ AI не придумывает выводы произвольно — он ра
   const pushHistory = () => {
     setHistory((prev) => [
       ...prev,
-      { clientsInput, checkInput, sales, retention, upsell, opexEff },
+      {
+        clientsInput,
+        checkInput,
+        marginInput,
+        marketing,
+        avgCheckShift,
+        efficiency,
+        ltv,
+      },
     ]);
   };
 
@@ -1482,63 +1515,157 @@ AI не придумывает выводы произвольно — он ра
       const last = prev[prev.length - 1];
       setClientsInput(last.clientsInput);
       setCheckInput(last.checkInput);
-      setSales(last.sales);
-      setRetention(last.retention);
-      setUpsell(last.upsell);
-      setOpexEff(last.opexEff);
+      setMarginInput(last.marginInput);
+      setMarketing(last.marketing);
+      setAvgCheckShift(last.avgCheckShift);
+      setEfficiency(last.efficiency);
+      setLtv(last.ltv);
       return prev.slice(0, -1);
     });
   };
 
   const handleReset = () => {
     pushHistory();
-    setClientsInput("");
-    setCheckInput("");
-    setSales(0);
-    setRetention(0);
-    setUpsell(0);
-    setOpexEff(0);
+    setClientsInput("20");
+    setCheckInput("2000");
+    setMarginInput("30");
+    setMarketing(0);
+    setAvgCheckShift(0);
+    setEfficiency(0);
+    setLtv(0);
   };
 
-  const data = useMemo(() => {
+  const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
+  const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
+  const nonLinear = (x: number) => x * (1 - 0.4 * Math.abs(x));
+
+  const preview = useMemo(() => {
     const safeClients = Math.max(0, clientsBase);
     const safeCheck = Math.max(0, checkBase);
-    const newClients = safeClients * (1 + sales * 0.6);
-    const retainedRevenueLift = 1 + retention * 0.35;
-    const avgCheck = safeCheck * (1 + upsell * 0.7);
-    const revenue = newClients * avgCheck * retainedRevenueLift;
-    const salesCost = revenue * 0.18 * (1 + sales * 0.4);
-    const support = revenue * 0.06 * (1 + retention * 0.25);
-    const opex = revenue * 0.35 * (1 - opexEff * 0.8);
-    const costs = salesCost + support + opex;
-    const profit = revenue - costs;
+    const safeMarginPct = clamp(marginBase, 1, 95);
 
-    return { clients: newClients, avgCheck, revenue, salesCost, support, opex, costs, profit };
-  }, [clientsBase, checkBase, sales, retention, upsell, opexEff]);
+    const baseRevenue = safeClients * safeCheck;
+    const baseProfit = baseRevenue * (safeMarginPct / 100);
+    const baseCosts = Math.max(0, baseRevenue - baseProfit);
 
-  const base = useMemo(() => {
-    const revenue = clientsBase * checkBase;
-    const salesCost = revenue * 0.18;
-    const support = revenue * 0.06;
-    const opex = revenue * 0.35;
-    const costs = salesCost + support + opex;
-    const profit = revenue - costs;
-    return { clients: clientsBase, avgCheck: checkBase, revenue, salesCost, support, opex, costs, profit };
-  }, [clientsBase, checkBase]);
+    const baseAcquisitionShare = 0.34;
+    const baseCAC = safeClients > 0 ? (baseCosts * baseAcquisitionShare) / safeClients : 0;
+    const baseOpex = baseCosts * (1 - baseAcquisitionShare);
 
-  const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
-  const revDelta = safeDiv(data.revenue - base.revenue, base.revenue);
-  const costDelta = safeDiv(data.costs - base.costs, base.costs);
-  const profitDelta = safeDiv(data.profit - base.profit, base.profit);
-  const clientsDelta = safeDiv(data.clients - base.clients, base.clients);
-  const avgCheckDelta = safeDiv(data.avgCheck - base.avgCheck, base.avgCheck);
-  const salesCostDelta = safeDiv(data.salesCost - base.salesCost, base.salesCost);
-  const opexSupportDelta = safeDiv(data.opex + data.support - (base.opex + base.support), base.opex + base.support);
+    const m = nonLinear(marketing / 20);
+    const e = nonLinear(efficiency / 20);
+    const l = nonLinear(ltv / 25);
 
-  const estimatedGap = Math.max(
-    0,
-    Math.round((data.revenue - base.revenue) * 0.55 + (data.profit - base.profit) * 0.45)
-  );
+    const c =
+      avgCheckShift >= 0
+        ? nonLinear(avgCheckShift / 30)
+        : nonLinear(avgCheckShift / 15);
+
+    let clients = safeClients;
+    let aov = safeCheck;
+    let cac = baseCAC;
+    let opex = baseOpex;
+
+    clients *= 1 + 0.12 * m;
+
+    if (avgCheckShift < 0) {
+      clients *= 1 + 0.25 * Math.abs(c);
+    } else {
+      clients *= 1 - 0.12 * c;
+    }
+
+    clients *= 1 + 0.04 * e;
+    clients *= 1 + 0.15 * l;
+    clients *= 1 + 0.06 * Math.max(0, c) * l;
+
+    if (avgCheckShift < 0) {
+      clients *= 1 + 0.1 * l;
+    }
+
+    aov *= 1 + avgCheckShift / 100;
+    aov *= 1 + 0.03 * m;
+    aov *= 1 + 0.02 * e;
+    aov *= 1 - 0.05 * l;
+
+    cac *= 1 - 0.07 * m;
+    cac *= 1 + 0.08 * Math.max(0, c);
+    cac *= 1 - 0.15 * e;
+    cac *= 1 - 0.12 * l;
+    cac *= 1 - 0.05 * m * e;
+
+    opex *= 1 + 0.15 * m;
+    opex *= 1 + 0.08 * Math.max(0, c);
+    opex *= 1 - 0.12 * e;
+    opex *= 1 + 0.08 * l;
+
+    clients = Math.max(0, clients);
+    aov = Math.max(0, aov);
+    cac = Math.max(baseCAC * 0.35, cac);
+    opex = Math.max(baseOpex * 0.55, opex);
+
+    const revenue = clients * aov;
+    const acquisition = clients * cac;
+    const rawCosts = acquisition + opex;
+    const rawProfit = revenue - rawCosts;
+    let marginPct = revenue > 0 ? (rawProfit / revenue) * 100 : 0;
+
+    marginPct -= 2 * Math.max(0, m) * (1 - e);
+
+    marginPct = clamp(marginPct, -20, 80);
+    const profit = revenue * (marginPct / 100);
+    const costs = revenue - profit;
+
+    const revDelta = safeDiv(revenue - baseRevenue, baseRevenue);
+    const costDelta = safeDiv(costs - baseCosts, baseCosts);
+    const profitDelta = safeDiv(profit - baseProfit, baseProfit);
+    const clientsDelta = safeDiv(clients - safeClients, safeClients);
+    const avgCheckDelta = safeDiv(aov - safeCheck, safeCheck);
+    const cacDelta = safeDiv(cac - baseCAC, baseCAC);
+    const marginDelta = marginPct - safeMarginPct;
+
+    const reserveValue = Math.max(0, profit - baseProfit);
+
+    const scenarioFlags: string[] = [];
+
+    if (marketing > 0 && efficiency < 8) {
+      scenarioFlags.push("Маркетинг усиливает рост, но без эффективности давит на прибыль.");
+    }
+    if (avgCheckShift > 0) {
+      scenarioFlags.push("Рост среднего чека повышает прибыльность, но сдерживает часть спроса.");
+    }
+    if (avgCheckShift < 0 && ltv > 0) {
+      scenarioFlags.push("Снижение чека частично компенсируется LTV и ростом клиентской базы.");
+    }
+    if (efficiency >= 10) {
+      scenarioFlags.push("Эффективность и автоматизация снижают давление расходов на модель.");
+    }
+    if (ltv >= 10) {
+      scenarioFlags.push("LTV усиливает монетизацию уже привлечённой базы.");
+    }
+    if (!scenarioFlags.length) {
+      scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
+    }
+
+    return {
+      revenue,
+      costs,
+      profit,
+      clients,
+      avgCheck: aov,
+      cac,
+      marginPct,
+      reserveValue,
+      revDelta,
+      costDelta,
+      profitDelta,
+      clientsDelta,
+      avgCheckDelta,
+      cacDelta,
+      marginDelta,
+      scenarioFlags,
+    };
+  }, [clientsBase, checkBase, marginBase, marketing, avgCheckShift, efficiency, ltv]);
+
 
   return (
     <main className="page-shell" id="top">
@@ -1687,29 +1814,54 @@ AI не придумывает выводы произвольно — он ра
         <section id="preview" className="mb-16">
           <div className="section-head">
             <div className="section-kicker">Интерактивное превью</div>
-            <h2 className="section-title">Посмотрите, как меняется экономика при разных сценариях
-</h2>
+            <h2 className="section-title">
+              Посмотрите, как меняется экономика бизнеса при разных управленческих решениях
+            </h2>
             <p className="section-copy">
-Это предварительная симуляция логики бизнеса.
-Она помогает увидеть, какие параметры сильнее всего влияют на результат, но не заменяет полный анализ.
-Полный Snapshot показывает, где именно находится ваше ограничение роста, почему оно возникает и какой шаг даст наибольший экономический эффект.
+              Это не упрощённая игрушка, а предварительная управленческая симуляция:
+              изменение одного рычага влияет сразу на несколько показателей и почти
+              всегда создаёт побочный эффект. Полный Snapshot идёт глубже и показывает
+              не только механику, но и ваше реальное ограничение роста.
             </p>
           </div>
 
-          <div className="preview-grid">
-            <div>
-              <div className="preview-input-intro">Введите ваши данные или попробуйте пример ниже</div>
+          <div className="preview-grid preview-grid-advanced">
+            <div className="preview-main-column">
+              <div className="preview-input-intro">
+                Введите базовые параметры бизнеса или выберите один из примеров
+              </div>
+
               <div className="preview-example-row">
-                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("20"); setCheckInput("2000"); }}>
-                  Пример: 20 клиентов / $2000
+                <button
+                  type="button"
+                  className="preview-example-chip"
+                  onClick={() => {
+                    pushHistory();
+                    setClientsInput("20");
+                    setCheckInput("2000");
+                    setMarginInput("30");
+                  }}
+                >
+                  Пример: 20 клиентов / $2000 / 30%
                 </button>
-                <button type="button" className="preview-example-chip" onClick={() => { pushHistory(); setClientsInput("45"); setCheckInput("1500"); }}>
-                  Пример: 45 клиентов / $1500
+
+                <button
+                  type="button"
+                  className="preview-example-chip"
+                  onClick={() => {
+                    pushHistory();
+                    setClientsInput("45");
+                    setCheckInput("1500");
+                    setMarginInput("24");
+                  }}
+                >
+                  Пример: 45 клиентов / $1500 / 24%
                 </button>
               </div>
-              <div className="input-grid mb-6 gap-3">
+
+              <div className="input-grid mb-6 gap-3 preview-input-grid-advanced">
                 <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">Клиентов / месяц</span>
+                  <span className="input-label input-label-strong">Клиенты / месяц</span>
                   <div className="input-wrap input-wrap-primary">
                     <input
                       type="text"
@@ -1737,21 +1889,36 @@ AI не придумывает выводы произвольно — он ра
                     />
                   </div>
                 </label>
+
+                <label className="input-shell input-shell-highlight">
+                  <span className="input-label input-label-strong">Маржинальность, %</span>
+                  <div className="input-wrap input-wrap-primary">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={marginInput}
+                      onFocus={pushHistory}
+                      onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
+                      className="glass-input glass-input-primary"
+                      placeholder="например, 30"
+                    />
+                  </div>
+                </label>
               </div>
 
               <section className="dashboard-grid">
-                <TopMetricCard title="Выручка" value={fmtMoney(data.revenue)} delta={revDelta} type="revenue" />
-                <TopMetricCard title="Прибыль" value={fmtMoney(data.profit)} delta={profitDelta} type="profit" />
-                <TopMetricCard title="Расходы" value={fmtMoney(data.costs)} delta={costDelta} type="costs" invert />
+                <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
+                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
+                <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
               </section>
 
               <div className="mt-5">
                 <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
                 <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <ModelCard title="Клиенты" value={Math.round(data.clients)} delta={clientsDelta} />
-                  <ModelCard title="Средний чек" value={fmtMoney(data.avgCheck)} delta={avgCheckDelta} />
-                  <ModelCard title="Sales cost" value={fmtMoney(data.salesCost)} delta={salesCostDelta} />
-                  <ModelCard title="Opex + Support" value={fmtMoney(data.opex + data.support)} delta={opexSupportDelta} invert />
+                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
+                  <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
+                  <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
+                  <ModelCard title="Средний чек" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
                 </div>
               </div>
 
@@ -1764,30 +1931,78 @@ AI не придумывает выводы произвольно — он ра
               </div>
 
               <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <Slider title="Эффективность продаж" subtitle="Влияние на конверсию и поток клиентов." value={sales} set={setSales} onStart={pushHistory} />
-                <Slider title="Повторные продажи" subtitle="Влияние на устойчивость выручки." value={retention} set={setRetention} onStart={pushHistory} />
-                <Slider title="Средний чек" subtitle="Рост денег без роста трафика." value={upsell} set={setUpsell} onStart={pushHistory} />
-                <Slider title="Загрузка команды" subtitle="Влияние на расходы и маржу." value={opexEff} set={setOpexEff} onStart={pushHistory} />
+                <ControlSlider
+                  title="Маркетинг"
+                  subtitle="−20% … +20%. Влияет на поток, CAC, чек и давление на расходы."
+                  value={marketing}
+                  min={-20}
+                  max={20}
+                  set={setMarketing}
+                  onStart={pushHistory}
+                />
+                <ControlSlider
+                  title="Средний чек"
+                  subtitle="−15% … +30%. Даёт рост денег с клиента, но может резать спрос."
+                  value={avgCheckShift}
+                  min={-15}
+                  max={30}
+                  set={setAvgCheckShift}
+                  onStart={pushHistory}
+                />
+                <ControlSlider
+                  title="Эффективность и автоматизация"
+                  subtitle="0% … +20%. Снижает давление расходов и улучшает экономику модели."
+                  value={efficiency}
+                  min={0}
+                  max={20}
+                  set={setEfficiency}
+                  onStart={pushHistory}
+                />
+                <ControlSlider
+                  title="LTV"
+                  subtitle="0% … +25%. Усиливает выручку с уже привлечённой базы."
+                  value={ltv}
+                  min={0}
+                  max={25}
+                  set={setLtv}
+                  onStart={pushHistory}
+                />
               </div>
             </div>
 
-            <aside className="glass-card glare-card preview-side">
+            <aside className="glass-card glare-card preview-side preview-side-advanced">
               <div className="reserve-kicker">Оценочный резерв</div>
-              <div className="hero-preview-box mt-4 glare-card-lite">
-                <div className="reserve-amount">≈ {fmtMoney(estimatedGap)} <span>/ мес</span></div>
+              <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
+                <div className="reserve-amount">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
                 <p className="mt-4 text-sm leading-7 text-white/65">
-                  Это только механика. Полный разбор раскрывает реальные
-                  возможности при текущей ситуации вашего бизнеса.
+                  Здесь показан потенциальный прирост прибыли относительно базового
+                  состояния модели. Это не финальный вывод, а предварительный диапазон,
+                  который позволяет увидеть, насколько чувствительна ваша экономика к
+                  изменениям управленческих рычагов.
                 </p>
               </div>
 
               <div className="mt-4 space-y-3 text-sm">
-                <Row label="Выручка" delta={revDelta} />
-                <Row label="Расходы" delta={costDelta} invert />
-                <Row label="Прибыль" delta={profitDelta} />
+                <Row label="Выручка" delta={preview.revDelta} />
+                <Row label="Расходы" delta={preview.costDelta} invert />
+                <Row label="Прибыль" delta={preview.profitDelta} />
               </div>
 
-              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>Попробовать Snapshot</button>
+              <div className="preview-side-note glass-card soft-glow glare-card mt-4">
+                <div className="preview-side-note-title">Что сейчас происходит в модели</div>
+                <div className="preview-side-note-list">
+                  {preview.scenarioFlags.map((item) => (
+                    <div key={item} className="preview-side-note-item">
+                      <span className="preview-side-note-bullet">•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
+                Попробовать Snapshot
+              </button>
             </aside>
           </div>
         </section>
@@ -2725,6 +2940,29 @@ AI не придумывает выводы произвольно — он ра
           line-height: 1.45;
         }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
+        .preview-grid-advanced {
+          grid-template-columns: minmax(0, 1fr) 340px;
+          gap: 22px;
+          align-items: start;
+        }
+        .preview-input-grid-advanced {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+        .preview-main-column {
+          min-width: 0;
+        }
+        .slider-card-advanced {
+          min-height: 156px;
+        }
+        .slider-scale-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          margin-top: 8px;
+          color: rgba(255,255,255,.42);
+          font-size: 11px;
+          line-height: 1;
+        }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
         .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
         .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
@@ -2769,6 +3007,40 @@ AI не придумывает выводы произвольно — он ра
         }
         .reset-link:disabled { opacity: .35; cursor: not-allowed; }
         .preview-side { position: sticky; top: 100px; }
+        .preview-side-advanced {
+          top: 96px;
+        }
+        .preview-reserve-box {
+          padding: 18px;
+        }
+        .preview-side-note {
+          padding: 16px;
+          border-radius: 20px;
+        }
+        .preview-side-note-title {
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1.2;
+        }
+        .preview-side-note-list {
+          display: grid;
+          gap: 10px;
+          margin-top: 12px;
+        }
+        .preview-side-note-item {
+          display: grid;
+          grid-template-columns: 12px 1fr;
+          gap: 10px;
+          align-items: start;
+          color: rgba(255,255,255,.72);
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .preview-side-note-bullet {
+          color: #f7d237;
+          line-height: 1.2;
+        }
         .reserve-kicker { color: #f7d237; font-size: 13px; font-weight: 700; }
         .hero-preview-box,
         .side-note-card,
@@ -4041,6 +4313,8 @@ AI не придумывает выводы произвольно — он ра
             justify-content: center;
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .preview-grid-advanced { grid-template-columns: 1fr; }
+          .preview-input-grid-advanced { grid-template-columns: 1fr; }
           .hero-chart-float { display: none; }
           .stage-scheme-slide {
             flex: 0 0 100%;
