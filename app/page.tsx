@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useState, type CSSProperties } from "react";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -209,7 +209,6 @@ function Slider({
   );
 }
 
-
 function HeroEconomyChart() {
   const base = {
     leads: 10,
@@ -281,9 +280,28 @@ function HeroEconomyChart() {
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(3);
-  const active = drivers[activeIndex];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const timerRef = useRef<number | null>(null);
 
+  useEffect(() => {
+    timerRef.current = window.setInterval(() => {
+      setActiveIndex((v) => (v + 1) % drivers.length);
+    }, 3400);
+
+    return () => {
+      if (timerRef.current) window.clearInterval(timerRef.current);
+    };
+  }, [drivers.length]);
+
+  const setDriver = (index: number) => {
+    setActiveIndex(index);
+    if (timerRef.current) window.clearInterval(timerRef.current);
+    timerRef.current = window.setInterval(() => {
+      setActiveIndex((v) => (v + 1) % drivers.length);
+    }, 3400);
+  };
+
+  const active = drivers[activeIndex];
   const bars = [
     { name: "Revenue", value: active.revenue, good: true },
     { name: "OPEX", value: active.opex, good: false },
@@ -295,14 +313,14 @@ function HeroEconomyChart() {
   return (
     <div className="hero-visual-shell">
       <div className="hero-chart-float">
-        <div className="hero-chart-float-title">Drivers</div>
+        <div className="hero-chart-float-title">MVP-Drivers</div>
 
         <div className="hero-levers-inline hero-levers-inline-float">
           {drivers.map((item, index) => (
             <button
               key={item.key}
               type="button"
-              onClick={() => setActiveIndex(index)}
+              onClick={() => setDriver(index)}
               className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
             >
               {item.label}
@@ -510,7 +528,6 @@ function TagList({
   );
 }
 
-
 function TariffColumn({
   title,
   sections,
@@ -527,11 +544,9 @@ function TariffColumn({
   disclaimer?: string[];
 }) {
   const [open, setOpen] = useState(false);
-  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
-  const activeSection = sections[activeSectionIndex];
 
   return (
-    <article className="tariff-column">
+<article className="tariff-column">
       <div className="tariff-column-head">
         <div className="tariff-column-title">{title}</div>
         {disclaimer?.length ? (
@@ -557,60 +572,44 @@ function TariffColumn({
         ) : null}
       </div>
 
-      <div className="tariff-panel-layout">
-        <div className="tariff-panel-nav" role="tablist" aria-label={`${title} sections`}>
-          {sections.map((section, index) => (
-            <button
-              key={section.label}
-              type="button"
-              role="tab"
-              aria-selected={activeSectionIndex === index}
-              className={`tariff-panel-tab ${activeSectionIndex === index ? "is-active" : ""}`}
-              onClick={() => setActiveSectionIndex(index)}
-            >
-              {section.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="tariff-panel-content" role="tabpanel">
-          <div className="tariff-panel-content-title">{activeSection.label}</div>
-
-          {activeSection.items?.length ? (
-            activeSection.render === "tags" ? (
-              <TagList items={activeSection.items} variant="soft" icon={activeSection.iconKind ?? "custom"} />
-            ) : activeSection.render === "icon-tags" ? (
-              <TagList items={activeSection.items} variant="icon-solid" icon={activeSection.iconKind ?? "custom"} />
-            ) : activeSection.render === "yellow-tags" ? (
-              <TagList items={activeSection.items} variant="yellow" icon={activeSection.iconKind ?? "custom"} />
-            ) : (
-              <div className="tariff-check-list tariff-check-list-panel">
-                {activeSection.items.map((item) => (
-                  <div key={item} className="tariff-check-item">
-                    <span className="tariff-check-mark"><ChipIcon kind={activeSection.iconKind ?? "custom"} /></span>
-                    <span>{item}</span>
+      <div className="tariff-column-sections">
+        {sections.map((section) => (
+          <div key={section.label} className="tariff-section">
+            <div className="tariff-section-label">{section.label}</div>
+            {section.items?.length ? (
+              section.render === "tags" ? (
+                <TagList items={section.items} variant="soft" icon={section.iconKind ?? "custom"} />
+              ) : section.render === "icon-tags" ? (
+                <TagList items={section.items} variant="icon-solid" icon={section.iconKind ?? "custom"} />
+              ) : section.render === "yellow-tags" ? (
+                <TagList items={section.items} variant="yellow" icon={section.iconKind ?? "custom"} />
+              ) : (
+                <div className="tariff-check-list">
+                  {section.items.map((item) => (
+                    <div key={item} className="tariff-check-item">
+                      <span className="tariff-check-mark"><ChipIcon kind={section.iconKind ?? "custom"} /></span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : null}
+            {section.notes?.length ? (
+              <div className="tariff-note-list">
+                {section.notes.map((note) => (
+                  <div key={note} className="tariff-note-item">
+                    <span className="tariff-note-bullet">•</span>
+                    <span>{note}</span>
                   </div>
                 ))}
               </div>
-            )
-          ) : null}
-
-          {activeSection.notes?.length ? (
-            <div className="tariff-note-list tariff-note-list-panel">
-              {activeSection.notes.map((note) => (
-                <div key={note} className="tariff-note-item">
-                  <span className="tariff-note-bullet">•</span>
-                  <span>{note}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+            ) : null}
+          </div>
+        ))}
       </div>
     </article>
   );
 }
-
 
 function TariffDetailsComparison() {
   const playgroundDisclaimer = [
@@ -641,13 +640,7 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Format",
-      render: "icon-tags" as const,
-      iconKind: "solo" as const,
-      items: ["Самостоятельное прохождение", "Онлайн-интерфейс", "Личный кабинет на 365 дней"],
-    },
-    {
-      label: "Economic model",
+      label: "Экономическая модель и анализ",
       iconKind: "rate" as const,
       items: [
         "Сборка модели на основе введенных данных",
@@ -656,7 +649,7 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Leverages",
+      label: "Рычаги роста и сценарии",
       iconKind: "rate" as const,
       items: [
         "Определение потенциальных драйверов роста",
@@ -665,29 +658,40 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Final Results",
+      label: "Финальный результат",
       render: "yellow-tags" as const,
       iconKind: "jtbd" as const,
       items: [
-        "Economic Rate",
-        "Growth Limit",
-        "Solution",
-        "JTBD",
-      ],
-      notes: [
-        "Оценка модели на основе вводных.",
-        "Главный фактор, сдерживающий рост.",
-        "Приоритетные рычаги роста и логика изменений.",
+        "Economic Rate (оценка модели на основе вводных)",
+        "Главный фактор, сдерживающий рост (гипотеза)",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
       ],
     },
     {
-      label: "Decompose",
+      label: "Decompose (разбор с командой)",
       iconKind: "chat" as const,
       items: [
         "Онлайн-встреча 60 минут",
         "Обсуждение результатов и допущений",
         "Пояснение логики выводов",
         "Ответы на вопросы",
+      ],
+    },
+    {
+      label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "solo" as const,
+      items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
+    },
+    {
+      label: "Результат",
+      iconKind: "practice" as const,
+      items: [
+        "Структурированное понимание текущей ситуации",
+        "Набор гипотез для роста",
+        "Возможные направления для изменений",
+        "Основа для дальнейшей проработки",
       ],
     },
   ];
@@ -709,13 +713,7 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Format",
-      render: "icon-tags" as const,
-      iconKind: "team" as const,
-      items: ["Работа с участием команды", "Онлайн-коммуникация", "Индивидуальная проработка"],
-    },
-    {
-      label: "Economic model",
+      label: "Экономическая модель и анализ",
       iconKind: "rate" as const,
       items: [
         "Сборка модели на основе интервью и уточнений",
@@ -724,7 +722,7 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Leverages",
+      label: "Рычаги роста и сценарии",
       iconKind: "rate" as const,
       items: [
         "Определение ключевых драйверов роста",
@@ -733,31 +731,57 @@ function TariffDetailsComparison() {
       ],
     },
     {
-      label: "Final Results",
+      label: "Рабочий процесс",
+      render: "icon-tags" as const,
+      iconKind: "team" as const,
+      items: [
+        "Личный брифинг с командой",
+        "Дополнительные уточнения в процессе",
+        "Связь во время подготовки результата",
+      ],
+    },
+    {
+      label: "Формат работы",
+      render: "icon-tags" as const,
+      iconKind: "online" as const,
+      items: [
+        "Работа с участием команды",
+        "Онлайн-коммуникация",
+        "Индивидуальная проработка",
+      ],
+    },
+    {
+      label: "Финальный результат",
       render: "yellow-tags" as const,
       iconKind: "swot" as const,
       items: [
         "Economic Rate",
-        "Growth Limit",
-        "Solution",
-        "JTBD",
+        "Главный фактор, сдерживающий рост",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
         "SWOT-анализ",
         "Сегментация и позиционирование",
-        "Best practices",
-      ],
-      notes: [
-        "Результат собирается командой самостоятельно на основе брифа и уточнений.",
-        "Дополнительно включаются SWOT-анализ, сегментация и позиционирование под сегменты.",
+        "Практики для внедрения",
       ],
     },
     {
-      label: "Decompose",
-      iconKind: "chat" as const,
+      label: "Дополнительная проработка",
+      iconKind: "segment" as const,
       items: [
-        "Связь во время подготовки результата",
-        "Дополнительные уточнения в процессе",
-        "Разбор выводов и логики решений",
-        "Ответы на вопросы команды клиента",
+        "SWOT-анализ бизнеса",
+        "Сегментация аудитории",
+        "Позиционирование под каждый сегмент",
+        "Best practices по рынку и модели",
+      ],
+    },
+    {
+      label: "Результат",
+      iconKind: "practice" as const,
+      items: [
+        "Более точная картина бизнеса с учетом контекста",
+        "Проверенные гипотезы роста",
+        "Конкретные направления изменений",
+        "Основа для внедрения и масштабирования",
       ],
     },
   ];
@@ -947,42 +971,51 @@ function StageCarousel() {
     },
   ];
 
-  const visibleCount = 3;
-  const [activeIndex, setActiveIndex] = useState(0);
+  const cloneCount = 3;
+  const extendedItems = [
+    ...items.slice(-cloneCount),
+    ...items,
+    ...items.slice(0, cloneCount),
+  ];
+
+  const [currentIndex, setCurrentIndex] = useState(cloneCount);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [isSnapReset, setIsSnapReset] = useState(false);
 
   const goToNext = () => {
     if (isAnimating) return;
     setDirection("next");
     setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-      setIsAnimating(false);
-    }, 320);
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const goToPrev = () => {
     if (isAnimating) return;
     setDirection("prev");
     setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
-      setIsAnimating(false);
-    }, 320);
+    setCurrentIndex((prev) => prev - 1);
   };
 
-  const visibleCards = Array.from({ length: visibleCount }, (_, offset) => {
-    const itemIndex = (activeIndex + offset) % items.length;
-    return {
-      ...items[itemIndex],
-      itemIndex,
-      slot: offset,
-    };
-  });
+  const handleTransitionEnd = () => {
+    setIsAnimating(false);
+
+    if (currentIndex >= items.length + cloneCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(currentIndex - items.length);
+      window.setTimeout(() => setIsSnapReset(false), 20);
+      return;
+    }
+
+    if (currentIndex < cloneCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(currentIndex + items.length);
+      window.setTimeout(() => setIsSnapReset(false), 20);
+    }
+  };
 
   return (
-    <div className={`stage-scheme-wrap ${isAnimating ? `is-animating direction-${direction}` : ""}`}>
+    <div className="stage-scheme-wrap">
       <div className="stage-scheme-nav">
         <button
           type="button"
@@ -1002,45 +1035,56 @@ function StageCarousel() {
         </button>
       </div>
 
-      <div className="stage-scheme-grid">
-        {visibleCards.map((item) => (
-          <article
-            key={`${item.niche}-${item.itemIndex}-${activeIndex}`}
-            className={`stage-scheme-card ${item.slot === 0 ? "is-left" : ""}`}
-          >
-            <div className="stage-scheme-kicker">Ниша</div>
-            <div className="stage-scheme-title">{item.niche}</div>
-            <div className="stage-scheme-stage">{item.stage}</div>
+      <div className="stage-scheme-viewport">
+        <div
+          className={`stage-scheme-track ${isAnimating ? `is-animating direction-${direction}` : ""} ${isSnapReset ? "is-snap-reset" : ""}`}
+          style={{ transform: `translateX(-${(currentIndex * 100) / 3}%)` }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {extendedItems.map((item, idx) => {
+            const leftEdgeIndex = currentIndex;
+            const isLeavingLeft = isAnimating && direction === "next" && idx === leftEdgeIndex;
 
-            <div className="stage-scheme-lever-label">Выявленный рычаг</div>
-            <div className="stage-scheme-lever">{item.lever}</div>
-            <p className="stage-scheme-roadmap">{item.roadmap}</p>
+            return (
+              <article
+                key={`${item.niche}-${idx}`}
+                className={`stage-scheme-card ${isLeavingLeft ? "is-leaving-left" : ""}`}
+              >
+                <div className="stage-scheme-kicker">Ниша</div>
+                <div className="stage-scheme-title">{item.niche}</div>
+                <div className="stage-scheme-stage">{item.stage}</div>
 
-            <div className="stage-scheme-bottom">
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">зоны влияния</div>
-                <div className="stage-scheme-tags">
-                  {item.zones.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag">
-                      {tag}
-                    </span>
-                  ))}
+                <div className="stage-scheme-lever-label">Выявленный рычаг</div>
+                <div className="stage-scheme-lever">{item.lever}</div>
+                <p className="stage-scheme-roadmap">{item.roadmap}</p>
+
+                <div className="stage-scheme-bottom">
+                  <div className="stage-scheme-group">
+                    <div className="stage-scheme-label">зоны влияния</div>
+                    <div className="stage-scheme-tags">
+                      {item.zones.map((tag) => (
+                        <span key={tag} className="stage-scheme-tag">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="stage-scheme-group">
+                    <div className="stage-scheme-label">результат</div>
+                    <div className="stage-scheme-tags">
+                      {item.result.map((tag) => (
+                        <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
-
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">результат</div>
-                <div className="stage-scheme-tags">
-                  {item.result.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
-        ))}
+              </article>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
@@ -1071,8 +1115,6 @@ export default function Home() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
-  const journeySectionRef = useRef<HTMLElement | null>(null);
-  const [journeyActiveIndex, setJourneyActiveIndex] = useState(0);
   const journeySteps: Array<{
     number: string;
     title: string;
@@ -1082,9 +1124,9 @@ export default function Home() {
   }> = [
     {
       number: "01",
-      title: "Выбор формата",
+      title: "Выбор варианта прохождения",
       text: "Online Playground — самостоятельный формат. On Rec — формат с участием команды.",
-      linkLabel: "Начать",
+      linkLabel: "Подробнее",
       linkHref: "#tariffs",
     },
     {
@@ -1298,36 +1340,6 @@ AI не придумывает выводы произвольно — он ра
   }, [paymentState]);
 
   useEffect(() => {
-    const handleJourneyScroll = () => {
-      const section = journeySectionRef.current;
-      if (!section || window.innerWidth <= 1180) {
-        setJourneyActiveIndex(0);
-        return;
-      }
-
-      const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.2 - rect.top) / sectionHeight;
-      const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
-      const nextIndex = Math.min(
-        journeySteps.length - 1,
-        Math.floor(progress * journeySteps.length)
-      );
-
-      setJourneyActiveIndex(nextIndex);
-    };
-
-    handleJourneyScroll();
-    window.addEventListener("scroll", handleJourneyScroll, { passive: true });
-    window.addEventListener("resize", handleJourneyScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleJourneyScroll);
-      window.removeEventListener("resize", handleJourneyScroll);
-    };
-  }, [journeySteps.length]);
-
-  useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
 
     const tiltCards = Array.from(document.querySelectorAll<HTMLElement>(".tilt-card"));
@@ -1483,7 +1495,7 @@ AI не придумывает выводы произвольно — он ра
               FAQ
             </button>
             <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Profile</a>
-            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Начать</a>
+            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Выбрать способ прохождения</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1497,24 +1509,25 @@ AI не придумывает выводы произвольно — он ра
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
-                Не общие выводы, а конкретные расчёты и приоритеты.
+                стратегическая диагностика
+                <br />
+                экономики вашего бизнеса
               </div>
 
               <p className="hero-main-copy">
-                Система фиксирует ограничения роста, показывает точки потерь и
-                собирает управленческую последовательность решений на основе экономики бизнеса.
+                Узнайте, какое изменение в модели способно дать наиболее сильный
+                эффект на выручку, и где сейчас скрываются главные точки потери
+                денег.
               </p>
 
               <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
-                <div className="hero-highlight-chip">ECONOMIC RATE</div>
-                <div className="hero-highlight-chip">GROWTH LIMIT</div>
-                <div className="hero-highlight-chip">SOLUTION</div>
-                <div className="hero-highlight-chip">JTBD</div>
+                <div className="hero-highlight-chip">MVP</div>
+                <div className="hero-highlight-chip">CashCow</div>
+                <div className="hero-highlight-chip">Scaling</div>
               </div>
 
               <div className="hero-actions-row">
-                <a href="#tariffs" className="tg-gradient-btn inline-flex">Начать</a>
+                <a href="#tariffs" className="tg-gradient-btn inline-flex">Выбрать способ прохождения</a>
                 <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
               </div>
             </div>
@@ -1523,7 +1536,7 @@ AI не придумывает выводы произвольно — он ра
           </div>
         </section>
 
-        <section id="how-it-works" className="mb-16 journey-scroll-shell" ref={journeySectionRef}>
+        <section id="how-it-works" className="mb-16 journey-scroll-shell">
           <div className="journey-scroll-sticky">
             <div className="section-head">
               <div className="section-kicker">Как это работает</div>
@@ -1537,7 +1550,7 @@ AI не придумывает выводы произвольно — он ра
               {journeySteps.map((step, index) => (
                 <article
                   key={step.number}
-                  className={`journey-stage-card ${index <= journeyActiveIndex ? "is-active" : "is-muted"}`}
+                  className="journey-stage-card"
                 >
                   <div className="journey-stage-number">{step.number}</div>
                   <div className="journey-stage-title">{step.title}</div>
@@ -1552,15 +1565,12 @@ AI не придумывает выводы произвольно — он ра
             </div>
 
             <div className="journey-progress-wrap" aria-hidden="true">
-              <div
-                className="journey-progress-fill"
-                style={{ width: `${((journeyActiveIndex + 1) / journeySteps.length) * 100}%` }}
-              />
+              <div className="journey-progress-fill" style={{ width: "100%" }} />
               <div className="journey-progress-dots">
                 {journeySteps.map((step, index) => (
                   <span
                     key={step.number}
-                    className={`journey-progress-dot ${index <= journeyActiveIndex ? "is-active" : ""}`}
+                    className="journey-progress-dot is-active"
                   />
                 ))}
               </div>
@@ -1901,7 +1911,7 @@ AI не придумывает выводы произвольно — он ра
             radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
             linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
           background-size: 140% 140%;
-          animation: none;
+          animation: pageAmbient 26s ease-in-out infinite alternate;
         }
         .content-wrap {
           position: relative;
@@ -2329,7 +2339,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71, 96, 255, 0.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: none;
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .tg-gradient-btn::before {
           content: "";
@@ -2337,7 +2347,7 @@ AI не придумывает выводы произвольно — он ра
           inset: 0;
           background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 25%, transparent 50%);
           transform: translateX(-130%);
-          animation: none;
+          animation: tgShine 3.8s ease-in-out infinite;
         }
         .tg-gradient-btn > * { position: relative; z-index: 1; }
         .tg-gradient-btn:hover { transform: translateY(-1px); }
@@ -2466,7 +2476,7 @@ AI не придумывает выводы произвольно — он ра
           border-radius: 999px;
           background: #f7d237;
           box-shadow: 0 0 16px rgba(247,210,55,.42);
-          animation: none;
+          animation: pulseTinyYellow 1.8s ease-in-out infinite;
           flex-shrink: 0;
         }
         .hero-money-card-muted {
@@ -2476,13 +2486,13 @@ AI не придумывает выводы произвольно — он ра
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 250vh;
+          min-height: auto;
         }
         .journey-scroll-sticky {
-          position: sticky;
-          top: 92px;
+          position: static;
+          top: auto;
           padding-bottom: 12px;
-          overflow: hidden;
+          overflow: visible;
         }
         .journey-scroll-grid {
           display: grid;
@@ -2497,23 +2507,16 @@ AI не придумывает выводы произвольно — он ра
           padding: 16px 24px 24px;
           border-left: 1px solid rgba(255,255,255,.08);
           border-top: 1px solid rgba(255,255,255,.08);
-          transition: opacity .38s ease, filter .38s ease, transform .38s ease;
+          transition: none;
+          opacity: 1;
+          filter: none;
+          transform: none;
         }
         .journey-stage-card:nth-child(-n+3) {
           border-top: none;
         }
         .journey-stage-card:nth-child(3n+1) {
           border-left: none;
-        }
-        .journey-stage-card.is-muted {
-          opacity: .24;
-          filter: blur(8px);
-          transform: translateY(10px);
-        }
-        .journey-stage-card.is-active {
-          opacity: 1;
-          filter: blur(0);
-          transform: translateY(0);
         }
         .journey-stage-number {
           color: rgba(255,255,255,.72);
@@ -2569,9 +2572,10 @@ AI не придумывает выводы произвольно — он ра
           top: 11px;
           height: 4px;
           border-radius: 999px;
+          width: 100%;
           background: linear-gradient(90deg, rgba(130,120,255,.95), rgba(188,125,255,.95));
           box-shadow: 0 0 26px rgba(130,120,255,.5);
-          transition: width .32s ease;
+          transition: none;
         }
         .journey-progress-dots {
           position: relative;
@@ -2583,17 +2587,12 @@ AI не придумывает выводы произвольно — он ра
           width: 18px;
           height: 18px;
           border-radius: 999px;
-          background: #3f325f;
-          border: 3px solid #6e5fa2;
+          background: #8d79e6;
+          border: 3px solid #5e4f98;
           justify-self: center;
           align-self: center;
-          box-shadow: 0 0 0 6px rgba(111,96,166,.08);
-          transition: background .24s ease, border-color .24s ease, box-shadow .24s ease;
-        }
-        .journey-progress-dot.is-active {
-          background: #8d79e6;
-          border-color: #5e4f98;
           box-shadow: 0 0 0 6px rgba(141,121,230,.18);
+          transition: none;
         }
         .journey-demo-bridge {
           display: flex;
@@ -2609,7 +2608,7 @@ AI не придумывает выводы произвольно — он ра
           font-size: 16px;
           line-height: 1.45;
         }
-        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
+        .preview-grid { display: grid;        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
         .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
         .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
@@ -2688,7 +2687,7 @@ AI не придумывает выводы произвольно — он ра
           text-decoration: none; color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: none;
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
         .industries-pills-carousel {
@@ -2954,145 +2953,6 @@ AI не придумывает выводы произвольно — он ра
         .stage-lite-bar-fill-plan {
           background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82));
         }
-
-        .stage-scheme-wrap {
-          position: relative;
-          border-radius: 30px;
-          padding: 18px 18px 0;
-          background: linear-gradient(180deg, rgba(12,27,58,.28), rgba(8,18,40,.12));
-          border: 1px solid rgba(255,255,255,.08);
-          overflow: hidden;
-        }
-        .stage-scheme-nav {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-          margin-bottom: 12px;
-        }
-        .stage-scheme-arrow {
-          width: 46px;
-          height: 46px;
-          border-radius: 999px;
-          border: 1px solid rgba(255,255,255,.14);
-          background: rgba(255,255,255,.05);
-          color: #fff;
-          font-size: 22px;
-          line-height: 1;
-          transition: transform .2s ease, background .2s ease, border-color .2s ease;
-        }
-        .stage-scheme-arrow:hover {
-          transform: translateY(-1px);
-          background: rgba(255,255,255,.08);
-          border-color: rgba(255,255,255,.18);
-        }
-        .stage-scheme-grid {
-          display: grid;
-          grid-template-columns: repeat(3, minmax(0,1fr));
-          gap: 0;
-          min-height: 360px;
-        }
-        .stage-scheme-card {
-          position: relative;
-          padding: 18px 20px 20px;
-          border-top: 1px solid rgba(255,255,255,.08);
-          border-left: 1px solid rgba(255,255,255,.08);
-          background:
-            radial-gradient(circle at 30% 20%, rgba(130,120,255,.10), transparent 34%),
-            linear-gradient(180deg, rgba(16,27,49,.38), rgba(11,20,38,.18));
-          transition: opacity .32s ease, filter .32s ease, transform .32s ease;
-        }
-        .stage-scheme-card:first-child {
-          border-left: none;
-        }
-        .stage-scheme-wrap.is-animating.direction-next .stage-scheme-card.is-left,
-        .stage-scheme-wrap.is-animating.direction-prev .stage-scheme-card:not(.is-left) {
-          opacity: .28;
-          filter: blur(10px);
-          transform: scale(.98);
-        }
-        .stage-scheme-kicker {
-          color: rgba(255,255,255,.56);
-          font-size: 12px;
-          letter-spacing: .12em;
-          text-transform: uppercase;
-        }
-        .stage-scheme-title {
-          margin-top: 10px;
-          font-size: clamp(34px, 4vw, 54px);
-          line-height: .94;
-          letter-spacing: -.05em;
-          font-weight: 600;
-        }
-        .stage-scheme-stage {
-          margin-top: 8px;
-          color: rgba(255,255,255,.72);
-          font-size: 18px;
-          line-height: 1.15;
-          letter-spacing: -.03em;
-        }
-        .stage-scheme-lever-label {
-          margin-top: 18px;
-          color: rgba(255,255,255,.72);
-          font-size: 14px;
-          line-height: 1.15;
-          letter-spacing: -.02em;
-          font-weight: 500;
-        }
-        .stage-scheme-lever {
-          margin-top: 6px;
-          color: #ffffff;
-          font-size: 22px;
-          line-height: 1.05;
-          letter-spacing: -.03em;
-          font-weight: 600;
-          max-width: 320px;
-        }
-        .stage-scheme-roadmap {
-          margin: 6px 0 0;
-          max-width: 300px;
-          color: rgba(255,255,255,.72);
-          font-size: 14px;
-          line-height: 1.5;
-        }
-        .stage-scheme-bottom {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          margin-top: 26px;
-          align-items: end;
-        }
-        .stage-scheme-label {
-          margin-bottom: 8px;
-          color: rgba(255,255,255,.82);
-          font-size: 13px;
-          letter-spacing: .08em;
-          text-transform: lowercase;
-        }
-        .stage-scheme-tags {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .stage-scheme-tag {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 34px;
-          min-width: 86px;
-          padding: 0 14px;
-          border-radius: 10px;
-          background: rgba(255,255,255,.08);
-          border: 1px solid rgba(255,255,255,.10);
-          color: rgba(255,255,255,.88);
-          font-size: 13px;
-          font-weight: 600;
-        }
-        .stage-scheme-tag-result {
-          background: rgba(247,210,55,.16);
-          border-color: rgba(247,210,55,.24);
-          color: #fff2b2;
-        }
-
         .analysis-stack {
           display: flex;
           flex-direction: column;
@@ -3206,7 +3066,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: none;
+          animation: tgGradientFlow 6s ease-in-out infinite;
           pointer-events: auto;
           white-space: nowrap;
         }
@@ -3383,87 +3243,6 @@ AI не придумывает выводы произвольно — он ра
           font-weight: 600;
         }
         .tariff-tag-yellow .tariff-tag-icon { color: #1a2133; }
-
-        .tariff-panel-layout {
-          display: grid;
-          grid-template-columns: 280px minmax(0, 1fr);
-          gap: 24px;
-          align-items: stretch;
-          min-height: 520px;
-        }
-        .tariff-panel-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 14px;
-          padding: 6px 0;
-        }
-        .tariff-panel-tab {
-          display: inline-flex;
-          align-items: center;
-          justify-content: flex-start;
-          min-height: 56px;
-          width: fit-content;
-          max-width: 100%;
-          padding: 0 22px;
-          border-radius: 18px;
-          border: 1px solid rgba(255,255,255,.14);
-          background: rgba(224,225,227,.92);
-          color: #25314e;
-          font-size: 15px;
-          line-height: 1.2;
-          font-weight: 500;
-          letter-spacing: .02em;
-          transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
-          text-align: left;
-        }
-        .tariff-panel-tab:hover {
-          transform: translateY(-1px);
-        }
-        .tariff-panel-tab.is-active {
-          background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.9));
-          border-color: rgba(247,210,55,.3);
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(247,210,55,.12);
-        }
-        .tariff-panel-content {
-          min-width: 0;
-          border-left: 2px solid rgba(255,255,255,.78);
-          padding: 10px 0 10px 34px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          gap: 18px;
-        }
-        .tariff-panel-content-title {
-          color: #ffffff;
-          font-size: clamp(22px, 2vw, 32px);
-          line-height: 1.18;
-          letter-spacing: .01em;
-          font-weight: 500;
-          max-width: 520px;
-          white-space: pre-line;
-        }
-        .tariff-check-list-panel,
-        .tariff-note-list-panel {
-          max-width: 760px;
-        }
-        .tariff-panel-content .tariff-check-list {
-          gap: 14px;
-        }
-        .tariff-panel-content .tariff-check-item,
-        .tariff-panel-content .tariff-note-item {
-          font-size: 15px;
-          line-height: 1.65;
-        }
-        .tariff-panel-content .tariff-tag-list {
-          gap: 12px;
-        }
-        .tariff-panel-content .tariff-tag {
-          min-height: 44px;
-          padding: 10px 16px;
-          font-size: 14px;
-        }
-
         .cta-card {
           display: grid;
           grid-template-columns: minmax(0,1fr);
@@ -3598,7 +3377,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: none;
+          animation: tgGradientFlow 6s ease-in-out infinite;
         }
         .payment-overlay-btn-secondary {
           color: #ffffff;
@@ -3673,11 +3452,6 @@ AI не придумывает выводы произвольно — он ра
             justify-content: center;
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
-          .hero-chart-float { display: none; }
-          .stage-scheme-grid { grid-template-columns: 1fr; }
-          .stage-scheme-card { border-left: none; }
-          .stage-scheme-card + .stage-scheme-card { border-top: 1px solid rgba(255,255,255,.08); }
-          .stage-scheme-bottom { grid-template-columns: 1fr; }
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
@@ -3892,40 +3666,6 @@ AI не придумывает выводы произвольно — он ра
           .input-grid,
           .compact-metrics-grid { width: 100%; max-width: 100%; }
           .cta-card { grid-template-columns: 1fr; gap: 14px; }
-
-          .tariff-panel-layout {
-            grid-template-columns: 1fr;
-            gap: 16px;
-            min-height: 0;
-          }
-          .tariff-panel-nav {
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 0;
-          }
-          .tariff-panel-tab {
-            min-height: 42px;
-            padding: 0 14px;
-            border-radius: 14px;
-            font-size: 13px;
-          }
-          .tariff-panel-content {
-            border-left: none;
-            border-top: 1px solid rgba(255,255,255,.12);
-            padding: 16px 0 0;
-            gap: 14px;
-          }
-          .tariff-panel-content-title {
-            font-size: 22px;
-            max-width: none;
-          }
-          .tariff-panel-content .tariff-check-item,
-          .tariff-panel-content .tariff-note-item {
-            font-size: 13px;
-            line-height: 1.55;
-          }
-
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
