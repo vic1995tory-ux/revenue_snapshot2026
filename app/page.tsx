@@ -974,105 +974,103 @@ function StageCarousel() {
       result: ["Profit", "Structure"],
     },
   ];
+const [activeIndex, setActiveIndex] = useState(0);
 
-  const visibleCount = 3;
-  const [activeIndex, setActiveIndex] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
+const goToNext = () => {
+  setActiveIndex((prev) => (prev + 1) % items.length);
+};
 
-  const goToNext = () => {
-    if (isAnimating) return;
-    setDirection("next");
-    setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-      setIsAnimating(false);
-    }, 320);
-  };
+const goToPrev = () => {
+  setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+};
 
-  const goToPrev = () => {
-    if (isAnimating) return;
-    setDirection("prev");
-    setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
-      setIsAnimating(false);
-    }, 320);
-  };
+return (
+  <div className="stage-scheme-wrap">
+    <div className="stage-scheme-nav">
+      <button
+        type="button"
+        className="stage-scheme-arrow"
+        onClick={goToPrev}
+      >
+        ←
+      </button>
 
-  const visibleCards = Array.from({ length: visibleCount }, (_, offset) => {
-    const itemIndex = (activeIndex + offset) % items.length;
-    return {
-      ...items[itemIndex],
-      itemIndex,
-      slot: offset,
-    };
-  });
+      <button
+        type="button"
+        className="stage-scheme-arrow"
+        onClick={goToNext}
+      >
+        →
+      </button>
+    </div>
 
-  return (
-    <div className={`stage-scheme-wrap ${isAnimating ? `is-animating direction-${direction}` : ""}`}>
-      <div className="stage-scheme-nav">
-        <button
-          type="button"
-          className="stage-scheme-arrow"
-          onClick={goToPrev}
-          aria-label="Предыдущая карточка"
-        >
-          ←
-        </button>
-        <button
-          type="button"
-          className="stage-scheme-arrow"
-          onClick={goToNext}
-          aria-label="Следующая карточка"
-        >
-          →
-        </button>
-      </div>
-
-      <div className="stage-scheme-grid">
-        {visibleCards.map((item) => (
-          <article
-            key={`${item.niche}-${item.itemIndex}-${activeIndex}`}
-            className={`stage-scheme-card ${item.slot === 0 ? "is-left" : ""}`}
+    <div className="overflow-hidden">
+      <div
+        className="flex transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
+        style={{
+          transform: `translateX(-${activeIndex * 33.333}%)`,
+        }}
+      >
+        {items.map((item, i) => (
+          <div
+            key={i}
+            className="w-1/3 flex-shrink-0 px-3"
           >
-            <div className="stage-scheme-kicker">Ниша</div>
-            <div className="stage-scheme-title">{item.niche}</div>
-            <div className="stage-scheme-stage">{item.stage}</div>
+            <article className="stage-scheme-card h-full">
 
-            <div className="stage-scheme-lever-label">Выявленный рычаг</div>
-            <div className="stage-scheme-lever">{item.lever}</div>
-            <p className="stage-scheme-roadmap">{item.roadmap}</p>
+              <div className="stage-scheme-kicker">НИША</div>
+              <div className="stage-scheme-title">{item.niche}</div>
+              <div className="stage-scheme-stage">{item.stage}</div>
 
-            <div className="stage-scheme-bottom">
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">зоны влияния</div>
-                <div className="stage-scheme-tags">
-                  {item.zones.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag">
-                      {tag}
-                    </span>
-                  ))}
+              <div className="stage-scheme-lever-label">
+                Выявленный рычаг
+              </div>
+              <div className="stage-scheme-lever">
+                {item.lever}
+              </div>
+
+              <p className="stage-scheme-roadmap">
+                {item.roadmap}
+              </p>
+
+              <div className="stage-scheme-bottom">
+                <div className="stage-scheme-group">
+                  <div className="stage-scheme-label">
+                    зоны влияния
+                  </div>
+                  <div className="stage-scheme-tags">
+                    {item.zones.map((tag) => (
+                      <span key={tag} className="stage-scheme-tag">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="stage-scheme-group">
+                  <div className="stage-scheme-label">
+                    результат
+                  </div>
+                  <div className="stage-scheme-tags">
+                    {item.result.map((tag) => (
+                      <span
+                        key={tag}
+                        className="stage-scheme-tag is-result"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">результат</div>
-                <div className="stage-scheme-tags">
-                  {item.result.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
+            </article>
+          </div>
         ))}
       </div>
     </div>
-  );
-}
+  </div>
+);
 
 
 export default function Home() {
