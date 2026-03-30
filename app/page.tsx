@@ -502,7 +502,9 @@ function TagList({
     <div className={`tariff-tag-list tariff-tag-list-${variant}`}>
       {items.map((item) => (
         <div key={item} className={`tariff-tag tariff-tag-${variant}`}>
-          <span className="tariff-tag-icon"><ChipIcon kind={icon} /></span>
+          <span className="tariff-tag-icon">
+            <ChipIcon kind={icon} />
+          </span>
           <span>{item}</span>
         </div>
       ))}
@@ -510,6 +512,67 @@ function TagList({
   );
 }
 
+function TariffParagraphContent({
+  section,
+}: {
+  section: {
+    label: string;
+    items?: string[];
+    notes?: string[];
+    render?: "list" | "tags" | "icon-tags" | "yellow-tags";
+    iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+  };
+}) {
+  return (
+    <div className="tariff-paragraph-content">
+      <h3 className="tariff-paragraph-title">{section.label}</h3>
+
+      {section.items?.length ? (
+        section.render === "tags" ? (
+          <TagList
+            items={section.items}
+            variant="soft"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : section.render === "icon-tags" ? (
+          <TagList
+            items={section.items}
+            variant="icon-solid"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : section.render === "yellow-tags" ? (
+          <TagList
+            items={section.items}
+            variant="yellow"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : (
+          <div className="tariff-check-list">
+            {section.items.map((item) => (
+              <div key={item} className="tariff-check-item">
+                <span className="tariff-check-mark">
+                  <ChipIcon kind={section.iconKind ?? "custom"} />
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        )
+      ) : null}
+
+      {section.notes?.length ? (
+        <div className="tariff-note-list">
+          {section.notes.map((note) => (
+            <div key={note} className="tariff-note-item">
+              <span className="tariff-note-bullet">•</span>
+              <span>{note}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function TariffColumn({
   title,
@@ -527,13 +590,14 @@ function TariffColumn({
   disclaimer?: string[];
 }) {
   const [open, setOpen] = useState(false);
-  const [activeSectionIndex, setActiveSectionIndex] = useState(0);
-  const activeSection = sections[activeSectionIndex];
+  const [activeIndex, setActiveIndex] = useState(0);
+  const activeSection = sections[activeIndex];
 
   return (
-    <article className="tariff-column">
-      <div className="tariff-column-head">
+    <article className="tariff-column tariff-column-rebuilt">
+      <div className="tariff-column-head tariff-column-head-rebuilt">
         <div className="tariff-column-title">{title}</div>
+
         {disclaimer?.length ? (
           <button
             type="button"
@@ -550,67 +614,38 @@ function TariffColumn({
             <span className="tariff-attention-label">disclaimer</span>
             <span className={`tariff-disclaimer-pop ${open ? "is-open" : ""}`}>
               {disclaimer.map((note) => (
-                <span key={note} className="tariff-disclaimer-line">{note}</span>
+                <span key={note} className="tariff-disclaimer-line">
+                  {note}
+                </span>
               ))}
             </span>
           </button>
         ) : null}
       </div>
 
-      <div className="tariff-panel-layout">
-        <div className="tariff-panel-nav" role="tablist" aria-label={`${title} sections`}>
+      <div className="tariff-layout">
+        <div className="tariff-menu">
           {sections.map((section, index) => (
             <button
               key={section.label}
               type="button"
-              role="tab"
-              aria-selected={activeSectionIndex === index}
-              className={`tariff-panel-tab ${activeSectionIndex === index ? "is-active" : ""}`}
-              onClick={() => setActiveSectionIndex(index)}
+              className={`tariff-menu-btn ${index === activeIndex ? "is-active" : ""}`}
+              onClick={() => setActiveIndex(index)}
             >
-              {section.label}
+              <span>{section.label}</span>
             </button>
           ))}
         </div>
 
-        <div className="tariff-panel-content" role="tabpanel">
-          <div className="tariff-panel-content-title">{activeSection.label}</div>
+        <div className="tariff-divider" />
 
-          {activeSection.items?.length ? (
-            activeSection.render === "tags" ? (
-              <TagList items={activeSection.items} variant="soft" icon={activeSection.iconKind ?? "custom"} />
-            ) : activeSection.render === "icon-tags" ? (
-              <TagList items={activeSection.items} variant="icon-solid" icon={activeSection.iconKind ?? "custom"} />
-            ) : activeSection.render === "yellow-tags" ? (
-              <TagList items={activeSection.items} variant="yellow" icon={activeSection.iconKind ?? "custom"} />
-            ) : (
-              <div className="tariff-check-list tariff-check-list-panel">
-                {activeSection.items.map((item) => (
-                  <div key={item} className="tariff-check-item">
-                    <span className="tariff-check-mark"><ChipIcon kind={activeSection.iconKind ?? "custom"} /></span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            )
-          ) : null}
-
-          {activeSection.notes?.length ? (
-            <div className="tariff-note-list tariff-note-list-panel">
-              {activeSection.notes.map((note) => (
-                <div key={note} className="tariff-note-item">
-                  <span className="tariff-note-bullet">•</span>
-                  <span>{note}</span>
-                </div>
-              ))}
-            </div>
-          ) : null}
+        <div className="tariff-content">
+          <TariffParagraphContent section={activeSection} />
         </div>
       </div>
     </article>
   );
 }
-
 
 function TariffDetailsComparison() {
   const playgroundDisclaimer = [
@@ -644,7 +679,7 @@ function TariffDetailsComparison() {
       label: "Format",
       render: "icon-tags" as const,
       iconKind: "solo" as const,
-      items: ["Самостоятельное прохождение", "Онлайн-интерфейс", "Личный кабинет на 365 дней"],
+      items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
     },
     {
       label: "Economic model",
@@ -669,15 +704,10 @@ function TariffDetailsComparison() {
       render: "yellow-tags" as const,
       iconKind: "jtbd" as const,
       items: [
-        "Economic Rate",
-        "Growth Limit",
-        "Solution",
-        "JTBD",
-      ],
-      notes: [
-        "Оценка модели на основе вводных.",
-        "Главный фактор, сдерживающий рост.",
-        "Приоритетные рычаги роста и логика изменений.",
+        "Economic Rate (оценка модели на основе вводных)",
+        "Главный фактор, сдерживающий рост (гипотеза)",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
       ],
     },
     {
@@ -711,8 +741,12 @@ function TariffDetailsComparison() {
     {
       label: "Format",
       render: "icon-tags" as const,
-      iconKind: "team" as const,
-      items: ["Работа с участием команды", "Онлайн-коммуникация", "Индивидуальная проработка"],
+      iconKind: "online" as const,
+      items: [
+        "Работа с участием команды",
+        "Онлайн-коммуникация",
+        "Индивидуальная проработка",
+      ],
     },
     {
       label: "Economic model",
@@ -738,26 +772,21 @@ function TariffDetailsComparison() {
       iconKind: "swot" as const,
       items: [
         "Economic Rate",
-        "Growth Limit",
-        "Solution",
-        "JTBD",
+        "Главный фактор, сдерживающий рост",
+        "Приоритетные рычаги роста",
+        "JTBD под каждый рычаг",
         "SWOT-анализ",
         "Сегментация и позиционирование",
-        "Best practices",
-      ],
-      notes: [
-        "Результат собирается командой самостоятельно на основе брифа и уточнений.",
-        "Дополнительно включаются SWOT-анализ, сегментация и позиционирование под сегменты.",
+        "Практики для внедрения",
       ],
     },
     {
       label: "Decompose",
-      iconKind: "chat" as const,
+      iconKind: "team" as const,
       items: [
-        "Связь во время подготовки результата",
+        "Личный брифинг с командой",
         "Дополнительные уточнения в процессе",
-        "Разбор выводов и логики решений",
-        "Ответы на вопросы команды клиента",
+        "Связь во время подготовки результата",
       ],
     },
   ];
@@ -777,7 +806,6 @@ function TariffDetailsComparison() {
     </div>
   );
 }
-
 function ResultDocCard({
   tab,
   title,
@@ -1307,7 +1335,7 @@ AI не придумывает выводы произвольно — он ра
 
       const rect = section.getBoundingClientRect();
       const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.2 - rect.top) / sectionHeight;
+      const rawProgress = (window.innerHeight * 0.4 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
         journeySteps.length - 1,
@@ -3159,54 +3187,14 @@ AI не придумывает выводы произвольно — он ра
           position: relative;
           z-index: 2;
         }
-.start-card-overlay {
-  position: absolute;
-  inset: 0;
-  display: block;
-  padding: 0;
-  background: none;
-  pointer-events: none;
-  z-index: 4;
-}
-.start-card-price-float {
-  position: absolute;
-  top: var(--price-top, auto);
-  right: var(--price-right, auto);
-  bottom: var(--price-bottom, auto);
-  left: var(--price-left, auto);
-  font-size: clamp(52px, 4.3vw, 92px);
-  line-height: .92;
-  letter-spacing: -.06em;
-  font-weight: 700;
-  text-shadow: 0 10px 28px rgba(0,0,0,.22);
-  z-index: 5;
-}
-
-.start-card-btn {
-  position: absolute;
-  top: var(--button-top, auto);
-  right: var(--button-right, auto);
-  bottom: var(--button-bottom, auto);
-  left: var(--button-left, auto);
-  width: var(--button-width, auto);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 42px;
-  padding: 0 18px;
-  border-radius: 999px;
-  text-decoration: none;
-  color: #ffffff;
-  font-weight: 700;
-  border: 1px solid rgba(255,255,255,.16);
-  background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
-  background-size: 220% 220%;
-  box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-  animation: none;
-  pointer-events: auto;
-  white-space: nowrap;
-  z-index: 5;
-}
+        .start-card-overlay {
+          position: absolute;
+          inset: 0;
+          display: block;
+          padding: 0;
+          background: none;
+          pointer-events: none;
+        }
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
           position: absolute;
@@ -3250,260 +3238,294 @@ AI не придумывает выводы произвольно — он ра
           pointer-events: auto;
           white-space: nowrap;
         }
-        .tariff-comparison-grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 28px;
-          margin-top: 20px;
-          align-items: start;
-        }
-        .tariff-column {
-          position: relative;
-          border-radius: 28px;
-          padding: 20px 18px;
-          background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.025));
-          border: 1px solid rgba(255,255,255,.12);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 18px 42px rgba(0,0,0,.14);
-          backdrop-filter: blur(28px) saturate(135%);
-          -webkit-backdrop-filter: blur(28px) saturate(135%);
-        }
-        .tariff-column-head {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 12px;
-          margin-bottom: 16px;
-        }
-        .tariff-column-title {
-          color: #f7d237;
-          font-size: 18px;
-          line-height: 1;
-          letter-spacing: -.03em;
-          font-weight: 800;
-        }
-        .tariff-attention {
-          position: relative;
-          flex: none;
-          min-height: 34px;
-          padding: 0 12px;
-          height: 34px;
-          border-radius: 999px;
-          border: 1px solid rgba(247,210,55,.35);
-          background: rgba(247,210,55,.08);
-          color: #f7d237;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          cursor: pointer;
-        }
-        .tariff-attention svg { width: 16px; height: 16px; }
-        .tariff-attention-label {
-          margin-left: 6px;
-          font-size: 11px;
-          line-height: 1;
-          letter-spacing: .08em;
-          text-transform: uppercase;
-        }
-        .tariff-disclaimer-pop {
-          position: absolute;
-          top: calc(100% + 10px);
-          right: 0;
-          width: min(280px, 72vw);
-          padding: 12px 14px;
-          border-radius: 16px;
-          background: rgba(7,15,32,.97);
-          border: 1px solid rgba(247,210,55,.24);
-          box-shadow: 0 18px 34px rgba(0,0,0,.38);
-          color: rgba(255,255,255,.84);
-          font-size: 12px;
-          line-height: 1.5;
-          text-align: left;
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(6px);
-          transition: .18s ease;
-          z-index: 20;
-          pointer-events: none;
-        }
-        .tariff-disclaimer-pop.is-open {
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-        .tariff-disclaimer-line { display: block; }
-        .tariff-disclaimer-line + .tariff-disclaimer-line { margin-top: 6px; }
-        .tariff-column-sections {
-          display: grid;
-          gap: 18px;
-        }
-        .tariff-section {
-          padding-top: 18px;
-          border-top: 1px solid rgba(255,255,255,.08);
-        }
-        .tariff-section:first-child {
-          padding-top: 0;
-          border-top: none;
-        }
-        .tariff-section-label {
-          margin-bottom: 12px;
-          color: #ffffff;
-          font-size: 16px;
-          line-height: 1.25;
-          font-weight: 700;
-          letter-spacing: -.01em;
-        }
-        .tariff-check-list,
-        .tariff-note-list {
-          display: grid;
-          gap: 8px;
-        }
-        .tariff-check-item,
-        .tariff-note-item {
-          display: grid;
-          grid-template-columns: 18px 1fr;
-          gap: 12px;
-          align-items: start;
-          color: rgba(255,255,255,.8);
-          font-size: 14px;
-          line-height: 1.55;
-        }
-        .tariff-check-mark {
-          color: #f7d237;
-          width: 18px;
-          height: 18px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-        }
-        .tariff-check-mark svg,
-        .tariff-tag-icon svg { width: 16px; height: 16px; }
-        .tariff-note-bullet {
-          color: rgba(255,255,255,.56);
-          line-height: 1.2;
-        }
-        .tariff-tag-list {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-        }
-        .tariff-tag {
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
-          min-height: 36px;
-          padding: 8px 13px;
-          border-radius: 999px;
-          font-size: 13px;
-          line-height: 1.3;
-        }
-        .tariff-tag-icon {
-          width: 16px;
-          height: 16px;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          flex: none;
-        }
-        .tariff-tag-soft {
-          background: rgba(255,255,255,.06);
-          border: 1px solid rgba(255,255,255,.12);
-          color: rgba(255,255,255,.82);
-        }
-        .tariff-tag-soft .tariff-tag-icon { color: #f7d237; }
-        .tariff-tag-icon-solid {
-          background: rgba(247,210,55,.08);
-          border: 1px solid rgba(247,210,55,.22);
-          color: #fff4bf;
-        }
-        .tariff-tag-icon-solid .tariff-tag-icon { color: #f7d237; }
-        .tariff-tag-yellow {
-          background: rgba(247,210,55,.96);
-          border: 1px solid rgba(247,210,55,1);
-          color: #1a2133;
-          font-weight: 600;
-        }
-        .tariff-tag-yellow .tariff-tag-icon { color: #1a2133; }
+.tariff-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  margin-top: 20px;
+  align-items: start;
+}
 
-        .tariff-panel-layout {
-          display: grid;
-          grid-template-columns: 224px minmax(0, 1fr);
-          gap: 28px;
-          align-items: stretch;
-          min-height: 520px;
-        }
-        .tariff-panel-nav {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          padding: 2px 0;
-        }
-        .tariff-panel-tab {
-          display: inline-flex;
-          align-items: center;
-          justify-content: flex-start;
-          min-height: 46px;
-          width: fit-content;
-          max-width: 100%;
-          padding: 0 18px;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,.14);
-          background: rgba(224,225,227,.92);
-          color: #25314e;
-          font-size: 13px;
-          line-height: 1.15;
-          font-weight: 500;
-          letter-spacing: .02em;
-          transition: background .2s ease, color .2s ease, border-color .2s ease, transform .2s ease, box-shadow .2s ease;
-          text-align: left;
-        }
-        .tariff-panel-tab:hover {
-          transform: translateY(-1px);
-        }
-        .tariff-panel-tab.is-active {
-          background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.9));
-          border-color: rgba(247,210,55,.3);
-          color: #ffffff;
-          box-shadow: 0 10px 24px rgba(247,210,55,.12);
-        }
-        .tariff-panel-content {
-          min-width: 0;
-          border-left: 1px solid rgba(255,255,255,.12);
-          padding: 2px 0 2px 28px;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          gap: 18px;
-        }
-        .tariff-panel-content-title {
-          color: #ffffff;
-          font-size: clamp(22px, 2vw, 30px);
-          line-height: 1.16;
-          letter-spacing: .01em;
-          font-weight: 500;
-          max-width: 520px;
-          white-space: pre-line;
-        }
-        .tariff-check-list-panel,
-        .tariff-note-list-panel {
-          max-width: 760px;
-        }
-        .tariff-panel-content .tariff-check-list {
-          gap: 14px;
-        }
-        .tariff-panel-content .tariff-check-item,
-        .tariff-panel-content .tariff-note-item {
-          font-size: 15px;
-          line-height: 1.65;
-        }
-        .tariff-panel-content .tariff-tag-list {
-          gap: 12px;
-        }
-        .tariff-panel-content .tariff-tag {
-          min-height: 40px;
-          padding: 9px 15px;
-          font-size: 13px;
-        }
+.tariff-column {
+  position: relative;
+  border-radius: 30px;
+  padding: 26px 26px 28px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(126, 163, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 72% 0%, rgba(126, 111, 255, 0.10), transparent 28%),
+    linear-gradient(180deg, rgba(20, 35, 68, 0.72), rgba(8, 21, 48, 0.62));
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.14);
+  backdrop-filter: blur(24px) saturate(135%);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+}
 
+.tariff-column-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.tariff-column-title {
+  color: #f7d237;
+  font-size: 18px;
+  line-height: 1;
+  letter-spacing: -.03em;
+  font-weight: 800;
+}
+
+.tariff-attention {
+  position: relative;
+  flex: none;
+  min-height: 34px;
+  padding: 0 14px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(247,210,55,.35);
+  background: rgba(247,210,55,.08);
+  color: #f7d237;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.tariff-attention svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tariff-attention-label {
+  margin-left: 6px;
+  font-size: 11px;
+  line-height: 1;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.tariff-disclaimer-pop {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: min(280px, 72vw);
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(7,15,32,.97);
+  border: 1px solid rgba(247,210,55,.24);
+  box-shadow: 0 18px 34px rgba(0,0,0,.38);
+  color: rgba(255,255,255,.84);
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: .18s ease;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.tariff-disclaimer-pop.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.tariff-disclaimer-line {
+  display: block;
+}
+
+.tariff-disclaimer-line + .tariff-disclaimer-line {
+  margin-top: 6px;
+}
+
+.tariff-layout {
+  display: grid;
+  grid-template-columns: 210px 1px minmax(0, 1fr);
+  column-gap: 30px;
+  align-items: stretch;
+  min-height: 560px;
+}
+
+.tariff-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-top: 8px;
+}
+
+.tariff-menu-btn {
+  min-height: 58px;
+  padding: 0 18px;
+  border-radius: 22px;
+  border: 1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.10), rgba(255,255,255,.06));
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.12),
+    0 8px 18px rgba(0,0,0,.12);
+  color: rgba(224, 230, 244, 0.92);
+  font-size: 15px;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  font-weight: 600;
+  text-align: left;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  transition:
+    background .22s ease,
+    border-color .22s ease,
+    transform .22s ease,
+    box-shadow .22s ease,
+    color .22s ease;
+}
+
+.tariff-menu-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.18);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.13), rgba(255,255,255,.08));
+}
+
+.tariff-menu-btn.is-active {
+  color: #152342;
+  border-color: rgba(247,210,55,.48);
+  background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88));
+  box-shadow:
+    0 12px 28px rgba(247,210,55,.18),
+    inset 0 1px 0 rgba(255,255,255,.22);
+}
+
+.tariff-divider {
+  width: 1px;
+  background: linear-gradient(
+    180deg,
+    rgba(255,255,255,.02) 0%,
+    rgba(255,255,255,.58) 8%,
+    rgba(255,255,255,.36) 92%,
+    rgba(255,255,255,.02) 100%
+  );
+  justify-self: start;
+}
+
+.tariff-content {
+  padding-top: 10px;
+  padding-left: 4px;
+  max-width: 100%;
+}
+
+.tariff-paragraph-content {
+  max-width: 100%;
+}
+
+.tariff-paragraph-title {
+  margin: 0 0 22px;
+  color: #ffffff;
+  font-size: clamp(34px, 3vw, 54px);
+  line-height: .96;
+  letter-spacing: -.05em;
+  font-weight: 500;
+}
+
+.tariff-check-list,
+.tariff-note-list {
+  display: grid;
+  gap: 16px;
+}
+
+.tariff-check-item,
+.tariff-note-item {
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 14px;
+  align-items: start;
+  color: rgba(255,255,255,.82);
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+.tariff-check-mark {
+  color: #f7d237;
+  width: 22px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+}
+
+.tariff-check-mark svg,
+.tariff-tag-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.tariff-note-bullet {
+  color: rgba(255,255,255,.56);
+  line-height: 1.2;
+}
+
+.tariff-tag-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tariff-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.tariff-tag-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+
+.tariff-tag-soft {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.84);
+}
+
+.tariff-tag-soft .tariff-tag-icon {
+  color: #f7d237;
+}
+
+.tariff-tag-icon-solid {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(255,255,255,.84);
+}
+
+.tariff-tag-icon-solid .tariff-tag-icon {
+  color: #f7d237;
+}
+
+.tariff-tag-yellow {
+  background: rgba(247,210,55,.96);
+  border: 1px solid rgba(247,210,55,1);
+  color: #1a2133;
+  font-weight: 600;
+}
+
+.tariff-tag-yellow .tariff-tag-icon {
+  color: #1a2133;
+}
         .cta-card {
           display: grid;
           grid-template-columns: minmax(0,1fr);
@@ -3778,36 +3800,84 @@ AI не придумывает выводы произвольно — он ра
           .stage-carousel-item-free { width: min(680px, 78vw); }
           .analysis-right-card-plain { height: auto; }
           .start-cards-row { gap: 14px; }
-          .tariff-comparison-grid {
-            grid-template-columns: 1fr;
-            gap: 12px;
-            margin-top: 14px;
-          }
-          .tariff-column {
-            padding: 16px 14px;
-            border-radius: 22px;
-          }
-          .tariff-column-head {
-            margin-bottom: 12px;
-          }
-          .tariff-column-title {
-            font-size: 16px;
-          }
-          .tariff-attention {
-            width: 30px;
-            height: 30px;
-          }
-          .tariff-section {
-            padding-top: 12px;
-          }
-          .tariff-section-label {
-            font-size: 13px;
-          }
-          .tariff-check-item,
-          .tariff-note-item {
-            font-size: 12px;
-            line-height: 1.45;
-          }
+        .tariff-comparison-grid {
+  grid-template-columns: 1fr;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.tariff-column {
+  padding: 18px 16px 20px;
+  border-radius: 24px;
+}
+
+.tariff-column-head {
+  margin-bottom: 14px;
+}
+
+.tariff-column-title {
+  font-size: 16px;
+}
+
+.tariff-attention {
+  min-height: 30px;
+  height: 30px;
+  padding: 0 10px;
+}
+
+.tariff-layout {
+  grid-template-columns: 1fr;
+  row-gap: 16px;
+  min-height: 0;
+}
+
+.tariff-menu {
+  gap: 10px;
+  padding-top: 0;
+}
+
+.tariff-menu-btn {
+  min-height: 46px;
+  border-radius: 18px;
+  font-size: 14px;
+  padding: 0 14px;
+}
+
+.tariff-divider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,.02) 0%,
+    rgba(255,255,255,.42) 14%,
+    rgba(255,255,255,.42) 86%,
+    rgba(255,255,255,.02) 100%
+  );
+}
+
+.tariff-content {
+  padding-top: 2px;
+  padding-left: 0;
+}
+
+.tariff-paragraph-title {
+  margin-bottom: 16px;
+  font-size: 32px;
+}
+
+.tariff-check-item,
+.tariff-note-item {
+  font-size: 15px;
+  line-height: 1.45;
+  grid-template-columns: 18px 1fr;
+  gap: 12px;
+}
+
+.tariff-tag {
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
           .start-card { flex: none; }
           .start-card-inner {
             min-height: 0;
