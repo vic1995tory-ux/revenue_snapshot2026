@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 
 function fmtMoney(n: number) {
@@ -912,7 +911,7 @@ type OverlayBox = {
   width?: string;
 };
 
-type PaymentState = "idle" | "waiting" | "success" | "timeout";
+type PaymentState = "idle" | "waiting";
 
 function StartCard({
   title,
@@ -1249,9 +1248,10 @@ export default function Home() {
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
-  const router = useRouter();
+  const paymentRecoveryUrl = `https://wa.me/995555163833?text=${encodeURIComponent(
+    "Я случайно закрыла PayPal после оплаты. Проверьте, пожалуйста, мою запись и, если найдёте оплату, отправьте повторно ссылку на завершение регистрации."
+  )}`;
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
-  const [paymentStartedAt, setPaymentStartedAt] = useState<number | null>(null);
 
   const faqItems = [
     {
@@ -1369,22 +1369,10 @@ AI не придумывает выводы произвольно — он ра
   const handlePay = (paypalUrl: string) => {
     window.open(paypalUrl, "_blank", "noopener,noreferrer");
     setPaymentState("waiting");
-    setPaymentStartedAt(Date.now());
   };
 
-  const handlePaymentSuccess = (delay = 1500) => {
-    setPaymentState("success");
-    window.setTimeout(() => {
-      router.push("/thank-you");
-    }, delay);
-  };
-
-  const checkPayment = () => {
-    const flag = localStorage.getItem("rs_payment_completed");
-
-    if (flag) {
-      handlePaymentSuccess(1000);
-    }
+  const closePaymentOverlay = () => {
+    setPaymentState("idle");
   };
 
   useEffect(() => {
@@ -1407,26 +1395,6 @@ AI не придумывает выводы произвольно — он ра
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [faqOpen]);
 
-  useEffect(() => {
-    const handleStorage = (e: StorageEvent) => {
-      if (e.key === "rs_payment_completed" && e.newValue) {
-        handlePaymentSuccess(1500);
-      }
-    };
-
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, [router]);
-
-  useEffect(() => {
-    if (paymentState !== "waiting") return;
-
-    const timer = window.setTimeout(() => {
-      setPaymentState("timeout");
-    }, 4 * 60 * 1000);
-
-    return () => window.clearTimeout(timer);
-  }, [paymentState]);
 
   useEffect(() => {
     const handleJourneyScroll = () => {
@@ -2109,62 +2077,37 @@ AI не придумывает выводы произвольно — он ра
           <div className="payment-overlay-backdrop" />
           <div className="payment-overlay-card">
             <div className="payment-overlay-status-row">
-              <div className={`payment-status-pill ${paymentState === "success" ? "is-success" : paymentState === "timeout" ? "is-timeout" : "is-waiting"}`}>
+              <div className="payment-status-pill is-waiting">
                 <span className="payment-status-dot" />
-                <span>
-                  {paymentState === "success"
-                    ? "Подтверждено"
-                    : paymentState === "timeout"
-                      ? "Ожидание истекло"
-                      : "Ожидание"}
-                </span>
+                <span>Ожидание оплаты</span>
               </div>
             </div>
 
-            {paymentState === "waiting" && (
-              <>
-                <h2 className="payment-overlay-title">Открыто окно оплаты</h2>
-                <p className="payment-overlay-copy">
-                  Завершите оплату в новой вкладке. После этого вы автоматически продолжите.
-                </p>
-                <div className="payment-overlay-note">
-                  Ожидаем подтверждение оплаты… Это занимает обычно до 10–30 секунд.
-                  {paymentStartedAt ? "" : ""}
-                </div>
-                <div className="payment-overlay-actions">
-                  <button type="button" className="payment-overlay-btn payment-overlay-btn-primary" onClick={checkPayment}>
-                    Я уже оплатил
-                  </button>
-                  <button type="button" className="payment-overlay-btn payment-overlay-btn-secondary" onClick={() => setPaymentState("idle")}>
-                    Отменить
-                  </button>
-                </div>
-              </>
-            )}
-
-            {paymentState === "success" && (
-              <>
-                <h2 className="payment-overlay-title">Оплата подтверждена</h2>
-                <p className="payment-overlay-copy">Перенаправляем...</p>
-              </>
-            )}
-
-            {paymentState === "timeout" && (
-              <>
-                <h2 className="payment-overlay-title">Время ожидания истекло</h2>
-                <p className="payment-overlay-copy">
-                  Если оплата уже завершена, нажмите «Я уже оплатил». Иначе вернитесь и попробуйте снова.
-                </p>
-                <div className="payment-overlay-actions">
-                  <button type="button" className="payment-overlay-btn payment-overlay-btn-primary" onClick={checkPayment}>
-                    Я уже оплатил
-                  </button>
-                  <button type="button" className="payment-overlay-btn payment-overlay-btn-secondary" onClick={() => setPaymentState("idle")}>
-                    Отменить
-                  </button>
-                </div>
-              </>
-            )}
+            <h2 className="payment-overlay-title">Открыто окно PayPal</h2>
+            <p className="payment-overlay-copy">
+              После успешной оплаты PayPal перенаправит вас на страницу создания личного кабинета.
+            </p>
+            <div className="payment-overlay-note">
+              Не закрывайте это окно, если оно вам не мешает. Попап останется открыт до тех пор,
+              пока вы сами не нажмёте «Всё ок. Готово» или не закроете страницу.
+            </div>
+            <div className="payment-overlay-actions payment-overlay-actions-stacked">
+              <a
+                href={paymentRecoveryUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="payment-overlay-btn payment-overlay-btn-secondary payment-overlay-btn-link"
+              >
+                Я случайно закрыл PayPal после оплаты
+              </a>
+              <button
+                type="button"
+                className="payment-overlay-btn payment-overlay-btn-primary"
+                onClick={closePaymentOverlay}
+              >
+                Всё ок. Готово
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -4220,6 +4163,10 @@ AI не придумывает выводы произвольно — он ра
           gap: 10px;
           margin-top: 20px;
         }
+        .payment-overlay-actions-stacked {
+          flex-direction: column;
+          align-items: stretch;
+        }
         .payment-overlay-btn {
           min-height: 44px;
           padding: 0 18px;
@@ -4245,6 +4192,14 @@ AI не придумывает выводы произвольно — он ра
           background: rgba(255,255,255,.06);
           border: 1px solid rgba(255,255,255,.14);
           box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+        }
+        .payment-overlay-btn-link {
+          text-decoration: none;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          text-align: center;
         }
         .accent-word { color: #f7d237; }
         .text-emerald-300 { color: #a7f3d0; }
