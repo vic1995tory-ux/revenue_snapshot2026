@@ -1639,6 +1639,21 @@ AI не придумывает выводы произвольно — он ра
               </p>
             </div>
 
+            <div className="journey-progress-wrap" aria-hidden="true">
+              <div
+                className="journey-progress-fill"
+                style={{ width: `${((journeyActiveIndex + 1) / journeySteps.length) * 100}%` }}
+              />
+              <div className="journey-progress-dots">
+                {journeySteps.map((step, index) => (
+                  <span
+                    key={step.number}
+                    className={`journey-progress-dot ${index <= journeyActiveIndex ? "is-active" : ""}`}
+                  />
+                ))}
+              </div>
+            </div>
+
             <div className="journey-scroll-grid">
               {journeySteps.map((step, index) => (
                 <article
@@ -1657,20 +1672,8 @@ AI не придумывает выводы произвольно — он ра
               ))}
             </div>
 
-            <div className="journey-progress-wrap" aria-hidden="true">
-              <div
-                className="journey-progress-fill"
-                style={{ width: `${((journeyActiveIndex + 1) / journeySteps.length) * 100}%` }}
-              />
-              <div className="journey-progress-dots">
-                {journeySteps.map((step, index) => (
-                  <span
-                    key={step.number}
-                    className={`journey-progress-dot ${index <= journeyActiveIndex ? "is-active" : ""}`}
-                  />
-                ))}
-              </div>
-            </div>
+            <div className="journey-progress-shadow-spacer" aria-hidden="true" />
+
 
             <div className="journey-demo-bridge">
               <div className="journey-demo-copy">
@@ -2594,7 +2597,7 @@ AI не придумывает выводы произвольно — он ра
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 0;
-          margin-top: 18px;
+          margin-top: 10px;
           border-bottom: 1px solid rgba(255,255,255,.08);
         }
         .journey-stage-card {
@@ -2656,8 +2659,14 @@ AI не придумывает выводы произвольно — он ра
         .journey-progress-wrap {
           position: relative;
           height: 26px;
-          margin-top: -2px;
-          border-top: 1px solid rgba(255,255,255,.08);
+          margin: 18px 0 8px;
+          z-index: 2;
+        }
+        .journey-progress-shadow-spacer {
+          display: none;
+        }
+        .journey-progress-wrap-legacy {
+          display: none;
         }
         .journey-progress-wrap::before {
           content: "";
@@ -4079,7 +4088,9 @@ AI не придумывает выводы произвольно — он ра
             max-width: none;
           }
           .journey-progress-wrap {
-            margin-top: 16px;
+            margin: 14px 0 16px;
+            width: calc(100% + 12px);
+            margin-left: -12px;
           }
           .journey-demo-bridge {
             flex-direction: column;
