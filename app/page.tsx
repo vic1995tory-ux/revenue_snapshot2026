@@ -948,31 +948,41 @@ function StageCarousel() {
   ];
 
   const visibleCount = 3;
-  const extendedItems = [...items, ...items.slice(0, visibleCount)];
   const [activeIndex, setActiveIndex] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
 
   const goToNext = () => {
     if (isAnimating) return;
+    setDirection("next");
     setIsAnimating(true);
-    setActiveIndex((prev) => prev + 1);
+    window.setTimeout(() => {
+      setActiveIndex((prev) => (prev + 1) % items.length);
+      setIsAnimating(false);
+    }, 320);
   };
 
   const goToPrev = () => {
     if (isAnimating) return;
+    setDirection("prev");
     setIsAnimating(true);
-    setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+    window.setTimeout(() => {
+      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+      setIsAnimating(false);
+    }, 320);
   };
 
-  const handleTransitionEnd = () => {
-    setIsAnimating(false);
-    if (activeIndex >= items.length) {
-      setActiveIndex(activeIndex % items.length);
-    }
-  };
+  const visibleCards = Array.from({ length: visibleCount }, (_, offset) => {
+    const itemIndex = (activeIndex + offset) % items.length;
+    return {
+      ...items[itemIndex],
+      itemIndex,
+      slot: offset,
+    };
+  });
 
   return (
-    <div className="stage-scheme-wrap">
+    <div className={`stage-scheme-wrap ${isAnimating ? `is-animating direction-${direction}` : ""}`}>
       <div className="stage-scheme-nav">
         <button
           type="button"
@@ -992,50 +1002,45 @@ function StageCarousel() {
         </button>
       </div>
 
-      <div className="stage-scheme-viewport">
-        <div
-          className={`stage-scheme-track ${!isAnimating && activeIndex >= items.length ? "is-resetting" : ""}`}
-          style={{ transform: `translate3d(-${activeIndex * (100 / visibleCount)}%, 0, 0)` }}
-          onTransitionEnd={handleTransitionEnd}
-        >
-          {extendedItems.map((item, i) => (
-            <div key={`${item.niche}-${i}`} className="stage-scheme-slide">
-              <article className="stage-scheme-card">
-                <div className="stage-scheme-kicker">Ниша</div>
-                <div className="stage-scheme-title">{item.niche}</div>
-                <div className="stage-scheme-stage">{item.stage}</div>
+      <div className="stage-scheme-grid">
+        {visibleCards.map((item) => (
+          <article
+            key={`${item.niche}-${item.itemIndex}-${activeIndex}`}
+            className={`stage-scheme-card ${item.slot === 0 ? "is-left" : ""}`}
+          >
+            <div className="stage-scheme-kicker">Ниша</div>
+            <div className="stage-scheme-title">{item.niche}</div>
+            <div className="stage-scheme-stage">{item.stage}</div>
 
-                <div className="stage-scheme-lever-label">Выявленный рычаг</div>
-                <div className="stage-scheme-lever">{item.lever}</div>
-                <p className="stage-scheme-roadmap">{item.roadmap}</p>
+            <div className="stage-scheme-lever-label">Выявленный рычаг</div>
+            <div className="stage-scheme-lever">{item.lever}</div>
+            <p className="stage-scheme-roadmap">{item.roadmap}</p>
 
-                <div className="stage-scheme-bottom">
-                  <div className="stage-scheme-group">
-                    <div className="stage-scheme-label">зоны влияния</div>
-                    <div className="stage-scheme-tags">
-                      {item.zones.map((tag) => (
-                        <span key={tag} className="stage-scheme-tag">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="stage-scheme-group">
-                    <div className="stage-scheme-label">результат</div>
-                    <div className="stage-scheme-tags">
-                      {item.result.map((tag) => (
-                        <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
+            <div className="stage-scheme-bottom">
+              <div className="stage-scheme-group">
+                <div className="stage-scheme-label">зоны влияния</div>
+                <div className="stage-scheme-tags">
+                  {item.zones.map((tag) => (
+                    <span key={tag} className="stage-scheme-tag">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-              </article>
+              </div>
+
+              <div className="stage-scheme-group">
+                <div className="stage-scheme-label">результат</div>
+                <div className="stage-scheme-tags">
+                  {item.result.map((tag) => (
+                    <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
-          ))}
-        </div>
+          </article>
+        ))}
       </div>
     </div>
   );
@@ -2980,21 +2985,11 @@ AI не придумывает выводы произвольно — он ра
           background: rgba(255,255,255,.08);
           border-color: rgba(255,255,255,.18);
         }
-        .stage-scheme-viewport {
-          overflow: hidden;
-        }
-        .stage-scheme-track {
-          display: flex;
-          width: 100%;
-          transition: transform .72s cubic-bezier(0.22, 1, 0.36, 1);
-          will-change: transform;
-        }
-        .stage-scheme-track.is-resetting {
-          transition: none;
-        }
-        .stage-scheme-slide {
-          flex: 0 0 33.333333%;
-          min-width: 33.333333%;
+        .stage-scheme-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0,1fr));
+          gap: 0;
+          min-height: 360px;
         }
         .stage-scheme-card {
           position: relative;
@@ -3008,6 +3003,12 @@ AI не придумывает выводы произвольно — он ра
         }
         .stage-scheme-card:first-child {
           border-left: none;
+        }
+        .stage-scheme-wrap.is-animating.direction-next .stage-scheme-card.is-left,
+        .stage-scheme-wrap.is-animating.direction-prev .stage-scheme-card:not(.is-left) {
+          opacity: .28;
+          filter: blur(10px);
+          transform: scale(.98);
         }
         .stage-scheme-kicker {
           color: rgba(255,255,255,.56);
