@@ -976,41 +976,52 @@ function StageCarousel() {
   ];
 
   const visibleCount = 3;
-  const [activeIndex, setActiveIndex] = useState(0);
+  const headClones = items.slice(-visibleCount);
+  const tailClones = items.slice(0, visibleCount);
+  const trackItems = [...headClones, ...items, ...tailClones];
+
+  const [currentIndex, setCurrentIndex] = useState(visibleCount);
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"next" | "prev">("next");
+  const [isSnapReset, setIsSnapReset] = useState(false);
 
   const goToNext = () => {
     if (isAnimating) return;
     setDirection("next");
     setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev + 1) % items.length);
-      setIsAnimating(false);
-    }, 320);
+    setCurrentIndex((prev) => prev + 1);
   };
 
   const goToPrev = () => {
     if (isAnimating) return;
     setDirection("prev");
     setIsAnimating(true);
-    window.setTimeout(() => {
-      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
-      setIsAnimating(false);
-    }, 320);
+    setCurrentIndex((prev) => prev - 1);
   };
 
-  const visibleCards = Array.from({ length: visibleCount }, (_, offset) => {
-    const itemIndex = (activeIndex + offset) % items.length;
-    return {
-      ...items[itemIndex],
-      itemIndex,
-      slot: offset,
-    };
-  });
+  const handleTransitionEnd = () => {
+    setIsAnimating(false);
+
+    if (currentIndex >= items.length + visibleCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(visibleCount);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+      return;
+    }
+
+    if (currentIndex < visibleCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(items.length + currentIndex);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+    }
+  };
 
   return (
-    <div className={`stage-scheme-wrap ${isAnimating ? `is-animating direction-${direction}` : ""}`}>
+    <div className="stage-scheme-wrap">
       <div className="stage-scheme-nav">
         <button
           type="button"
@@ -1030,49 +1041,63 @@ function StageCarousel() {
         </button>
       </div>
 
-      <div className="stage-scheme-grid">
-        {visibleCards.map((item) => (
-          <article
-            key={`${item.niche}-${item.itemIndex}-${activeIndex}`}
-            className={`stage-scheme-card ${item.slot === 0 ? "is-left" : ""}`}
-          >
-            <div className="stage-scheme-kicker">Ниша</div>
-            <div className="stage-scheme-title">{item.niche}</div>
-            <div className="stage-scheme-stage">{item.stage}</div>
+      <div className="stage-scheme-viewport">
+        <div
+          className={`stage-scheme-track ${isAnimating ? `is-animating direction-${direction}` : ""} ${isSnapReset ? "is-snap-reset" : ""}`}
+          style={{ transform: `translate3d(-${(currentIndex * 100) / visibleCount}%, 0, 0)` }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {trackItems.map((item, idx) => {
+            const isLeavingLeft = isAnimating && direction === "next" && idx === currentIndex;
+            const isLeavingRight = isAnimating && direction === "prev" && idx === currentIndex + visibleCount - 1;
 
-            <div className="stage-scheme-lever-label">Выявленный рычаг</div>
-            <div className="stage-scheme-lever">{item.lever}</div>
-            <p className="stage-scheme-roadmap">{item.roadmap}</p>
+            return (
+              <div
+                key={`${item.niche}-${idx}`}
+                className={`stage-scheme-slide ${isLeavingLeft ? "is-leaving-left" : ""} ${isLeavingRight ? "is-leaving-right" : ""}`}
+              >
+                <article className="stage-scheme-card">
+                  <div className="stage-scheme-kicker">Ниша</div>
+                  <div className="stage-scheme-title">{item.niche}</div>
+                  <div className="stage-scheme-stage">{item.stage}</div>
 
-            <div className="stage-scheme-bottom">
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">зоны влияния</div>
-                <div className="stage-scheme-tags">
-                  {item.zones.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                  <div className="stage-scheme-lever-label">Выявленный рычаг</div>
+                  <div className="stage-scheme-lever">{item.lever}</div>
+                  <p className="stage-scheme-roadmap">{item.roadmap}</p>
+
+                  <div className="stage-scheme-bottom">
+                    <div className="stage-scheme-group">
+                      <div className="stage-scheme-label">зоны влияния</div>
+                      <div className="stage-scheme-tags">
+                        {item.zones.map((tag) => (
+                          <span key={tag} className="stage-scheme-tag">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="stage-scheme-group">
+                      <div className="stage-scheme-label">результат</div>
+                      <div className="stage-scheme-tags">
+                        {item.result.map((tag) => (
+                          <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </article>
               </div>
-
-              <div className="stage-scheme-group">
-                <div className="stage-scheme-label">результат</div>
-                <div className="stage-scheme-tags">
-                  {item.result.map((tag) => (
-                    <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </article>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
+
 
 
 export default function Home() {
@@ -3526,6 +3551,238 @@ AI не придумывает выводы произвольно — он ра
 .tariff-tag-yellow .tariff-tag-icon {
   color: #1a2133;
 }
+        .tariff-panel-layout {
+          display: grid;
+          grid-template-columns: 244px minmax(0, 1fr);
+          gap: 30px;
+          align-items: stretch;
+          min-height: 520px;
+        }
+        .tariff-panel-nav {
+          display: flex;
+          flex-direction: column;
+          gap: 16px;
+          padding-top: 2px;
+        }
+        .tariff-panel-tab {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 44px;
+          width: fit-content;
+          max-width: 100%;
+          padding: 0 18px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.08);
+          color: rgba(255,255,255,.88);
+          font-size: 13px;
+          line-height: 1.1;
+          font-weight: 600;
+          letter-spacing: -.01em;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+          transition: transform .2s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease, color .2s ease;
+          text-align: left;
+        }
+        .tariff-panel-tab:hover {
+          transform: translateY(-1px);
+          background: rgba(255,255,255,.1);
+          border-color: rgba(255,255,255,.16);
+        }
+        .tariff-panel-tab.is-active {
+          background: rgba(255,255,255,.14);
+          border-color: rgba(255,255,255,.18);
+          color: #ffffff;
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 10px 20px rgba(0,0,0,.12);
+        }
+        .tariff-panel-content {
+          min-width: 0;
+          border-left: 1px solid rgba(255,255,255,.12);
+          padding: 6px 0 6px 34px;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+        }
+        .tariff-panel-content-title {
+          color: #ffffff;
+          font-size: clamp(30px, 2.8vw, 52px);
+          line-height: .96;
+          letter-spacing: -.04em;
+          font-weight: 500;
+          max-width: 520px;
+          white-space: pre-line;
+        }
+        .tariff-panel-content .tariff-check-list {
+          gap: 14px;
+        }
+        .tariff-panel-content .tariff-check-item,
+        .tariff-panel-content .tariff-note-item {
+          font-size: 15px;
+          line-height: 1.62;
+        }
+        .tariff-panel-content .tariff-tag-list {
+          gap: 12px;
+        }
+        .tariff-panel-content .tariff-tag {
+          min-height: 40px;
+          padding: 9px 15px;
+          font-size: 13px;
+        }
+
+        .stage-scheme-wrap {
+          position: relative;
+          border-radius: 0;
+          padding: 0;
+          background: transparent;
+          border: none;
+          overflow: visible;
+        }
+        .stage-scheme-nav {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-bottom: 16px;
+        }
+        .stage-scheme-arrow {
+          width: 46px;
+          height: 46px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.14);
+          background: rgba(255,255,255,.05);
+          color: #fff;
+          font-size: 22px;
+          line-height: 1;
+          transition: transform .2s ease, background .2s ease, border-color .2s ease;
+        }
+        .stage-scheme-arrow:hover {
+          transform: translateY(-1px);
+          background: rgba(255,255,255,.08);
+          border-color: rgba(255,255,255,.18);
+        }
+        .stage-scheme-viewport {
+          overflow: hidden;
+        }
+        .stage-scheme-track {
+          display: flex;
+          width: 100%;
+          transition: transform .82s cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: transform;
+        }
+        .stage-scheme-track.is-snap-reset {
+          transition: none;
+        }
+        .stage-scheme-slide {
+          flex: 0 0 33.333333%;
+          min-width: 33.333333%;
+          transition: opacity .82s cubic-bezier(0.22, 1, 0.36, 1), filter .82s cubic-bezier(0.22, 1, 0.36, 1), transform .82s cubic-bezier(0.22, 1, 0.36, 1);
+          will-change: opacity, filter, transform;
+        }
+        .stage-scheme-slide.is-leaving-left {
+          opacity: .12;
+          filter: blur(14px);
+          transform: scale(.965);
+          transform-origin: left center;
+        }
+        .stage-scheme-slide.is-leaving-right {
+          opacity: .12;
+          filter: blur(14px);
+          transform: scale(.965);
+          transform-origin: right center;
+        }
+        .stage-scheme-card {
+          position: relative;
+          padding: 18px 20px 20px;
+          border-top: 1px solid rgba(255,255,255,.08);
+          border-left: 1px solid rgba(255,255,255,.08);
+          background:
+            radial-gradient(circle at 30% 20%, rgba(130,120,255,.10), transparent 34%),
+            linear-gradient(180deg, rgba(16,27,49,.38), rgba(11,20,38,.18));
+        }
+        .stage-scheme-card:first-child {
+          border-left: none;
+        }
+        .stage-scheme-kicker {
+          color: rgba(255,255,255,.56);
+          font-size: 12px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .stage-scheme-title {
+          margin-top: 10px;
+          font-size: clamp(34px, 4vw, 54px);
+          line-height: .94;
+          letter-spacing: -.05em;
+          font-weight: 600;
+        }
+        .stage-scheme-stage {
+          margin-top: 8px;
+          color: rgba(255,255,255,.72);
+          font-size: 18px;
+          line-height: 1.15;
+          letter-spacing: -.03em;
+        }
+        .stage-scheme-lever-label {
+          margin-top: 18px;
+          color: rgba(255,255,255,.72);
+          font-size: 14px;
+          line-height: 1.15;
+          letter-spacing: -.02em;
+          font-weight: 500;
+        }
+        .stage-scheme-lever {
+          margin-top: 6px;
+          color: #ffffff;
+          font-size: 22px;
+          line-height: 1.05;
+          letter-spacing: -.03em;
+          font-weight: 600;
+          max-width: 320px;
+        }
+        .stage-scheme-roadmap {
+          margin: 6px 0 0;
+          max-width: 300px;
+          color: rgba(255,255,255,.72);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .stage-scheme-bottom {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-top: 26px;
+          align-items: end;
+        }
+        .stage-scheme-label {
+          margin-bottom: 8px;
+          color: rgba(255,255,255,.82);
+          font-size: 13px;
+          letter-spacing: .08em;
+          text-transform: lowercase;
+        }
+        .stage-scheme-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .stage-scheme-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          min-width: 86px;
+          padding: 0 14px;
+          border-radius: 10px;
+          background: rgba(255,255,255,.08);
+          border: 1px solid rgba(255,255,255,.10);
+          color: rgba(255,255,255,.88);
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .stage-scheme-tag-result {
+          background: rgba(34,197,94,.14);
+          border-color: rgba(74,222,128,.24);
+          color: #bbf7d0;
+        }
         .cta-card {
           display: grid;
           grid-template-columns: minmax(0,1fr);
@@ -3736,9 +3993,11 @@ AI не придумывает выводы произвольно — он ра
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .hero-chart-float { display: none; }
-          .stage-scheme-grid { grid-template-columns: 1fr; }
+          .stage-scheme-slide {
+            flex: 0 0 100%;
+            min-width: 100%;
+          }
           .stage-scheme-card { border-left: none; }
-          .stage-scheme-card + .stage-scheme-card { border-top: 1px solid rgba(255,255,255,.08); }
           .stage-scheme-bottom { grid-template-columns: 1fr; }
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
@@ -4015,9 +4274,9 @@ AI не придумывает выводы произвольно — он ра
             padding: 0;
           }
           .tariff-panel-tab {
-            min-height: 38px;
+            min-height: 36px;
             padding: 0 13px;
-            border-radius: 13px;
+            border-radius: 12px;
             font-size: 12px;
           }
           .tariff-panel-content {
