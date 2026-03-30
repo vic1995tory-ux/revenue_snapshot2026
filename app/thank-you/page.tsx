@@ -1,15 +1,30 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
+const HERO_SRC = "/hero.svg";
 const GIF_SRC =
   "/vicky_ticky_tavi_httpss.mj.runX8tiGZkFDLE_i_want_an_analogue__07099a01-3e02-4ea5-bb9d-70a6ff023a6a_2.gif";
-const BG_SRC = "/hero.svg";
+
+type RevealStage = 0 | 1 | 2 | 3 | 4 | 5;
 
 export default function ThankYouPage() {
   const router = useRouter();
+  const [revealStage, setRevealStage] = useState<RevealStage>(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  useEffect(() => {
+    const timers: Array<ReturnType<typeof setTimeout>> = [];
+
+    timers.push(setTimeout(() => setRevealStage(1), 120));
+    timers.push(setTimeout(() => setRevealStage(2), 420));
+    timers.push(setTimeout(() => setRevealStage(3), 760));
+    timers.push(setTimeout(() => setRevealStage(4), 1100));
+    timers.push(setTimeout(() => setRevealStage(5), 1460));
+
+    return () => timers.forEach(clearTimeout);
+  }, []);
 
   const handleEnterCabinet = () => {
     if (isTransitioning) return;
@@ -23,54 +38,66 @@ export default function ThankYouPage() {
 
   return (
     <main className="ga-thankyou-page">
-      <div className="ga-thankyou-bg" aria-hidden="true">
-        <div className="ga-aurora ga-aurora-1" />
-        <div className="ga-aurora ga-aurora-2" />
-        <div className="ga-vignette" />
-      </div>
+      <div
+        className={`ga-page-media ${isTransitioning ? "is-gif" : ""}`}
+        style={{
+          backgroundImage: `url("${isTransitioning ? GIF_SRC : HERO_SRC}")`,
+        }}
+        aria-hidden="true"
+      />
 
-      <section className="ga-thankyou-shell">
-        <div className="ga-thankyou-card">
-          <div
-            className={`ga-card-media ${isTransitioning ? "is-transitioning" : ""}`}
-            style={{ backgroundImage: `url("${isTransitioning ? GIF_SRC : BG_SRC}")` }}
-            aria-hidden="true"
-          />
+      <div className={`ga-page-shade ${isTransitioning ? "is-lifted" : ""}`} />
+      <div className="ga-page-vignette" />
 
-          <div className={`ga-card-overlay ${isTransitioning ? "is-lifted" : ""}`} />
-
-          <div className="ga-card-content">
-            <div className="ga-kicker">
+      <section className="ga-shell">
+        <article className="ga-card">
+          <div className="ga-card-inner">
+            <div
+              className={`ga-kicker cinematic-line ${revealStage >= 1 ? "is-visible" : ""}`}
+            >
               <span className="ga-kicker-dot" />
               <span>Payment confirmed</span>
             </div>
 
-            <h1 className="ga-title">Добро пожаловать</h1>
+            <h1
+              className={`ga-title cinematic-line ${revealStage >= 2 ? "is-visible" : ""}`}
+            >
+              Добро
+              <br />
+              пожаловать
+            </h1>
 
-            <div className="ga-subtitle">
-              в экосистему growth<span className="ga-brand-dot" />avenue
+            <div
+              className={`ga-subtitle cinematic-line ${revealStage >= 3 ? "is-visible" : ""}`}
+            >
+              <span className="ga-subtitle-prefix">в экосистему</span>
+              <span className="ga-brand-lockup" aria-label="growth avenue">
+                <span className="ga-brand-word">growth</span>
+                <span className="ga-brand-separator" aria-hidden="true" />
+                <span className="ga-brand-word">avenue</span>
+              </span>
             </div>
 
-            <p className="ga-copy">
+            <p
+              className={`ga-copy cinematic-line ${revealStage >= 4 ? "is-visible" : ""}`}
+            >
               Здесь вы найдете инструменты, которые дают возможности для
               контролируемого роста бизнеса и объективной оценки текущих
               возможностей.
             </p>
 
-            <div className="ga-products">
+            <div
+              className={`ga-products cinematic-line ${revealStage >= 5 ? "is-visible" : ""}`}
+            >
               <div className="ga-product-row ga-product-row-active">
-                <div className="ga-product-main">
-                  <div className="ga-product-name">Revenue Snapshot</div>
-                </div>
+                <div className="ga-product-name">Revenue Snapshot</div>
                 <div className="ga-product-tags">
                   <span className="ga-tag ga-tag-active">Active</span>
                 </div>
               </div>
 
               <div className="ga-product-row">
-                <div className="ga-product-main">
-                  <div className="ga-product-name">Marketing Calendar</div>
-                </div>
+                <div className="ga-product-name">Marketing Calendar</div>
                 <div className="ga-product-tags">
                   <span className="ga-tag ga-tag-upcoming">Upcoming</span>
                   <span className="ga-tag ga-tag-release">release JUNE 2026</span>
@@ -78,9 +105,7 @@ export default function ThankYouPage() {
               </div>
 
               <div className="ga-product-row">
-                <div className="ga-product-main">
-                  <div className="ga-product-name">Strategy Tracker</div>
-                </div>
+                <div className="ga-product-name">Strategy Tracker</div>
                 <div className="ga-product-tags">
                   <span className="ga-tag ga-tag-upcoming">Upcoming</span>
                   <span className="ga-tag ga-tag-release">release AUG 2026</span>
@@ -88,21 +113,25 @@ export default function ThankYouPage() {
               </div>
 
               <div className="ga-product-row">
-                <div className="ga-product-main">
-                  <div className="ga-product-name">Fin Model Forecaster</div>
-                </div>
+                <div className="ga-product-name">Fin Model Forecaster</div>
                 <div className="ga-product-tags">
                   <span className="ga-tag ga-tag-upcoming">Upcoming</span>
-                  <span className="ga-tag ga-tag-release">release AUG-SEP 2026</span>
+                  <span className="ga-tag ga-tag-release">
+                    release AUG-SEP 2026
+                  </span>
                 </div>
               </div>
             </div>
 
-            <p className="ga-final-note">
+            <p
+              className={`ga-final-note cinematic-line ${revealStage >= 5 ? "is-visible" : ""}`}
+            >
               У вас будет возможность попробовать их бесплатно!
             </p>
 
-            <div className="ga-actions">
+            <div
+              className={`ga-actions cinematic-line ${revealStage >= 5 ? "is-visible" : ""}`}
+            >
               <button
                 type="button"
                 className="ga-primary-btn"
@@ -113,24 +142,15 @@ export default function ThankYouPage() {
               </button>
             </div>
           </div>
-        </div>
+        </article>
       </section>
 
-      {isTransitioning && (
-        <div
-          className="ga-gif-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Переход в личный кабинет"
-        >
-          <div className="ga-gif-backdrop" />
-          <div className="ga-gif-content">
-            <img src={GIF_SRC} alt="Transition" className="ga-gif-image" />
-          </div>
-        </div>
-      )}
-
       <style jsx global>{`
+        html,
+        body {
+          background: #07162d;
+        }
+
         .ga-thankyou-page {
           position: relative;
           min-height: 100vh;
@@ -139,54 +159,68 @@ export default function ThankYouPage() {
           color: #fefefe;
         }
 
-        .ga-thankyou-bg {
+        .ga-page-media {
           position: fixed;
           inset: 0;
           z-index: 0;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          transform: scale(1.03);
+          transition:
+            background-image 0.25s ease,
+            transform 0.8s ease,
+            filter 0.8s ease;
+          filter: saturate(1) brightness(0.95);
+        }
+
+        .ga-page-media.is-gif {
+          transform: scale(1.01);
+          filter: saturate(1.02) brightness(0.98);
+        }
+
+        .ga-page-shade {
+          position: fixed;
+          inset: 0;
+          z-index: 1;
+          background:
+            linear-gradient(
+              180deg,
+              rgba(3, 10, 22, 0.78) 0%,
+              rgba(3, 10, 22, 0.66) 30%,
+              rgba(3, 10, 22, 0.48) 100%
+            ),
+            linear-gradient(
+              90deg,
+              rgba(3, 10, 22, 0.52) 0%,
+              rgba(3, 10, 22, 0.18) 48%,
+              rgba(3, 10, 22, 0.34) 100%
+            );
+          transition: opacity 0.9s ease;
+          pointer-events: none;
+        }
+
+        .ga-page-shade.is-lifted {
+          opacity: 0.18;
+        }
+
+        .ga-page-vignette {
+          position: fixed;
+          inset: 0;
+          z-index: 2;
           pointer-events: none;
           background:
-            radial-gradient(circle at 18% 22%, rgba(84, 122, 219, 0.16), transparent 24%),
-            radial-gradient(circle at 82% 12%, rgba(247, 210, 55, 0.08), transparent 18%),
-            linear-gradient(180deg, #061327 0%, #081a35 45%, #07162d 100%);
+            radial-gradient(
+              circle at center,
+              transparent 42%,
+              rgba(10, 21, 38, 0.18) 74%,
+              rgba(10, 21, 38, 0.52) 100%
+            );
         }
 
-        .ga-aurora {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(120px);
-          opacity: 0.24;
-        }
-
-        .ga-aurora-1 {
-          width: 360px;
-          height: 360px;
-          left: -60px;
-          top: 40px;
-          background: rgba(88, 114, 255, 0.22);
-        }
-
-        .ga-aurora-2 {
-          width: 320px;
-          height: 320px;
-          right: 4%;
-          top: 8%;
-          background: rgba(247, 210, 55, 0.12);
-        }
-
-        .ga-vignette {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-            circle at center,
-            transparent 42%,
-            rgba(10, 21, 38, 0.18) 72%,
-            rgba(10, 21, 38, 0.56) 100%
-          );
-        }
-
-        .ga-thankyou-shell {
+        .ga-shell {
           position: relative;
-          z-index: 2;
+          z-index: 3;
           min-height: 100vh;
           display: flex;
           align-items: center;
@@ -194,55 +228,26 @@ export default function ThankYouPage() {
           padding: 28px;
         }
 
-        .ga-thankyou-card {
-          position: relative;
-          width: min(1120px, 100%);
-          min-height: 860px;
+        .ga-card {
+          width: min(1180px, 100%);
           border-radius: 34px;
           overflow: hidden;
           background: linear-gradient(
             180deg,
-            rgba(255, 255, 255, 0.03),
-            rgba(255, 255, 255, 0.015)
+            rgba(255, 255, 255, 0.025),
+            rgba(255, 255, 255, 0.01)
           );
-          border: 1px solid rgba(255, 255, 255, 0.12);
+          border: 1px solid rgba(255, 255, 255, 0.1);
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.06),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05),
             0 24px 70px rgba(0, 0, 0, 0.28);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
         }
 
-        .ga-card-media {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          transform: scale(1.03);
-          transition: opacity 0.5s ease, transform 0.5s ease;
-        }
-
-        .ga-card-media.is-transitioning {
-          transform: scale(1.01);
-        }
-
-        .ga-card-overlay {
-          position: absolute;
-          inset: 0;
-          background:
-            linear-gradient(180deg, rgba(2, 8, 18, 0.72) 0%, rgba(2, 8, 18, 0.6) 30%, rgba(2, 8, 18, 0.38) 100%),
-            linear-gradient(90deg, rgba(2, 8, 18, 0.55) 0%, rgba(2, 8, 18, 0.18) 100%);
-          transition: opacity 0.9s ease;
-        }
-
-        .ga-card-overlay.is-lifted {
-          opacity: 0.18;
-        }
-
-        .ga-card-content {
-          position: relative;
-          z-index: 2;
+        .ga-card-inner {
           width: min(760px, 100%);
-          padding: 42px 38px 38px;
+          padding: 40px 36px 38px;
         }
 
         .ga-kicker {
@@ -261,46 +266,67 @@ export default function ThankYouPage() {
           height: 10px;
           border-radius: 999px;
           background: #f7d237;
-          box-shadow: 0 0 16px rgba(247, 210, 55, 0.7);
+          box-shadow: 0 0 16px rgba(247, 210, 55, 0.75);
           animation: gaBlinkSignal 1.8s ease-in-out infinite;
           flex: none;
         }
 
         .ga-title {
           margin: 18px 0 0;
-          color: rgba(255, 255, 255, 0.94);
-          font-size: clamp(72px, 8vw, 104px);
+          color: rgba(255, 255, 255, 0.96);
+          font-size: clamp(72px, 8vw, 106px);
           line-height: 0.9;
-          letter-spacing: -0.075em;
+          letter-spacing: -0.078em;
           font-weight: 700;
-          max-width: 680px;
+          max-width: 720px;
         }
 
         .ga-subtitle {
-          margin-top: 18px;
-          color: rgba(255, 255, 255, 0.9);
+          margin-top: 20px;
+          display: flex;
+          flex-wrap: wrap;
+          align-items: baseline;
+          gap: 12px;
+          color: rgba(255, 255, 255, 0.92);
           font-size: clamp(30px, 2.7vw, 44px);
-          line-height: 1.02;
+          line-height: 1.04;
           letter-spacing: -0.05em;
           font-weight: 500;
         }
 
-        .ga-brand-dot {
+        .ga-subtitle-prefix {
+          color: rgba(255, 255, 255, 0.88);
+        }
+
+        .ga-brand-lockup {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.18em;
+          line-height: 1;
+          white-space: nowrap;
+        }
+
+        .ga-brand-word {
           display: inline-block;
-          width: 0.34em;
-          height: 0.34em;
-          margin: 0 0.08em 0 0.02em;
+          color: rgba(255, 255, 255, 0.92);
+        }
+
+        .ga-brand-separator {
+          width: 0.22em;
+          height: 0.22em;
+          margin: 0 0.04em 0 0.02em;
           border-radius: 999px;
           background: #f7d237;
-          vertical-align: middle;
-          transform: translateY(-0.02em);
-          box-shadow: 0 0 16px rgba(247, 210, 55, 0.55);
+          box-shadow: 0 0 16px rgba(247, 210, 55, 0.6);
+          align-self: center;
+          transform: translateY(0.02em);
+          flex: none;
         }
 
         .ga-copy {
-          margin: 26px 0 0;
-          max-width: 650px;
-          color: rgba(255, 255, 255, 0.74);
+          margin: 28px 0 0;
+          max-width: 660px;
+          color: rgba(255, 255, 255, 0.76);
           font-size: 17px;
           line-height: 1.7;
         }
@@ -309,7 +335,7 @@ export default function ThankYouPage() {
           margin-top: 24px;
           display: grid;
           gap: 14px;
-          max-width: 760px;
+          max-width: 780px;
         }
 
         .ga-product-row {
@@ -329,16 +355,13 @@ export default function ThankYouPage() {
           border-color: rgba(247, 210, 55, 0.14);
         }
 
-        .ga-product-main {
-          min-width: 0;
-        }
-
         .ga-product-name {
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.92);
           font-size: 22px;
           line-height: 1.1;
           letter-spacing: -0.03em;
           font-weight: 600;
+          min-width: 0;
         }
 
         .ga-product-tags {
@@ -365,7 +388,11 @@ export default function ThankYouPage() {
 
         .ga-tag-active {
           color: #081a35;
-          background: linear-gradient(135deg, rgba(247, 210, 55, 0.98), rgba(247, 210, 55, 0.88));
+          background: linear-gradient(
+            135deg,
+            rgba(247, 210, 55, 0.98),
+            rgba(247, 210, 55, 0.88)
+          );
           border-color: rgba(247, 210, 55, 0.24);
         }
 
@@ -383,7 +410,7 @@ export default function ThankYouPage() {
 
         .ga-final-note {
           margin: 24px 0 0;
-          color: rgba(255, 255, 255, 0.9);
+          color: rgba(255, 255, 255, 0.92);
           font-size: 18px;
           line-height: 1.45;
           font-weight: 600;
@@ -403,9 +430,17 @@ export default function ThankYouPage() {
           color: #ffffff;
           font-size: 18px;
           font-weight: 700;
-          background: linear-gradient(90deg, #47b6f6 0%, #6f8cff 52%, #c25cf3 100%);
+          background: linear-gradient(
+            90deg,
+            #47b6f6 0%,
+            #6f8cff 52%,
+            #c25cf3 100%
+          );
           box-shadow: 0 18px 34px rgba(97, 98, 255, 0.24);
-          transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
+          transition:
+            transform 0.22s ease,
+            box-shadow 0.22s ease,
+            opacity 0.22s ease;
         }
 
         .ga-primary-btn:hover {
@@ -414,47 +449,24 @@ export default function ThankYouPage() {
         }
 
         .ga-primary-btn:disabled {
-          opacity: 0.76;
+          opacity: 0.78;
           cursor: default;
         }
 
-        .ga-gif-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 140;
-          display: grid;
-          place-items: center;
-          padding: 20px;
+        .cinematic-line {
+          opacity: 0;
+          transform: translateY(22px);
+          filter: blur(12px);
+          transition:
+            opacity 0.85s ease,
+            transform 0.85s ease,
+            filter 0.85s ease;
         }
 
-        .ga-gif-backdrop {
-          position: absolute;
-          inset: 0;
-          background: rgba(3, 10, 22, 0.86);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
-        }
-
-        .ga-gif-content {
-          position: relative;
-          z-index: 1;
-          width: min(680px, 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .ga-gif-image {
-          width: 100%;
-          max-width: 560px;
-          height: auto;
-          display: block;
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            0 30px 80px rgba(0, 0, 0, 0.34),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
-          background: rgba(11, 20, 38, 0.92);
+        .cinematic-line.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
         }
 
         @keyframes gaBlinkSignal {
@@ -473,15 +485,11 @@ export default function ThankYouPage() {
         }
 
         @media (max-width: 900px) {
-          .ga-thankyou-shell {
-            padding: 18px;
+          .ga-shell {
+            padding: 16px;
           }
 
-          .ga-thankyou-card {
-            min-height: auto;
-          }
-
-          .ga-card-content {
+          .ga-card-inner {
             width: 100%;
             padding: 28px 20px 24px;
           }
@@ -523,11 +531,6 @@ export default function ThankYouPage() {
             min-width: 0;
             min-height: 54px;
             font-size: 16px;
-          }
-
-          .ga-gif-image {
-            max-width: 100%;
-            border-radius: 22px;
           }
         }
       `}</style>
