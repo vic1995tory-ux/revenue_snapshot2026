@@ -574,7 +574,72 @@ function TariffParagraphContent({
   );
 }
 
-function TariffColumn({
+
+function TariffCompareBlock({
+  section,
+}: {
+  section: {
+    label: string;
+    items?: string[];
+    notes?: string[];
+    render?: "list" | "tags" | "icon-tags" | "yellow-tags";
+    iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+  };
+}) {
+  return (
+    <div className="tariff-compare-section">
+      <div className="tariff-compare-section-head">
+        <h3 className="tariff-compare-section-title">{section.label}</h3>
+      </div>
+
+      {section.items?.length ? (
+        section.render === "tags" ? (
+          <TagList
+            items={section.items}
+            variant="soft"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : section.render === "icon-tags" ? (
+          <TagList
+            items={section.items}
+            variant="icon-solid"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : section.render === "yellow-tags" ? (
+          <TagList
+            items={section.items}
+            variant="yellow"
+            icon={section.iconKind ?? "custom"}
+          />
+        ) : (
+          <div className="tariff-check-list">
+            {section.items.map((item) => (
+              <div key={item} className="tariff-check-item">
+                <span className="tariff-check-mark">
+                  <ChipIcon kind={section.iconKind ?? "custom"} />
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        )
+      ) : null}
+
+      {section.notes?.length ? (
+        <div className="tariff-note-list">
+          {section.notes.map((note) => (
+            <div key={note} className="tariff-note-item">
+              <span className="tariff-note-bullet">•</span>
+              <span>{note}</span>
+            </div>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function TariffCompareCard({
   title,
   sections,
   disclaimer,
@@ -590,12 +655,10 @@ function TariffColumn({
   disclaimer?: string[];
 }) {
   const [open, setOpen] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
-  const activeSection = sections[activeIndex];
 
   return (
-    <article className="tariff-column tariff-column-rebuilt">
-      <div className="tariff-column-head tariff-column-head-rebuilt">
+    <article className="tariff-compare-card">
+      <div className="tariff-compare-card-head">
         <div className="tariff-column-title">{title}</div>
 
         {disclaimer?.length ? (
@@ -623,25 +686,10 @@ function TariffColumn({
         ) : null}
       </div>
 
-      <div className="tariff-layout">
-        <div className="tariff-menu">
-          {sections.map((section, index) => (
-            <button
-              key={section.label}
-              type="button"
-              className={`tariff-menu-btn ${index === activeIndex ? "is-active" : ""}`}
-              onClick={() => setActiveIndex(index)}
-            >
-              <span>{section.label}</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="tariff-divider" />
-
-        <div className="tariff-content">
-          <TariffParagraphContent section={activeSection} />
-        </div>
+      <div className="tariff-compare-card-body">
+        {sections.map((section) => (
+          <TariffCompareBlock key={section.label} section={section} />
+        ))}
       </div>
     </article>
   );
@@ -741,11 +789,15 @@ function TariffDetailsComparison() {
     {
       label: "Format",
       render: "icon-tags" as const,
-      iconKind: "online" as const,
+      iconKind: "team" as const,
       items: [
         "Работа с участием команды",
         "Онлайн-коммуникация",
         "Индивидуальная проработка",
+      ],
+      notes: [
+        "Связь во время подготовки результата.",
+        "Дополнительные уточнения в процессе.",
       ],
     },
     {
@@ -782,23 +834,26 @@ function TariffDetailsComparison() {
     },
     {
       label: "Decompose",
-      iconKind: "team" as const,
+      iconKind: "brief" as const,
       items: [
         "Личный брифинг с командой",
         "Дополнительные уточнения в процессе",
         "Связь во время подготовки результата",
       ],
+      notes: [
+        "Результат готовится самостоятельно командой на основе более глубокого контекста.",
+      ],
     },
   ];
 
   return (
-    <div className="tariff-comparison-grid">
-      <TariffColumn
+    <div className="tariff-comparison-grid tariff-comparison-grid-parallel">
+      <TariffCompareCard
         title="ONLINE PLAYGROUND"
         sections={playgroundSections}
         disclaimer={playgroundDisclaimer}
       />
-      <TariffColumn
+      <TariffCompareCard
         title="ON REC"
         sections={onRecSections}
         disclaimer={onRecDisclaimer}
@@ -806,6 +861,7 @@ function TariffDetailsComparison() {
     </div>
   );
 }
+
 function ResultDocCard({
   tab,
   title,
@@ -4297,6 +4353,116 @@ AI не придумывает выводы произвольно — он ра
 
           .page-footer { flex-direction: column; align-items: flex-start; }
         }
+
+.tariff-comparison-grid-parallel {
+  gap: 28px;
+}
+
+.tariff-compare-card {
+  position: relative;
+  border-radius: 30px;
+  padding: 26px 26px 28px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(126, 163, 255, 0.12), transparent 24%),
+    radial-gradient(circle at 72% 0%, rgba(126, 111, 255, 0.10), transparent 28%),
+    linear-gradient(180deg, rgba(20, 35, 68, 0.72), rgba(8, 21, 48, 0.62));
+  border: 1px solid rgba(255,255,255,.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.10),
+    0 18px 42px rgba(0,0,0,.14);
+  backdrop-filter: blur(24px) saturate(135%);
+  -webkit-backdrop-filter: blur(24px) saturate(135%);
+}
+
+.tariff-compare-card-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tariff-compare-card-body {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.tariff-compare-section {
+  border-radius: 22px;
+  padding: 16px 16px 18px;
+  background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.10);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.tariff-compare-section-title {
+  margin: 0 0 14px;
+  color: #ffffff;
+  font-size: 16px;
+  line-height: 1.1;
+  letter-spacing: -.03em;
+  font-weight: 700;
+}
+
+.tariff-compare-section .tariff-check-list,
+.tariff-compare-section .tariff-note-list {
+  gap: 12px;
+}
+
+.tariff-compare-section .tariff-check-item,
+.tariff-compare-section .tariff-note-item {
+  font-size: 15px;
+  line-height: 1.45;
+  grid-template-columns: 18px 1fr;
+  gap: 12px;
+}
+
+.tariff-compare-section .tariff-tag-list {
+  gap: 9px;
+}
+
+.tariff-compare-section .tariff-tag {
+  min-height: 36px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+@media (max-width: 1180px) {
+  .tariff-comparison-grid-parallel {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .tariff-compare-card {
+    padding: 18px 16px 18px;
+    border-radius: 24px;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .tariff-compare-card-body {
+    gap: 12px;
+  }
+
+  .tariff-compare-section {
+    padding: 14px 14px 16px;
+    border-radius: 18px;
+  }
+
+  .tariff-compare-section-title {
+    margin-bottom: 12px;
+    font-size: 15px;
+  }
+
+  .tariff-compare-section .tariff-check-item,
+  .tariff-compare-section .tariff-note-item {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+}
+
       `}</style>
     </main>
   );
