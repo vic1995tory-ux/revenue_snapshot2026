@@ -1104,13 +1104,10 @@ function StageCarousel() {
           onTransitionEnd={handleTransitionEnd}
         >
           {trackItems.map((item, idx) => {
-            const isLeavingLeft = isAnimating && direction === "next" && idx === currentIndex;
-            const isLeavingRight = isAnimating && direction === "prev" && idx === currentIndex + visibleCount - 1;
-
             return (
               <div
                 key={`${item.niche}-${idx}`}
-                className={`stage-scheme-slide ${isLeavingLeft ? "is-leaving-left" : ""} ${isLeavingRight ? "is-leaving-right" : ""}`}
+                className="stage-scheme-slide"
               >
                 <article className="stage-scheme-card">
                   <div className="stage-scheme-kicker">Ниша</div>
@@ -1416,7 +1413,7 @@ AI не придумывает выводы произвольно — он ра
 
       const rect = section.getBoundingClientRect();
       const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.4 - rect.top) / sectionHeight;
+      const rawProgress = (window.innerHeight * 0.84 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
         journeySteps.length - 1,
@@ -3113,12 +3110,7 @@ AI не придумывает выводы произвольно — он ра
         .stage-scheme-card:first-child {
           border-left: none;
         }
-        .stage-scheme-wrap.is-animating.direction-next .stage-scheme-card.is-left,
-        .stage-scheme-wrap.is-animating.direction-prev .stage-scheme-card:not(.is-left) {
-          opacity: .28;
-          filter: blur(10px);
-          transform: scale(.98);
-        }
+        
         .stage-scheme-kicker {
           color: rgba(255,255,255,.56);
           font-size: 12px;
@@ -3736,20 +3728,6 @@ AI не придумывает выводы произвольно — он ра
         .stage-scheme-slide {
           flex: 0 0 33.333333%;
           min-width: 33.333333%;
-          transition: opacity .82s cubic-bezier(0.22, 1, 0.36, 1), filter .82s cubic-bezier(0.22, 1, 0.36, 1), transform .82s cubic-bezier(0.22, 1, 0.36, 1);
-          will-change: opacity, filter, transform;
-        }
-        .stage-scheme-slide.is-leaving-left {
-          opacity: .12;
-          filter: blur(14px);
-          transform: scale(.965);
-          transform-origin: left center;
-        }
-        .stage-scheme-slide.is-leaving-right {
-          opacity: .12;
-          filter: blur(14px);
-          transform: scale(.965);
-          transform-origin: right center;
         }
         .stage-scheme-card {
           position: relative;
