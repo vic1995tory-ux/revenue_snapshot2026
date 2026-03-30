@@ -1311,28 +1311,6 @@ AI не придумывает выводы произвольно — он ра
         return;
       }
 
-      const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.2 - rect.top) / sectionHeight;
-      const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
-      const nextIndex = Math.min(
-        journeySteps.length - 1,
-        Math.floor(progress * journeySteps.length)
-      );
-
-      setJourneyActiveIndex(nextIndex);
-    };
-
-    handleJourneyScroll();
-    window.addEventListener("scroll", handleJourneyScroll, { passive: true });
-    window.addEventListener("resize", handleJourneyScroll);
-
-    return () => {
-      window.removeEventListener("scroll", handleJourneyScroll);
-      window.removeEventListener("resize", handleJourneyScroll);
-    };
-  }, [journeySteps.length]);
-
   useEffect(() => {
     if (typeof window !== "undefined" && window.innerWidth <= 1023) return;
 
@@ -1539,12 +1517,6 @@ AI не придумывает выводы произвольно — он ра
               </p>
             </div>
 
-            <div className="journey-scroll-grid">
-              {journeySteps.map((step, index) => (
-                <article
-                  key={step.number}
-                  className={`journey-stage-card ${index <= journeyActiveIndex ? "is-active" : "is-muted"}`}
-                >
                   <div className="journey-stage-number">{step.number}</div>
                   <div className="journey-stage-title">{step.title}</div>
                   <div className="journey-stage-text">{step.text}</div>
