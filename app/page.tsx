@@ -209,6 +209,7 @@ function Slider({
   );
 }
 
+
 function HeroEconomyChart() {
   const base = {
     leads: 10,
@@ -280,28 +281,9 @@ function HeroEconomyChart() {
     },
   ];
 
-  const [activeIndex, setActiveIndex] = useState(0);
-  const timerRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-
-    return () => {
-      if (timerRef.current) window.clearInterval(timerRef.current);
-    };
-  }, [drivers.length]);
-
-  const setDriver = (index: number) => {
-    setActiveIndex(index);
-    if (timerRef.current) window.clearInterval(timerRef.current);
-    timerRef.current = window.setInterval(() => {
-      setActiveIndex((v) => (v + 1) % drivers.length);
-    }, 3400);
-  };
-
+  const [activeIndex, setActiveIndex] = useState(3);
   const active = drivers[activeIndex];
+
   const bars = [
     { name: "Revenue", value: active.revenue, good: true },
     { name: "OPEX", value: active.opex, good: false },
@@ -313,14 +295,14 @@ function HeroEconomyChart() {
   return (
     <div className="hero-visual-shell">
       <div className="hero-chart-float">
-        <div className="hero-chart-float-title">MVP-Drivers</div>
+        <div className="hero-chart-float-title">Drivers</div>
 
         <div className="hero-levers-inline hero-levers-inline-float">
           {drivers.map((item, index) => (
             <button
               key={item.key}
               type="button"
-              onClick={() => setDriver(index)}
+              onClick={() => setActiveIndex(index)}
               className={`hero-tag ${index === activeIndex ? "hero-tag-active" : ""}`}
             >
               {item.label}
@@ -918,181 +900,158 @@ type StageItem = {
   bars: Array<{ label: string; fact: number; plan: number }>;
 };
 
+
 function StageCarousel() {
-  const items: StageItem[] = [
+  const items = [
     {
       niche: "SaaS",
       stage: "Early Stage",
-      summary: "Подходит бизнесам, которые уже видят спрос, но еще не собрали устойчивую модель роста.",
-      focus: "Фокус на первом рабочем оффере, сборке экономики и выборе главного рычага.",
-      metrics: [
-        { label: "Leads", value: "25 / 40" },
-        { label: "Qual leads", value: "6 / 15" },
-        { label: "Demo", value: "2 / 5" },
-        { label: "Deals", value: "1 / 2" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 5, plan: 3 },
-        { label: "CAC payback", fact: 9, plan: 6 },
-      ],
+      lever: "Сборка первой устойчивой модели",
+      roadmap: "Сначала фиксируется факт экономики, затем приоритет и короткий RoadMap по усилению.",
+      zones: ["Leads", "Qual Leads"],
+      result: ["Cycle", "Payback"],
     },
     {
       niche: "HealthTech",
       stage: "Growth",
-      summary: "Полезен компаниям, где уже есть сложный спрос, но требуется лучше увязать продажи, цикл сделки и unit-экономику.",
-      focus: "Фокус на воронке, приоритетах роста и удержании маржи при расширении.",
-      metrics: [
-        { label: "Leads", value: "62 / 90" },
-        { label: "Qual leads", value: "18 / 30" },
-        { label: "Demo", value: "9 / 14" },
-        { label: "Deals", value: "4 / 7" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 10, plan: 7 },
-        { label: "CAC payback", fact: 8, plan: 5 },
-      ],
+      lever: "Ускорение сделки без давления на маржу",
+      roadmap: "Snapshot собирает логику роста, выделяет ограничение и дает последовательность решений.",
+      zones: ["Sales", "Retention"],
+      result: ["CAC", "Margin"],
     },
     {
       niche: "B2B",
       stage: "Startup",
-      summary: "Актуален для сервисных и проектных B2B-команд, где продажи уже идут, но модель пока держится на ручном управлении.",
-      focus: "Фокус на длине цикла сделки, структуре спроса и точке главного ограничения роста.",
-      metrics: [
-        { label: "Leads", value: "70 / 95" },
-        { label: "Qual leads", value: "22 / 30" },
-        { label: "Demo", value: "10 / 14" },
-        { label: "Deals", value: "4 / 6" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 8, plan: 5 },
-        { label: "Margin", fact: 37, plan: 46 },
-      ],
+      lever: "Сокращение ручного управления ростом",
+      roadmap: "Результат показывает, где теряется скорость роста и какой сценарий дает наибольший эффект.",
+      zones: ["Pipeline", "Offer"],
+      result: ["Cycle", "Profit"],
     },
     {
       niche: "FinTech",
       stage: "Growth",
-      summary: "Подходит продуктам с уже работающим спросом, где особенно важны экономика привлечения и скорость возврата инвестиций в канал.",
-      focus: "Фокус на CAC payback, качестве сегментов и управлении рычагами роста без размывания модели.",
-      metrics: [
-        { label: "Leads", value: "180 / 230" },
-        { label: "Qual leads", value: "62 / 80" },
-        { label: "Demo", value: "28 / 34" },
-        { label: "Deals", value: "11 / 14" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 11, plan: 8 },
-        { label: "CAC payback", fact: 7, plan: 5 },
-      ],
+      lever: "Пересборка экономики привлечения",
+      roadmap: "Фокус смещается на каналы, payback и точку, которая реально тормозит масштабирование.",
+      zones: ["CAC", "Quality"],
+      result: ["Payback", "Scale"],
     },
     {
       niche: "EdTech",
       stage: "Expansion",
-      summary: "Полезен в момент, когда компания масштабирует новые направления и должна удержать качество экономики при расширении.",
-      focus: "Фокус на сохранении маржи, точках потерь и управлении ростом через правильные сценарии расширения.",
-      metrics: [
-        { label: "Leads", value: "140 / 190" },
-        { label: "Qual leads", value: "46 / 60" },
-        { label: "Demo", value: "21 / 28" },
-        { label: "Deals", value: "8 / 11" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 9, plan: 6 },
-        { label: "Margin", fact: 29, plan: 37 },
-      ],
+      lever: "Рост без потери качества экономики",
+      roadmap: "Система показывает, как сохранить маржу и где нужна смена приоритета роста.",
+      zones: ["Offer", "Retention"],
+      result: ["Margin", "Load"],
     },
     {
       niche: "E-com",
       stage: "Expansion",
-      summary: "Подходит бизнесам, где уже есть объем, но важно понять, что сильнее всего влияет на прибыльность: каналы, средний чек или структура расходов.",
-      focus: "Фокус на росте без потери маржи, переоценке экономики каналов и выборе главного сценария усиления.",
-      metrics: [
-        { label: "Leads", value: "340 / 420" },
-        { label: "Qual leads", value: "120 / 150" },
-        { label: "Demo", value: "54 / 66" },
-        { label: "Deals", value: "19 / 24" },
-      ],
-      bars: [
-        { label: "Deal cycle", fact: 14, plan: 10 },
-        { label: "Margin", fact: 31, plan: 39 },
-      ],
+      lever: "Усиление прибыльности через модель",
+      roadmap: "Snapshot отделяет видимый рост от полезного роста и расставляет экономические приоритеты.",
+      zones: ["AOV", "Costs"],
+      result: ["Profit", "Structure"],
     },
   ];
 
+  const visibleCount = 3;
   const [activeIndex, setActiveIndex] = useState(0);
-  const active = items[activeIndex];
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
+
+  const goToNext = () => {
+    if (isAnimating) return;
+    setDirection("next");
+    setIsAnimating(true);
+    window.setTimeout(() => {
+      setActiveIndex((prev) => (prev + 1) % items.length);
+      setIsAnimating(false);
+    }, 320);
+  };
+
+  const goToPrev = () => {
+    if (isAnimating) return;
+    setDirection("prev");
+    setIsAnimating(true);
+    window.setTimeout(() => {
+      setActiveIndex((prev) => (prev - 1 + items.length) % items.length);
+      setIsAnimating(false);
+    }, 320);
+  };
+
+  const visibleCards = Array.from({ length: visibleCount }, (_, offset) => {
+    const itemIndex = (activeIndex + offset) % items.length;
+    return {
+      ...items[itemIndex],
+      itemIndex,
+      slot: offset,
+    };
+  });
 
   return (
-    <div className="stage-lite-wrap">
-      <div className="stage-lite-card glare-card" key={active.niche}>
-        <div className="stage-lite-head">
-          <div>
-            <div className="stage-lite-kicker">Ниша</div>
-            <h3 className="stage-lite-title">{active.niche}</h3>
-            <div className="stage-lite-stage-chip">{active.stage}</div>
-          </div>
-          <div className="stage-lite-nav">
-            <button
-              type="button"
-              className="stage-lite-arrow"
-              onClick={() => setActiveIndex((activeIndex - 1 + items.length) % items.length)}
-              aria-label="Предыдущая карточка"
-            >
-              ←
-            </button>
-            <button
-              type="button"
-              className="stage-lite-arrow"
-              onClick={() => setActiveIndex((activeIndex + 1) % items.length)}
-              aria-label="Следующая карточка"
-            >
-              →
-            </button>
-          </div>
-        </div>
+    <div className={`stage-scheme-wrap ${isAnimating ? `is-animating direction-${direction}` : ""}`}>
+      <div className="stage-scheme-nav">
+        <button
+          type="button"
+          className="stage-scheme-arrow"
+          onClick={goToPrev}
+          aria-label="Предыдущая карточка"
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          className="stage-scheme-arrow"
+          onClick={goToNext}
+          aria-label="Следующая карточка"
+        >
+          →
+        </button>
+      </div>
 
-        <div className="stage-lite-copy-grid">
-          <div className="stage-lite-copy-card">
-            <div className="stage-lite-copy-title">Где полезен Snapshot</div>
-            <p>{active.summary}</p>
-          </div>
-          <div className="stage-lite-copy-card">
-            <div className="stage-lite-copy-title">На чем фокус</div>
-            <p>{active.focus}</p>
-          </div>
-        </div>
+      <div className="stage-scheme-grid">
+        {visibleCards.map((item) => (
+          <article
+            key={`${item.niche}-${item.itemIndex}-${activeIndex}`}
+            className={`stage-scheme-card ${item.slot === 0 ? "is-left" : ""}`}
+          >
+            <div className="stage-scheme-kicker">Ниша</div>
+            <div className="stage-scheme-title">{item.niche}</div>
+            <div className="stage-scheme-stage">{item.stage}</div>
 
-        <div className="stage-lite-bottom">
-          <div className="stage-lite-metrics">
-            {active.metrics.map((metric) => (
-              <div key={metric.label} className="stage-lite-metric">
-                <div className="stage-lite-metric-label">{metric.label}</div>
-                <div className="stage-lite-metric-value">{metric.value}</div>
-              </div>
-            ))}
-          </div>
+            <div className="stage-scheme-lever-label">Выявленный рычаг</div>
+            <div className="stage-scheme-lever">{item.lever}</div>
+            <p className="stage-scheme-roadmap">{item.roadmap}</p>
 
-          <div className="stage-lite-bars">
-            <div className="stage-lite-bars-title">fact / plan</div>
-            {active.bars.map((bar) => {
-              const max = Math.max(bar.fact, bar.plan, 1);
-              return (
-                <div key={bar.label} className="stage-lite-bar-group">
-                  <div className="stage-lite-bar-label">{bar.label}</div>
-                  <div className="stage-lite-bar-track">
-                    <div className="stage-lite-bar-fill stage-lite-bar-fill-fact" style={{ width: `${(bar.fact / max) * 100}%` }} />
-                  </div>
-                  <div className="stage-lite-bar-track stage-lite-bar-track-thin">
-                    <div className="stage-lite-bar-fill stage-lite-bar-fill-plan" style={{ width: `${(bar.plan / max) * 100}%` }} />
-                  </div>
+            <div className="stage-scheme-bottom">
+              <div className="stage-scheme-group">
+                <div className="stage-scheme-label">зоны влияния</div>
+                <div className="stage-scheme-tags">
+                  {item.zones.map((tag) => (
+                    <span key={tag} className="stage-scheme-tag">
+                      {tag}
+                    </span>
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </div>
+
+              <div className="stage-scheme-group">
+                <div className="stage-scheme-label">результат</div>
+                <div className="stage-scheme-tags">
+                  {item.result.map((tag) => (
+                    <span key={tag} className="stage-scheme-tag stage-scheme-tag-result">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   );
 }
+
 
 export default function Home() {
   const [clientsInput, setClientsInput] = useState("20");
@@ -1129,9 +1088,9 @@ export default function Home() {
   }> = [
     {
       number: "01",
-      title: "Выбор варианта прохождения",
+      title: "Выбор формата",
       text: "Online Playground — самостоятельный формат. On Rec — формат с участием команды.",
-      linkLabel: "Подробнее",
+      linkLabel: "Начать",
       linkHref: "#tariffs",
     },
     {
@@ -1530,7 +1489,7 @@ AI не придумывает выводы произвольно — он ра
               FAQ
             </button>
             <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Profile</a>
-            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Выбрать способ прохождения</a>
+            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Начать</a>
             <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
             <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
           </div>
@@ -1544,25 +1503,24 @@ AI не придумывает выводы произвольно — он ра
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-                стратегическая диагностика
-                <br />
-                экономики вашего бизнеса
+                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
+                Не общие выводы, а конкретные расчёты и приоритеты.
               </div>
 
               <p className="hero-main-copy">
-                Узнайте, какое изменение в модели способно дать наиболее сильный
-                эффект на выручку, и где сейчас скрываются главные точки потери
-                денег.
+                Система фиксирует ограничения роста, показывает точки потерь и
+                собирает управленческую последовательность решений на основе экономики бизнеса.
               </p>
 
               <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
-                <div className="hero-highlight-chip">MVP</div>
-                <div className="hero-highlight-chip">CashCow</div>
-                <div className="hero-highlight-chip">Scaling</div>
+                <div className="hero-highlight-chip">ECONOMIC RATE</div>
+                <div className="hero-highlight-chip">GROWTH LIMIT</div>
+                <div className="hero-highlight-chip">SOLUTION</div>
+                <div className="hero-highlight-chip">JTBD</div>
               </div>
 
               <div className="hero-actions-row">
-                <a href="#tariffs" className="tg-gradient-btn inline-flex">Выбрать способ прохождения</a>
+                <a href="#tariffs" className="tg-gradient-btn inline-flex">Начать</a>
                 <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
               </div>
             </div>
@@ -1949,7 +1907,7 @@ AI не придумывает выводы произвольно — он ра
             radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
             linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
           background-size: 140% 140%;
-          animation: pageAmbient 26s ease-in-out infinite alternate;
+          animation: none;
         }
         .content-wrap {
           position: relative;
@@ -2377,7 +2335,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71, 96, 255, 0.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
+          animation: none;
         }
         .tg-gradient-btn::before {
           content: "";
@@ -2385,7 +2343,7 @@ AI не придумывает выводы произвольно — он ра
           inset: 0;
           background: linear-gradient(120deg, transparent 0%, rgba(255,255,255,.22) 25%, transparent 50%);
           transform: translateX(-130%);
-          animation: tgShine 3.8s ease-in-out infinite;
+          animation: none;
         }
         .tg-gradient-btn > * { position: relative; z-index: 1; }
         .tg-gradient-btn:hover { transform: translateY(-1px); }
@@ -2514,7 +2472,7 @@ AI не придумывает выводы произвольно — он ра
           border-radius: 999px;
           background: #f7d237;
           box-shadow: 0 0 16px rgba(247,210,55,.42);
-          animation: pulseTinyYellow 1.8s ease-in-out infinite;
+          animation: none;
           flex-shrink: 0;
         }
         .hero-money-card-muted {
@@ -2736,7 +2694,7 @@ AI не придумывает выводы произвольно — он ра
           text-decoration: none; color: #ffffff; font-weight: 700; border: 1px solid rgba(255,255,255,.16);
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%; box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
+          animation: none;
         }
         .industries-pills { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; align-items: center; }
         .industries-pills-carousel {
@@ -3002,6 +2960,145 @@ AI не придумывает выводы произвольно — он ра
         .stage-lite-bar-fill-plan {
           background: linear-gradient(90deg, rgba(130,120,255,.76), rgba(172,183,255,.82));
         }
+
+        .stage-scheme-wrap {
+          position: relative;
+          border-radius: 30px;
+          padding: 18px 18px 0;
+          background: linear-gradient(180deg, rgba(12,27,58,.28), rgba(8,18,40,.12));
+          border: 1px solid rgba(255,255,255,.08);
+          overflow: hidden;
+        }
+        .stage-scheme-nav {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-bottom: 12px;
+        }
+        .stage-scheme-arrow {
+          width: 46px;
+          height: 46px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.14);
+          background: rgba(255,255,255,.05);
+          color: #fff;
+          font-size: 22px;
+          line-height: 1;
+          transition: transform .2s ease, background .2s ease, border-color .2s ease;
+        }
+        .stage-scheme-arrow:hover {
+          transform: translateY(-1px);
+          background: rgba(255,255,255,.08);
+          border-color: rgba(255,255,255,.18);
+        }
+        .stage-scheme-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0,1fr));
+          gap: 0;
+          min-height: 360px;
+        }
+        .stage-scheme-card {
+          position: relative;
+          padding: 18px 20px 20px;
+          border-top: 1px solid rgba(255,255,255,.08);
+          border-left: 1px solid rgba(255,255,255,.08);
+          background:
+            radial-gradient(circle at 30% 20%, rgba(130,120,255,.10), transparent 34%),
+            linear-gradient(180deg, rgba(16,27,49,.38), rgba(11,20,38,.18));
+          transition: opacity .32s ease, filter .32s ease, transform .32s ease;
+        }
+        .stage-scheme-card:first-child {
+          border-left: none;
+        }
+        .stage-scheme-wrap.is-animating.direction-next .stage-scheme-card.is-left,
+        .stage-scheme-wrap.is-animating.direction-prev .stage-scheme-card:not(.is-left) {
+          opacity: .28;
+          filter: blur(10px);
+          transform: scale(.98);
+        }
+        .stage-scheme-kicker {
+          color: rgba(255,255,255,.56);
+          font-size: 12px;
+          letter-spacing: .12em;
+          text-transform: uppercase;
+        }
+        .stage-scheme-title {
+          margin-top: 10px;
+          font-size: clamp(34px, 4vw, 54px);
+          line-height: .94;
+          letter-spacing: -.05em;
+          font-weight: 600;
+        }
+        .stage-scheme-stage {
+          margin-top: 8px;
+          color: rgba(255,255,255,.72);
+          font-size: 18px;
+          line-height: 1.15;
+          letter-spacing: -.03em;
+        }
+        .stage-scheme-lever-label {
+          margin-top: 18px;
+          color: rgba(255,255,255,.72);
+          font-size: 14px;
+          line-height: 1.15;
+          letter-spacing: -.02em;
+          font-weight: 500;
+        }
+        .stage-scheme-lever {
+          margin-top: 6px;
+          color: #ffffff;
+          font-size: 22px;
+          line-height: 1.05;
+          letter-spacing: -.03em;
+          font-weight: 600;
+          max-width: 320px;
+        }
+        .stage-scheme-roadmap {
+          margin: 6px 0 0;
+          max-width: 300px;
+          color: rgba(255,255,255,.72);
+          font-size: 14px;
+          line-height: 1.5;
+        }
+        .stage-scheme-bottom {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+          margin-top: 26px;
+          align-items: end;
+        }
+        .stage-scheme-label {
+          margin-bottom: 8px;
+          color: rgba(255,255,255,.82);
+          font-size: 13px;
+          letter-spacing: .08em;
+          text-transform: lowercase;
+        }
+        .stage-scheme-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .stage-scheme-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 34px;
+          min-width: 86px;
+          padding: 0 14px;
+          border-radius: 10px;
+          background: rgba(255,255,255,.08);
+          border: 1px solid rgba(255,255,255,.10);
+          color: rgba(255,255,255,.88);
+          font-size: 13px;
+          font-weight: 600;
+        }
+        .stage-scheme-tag-result {
+          background: rgba(247,210,55,.16);
+          border-color: rgba(247,210,55,.24);
+          color: #fff2b2;
+        }
+
         .analysis-stack {
           display: flex;
           flex-direction: column;
@@ -3115,7 +3212,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
+          animation: none;
           pointer-events: auto;
           white-space: nowrap;
         }
@@ -3426,7 +3523,7 @@ AI не придумывает выводы произвольно — он ра
           background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
           background-size: 220% 220%;
           box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
+          animation: none;
         }
         .payment-overlay-btn-secondary {
           color: #ffffff;
@@ -3501,6 +3598,11 @@ AI не придумывает выводы произвольно — он ра
             justify-content: center;
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
+          .hero-chart-float { display: none; }
+          .stage-scheme-grid { grid-template-columns: 1fr; }
+          .stage-scheme-card { border-left: none; }
+          .stage-scheme-card + .stage-scheme-card { border-top: 1px solid rgba(255,255,255,.08); }
+          .stage-scheme-bottom { grid-template-columns: 1fr; }
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
