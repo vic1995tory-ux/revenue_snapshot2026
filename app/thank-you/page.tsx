@@ -1,476 +1,446 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+
+const GIF_SRC = "/vicky_ticky_tavi_httpss.mj.runX8tiGZkFDLE_i_want_an_analogue__07099a01-3e02-4ea5-bb9d-70a6ff023a6a_2.gif";
+const IMAGE_SRC = "/hero.svg";
+
+type RevealStage = 0 | 1 | 2 | 3;
 
 export default function ThankYouPage() {
   const router = useRouter();
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isTabActive, setIsTabActive] = useState(true);
+  const [revealStage, setRevealStage] = useState<RevealStage>(0);
+  const [isActivated, setIsActivated] = useState(false);
+  const [overlayLifted, setOverlayLifted] = useState(false);
 
-  const nextUrl = "/cabinet-login";
+  useEffect(() => {
+    const handleVisibility = () => {
+      setIsTabActive(document.visibilityState === "visible");
+    };
 
-  const handleGoToCabinet = () => {
-    if (isTransitioning) return;
+    handleVisibility();
+    document.addEventListener("visibilitychange", handleVisibility);
 
-    setIsTransitioning(true);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
 
-    window.setTimeout(() => {
-      router.push(nextUrl);
-    }, 1800);
+  useEffect(() => {
+    if (!isTabActive) return;
+
+    let t1: ReturnType<typeof setTimeout> | null = null;
+    let t2: ReturnType<typeof setTimeout> | null = null;
+    let t3: ReturnType<typeof setTimeout> | null = null;
+
+    if (revealStage < 1) t1 = setTimeout(() => setRevealStage(1), 250);
+    if (revealStage < 2) t2 = setTimeout(() => setRevealStage(2), 950);
+    if (revealStage < 3) t3 = setTimeout(() => setRevealStage(3), 1750);
+
+    return () => {
+      if (t1) clearTimeout(t1);
+      if (t2) clearTimeout(t2);
+      if (t3) clearTimeout(t3);
+    };
+  }, [isTabActive, revealStage]);
+
+  const mediaBackground = useMemo(() => {
+    return `url('${isActivated ? GIF_SRC : IMAGE_SRC}')`;
+  }, [isActivated]);
+
+  const handleEnterCabinet = () => {
+    setIsActivated(true);
+    setOverlayLifted(true);
+
+    setTimeout(() => {
+      router.push("/cabinet-login");
+    }, 1400);
   };
 
   return (
-    <main className="thankyou-page">
-      <div className="thankyou-background" aria-hidden="true">
-        <div className="aurora aurora-1" />
-        <div className="aurora aurora-2" />
-        <div className="aurora aurora-3" />
-        <div className="aurora aurora-4" />
-        <div className="vignette" />
-      </div>
-
-      <section className="thankyou-shell">
-        <div className="thankyou-card">
-          <div className="thankyou-visual">
-            <img src="/hero.svg" alt="Growth Avenue" className="thankyou-hero" />
+    <main className="ga-thankyou-page">
+      <div className="ga-thankyou-shell">
+        <section className="ga-media-card">
+          <div
+            className={`ga-media-surface ${isActivated ? "is-activated" : ""}`}
+            style={{ backgroundImage: mediaBackground }}
+            aria-hidden="true"
+          >
+            <div className={`ga-media-overlay ${overlayLifted ? "is-lifted" : ""}`} />
           </div>
+        </section>
 
-          <div className="thankyou-content">
-            <div className="thankyou-kicker">Payment confirmed</div>
+        <section className="ga-copy-card">
+          <div
+            className="ga-copy-bg"
+            style={{ backgroundImage: mediaBackground }}
+            aria-hidden="true"
+          />
+          <div className={`ga-copy-overlay ${overlayLifted ? "is-lifted" : ""}`} />
 
-            <h1 className="thankyou-title">Добро пожаловать!</h1>
+          <div className="ga-copy-content">
+            <div className={`ga-kicker cinematic-line ${revealStage >= 1 ? "is-visible" : ""}`}>
+              Payment confirmed
+            </div>
 
-            <div className="thankyou-text">
-              <p>
-                Добро пожаловать в экосистему growth.avenue!
-              </p>
+            <h1 className={`ga-title cinematic-line ${revealStage >= 1 ? "is-visible" : ""}`}>
+              Добро пожаловать
+            </h1>
 
+            <h2 className={`ga-subtitle cinematic-line ${revealStage >= 2 ? "is-visible" : ""}`}>
+              в экосистему growth<span className="ga-dot">.</span>avenue
+            </h2>
+
+            <div className={`ga-copy-block cinematic-line ${revealStage >= 3 ? "is-visible" : ""}`}>
               <p>
                 Здесь вы найдете инструменты, которые дают возможности для
                 контролируемого роста бизнеса и объективной оценки текущих
                 возможностей.
               </p>
 
-              <div className="thankyou-list-block">
-                <div className="thankyou-list-title">В разработке находятся:</div>
+              <div className="ga-list-box">
+                <div className="ga-list-title">В разработке находятся:</div>
 
-                <ul className="thankyou-list">
-                  <li>
-                    Маркетинговый Календарь
-                    <span className="thankyou-note">
-                      * релиз планируется на июнь 2026
-                    </span>
-                  </li>
-                  <li>
-                    Трекер стратегии
-                    <span className="thankyou-note">
-                      * релиз планируется на конец лета 2026
-                    </span>
-                  </li>
-                  <li>
-                    Конструктор фин. модели
-                    <span className="thankyou-note">
-                      * релиз планируется на конец лета 2026
-                    </span>
-                  </li>
-                </ul>
+                <div className="ga-list-item">
+                  <div className="ga-list-name">Маркетинговый Календарь</div>
+                  <div className="ga-list-note">* релиз планируется на июнь 2026</div>
+                </div>
+
+                <div className="ga-list-item">
+                  <div className="ga-list-name">Трекер стратегии</div>
+                  <div className="ga-list-note">* релиз планируется на конец лета 2026</div>
+                </div>
+
+                <div className="ga-list-item">
+                  <div className="ga-list-name">Конструктор фин. модели</div>
+                  <div className="ga-list-note">* релиз планируется на конец лета 2026</div>
+                </div>
               </div>
 
-              <p className="thankyou-accent">
+              <p className="ga-final-note">
                 У вас будет возможность попробовать их бесплатно!
               </p>
             </div>
 
-            <div className="thankyou-actions">
+            <div className={`ga-actions cinematic-line ${revealStage >= 3 ? "is-visible" : ""}`}>
               <button
                 type="button"
-                className="thankyou-btn"
-                onClick={handleGoToCabinet}
-                disabled={isTransitioning}
+                className="ga-primary-btn"
+                onClick={handleEnterCabinet}
               >
                 Перейти в Личный кабинет
               </button>
             </div>
           </div>
-        </div>
-      </section>
-
-      {isTransitioning && (
-        <div className="gif-overlay" role="dialog" aria-modal="true" aria-label="Переход в личный кабинет">
-          <div className="gif-overlay-backdrop" />
-          <div className="gif-overlay-content">
-            <img
-              src="/vicky_ticky_tavi_httpss.mj.runX8tiGZkFDLE_i_want_an_analogue__07099a01-3e02-4ea5-bb9d-70a6ff023a6a_2.gif"
-              alt="Loading transition"
-              className="gif-overlay-image"
-            />
-          </div>
-        </div>
-      )}
+        </section>
+      </div>
 
       <style jsx global>{`
-        html,
-        body {
-          background: #0a1526;
-        }
-
-        .thankyou-page {
-          position: relative;
-          min-height: 100vh;
-          overflow: hidden;
-          background: #0a1526;
-          color: #fefefe;
-        }
-
-        .thankyou-background {
-          pointer-events: none;
-          position: fixed;
-          inset: 0;
-          z-index: 0;
-          background:
-            radial-gradient(circle at 18% 22%, rgba(112, 134, 255, 0.12), transparent 26%),
-            radial-gradient(circle at 82% 18%, rgba(255, 255, 255, 0.05), transparent 22%),
-            radial-gradient(circle at 62% 70%, rgba(135, 97, 255, 0.08), transparent 22%),
-            linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
-          background-size: 140% 140%;
-          animation: pageAmbient 26s ease-in-out infinite alternate;
-        }
-
-        .aurora {
-          position: absolute;
-          border-radius: 999px;
-          filter: blur(110px);
-          opacity: 0.26;
-        }
-
-        .aurora-1 {
-          width: 380px;
-          height: 380px;
-          left: -80px;
-          top: 40px;
-          background: rgba(80, 127, 255, 0.22);
-        }
-
-        .aurora-2 {
-          width: 300px;
-          height: 300px;
-          right: 5%;
-          top: 80px;
-          background: rgba(247, 210, 55, 0.12);
-        }
-
-        .aurora-3 {
-          width: 360px;
-          height: 360px;
-          left: 26%;
-          top: 36%;
-          background: rgba(88, 114, 255, 0.16);
-        }
-
-        .aurora-4 {
-          width: 300px;
-          height: 300px;
-          right: 10%;
-          bottom: 12%;
-          background: rgba(255, 255, 255, 0.08);
-        }
-
-        .vignette {
-          position: absolute;
-          inset: 0;
-          background: radial-gradient(
-            circle at center,
-            transparent 42%,
-            rgba(10, 21, 38, 0.24) 72%,
-            rgba(10, 21, 38, 0.74) 100%
-          );
-        }
-
-        .thankyou-shell {
-          position: relative;
-          z-index: 2;
+        .ga-thankyou-page {
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 48px 20px;
+          padding: 28px;
+          background:
+            radial-gradient(circle at 18% 22%, rgba(84, 122, 219, 0.16), transparent 24%),
+            radial-gradient(circle at 82% 12%, rgba(247, 210, 55, 0.08), transparent 18%),
+            linear-gradient(180deg, #061327 0%, #081a35 45%, #07162d 100%);
+          overflow: hidden;
         }
 
-        .thankyou-card {
-          width: min(1240px, 100%);
+        .ga-thankyou-shell {
+          width: min(1380px, 100%);
           display: grid;
           grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
           gap: 26px;
           align-items: stretch;
         }
 
-        .thankyou-visual,
-        .thankyou-content {
+        .ga-media-card,
+        .ga-copy-card {
           position: relative;
-          border-radius: 32px;
+          min-height: 820px;
+          border-radius: 34px;
           overflow: hidden;
-          background: linear-gradient(
-            180deg,
-            rgba(224, 225, 227, 0.08) 0%,
-            rgba(224, 225, 227, 0.04) 100%
-          );
-          border: 1px solid rgba(214, 220, 232, 0.14);
+          background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
+          border: 1px solid rgba(255,255,255,0.12);
           box-shadow:
-            inset 0 1px 0 rgba(255, 255, 255, 0.14),
-            inset 0 -1px 0 rgba(255, 255, 255, 0.025),
-            0 18px 44px rgba(0, 0, 0, 0.16);
-          backdrop-filter: blur(42px) saturate(155%);
-          -webkit-backdrop-filter: blur(42px) saturate(155%);
+            inset 0 1px 0 rgba(255,255,255,0.06),
+            0 24px 70px rgba(0,0,0,0.28);
         }
 
-        .thankyou-visual {
-          min-height: 680px;
+        .ga-media-card {
           padding: 22px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
         }
 
-        .thankyou-hero {
+        .ga-media-surface {
+          position: relative;
           width: 100%;
           height: 100%;
-          max-height: 636px;
-          object-fit: cover;
-          object-position: center;
-          border-radius: 24px;
-          display: block;
+          min-height: 776px;
+          border-radius: 30px;
+          overflow: hidden;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          background-color: #020812;
         }
 
-        .thankyou-content {
-          padding: 34px 30px;
+        .ga-media-overlay,
+        .ga-copy-overlay {
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(180deg, rgba(2,8,18,0.74) 0%, rgba(2,8,18,0.66) 32%, rgba(2,8,18,0.46) 100%);
+          transition: opacity 1.1s ease;
+          pointer-events: none;
+        }
+
+        .ga-media-overlay.is-lifted,
+        .ga-copy-overlay.is-lifted {
+          opacity: 0.16;
+        }
+
+        .ga-copy-card {
+          isolation: isolate;
+        }
+
+        .ga-copy-bg {
+          position: absolute;
+          inset: 0;
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+          opacity: 0.4;
+          transform: scale(1.08);
+        }
+
+        .ga-copy-content {
+          position: relative;
+          z-index: 2;
+          height: 100%;
+          padding: 38px 34px 34px;
           display: flex;
           flex-direction: column;
-          justify-content: center;
         }
 
-        .thankyou-kicker {
-          margin-bottom: 12px;
+        .ga-kicker {
           color: #f7d237;
-          font-size: 14px;
+          font-size: 15px;
           font-weight: 700;
-          line-height: 1.05;
-          letter-spacing: -0.03em;
-        }
-
-        .thankyou-title {
-          margin: 0;
-          font-size: clamp(42px, 5vw, 72px);
-          line-height: 0.94;
-          letter-spacing: -0.06em;
-          font-weight: 700;
-          color: #ffffff;
-        }
-
-        .thankyou-text {
-          margin-top: 24px;
-          color: rgba(255, 255, 255, 0.76);
-          font-size: 18px;
-          line-height: 1.6;
-        }
-
-        .thankyou-text p {
-          margin: 0 0 16px;
-        }
-
-        .thankyou-list-block {
-          margin: 22px 0 12px;
-          padding: 18px 18px 16px;
-          border-radius: 22px;
-          background: rgba(255, 255, 255, 0.045);
-          border: 1px solid rgba(255, 255, 255, 0.09);
-        }
-
-        .thankyou-list-title {
-          margin-bottom: 12px;
-          color: #ffffff;
-          font-size: 18px;
-          font-weight: 700;
+          line-height: 1;
           letter-spacing: -0.02em;
         }
 
-        .thankyou-list {
-          margin: 0;
-          padding-left: 20px;
+        .ga-title {
+          margin: 22px 0 0;
+          color: rgba(255,255,255,0.92);
+          font-size: clamp(64px, 7vw, 94px);
+          line-height: 0.92;
+          letter-spacing: -0.07em;
+          font-weight: 700;
+          max-width: 560px;
         }
 
-        .thankyou-list li {
-          margin: 0 0 12px;
-          color: rgba(255, 255, 255, 0.84);
+        .ga-subtitle {
+          margin: 18px 0 0;
+          color: rgba(255,255,255,0.88);
+          font-size: clamp(28px, 2.6vw, 38px);
+          line-height: 1;
+          letter-spacing: -0.05em;
+          font-weight: 500;
         }
 
-        .thankyou-list li:last-child {
-          margin-bottom: 0;
-        }
-
-        .thankyou-note {
-          display: block;
-          margin-top: 4px;
+        .ga-dot {
+          display: inline-block;
           color: #f7d237;
-          font-size: 14px;
-          line-height: 1.45;
+          text-shadow: 0 0 18px rgba(247,210,55,0.65);
+          animation: gaBlinkDot 1.8s ease-in-out infinite;
         }
 
-        .thankyou-accent {
-          color: #ffffff;
+        .ga-copy-block {
+          margin-top: 28px;
+          max-width: 620px;
+          color: rgba(255,255,255,0.72);
+          font-size: 17px;
+          line-height: 1.7;
+        }
+
+        .ga-copy-block p {
+          margin: 0 0 18px;
+        }
+
+        .ga-list-box {
+          margin: 18px 0 18px;
+          padding: 22px 20px;
+          border-radius: 26px;
+          background: rgba(255,255,255,0.03);
+          border: 1px solid rgba(255,255,255,0.08);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        }
+
+        .ga-list-title {
+          margin-bottom: 18px;
+          color: rgba(255,255,255,0.84);
+          font-size: 20px;
+          line-height: 1.1;
+          font-weight: 700;
+        }
+
+        .ga-list-item + .ga-list-item {
+          margin-top: 16px;
+        }
+
+        .ga-list-name {
+          color: rgba(255,255,255,0.78);
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 500;
+        }
+
+        .ga-list-note {
+          margin-top: 6px;
+          color: rgba(247,210,55,0.84);
+          font-size: 14px;
+          line-height: 1.35;
+        }
+
+        .ga-final-note {
+          color: rgba(255,255,255,0.88);
+          font-size: 18px;
+          line-height: 1.45;
           font-weight: 600;
         }
 
-        .thankyou-actions {
-          margin-top: 14px;
+        .ga-actions {
+          margin-top: auto;
+          padding-top: 18px;
         }
 
-        .thankyou-btn {
-          position: relative;
-          overflow: hidden;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          min-height: 50px;
+        .ga-primary-btn {
+          min-width: 270px;
+          min-height: 58px;
+          padding: 0 24px;
+          border: 0;
           border-radius: 999px;
-          padding: 0 22px;
-          border: 1px solid rgba(255, 255, 255, 0.16);
-          color: #ffffff;
-          font-size: 14px;
-          font-weight: 700;
           cursor: pointer;
-          background: linear-gradient(
-            90deg,
-            #47b6f6 0%,
-            #5da7ff 22%,
-            #7c84ff 48%,
-            #9c6dff 72%,
-            #c25cf3 100%
-          );
-          background-size: 220% 220%;
-          box-shadow:
-            0 10px 30px rgba(71, 96, 255, 0.22),
-            inset 0 1px 0 rgba(255, 255, 255, 0.18);
-          animation: tgGradientFlow 6s ease-in-out infinite;
-          transition: transform 0.2s ease, opacity 0.2s ease;
+          color: #ffffff;
+          font-size: 18px;
+          font-weight: 700;
+          background: linear-gradient(90deg, #47b6f6 0%, #6f8cff 52%, #c25cf3 100%);
+          box-shadow: 0 18px 34px rgba(97, 98, 255, 0.24);
+          transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.22s ease;
         }
 
-        .thankyou-btn:hover {
+        .ga-primary-btn:hover {
           transform: translateY(-1px);
+          box-shadow: 0 22px 42px rgba(97, 98, 255, 0.32);
         }
 
-        .thankyou-btn:disabled {
-          opacity: 0.7;
-          cursor: default;
+        .cinematic-line {
+          opacity: 0;
+          transform: translateY(18px);
+          filter: blur(10px);
+          transition:
+            opacity 0.8s ease,
+            transform 0.8s ease,
+            filter 0.8s ease;
         }
 
-        .gif-overlay {
-          position: fixed;
-          inset: 0;
-          z-index: 140;
-          display: grid;
-          place-items: center;
-          padding: 20px;
+        .cinematic-line.is-visible {
+          opacity: 1;
+          transform: translateY(0);
+          filter: blur(0);
         }
 
-        .gif-overlay-backdrop {
-          position: absolute;
-          inset: 0;
-          background: rgba(3, 10, 22, 0.86);
-          backdrop-filter: blur(14px);
-          -webkit-backdrop-filter: blur(14px);
+        @keyframes gaBlinkDot {
+          0% { opacity: 0.45; transform: scale(0.92); }
+          50% { opacity: 1; transform: scale(1.08); }
+          100% { opacity: 0.45; transform: scale(0.92); }
         }
 
-        .gif-overlay-content {
-          position: relative;
-          z-index: 1;
-          width: min(640px, 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .gif-overlay-image {
-          width: 100%;
-          max-width: 520px;
-          height: auto;
-          display: block;
-          border-radius: 28px;
-          border: 1px solid rgba(255, 255, 255, 0.14);
-          box-shadow:
-            0 30px 80px rgba(0, 0, 0, 0.34),
-            inset 0 1px 0 rgba(255, 255, 255, 0.08);
-          background: rgba(11, 20, 38, 0.92);
-        }
-
-        @keyframes pageAmbient {
-          0% {
-            transform: translate3d(0, 0, 0) scale(1);
-            filter: hue-rotate(0deg);
-          }
-          50% {
-            transform: translate3d(0, 0, 0) scale(1.05);
-            filter: hue-rotate(4deg);
-          }
-          100% {
-            transform: translate3d(0, 0, 0) scale(1.02);
-            filter: hue-rotate(-4deg);
-          }
-        }
-
-        @keyframes tgGradientFlow {
-          0% {
-            background-position: 0% 50%;
-          }
-          50% {
-            background-position: 100% 50%;
-          }
-          100% {
-            background-position: 0% 50%;
-          }
-        }
-
-        @media (max-width: 1080px) {
-          .thankyou-card {
+        @media (max-width: 1180px) {
+          .ga-thankyou-shell {
             grid-template-columns: 1fr;
           }
 
-          .thankyou-visual {
-            min-height: 360px;
+          .ga-media-card,
+          .ga-copy-card {
+            min-height: auto;
           }
 
-          .thankyou-hero {
-            max-height: 420px;
+          .ga-media-surface {
+            min-height: 420px;
+          }
+
+          .ga-copy-content {
+            min-height: 620px;
           }
         }
 
-        @media (max-width: 640px) {
-          .thankyou-shell {
-            padding: 24px 14px;
+        @media (max-width: 767px) {
+          .ga-thankyou-page {
+            padding: 16px;
           }
 
-          .thankyou-content {
-            padding: 24px 18px;
+          .ga-media-card {
+            padding: 14px;
           }
 
-          .thankyou-text {
+          .ga-media-surface {
+            min-height: 300px;
+            border-radius: 22px;
+          }
+
+          .ga-copy-card {
+            border-radius: 24px;
+          }
+
+          .ga-copy-content {
+            padding: 24px 20px 24px;
+            min-height: auto;
+          }
+
+          .ga-title {
+            font-size: clamp(46px, 15vw, 68px);
+            max-width: none;
+          }
+
+          .ga-subtitle {
+            font-size: 24px;
+            line-height: 1.08;
+          }
+
+          .ga-copy-block {
+            font-size: 15px;
+            line-height: 1.6;
+          }
+
+          .ga-list-box {
+            padding: 16px 14px;
+            border-radius: 20px;
+          }
+
+          .ga-list-title {
+            font-size: 17px;
+          }
+
+          .ga-list-name {
             font-size: 16px;
           }
 
-          .thankyou-list-title {
-            font-size: 16px;
-          }
-
-          .thankyou-note {
+          .ga-list-note {
             font-size: 13px;
           }
 
-          .thankyou-btn {
+          .ga-primary-btn {
             width: 100%;
-          }
-
-          .gif-overlay-image {
-            max-width: 100%;
-            border-radius: 22px;
+            min-width: 0;
+            min-height: 54px;
+            font-size: 16px;
           }
         }
       `}</style>
