@@ -3159,14 +3159,54 @@ AI не придумывает выводы произвольно — он ра
           position: relative;
           z-index: 2;
         }
-        .start-card-overlay {
-          position: absolute;
-          inset: 0;
-          display: block;
-          padding: 0;
-          background: none;
-          pointer-events: none;
-        }
+.start-card-overlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  padding: 0;
+  background: none;
+  pointer-events: none;
+  z-index: 4;
+}
+.start-card-price-float {
+  position: absolute;
+  top: var(--price-top, auto);
+  right: var(--price-right, auto);
+  bottom: var(--price-bottom, auto);
+  left: var(--price-left, auto);
+  font-size: clamp(52px, 4.3vw, 92px);
+  line-height: .92;
+  letter-spacing: -.06em;
+  font-weight: 700;
+  text-shadow: 0 10px 28px rgba(0,0,0,.22);
+  z-index: 5;
+}
+
+.start-card-btn {
+  position: absolute;
+  top: var(--button-top, auto);
+  right: var(--button-right, auto);
+  bottom: var(--button-bottom, auto);
+  left: var(--button-left, auto);
+  width: var(--button-width, auto);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,.16);
+  background: linear-gradient(90deg, #47b6f6 0%, #5da7ff 22%, #7c84ff 48%, #9c6dff 72%, #c25cf3 100%);
+  background-size: 220% 220%;
+  box-shadow: 0 10px 30px rgba(71,96,255,.22), inset 0 1px 0 rgba(255,255,255,.18);
+  animation: none;
+  pointer-events: auto;
+  white-space: nowrap;
+  z-index: 5;
+}
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
           position: absolute;
