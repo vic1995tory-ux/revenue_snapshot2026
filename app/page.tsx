@@ -3275,12 +3275,14 @@ AI не придумывает выводы произвольно — он ра
           padding: 0;
           background: none;
           pointer-events: none;
+          z-index: 4;
         }
         .start-card-status-dot { display: none; }
         .start-card-bottom-simple {
           position: absolute;
           inset: 0;
           display: block;
+          z-index: 5;
         }
         .start-card-title-chip { display: none; }
         .start-card-price-float {
@@ -3289,6 +3291,8 @@ AI не придумывает выводы произвольно — он ра
           right: var(--price-right, auto);
           bottom: var(--price-bottom, auto);
           left: var(--price-left, auto);
+          z-index: 6;
+          color: #ffffff;
           font-size: clamp(52px, 4.3vw, 92px);
           line-height: .92;
           letter-spacing: -.06em;
@@ -3302,6 +3306,8 @@ AI не придумывает выводы произвольно — он ра
           bottom: var(--button-bottom, auto);
           left: var(--button-left, auto);
           width: var(--button-width, auto);
+          z-index: 6;
+          pointer-events: auto;
           display: inline-flex;
           align-items: center;
           justify-content: center;
