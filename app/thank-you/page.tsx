@@ -1,233 +1,254 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-const GIF_SRC = "/vicky_ticky_tavi_httpss.mj.runX8tiGZkFDLE_i_want_an_analogue__07099a01-3e02-4ea5-bb9d-70a6ff023a6a_2.gif";
-const IMAGE_SRC = "/hero.svg";
-
-type RevealStage = 0 | 1 | 2 | 3;
+const GIF_SRC =
+  "/vicky_ticky_tavi_httpss.mj.runX8tiGZkFDLE_i_want_an_analogue__07099a01-3e02-4ea5-bb9d-70a6ff023a6a_2.gif";
+const BG_SRC = "/hero.svg";
 
 export default function ThankYouPage() {
   const router = useRouter();
-  const [isTabActive, setIsTabActive] = useState(true);
-  const [revealStage, setRevealStage] = useState<RevealStage>(0);
-  const [isActivated, setIsActivated] = useState(false);
-  const [overlayLifted, setOverlayLifted] = useState(false);
-
-  useEffect(() => {
-    const handleVisibility = () => {
-      setIsTabActive(document.visibilityState === "visible");
-    };
-
-    handleVisibility();
-    document.addEventListener("visibilitychange", handleVisibility);
-
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibility);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isTabActive) return;
-
-    let t1: ReturnType<typeof setTimeout> | null = null;
-    let t2: ReturnType<typeof setTimeout> | null = null;
-    let t3: ReturnType<typeof setTimeout> | null = null;
-
-    if (revealStage < 1) t1 = setTimeout(() => setRevealStage(1), 250);
-    if (revealStage < 2) t2 = setTimeout(() => setRevealStage(2), 950);
-    if (revealStage < 3) t3 = setTimeout(() => setRevealStage(3), 1750);
-
-    return () => {
-      if (t1) clearTimeout(t1);
-      if (t2) clearTimeout(t2);
-      if (t3) clearTimeout(t3);
-    };
-  }, [isTabActive, revealStage]);
-
-  const mediaBackground = useMemo(() => {
-    return `url('${isActivated ? GIF_SRC : IMAGE_SRC}')`;
-  }, [isActivated]);
+  const [isTransitioning, setIsTransitioning] = useState(false);
 
   const handleEnterCabinet = () => {
-    setIsActivated(true);
-    setOverlayLifted(true);
+    if (isTransitioning) return;
 
-    setTimeout(() => {
+    setIsTransitioning(true);
+
+    window.setTimeout(() => {
       router.push("/cabinet-login");
-    }, 1400);
+    }, 1500);
   };
 
   return (
     <main className="ga-thankyou-page">
-      <div className="ga-thankyou-shell">
-        <section className="ga-media-card">
-          <div
-            className={`ga-media-surface ${isActivated ? "is-activated" : ""}`}
-            style={{ backgroundImage: mediaBackground }}
-            aria-hidden="true"
-          >
-            <div className={`ga-media-overlay ${overlayLifted ? "is-lifted" : ""}`} />
-          </div>
-        </section>
+      <div className="ga-thankyou-bg" aria-hidden="true">
+        <div className="ga-aurora ga-aurora-1" />
+        <div className="ga-aurora ga-aurora-2" />
+        <div className="ga-vignette" />
+      </div>
 
-        <section className="ga-copy-card">
+      <section className="ga-thankyou-shell">
+        <div className="ga-thankyou-card">
           <div
-            className="ga-copy-bg"
-            style={{ backgroundImage: mediaBackground }}
+            className={`ga-card-media ${isTransitioning ? "is-transitioning" : ""}`}
+            style={{ backgroundImage: `url("${isTransitioning ? GIF_SRC : BG_SRC}")` }}
             aria-hidden="true"
           />
-          <div className={`ga-copy-overlay ${overlayLifted ? "is-lifted" : ""}`} />
 
-          <div className="ga-copy-content">
-            <div className={`ga-kicker cinematic-line ${revealStage >= 1 ? "is-visible" : ""}`}>
-              Payment confirmed
+          <div className={`ga-card-overlay ${isTransitioning ? "is-lifted" : ""}`} />
+
+          <div className="ga-card-content">
+            <div className="ga-kicker">
+              <span className="ga-kicker-dot" />
+              <span>Payment confirmed</span>
             </div>
 
-            <h1 className={`ga-title cinematic-line ${revealStage >= 1 ? "is-visible" : ""}`}>
-              Добро пожаловать
-            </h1>
+            <h1 className="ga-title">Добро пожаловать</h1>
 
-            <h2 className={`ga-subtitle cinematic-line ${revealStage >= 2 ? "is-visible" : ""}`}>
-              в экосистему growth<span className="ga-dot">.</span>avenue
-            </h2>
+            <div className="ga-subtitle">
+              в экосистему growth<span className="ga-brand-dot" />avenue
+            </div>
 
-            <div className={`ga-copy-block cinematic-line ${revealStage >= 3 ? "is-visible" : ""}`}>
-              <p>
-                Здесь вы найдете инструменты, которые дают возможности для
-                контролируемого роста бизнеса и объективной оценки текущих
-                возможностей.
-              </p>
+            <p className="ga-copy">
+              Здесь вы найдете инструменты, которые дают возможности для
+              контролируемого роста бизнеса и объективной оценки текущих
+              возможностей.
+            </p>
 
-              <div className="ga-list-box">
-                <div className="ga-list-title">В разработке находятся:</div>
-
-                <div className="ga-list-item">
-                  <div className="ga-list-name">Маркетинговый Календарь</div>
-                  <div className="ga-list-note">* релиз планируется на июнь 2026</div>
+            <div className="ga-products">
+              <div className="ga-product-row ga-product-row-active">
+                <div className="ga-product-main">
+                  <div className="ga-product-name">Revenue Snapshot</div>
                 </div>
-
-                <div className="ga-list-item">
-                  <div className="ga-list-name">Трекер стратегии</div>
-                  <div className="ga-list-note">* релиз планируется на конец лета 2026</div>
-                </div>
-
-                <div className="ga-list-item">
-                  <div className="ga-list-name">Конструктор фин. модели</div>
-                  <div className="ga-list-note">* релиз планируется на конец лета 2026</div>
+                <div className="ga-product-tags">
+                  <span className="ga-tag ga-tag-active">Active</span>
                 </div>
               </div>
 
-              <p className="ga-final-note">
-                У вас будет возможность попробовать их бесплатно!
-              </p>
+              <div className="ga-product-row">
+                <div className="ga-product-main">
+                  <div className="ga-product-name">Marketing Calendar</div>
+                </div>
+                <div className="ga-product-tags">
+                  <span className="ga-tag ga-tag-upcoming">Upcoming</span>
+                  <span className="ga-tag ga-tag-release">release JUNE 2026</span>
+                </div>
+              </div>
+
+              <div className="ga-product-row">
+                <div className="ga-product-main">
+                  <div className="ga-product-name">Strategy Tracker</div>
+                </div>
+                <div className="ga-product-tags">
+                  <span className="ga-tag ga-tag-upcoming">Upcoming</span>
+                  <span className="ga-tag ga-tag-release">release AUG 2026</span>
+                </div>
+              </div>
+
+              <div className="ga-product-row">
+                <div className="ga-product-main">
+                  <div className="ga-product-name">Fin Model Forecaster</div>
+                </div>
+                <div className="ga-product-tags">
+                  <span className="ga-tag ga-tag-upcoming">Upcoming</span>
+                  <span className="ga-tag ga-tag-release">release AUG-SEP 2026</span>
+                </div>
+              </div>
             </div>
 
-            <div className={`ga-actions cinematic-line ${revealStage >= 3 ? "is-visible" : ""}`}>
+            <p className="ga-final-note">
+              У вас будет возможность попробовать их бесплатно!
+            </p>
+
+            <div className="ga-actions">
               <button
                 type="button"
                 className="ga-primary-btn"
                 onClick={handleEnterCabinet}
+                disabled={isTransitioning}
               >
                 Перейти в Личный кабинет
               </button>
             </div>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
+
+      {isTransitioning && (
+        <div
+          className="ga-gif-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Переход в личный кабинет"
+        >
+          <div className="ga-gif-backdrop" />
+          <div className="ga-gif-content">
+            <img src={GIF_SRC} alt="Transition" className="ga-gif-image" />
+          </div>
+        </div>
+      )}
 
       <style jsx global>{`
         .ga-thankyou-page {
+          position: relative;
+          min-height: 100vh;
+          overflow: hidden;
+          background: #07162d;
+          color: #fefefe;
+        }
+
+        .ga-thankyou-bg {
+          position: fixed;
+          inset: 0;
+          z-index: 0;
+          pointer-events: none;
+          background:
+            radial-gradient(circle at 18% 22%, rgba(84, 122, 219, 0.16), transparent 24%),
+            radial-gradient(circle at 82% 12%, rgba(247, 210, 55, 0.08), transparent 18%),
+            linear-gradient(180deg, #061327 0%, #081a35 45%, #07162d 100%);
+        }
+
+        .ga-aurora {
+          position: absolute;
+          border-radius: 999px;
+          filter: blur(120px);
+          opacity: 0.24;
+        }
+
+        .ga-aurora-1 {
+          width: 360px;
+          height: 360px;
+          left: -60px;
+          top: 40px;
+          background: rgba(88, 114, 255, 0.22);
+        }
+
+        .ga-aurora-2 {
+          width: 320px;
+          height: 320px;
+          right: 4%;
+          top: 8%;
+          background: rgba(247, 210, 55, 0.12);
+        }
+
+        .ga-vignette {
+          position: absolute;
+          inset: 0;
+          background: radial-gradient(
+            circle at center,
+            transparent 42%,
+            rgba(10, 21, 38, 0.18) 72%,
+            rgba(10, 21, 38, 0.56) 100%
+          );
+        }
+
+        .ga-thankyou-shell {
+          position: relative;
+          z-index: 2;
           min-height: 100vh;
           display: flex;
           align-items: center;
           justify-content: center;
           padding: 28px;
-          background:
-            radial-gradient(circle at 18% 22%, rgba(84, 122, 219, 0.16), transparent 24%),
-            radial-gradient(circle at 82% 12%, rgba(247, 210, 55, 0.08), transparent 18%),
-            linear-gradient(180deg, #061327 0%, #081a35 45%, #07162d 100%);
-          overflow: hidden;
         }
 
-        .ga-thankyou-shell {
-          width: min(1380px, 100%);
-          display: grid;
-          grid-template-columns: minmax(0, 1.02fr) minmax(0, 0.98fr);
-          gap: 26px;
-          align-items: stretch;
-        }
-
-        .ga-media-card,
-        .ga-copy-card {
+        .ga-thankyou-card {
           position: relative;
-          min-height: 820px;
+          width: min(1120px, 100%);
+          min-height: 860px;
           border-radius: 34px;
           overflow: hidden;
-          background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.015));
-          border: 1px solid rgba(255,255,255,0.12);
+          background: linear-gradient(
+            180deg,
+            rgba(255, 255, 255, 0.03),
+            rgba(255, 255, 255, 0.015)
+          );
+          border: 1px solid rgba(255, 255, 255, 0.12);
           box-shadow:
-            inset 0 1px 0 rgba(255,255,255,0.06),
-            0 24px 70px rgba(0,0,0,0.28);
+            inset 0 1px 0 rgba(255, 255, 255, 0.06),
+            0 24px 70px rgba(0, 0, 0, 0.28);
         }
 
-        .ga-media-card {
-          padding: 22px;
-        }
-
-        .ga-media-surface {
-          position: relative;
-          width: 100%;
-          height: 100%;
-          min-height: 776px;
-          border-radius: 30px;
-          overflow: hidden;
+        .ga-card-media {
+          position: absolute;
+          inset: 0;
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
-          background-color: #020812;
+          transform: scale(1.03);
+          transition: opacity 0.5s ease, transform 0.5s ease;
         }
 
-        .ga-media-overlay,
-        .ga-copy-overlay {
+        .ga-card-media.is-transitioning {
+          transform: scale(1.01);
+        }
+
+        .ga-card-overlay {
           position: absolute;
           inset: 0;
           background:
-            linear-gradient(180deg, rgba(2,8,18,0.74) 0%, rgba(2,8,18,0.66) 32%, rgba(2,8,18,0.46) 100%);
-          transition: opacity 1.1s ease;
-          pointer-events: none;
+            linear-gradient(180deg, rgba(2, 8, 18, 0.72) 0%, rgba(2, 8, 18, 0.6) 30%, rgba(2, 8, 18, 0.38) 100%),
+            linear-gradient(90deg, rgba(2, 8, 18, 0.55) 0%, rgba(2, 8, 18, 0.18) 100%);
+          transition: opacity 0.9s ease;
         }
 
-        .ga-media-overlay.is-lifted,
-        .ga-copy-overlay.is-lifted {
-          opacity: 0.16;
+        .ga-card-overlay.is-lifted {
+          opacity: 0.18;
         }
 
-        .ga-copy-card {
-          isolation: isolate;
-        }
-
-        .ga-copy-bg {
-          position: absolute;
-          inset: 0;
-          background-size: cover;
-          background-position: center;
-          background-repeat: no-repeat;
-          opacity: 0.4;
-          transform: scale(1.08);
-        }
-
-        .ga-copy-content {
+        .ga-card-content {
           position: relative;
           z-index: 2;
-          height: 100%;
-          padding: 38px 34px 34px;
-          display: flex;
-          flex-direction: column;
+          width: min(760px, 100%);
+          padding: 42px 38px 38px;
         }
 
         .ga-kicker {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
           color: #f7d237;
           font-size: 15px;
           font-weight: 700;
@@ -235,95 +256,147 @@ export default function ThankYouPage() {
           letter-spacing: -0.02em;
         }
 
+        .ga-kicker-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 16px rgba(247, 210, 55, 0.7);
+          animation: gaBlinkSignal 1.8s ease-in-out infinite;
+          flex: none;
+        }
+
         .ga-title {
-          margin: 22px 0 0;
-          color: rgba(255,255,255,0.92);
-          font-size: clamp(64px, 7vw, 94px);
-          line-height: 0.92;
-          letter-spacing: -0.07em;
+          margin: 18px 0 0;
+          color: rgba(255, 255, 255, 0.94);
+          font-size: clamp(72px, 8vw, 104px);
+          line-height: 0.9;
+          letter-spacing: -0.075em;
           font-weight: 700;
-          max-width: 560px;
+          max-width: 680px;
         }
 
         .ga-subtitle {
-          margin: 18px 0 0;
-          color: rgba(255,255,255,0.88);
-          font-size: clamp(28px, 2.6vw, 38px);
-          line-height: 1;
+          margin-top: 18px;
+          color: rgba(255, 255, 255, 0.9);
+          font-size: clamp(30px, 2.7vw, 44px);
+          line-height: 1.02;
           letter-spacing: -0.05em;
           font-weight: 500;
         }
 
-        .ga-dot {
+        .ga-brand-dot {
           display: inline-block;
-          color: #f7d237;
-          text-shadow: 0 0 18px rgba(247,210,55,0.65);
-          animation: gaBlinkDot 1.8s ease-in-out infinite;
+          width: 0.34em;
+          height: 0.34em;
+          margin: 0 0.08em 0 0.02em;
+          border-radius: 999px;
+          background: #f7d237;
+          vertical-align: middle;
+          transform: translateY(-0.02em);
+          box-shadow: 0 0 16px rgba(247, 210, 55, 0.55);
         }
 
-        .ga-copy-block {
-          margin-top: 28px;
-          max-width: 620px;
-          color: rgba(255,255,255,0.72);
+        .ga-copy {
+          margin: 26px 0 0;
+          max-width: 650px;
+          color: rgba(255, 255, 255, 0.74);
           font-size: 17px;
           line-height: 1.7;
         }
 
-        .ga-copy-block p {
-          margin: 0 0 18px;
+        .ga-products {
+          margin-top: 24px;
+          display: grid;
+          gap: 14px;
+          max-width: 760px;
         }
 
-        .ga-list-box {
-          margin: 18px 0 18px;
-          padding: 22px 20px;
-          border-radius: 26px;
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.08);
-          box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+        .ga-product-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          padding: 18px 20px;
+          border-radius: 22px;
+          background: rgba(255, 255, 255, 0.04);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
 
-        .ga-list-title {
-          margin-bottom: 18px;
-          color: rgba(255,255,255,0.84);
-          font-size: 20px;
+        .ga-product-row-active {
+          background: rgba(247, 210, 55, 0.06);
+          border-color: rgba(247, 210, 55, 0.14);
+        }
+
+        .ga-product-main {
+          min-width: 0;
+        }
+
+        .ga-product-name {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 22px;
           line-height: 1.1;
+          letter-spacing: -0.03em;
+          font-weight: 600;
+        }
+
+        .ga-product-tags {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: flex-end;
+          gap: 8px;
+          flex-shrink: 0;
+        }
+
+        .ga-tag {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 32px;
+          padding: 0 12px;
+          border-radius: 999px;
+          font-size: 12px;
           font-weight: 700;
+          line-height: 1;
+          white-space: nowrap;
+          border: 1px solid transparent;
         }
 
-        .ga-list-item + .ga-list-item {
-          margin-top: 16px;
+        .ga-tag-active {
+          color: #081a35;
+          background: linear-gradient(135deg, rgba(247, 210, 55, 0.98), rgba(247, 210, 55, 0.88));
+          border-color: rgba(247, 210, 55, 0.24);
         }
 
-        .ga-list-name {
-          color: rgba(255,255,255,0.78);
-          font-size: 18px;
-          line-height: 1.2;
-          font-weight: 500;
+        .ga-tag-upcoming {
+          color: #ffffff;
+          background: rgba(124, 132, 255, 0.16);
+          border-color: rgba(124, 132, 255, 0.28);
         }
 
-        .ga-list-note {
-          margin-top: 6px;
-          color: rgba(247,210,55,0.84);
-          font-size: 14px;
-          line-height: 1.35;
+        .ga-tag-release {
+          color: #f7d237;
+          background: rgba(247, 210, 55, 0.08);
+          border-color: rgba(247, 210, 55, 0.18);
         }
 
         .ga-final-note {
-          color: rgba(255,255,255,0.88);
+          margin: 24px 0 0;
+          color: rgba(255, 255, 255, 0.9);
           font-size: 18px;
           line-height: 1.45;
           font-weight: 600;
         }
 
         .ga-actions {
-          margin-top: auto;
-          padding-top: 18px;
+          margin-top: 28px;
         }
 
         .ga-primary-btn {
-          min-width: 270px;
+          min-width: 320px;
           min-height: 58px;
-          padding: 0 24px;
+          padding: 0 26px;
           border: 0;
           border-radius: 999px;
           cursor: pointer;
@@ -340,100 +413,109 @@ export default function ThankYouPage() {
           box-shadow: 0 22px 42px rgba(97, 98, 255, 0.32);
         }
 
-        .cinematic-line {
-          opacity: 0;
-          transform: translateY(18px);
-          filter: blur(10px);
-          transition:
-            opacity 0.8s ease,
-            transform 0.8s ease,
-            filter 0.8s ease;
+        .ga-primary-btn:disabled {
+          opacity: 0.76;
+          cursor: default;
         }
 
-        .cinematic-line.is-visible {
-          opacity: 1;
-          transform: translateY(0);
-          filter: blur(0);
+        .ga-gif-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 140;
+          display: grid;
+          place-items: center;
+          padding: 20px;
         }
 
-        @keyframes gaBlinkDot {
-          0% { opacity: 0.45; transform: scale(0.92); }
-          50% { opacity: 1; transform: scale(1.08); }
-          100% { opacity: 0.45; transform: scale(0.92); }
+        .ga-gif-backdrop {
+          position: absolute;
+          inset: 0;
+          background: rgba(3, 10, 22, 0.86);
+          backdrop-filter: blur(14px);
+          -webkit-backdrop-filter: blur(14px);
         }
 
-        @media (max-width: 1180px) {
+        .ga-gif-content {
+          position: relative;
+          z-index: 1;
+          width: min(680px, 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .ga-gif-image {
+          width: 100%;
+          max-width: 560px;
+          height: auto;
+          display: block;
+          border-radius: 28px;
+          border: 1px solid rgba(255, 255, 255, 0.14);
+          box-shadow:
+            0 30px 80px rgba(0, 0, 0, 0.34),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+          background: rgba(11, 20, 38, 0.92);
+        }
+
+        @keyframes gaBlinkSignal {
+          0% {
+            opacity: 0.42;
+            transform: scale(0.92);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.08);
+          }
+          100% {
+            opacity: 0.42;
+            transform: scale(0.92);
+          }
+        }
+
+        @media (max-width: 900px) {
           .ga-thankyou-shell {
-            grid-template-columns: 1fr;
+            padding: 18px;
           }
 
-          .ga-media-card,
-          .ga-copy-card {
+          .ga-thankyou-card {
             min-height: auto;
           }
 
-          .ga-media-surface {
-            min-height: 420px;
-          }
-
-          .ga-copy-content {
-            min-height: 620px;
-          }
-        }
-
-        @media (max-width: 767px) {
-          .ga-thankyou-page {
-            padding: 16px;
-          }
-
-          .ga-media-card {
-            padding: 14px;
-          }
-
-          .ga-media-surface {
-            min-height: 300px;
-            border-radius: 22px;
-          }
-
-          .ga-copy-card {
-            border-radius: 24px;
-          }
-
-          .ga-copy-content {
-            padding: 24px 20px 24px;
-            min-height: auto;
+          .ga-card-content {
+            width: 100%;
+            padding: 28px 20px 24px;
           }
 
           .ga-title {
-            font-size: clamp(46px, 15vw, 68px);
+            font-size: clamp(52px, 16vw, 74px);
             max-width: none;
           }
 
           .ga-subtitle {
-            font-size: 24px;
+            font-size: 26px;
             line-height: 1.08;
           }
 
-          .ga-copy-block {
+          .ga-copy {
             font-size: 15px;
             line-height: 1.6;
           }
 
-          .ga-list-box {
-            padding: 16px 14px;
-            border-radius: 20px;
+          .ga-product-row {
+            flex-direction: column;
+            align-items: flex-start;
           }
 
-          .ga-list-title {
-            font-size: 17px;
+          .ga-product-name {
+            font-size: 18px;
           }
 
-          .ga-list-name {
+          .ga-product-tags {
+            justify-content: flex-start;
+          }
+
+          .ga-final-note {
             font-size: 16px;
-          }
-
-          .ga-list-note {
-            font-size: 13px;
           }
 
           .ga-primary-btn {
@@ -441,6 +523,11 @@ export default function ThankYouPage() {
             min-width: 0;
             min-height: 54px;
             font-size: 16px;
+          }
+
+          .ga-gif-image {
+            max-width: 100%;
+            border-radius: 22px;
           }
         }
       `}</style>
