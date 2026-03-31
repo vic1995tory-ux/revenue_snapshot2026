@@ -1959,7 +1959,6 @@ if (allLeversAtMax) {
 
               <div className="hero-main-subtitle">
                это данные, которые отвечают на острые вопросы бизнеса.
-                КОНКРЕТНЫЕ РАСЧЕТЫ И ПРИОРИТЕТЫ
               </div>
 
               <p className="hero-main-copy">
