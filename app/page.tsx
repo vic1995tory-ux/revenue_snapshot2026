@@ -188,6 +188,35 @@ function StrategyChip({
   );
 }
 
+type StrategyKey = "aggressive" | "planned" | "cheap";
+type StrategySelection = StrategyKey | null;
+
+type StrategyMetaPoint = {
+  label: string;
+  value: string;
+};
+
+function StrategyMetaBadges({
+  items,
+  tone = "neutral",
+}: {
+  items: StrategyMetaPoint[];
+  tone?: "neutral" | "soft";
+}) {
+  if (!items.length) return null;
+
+  return (
+    <div className={`strategy-meta-row ${tone === "soft" ? "is-soft" : ""}`}>
+      {items.map((item) => (
+        <div key={`${item.label}-${item.value}`} className="strategy-meta-badge">
+          <span className="strategy-meta-badge-label">{item.label}</span>
+          <span className="strategy-meta-badge-value">{item.value}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function ControlLever({
   title,
   tooltip,
@@ -1239,9 +1268,7 @@ export default function Home() {
   const [avgCheckShift, setAvgCheckShift] = useState(0);
   const [efficiency, setEfficiency] = useState(0);
   const [ltv, setLtv] = useState(0);
-  const [selectedStrategy, setSelectedStrategy] = useState<
-  "aggressive" | "planned" | "cheap"
->("aggressive");
+  const [selectedStrategy, setSelectedStrategy] = useState<StrategySelection>(null);
 
 const [history, setHistory] = useState<
   Array<{
@@ -1252,7 +1279,7 @@ const [history, setHistory] = useState<
     avgCheckShift: number;
     efficiency: number;
     ltv: number;
-    selectedStrategy: "aggressive" | "planned" | "cheap";
+    selectedStrategy: StrategySelection;
   }>
 >([]);
 
@@ -1422,22 +1449,103 @@ AI не придумывает выводы произвольно — он ра
 Они не используются публично или в кейсах без вашего предварительного согласия.`,
     },
   ];
+const STRATEGY_CONFIG: Record<StrategyKey, {
+  label: string;
+  preset: {
+    marketing: number;
+    avgCheckShift: number;
+    efficiency: number;
+    ltv: number;
+  };
+  formationParams: StrategyMetaPoint[];
+  leverParams: StrategyMetaPoint[];
+  behavior: string[];
+}> = {
+  aggressive: {
+    label: "агрессивный и рискованный рост",
+    preset: {
+      marketing: 16,
+      avgCheckShift: -8,
+      efficiency: 6,
+      ltv: 4,
+    },
+    formationParams: [
+      { label: "Реализация", value: "средне-высокая" },
+      { label: "Время до KPI", value: "быстро" },
+    ],
+    leverParams: [
+      { label: "Risk Exposure", value: "высокий" },
+      { label: "Scaling", value: "высокий" },
+      { label: "Стоимость", value: "средне-высокая" },
+    ],
+    behavior: [
+      "Резкий рост выручки.",
+      "Нестабильная или падающая маржа.",
+      "Высокая нагрузка на систему и бюджет.",
+    ],
+  },
+  planned: {
+    label: "планомерный рост с отложенным эффектом",
+    preset: {
+      marketing: 5,
+      avgCheckShift: 12,
+      efficiency: 14,
+      ltv: 15,
+    },
+    formationParams: [
+      { label: "Реализация", value: "высокая" },
+      { label: "Время до KPI", value: "среднее" },
+    ],
+    leverParams: [
+      { label: "Risk Exposure", value: "средний" },
+      { label: "Scaling", value: "высокий" },
+      { label: "Стоимость", value: "средняя" },
+    ],
+    behavior: [
+      "Клиенты растут умеренно.",
+      "Выручка растет без резкого давления на модель.",
+      "Маржинальность стабильно увеличивается, а модель становится устойчивее.",
+    ],
+  },
+  cheap: {
+    label: "дешевый медленный рост",
+    preset: {
+      marketing: 0,
+      avgCheckShift: -12,
+      efficiency: 7,
+      ltv: 20,
+    },
+    formationParams: [
+      { label: "Реализация", value: "низкая" },
+      { label: "Время до KPI", value: "долго" },
+    ],
+    leverParams: [
+      { label: "Risk Exposure", value: "низкий" },
+      { label: "Scaling", value: "средний" },
+      { label: "Стоимость", value: "низкая" },
+    ],
+    behavior: [
+      "Медленный рост выручки.",
+      "Стабильный рост прибыли.",
+      "Низкая нагрузка на бюджет и более бережная траектория модели.",
+    ],
+  },
+};
+
 const strategyOptions = [
   {
     key: "aggressive" as const,
-    label: "агрессивный и рискованный рост",
+    label: STRATEGY_CONFIG.aggressive.label,
   },
   {
     key: "planned" as const,
-    label: "планомерный рост с отложенным эффектом",
+    label: STRATEGY_CONFIG.planned.label,
   },
   {
     key: "cheap" as const,
-    label: "дешевый медленный рост",
+    label: STRATEGY_CONFIG.cheap.label,
   },
 ];
-
-
 
   const handlePay = (paypalUrl: string) => {
     window.open(paypalUrl, "_blank", "noopener,noreferrer");
@@ -1576,7 +1684,7 @@ const handleReset = () => {
   setAvgCheckShift(0);
   setEfficiency(0);
   setLtv(0);
-  setSelectedStrategy("aggressive");
+  setSelectedStrategy(null);
 };
 
   const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
@@ -1671,21 +1779,32 @@ const handleReset = () => {
 
     const scenarioFlags: string[] = [];
 
-    if (marketing > 0 && efficiency < 8) {
-      scenarioFlags.push("Маркетинг усиливает рост, но без эффективности давит на прибыль.");
+    if (revDelta >= 8) {
+      scenarioFlags.push("Модель ускоряет рост выручки за счёт усиления клиентского потока и более активной траектории роста.");
+    } else if (revDelta >= 3) {
+      scenarioFlags.push("Выручка растёт без резкого разрыва с базовой моделью — эффект уже заметен, но остаётся контролируемым.");
+    } else if (revDelta <= -3) {
+      scenarioFlags.push("Текущая комбинация рычагов снижает верхний предел выручки и делает модель более сдержанной по объёму.");
     }
-    if (avgCheckShift > 0) {
-      scenarioFlags.push("Рост среднего чека повышает прибыльность, но сдерживает часть спроса.");
+
+    if (costDelta >= 8) {
+      scenarioFlags.push("Расходы растут ускоренно: сценарий покупает объём через дополнительное давление на CAC и OPEX.");
+    } else if (costDelta <= -3) {
+      scenarioFlags.push("Сценарий разгружает расходную часть и удерживает рост в более чистой экономической структуре.");
     }
-    if (avgCheckShift < 0 && ltv > 0) {
-      scenarioFlags.push("Снижение чека частично компенсируется LTV и ростом клиентской базы.");
+
+    if (profitDelta >= 8) {
+      scenarioFlags.push("Прибыль растёт быстрее базы — модель усиливает не только оборот, но и полезный экономический результат.");
+    } else if (profitDelta <= -3) {
+      scenarioFlags.push("Прибыль остаётся под давлением: часть роста уходит в стоимость привлечения и операционную нагрузку.");
     }
-    if (efficiency >= 10) {
-      scenarioFlags.push("Эффективность и автоматизация снижают давление расходов на модель.");
+
+    if (marginDelta >= 3) {
+      scenarioFlags.push("Маржинальность укрепляется: модель становится устойчивее к масштабированию и менее чувствительна к лишним затратам.");
+    } else if (marginDelta <= -3) {
+      scenarioFlags.push("Маржа проседает: сценарий усиливает рост, но делает его более дорогим для текущей экономики.");
     }
-    if (ltv >= 10) {
-      scenarioFlags.push("LTV усиливает монетизацию уже привлечённой базы.");
-    }
+
     if (!scenarioFlags.length) {
       scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
     }
@@ -1737,6 +1856,45 @@ const handleReset = () => {
   };
 
 
+
+
+  const selectedStrategyMeta = selectedStrategy ? STRATEGY_CONFIG[selectedStrategy] : null;
+
+  const handleStrategySelect = (key: StrategyKey) => {
+    pushHistory();
+
+    if (selectedStrategy === key) {
+      setSelectedStrategy(null);
+      return;
+    }
+
+    const preset = STRATEGY_CONFIG[key].preset;
+    setSelectedStrategy(key);
+    setMarketing(preset.marketing);
+    setAvgCheckShift(preset.avgCheckShift);
+    setEfficiency(preset.efficiency);
+    setLtv(preset.ltv);
+  };
+
+  const handleManualMarketing = (value: number) => {
+    if (selectedStrategy) setSelectedStrategy(null);
+    setMarketing(value);
+  };
+
+  const handleManualAvgCheck = (value: number) => {
+    if (selectedStrategy) setSelectedStrategy(null);
+    setAvgCheckShift(value);
+  };
+
+  const handleManualEfficiency = (value: number) => {
+    if (selectedStrategy) setSelectedStrategy(null);
+    setEfficiency(value);
+  };
+
+  const handleManualLtv = (value: number) => {
+    if (selectedStrategy) setSelectedStrategy(null);
+    setLtv(value);
+  };
 
   return (
     <main className="page-shell" id="top">
@@ -1801,9 +1959,14 @@ const handleReset = () => {
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-                 — это данные, которые отвечают на острые вопросы бизнеса.
-                КОНКРЕТНЫЕ РАСЧЁТЫ И ПРИОРИТЕТЫ
+                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
+                Не общие выводы, а конкретные расчёты и приоритеты.
               </div>
+
+              <p className="hero-main-copy">
+                Система фиксирует ограничения роста, показывает точки потерь и
+                собирает управленческую последовательность решений на основе экономики бизнеса.
+              </p>
 
               <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
                 <div className="hero-highlight-chip">ECONOMIC RATE</div>
@@ -1941,7 +2104,7 @@ const handleReset = () => {
       key={item.key}
       label={item.label}
       active={selectedStrategy === item.key}
-      onClick={() => setSelectedStrategy(item.key)}
+      onClick={() => handleStrategySelect(item.key)}
     />
   ))}
 </div>
@@ -1953,7 +2116,12 @@ const handleReset = () => {
               </section>
 
               <div className="mt-8">
-                <div className="preview-panel-label preview-panel-label-muted">Формирование экономики</div>
+                <div className="preview-section-headline">
+                  <div className="preview-panel-label preview-panel-label-muted">Формирование экономики</div>
+                  {selectedStrategyMeta ? (
+                    <StrategyMetaBadges items={selectedStrategyMeta.formationParams} />
+                  ) : null}
+                </div>
                 <div className="model-grid-structured">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
                   <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
@@ -1963,7 +2131,12 @@ const handleReset = () => {
               </div>
 
               <div className="preview-controls-head mt-10">
-                <div className="preview-panel-label preview-panel-label-muted">Рычаги управления</div>
+                <div className="preview-controls-head-left">
+                  <div className="preview-panel-label preview-panel-label-muted">Рычаги управления</div>
+                  {selectedStrategyMeta ? (
+                    <StrategyMetaBadges items={selectedStrategyMeta.leverParams} tone="soft" />
+                  ) : null}
+                </div>
                 <div className="preview-actions-inline">
                   <button type="button" onClick={handleUndo} className="reset-link" disabled={!history.length}>Отменить действие</button>
                   <button type="button" onClick={handleReset} className="reset-link">Сбросить</button>
@@ -1977,7 +2150,7 @@ const handleReset = () => {
                   value={marketing}
                   min={-20}
                   max={20}
-                  set={setMarketing}
+                  set={handleManualMarketing}
                   onStart={pushHistory}
                 />
                 <ControlLever
@@ -1986,7 +2159,7 @@ const handleReset = () => {
                   value={avgCheckShift}
                   min={-15}
                   max={30}
-                  set={setAvgCheckShift}
+                  set={handleManualAvgCheck}
                   onStart={pushHistory}
                 />
                 <ControlLever
@@ -1995,7 +2168,7 @@ const handleReset = () => {
                   value={efficiency}
                   min={0}
                   max={20}
-                  set={setEfficiency}
+                  set={handleManualEfficiency}
                   onStart={pushHistory}
                 />
                 <ControlLever
@@ -2004,7 +2177,7 @@ const handleReset = () => {
                   value={ltv}
                   min={0}
                   max={25}
-                  set={setLtv}
+                  set={handleManualLtv}
                   onStart={pushHistory}
                 />
               </div>
@@ -2014,11 +2187,16 @@ const handleReset = () => {
               <div className="reserve-kicker">Оценочный резерв</div>
               <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
                 <div className="reserve-amount">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
-                <p className="mt-4 text-sm leading-7 text-white/65">
-                  Здесь будет собираться сценарная трактовка стратегии. Число справа уже показывает
-                  возможный прирост прибыли относительно базовой модели, а сама стратегия будет
-                  объяснять, за счёт какого компромисса достигается этот резерв.
-                </p>
+                {selectedStrategyMeta ? (
+                  <div className="reserve-strategy-copy">
+                    {selectedStrategyMeta.behavior.map((item) => (
+                      <div key={item} className="reserve-strategy-item">
+                        <span className="reserve-strategy-bullet">•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
 
               <div className="mt-4 space-y-3 text-sm">
@@ -3018,6 +3196,43 @@ const handleReset = () => {
   letter-spacing: -.02em;
   text-align: left;
 }
+.preview-section-headline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+}
+.strategy-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.strategy-meta-row.is-soft {
+  justify-content: flex-start;
+}
+.strategy-meta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,255,255,.1);
+}
+.strategy-meta-badge-label {
+  color: rgba(255,255,255,.58);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+.strategy-meta-badge-value {
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+}
         .strategy-chip-row {
           display: flex;
           flex-wrap: wrap;
@@ -3082,6 +3297,12 @@ const handleReset = () => {
           align-items: center;
           justify-content: space-between;
           gap: 16px;
+        }
+        .preview-controls-head-left {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          align-items: flex-start;
         }
         .control-levers-grid {
           display: grid;
@@ -3263,6 +3484,24 @@ const handleReset = () => {
           color: #f7d237;
         }
         .reserve-amount span { color: rgba(255,255,255,.62); font-size: inherit; font-weight: inherit; }
+        .reserve-strategy-copy {
+          display: grid;
+          gap: 10px;
+          margin-top: 18px;
+        }
+        .reserve-strategy-item {
+          display: grid;
+          grid-template-columns: 10px 1fr;
+          gap: 10px;
+          align-items: start;
+          color: rgba(255,255,255,.74);
+          font-size: 13px;
+          line-height: 1.5;
+        }
+        .reserve-strategy-bullet {
+          color: #f7d237;
+          line-height: 1.2;
+        }
         .results-grid-2x2 { display: grid; grid-template-columns: repeat(2, minmax(0, min(100%, 470px))); gap: 14px; justify-content: center; }
         .result-doc-card { min-height: 236px; perspective: 1400px; }
         .result-doc-card-inner {
@@ -4549,6 +4788,14 @@ const handleReset = () => {
 .preview-inline-input-meta {
   font-size: 15px;
 }
+          .preview-section-headline {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .strategy-meta-row,
+          .strategy-meta-row.is-soft {
+            justify-content: flex-start;
+          }
           .preview-input-grid-visible { grid-template-columns: 1fr; }
           .dashboard-grid-structured,
           .model-grid-structured,
@@ -4568,6 +4815,10 @@ const handleReset = () => {
             margin-bottom: 24px;
           }
           .strategy-chip-row { gap: 12px; }
+          .preview-controls-head {
+            flex-direction: column;
+            align-items: flex-start;
+          }
           .hero-chart-float { display: none; }
           .stage-scheme-slide {
             flex: 0 0 100%;
