@@ -1777,37 +1777,36 @@ const handleReset = () => {
 
     const reserveValue = Math.max(0, profit - baseProfit);
 
-    const scenarioFlags: string[] = [];
+const scenarioFlags: string[] = [];
 
-    if (revDelta >= 8) {
-      scenarioFlags.push("Модель ускоряет рост выручки за счёт усиления клиентского потока и более активной траектории роста.");
-    } else if (revDelta >= 3) {
-      scenarioFlags.push("Выручка растёт без резкого разрыва с базовой моделью — эффект уже заметен, но остаётся контролируемым.");
-    } else if (revDelta <= -3) {
-      scenarioFlags.push("Текущая комбинация рычагов снижает верхний предел выручки и делает модель более сдержанной по объёму.");
-    }
+const allLeversAtMax =
+  marketing === 20 &&
+  avgCheckShift === 30 &&
+  efficiency === 20 &&
+  ltv === 25;
 
-    if (costDelta >= 8) {
-      scenarioFlags.push("Расходы растут ускоренно: сценарий покупает объём через дополнительное давление на CAC и OPEX.");
-    } else if (costDelta <= -3) {
-      scenarioFlags.push("Сценарий разгружает расходную часть и удерживает рост в более чистой экономической структуре.");
-    }
-
-    if (profitDelta >= 8) {
-      scenarioFlags.push("Прибыль растёт быстрее базы — модель усиливает не только оборот, но и полезный экономический результат.");
-    } else if (profitDelta <= -3) {
-      scenarioFlags.push("Прибыль остаётся под давлением: часть роста уходит в стоимость привлечения и операционную нагрузку.");
-    }
-
-    if (marginDelta >= 3) {
-      scenarioFlags.push("Маржинальность укрепляется: модель становится устойчивее к масштабированию и менее чувствительна к лишним затратам.");
-    } else if (marginDelta <= -3) {
-      scenarioFlags.push("Маржа проседает: сценарий усиливает рост, но делает его более дорогим для текущей экономики.");
-    }
-
-    if (!scenarioFlags.length) {
-      scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
-    }
+if (allLeversAtMax) {
+  scenarioFlags.push("это утопия, ну ало");
+} else {
+  if (marketing > 0 && efficiency < 8) {
+    scenarioFlags.push("Маркетинг усиливает рост, но без эффективности давит на прибыль.");
+  }
+  if (avgCheckShift > 0) {
+    scenarioFlags.push("Рост среднего чека повышает прибыльность, но сдерживает часть спроса.");
+  }
+  if (avgCheckShift < 0 && ltv > 0) {
+    scenarioFlags.push("Снижение чека частично компенсируется LTV и ростом клиентской базы.");
+  }
+  if (efficiency >= 10) {
+    scenarioFlags.push("Эффективность и автоматизация снижают давление расходов на модель.");
+  }
+  if (ltv >= 10) {
+    scenarioFlags.push("LTV усиливает монетизацию уже привлечённой базы.");
+  }
+  if (!scenarioFlags.length) {
+    scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
+  }
+}
 
     return {
       revenue,
@@ -1959,8 +1958,8 @@ const handleReset = () => {
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
-                Не общие выводы, а конкретные расчёты и приоритеты.
+               это данные, которые отвечают на острые вопросы бизнеса.
+                КОНКРЕТНЫЕ РАСЧЕТЫ И ПРИОРИТЕТЫ
               </div>
 
               <p className="hero-main-copy">
@@ -2242,7 +2241,7 @@ const handleReset = () => {
 
           <div className="results-bottom-stack">
             <div className="results-roadmap-note">
-              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+              После получения и изучения Revenue Snapshot у Вас есть возможность назначить <span>60-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
             <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
           </div>
