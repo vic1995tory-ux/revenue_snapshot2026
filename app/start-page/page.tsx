@@ -296,7 +296,7 @@ function StartPageContent() {
         start_page_link: currentUrl,
       };
 
-      const res = await fetch("/api/start", {
+      const res = await fetch("/api/start-action", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
