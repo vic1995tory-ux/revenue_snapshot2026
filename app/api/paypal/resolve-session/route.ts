@@ -23,6 +23,53 @@ function tryParseJson(raw: string) {
   }
 }
 
+function toTrimmedString(value: unknown) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim();
+}
+
+function parseAmount(value: string) {
+  if (!value) return null;
+
+  const normalized = value.replace(",", ".").replace(/[^\d.-]/g, "");
+  const parsed = Number(normalized);
+
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function normalizePaymentStatus(rawStatus: string) {
+  const status = rawStatus.trim().toUpperCase();
+
+  if (status === "COMPLETED" || status === "CONFIRMED") {
+    return "confirmed";
+  }
+
+  if (
+    status === "FAILED" ||
+    status === "DENIED" ||
+    status === "VOIDED" ||
+    status === "CANCELED" ||
+    status === "CANCELLED" ||
+    status === "EXPIRED"
+  ) {
+    return "failed";
+  }
+
+  if (
+    status === "REFUNDED" ||
+    status === "PARTIALLY_REFUNDED" ||
+    status === "REVERSED"
+  ) {
+    return "refunded";
+  }
+
+  if (!status) {
+    return "unknown";
+  }
+
+  return "pending";
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
@@ -40,13 +87,23 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!MAKE_RESOLVE_WEBHOOK_URL) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "MAKE_RESOLVE_WEBHOOK_URL is not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
 
-    const tx = String(body?.tx ?? body?.payment_id ?? "").trim();
-    const st = String(body?.st ?? body?.payment_status ?? "").trim();
-    const amt = String(body?.amt ?? body?.gross_amount ?? "").trim();
-    const cc = String(body?.cc ?? body?.currency ?? "").trim();
-    const currentUrl = String(body?.current_url ?? "").trim();
+    const tx = toTrimmedString(body?.tx ?? body?.payment_id);
+    const st = toTrimmedString(body?.st ?? body?.payment_status);
+    const amt = toTrimmedString(body?.amt ?? body?.gross_amount);
+    const cc = toTrimmedString(body?.cc ?? body?.currency);
+    const currentUrl = toTrimmedString(body?.current_url);
 
     if (!tx) {
       return NextResponse.json(
@@ -58,11 +115,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const normalizedStatus =
-      st.toUpperCase() === "COMPLETED" ||
-      st.toUpperCase() === "CONFIRMED"
-        ? "confirmed"
-        : "pending";
+    const normalizedStatus = normalizePaymentStatus(st);
+    const parsedAmount = parseAmount(amt);
 
     const fallbackToken = generateFallbackToken();
     const expiresAt = addDays(new Date(), 365).toISOString();
@@ -74,7 +128,7 @@ export async function POST(req: NextRequest) {
       paypal_status_raw: st,
       payment_status: normalizedStatus,
 
-      gross_amount: amt ? Number(amt) : null,
+      gross_amount: parsedAmount,
       currency: cc || null,
       source: "paypal",
 
@@ -113,10 +167,11 @@ export async function POST(req: NextRequest) {
       if (parsed) {
         makeData = parsed;
       } else {
+        const trimmed = rawText.trim();
         const looksLikeHtml =
-          rawText.trim().startsWith("<!DOCTYPE") ||
-          rawText.trim().startsWith("<html") ||
-          rawText.includes("<body");
+          trimmed.startsWith("<!DOCTYPE") ||
+          trimmed.startsWith("<html") ||
+          trimmed.includes("<body");
 
         return NextResponse.json(
           {
