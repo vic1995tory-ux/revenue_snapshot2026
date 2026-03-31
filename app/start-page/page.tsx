@@ -55,6 +55,30 @@ function normalizeLogin(value: string) {
   return value.trim().toLowerCase();
 }
 
+function sanitizeWhatsapp(value: string) {
+  let result = value.replace(/[^\d+]/g, "");
+
+  if (result.includes("+")) {
+    result = (result.startsWith("+") ? "+" : "") + result.replace(/\+/g, "");
+  }
+
+  return result;
+}
+
+function validateWhatsapp(value: string) {
+  const normalized = sanitizeWhatsapp(value).replace(/\D/g, "");
+
+  if (!normalized) {
+    return "Введите телефон в WhatsApp.";
+  }
+
+  if (normalized.length < 8) {
+    return "Введите корректный номер телефона.";
+  }
+
+  return "";
+}
+
 function validatePassword(value: string) {
   const password = value.trim();
 
@@ -71,6 +95,18 @@ function validatePassword(value: string) {
   }
 
   return "";
+}
+
+function generateRandomSuffix(length = 5) {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  const array = new Uint32Array(length);
+  crypto.getRandomValues(array);
+
+  return Array.from(array, (value) => chars[value % chars.length]).join("");
+}
+
+function buildUniqueLogin(login: string) {
+  return `${login}_${generateRandomSuffix(5)}`;
 }
 
 function StartPageContent() {
@@ -91,6 +127,7 @@ function StartPageContent() {
   const [whatsapp, setWhatsapp] = useState("");
   const [login, setLogin] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const tx = useMemo(() => searchParams.get("tx") || "", [searchParams]);
   const st = useMemo(() => searchParams.get("st") || "", [searchParams]);
@@ -216,8 +253,9 @@ function StartPageContent() {
         throw new Error("Введите название компании.");
       }
 
-      if (!whatsapp.trim()) {
-        throw new Error("Введите телефон в WhatsApp.");
+      const whatsappError = validateWhatsapp(whatsapp);
+      if (whatsappError) {
+        throw new Error(whatsappError);
       }
 
       const cleanLogin = normalizeLogin(login);
@@ -231,18 +269,28 @@ function StartPageContent() {
         throw new Error(passwordError);
       }
 
+      if (!confirmPassword.trim()) {
+        throw new Error("Подтвердите пароль.");
+      }
+
+      if (password.trim() !== confirmPassword.trim()) {
+        throw new Error("Пароли не совпадают.");
+      }
+
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
 
       const passwordHash = await sha256Hex(password.trim());
+      const uniqueLogin = buildUniqueLogin(cleanLogin);
 
       const payload = {
         payment_id: tx,
         access_token: resolved.access_token,
         full_name: fullName.trim(),
         company_name: companyName.trim(),
-        whatsapp: whatsapp.trim(),
+        whatsapp: sanitizeWhatsapp(whatsapp),
         login: cleanLogin,
+        unique_login: uniqueLogin,
         password_hash: passwordHash,
         password_version: "sha256-v1",
         start_page_link: currentUrl,
@@ -486,12 +534,13 @@ function StartPageContent() {
                     <input
                       style={styles.input}
                       type="tel"
-                      inputMode="tel"
+                      inputMode="numeric"
                       autoComplete="tel"
                       name="whatsapp"
                       value={whatsapp}
-                      onChange={(e) => setWhatsapp(e.target.value)}
-                      placeholder="+995 5XX XX XX XX"
+                      onChange={(e) => setWhatsapp(sanitizeWhatsapp(e.target.value))}
+                      placeholder="+995577123456"
+                      pattern="^\+?\d*$"
                     />
                   </div>
 
@@ -502,7 +551,7 @@ function StartPageContent() {
                       type="text"
                       value={login}
                       onChange={(e) => setLogin(e.target.value)}
-                      placeholder="Например: anna.studio"
+                      placeholder="Например: vicky"
                       autoComplete="username"
                     />
                   </div>
@@ -516,6 +565,19 @@ function StartPageContent() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Минимум 8 символов, буквы и цифры"
+                      autoComplete="new-password"
+                    />
+                  </div>
+
+                  <div style={styles.field}>
+                    <label style={styles.label}>Подтвердите пароль</label>
+                    <input
+                      style={styles.input}
+                      type="password"
+                      name="confirm-password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Повторите пароль"
                       autoComplete="new-password"
                     />
                   </div>
