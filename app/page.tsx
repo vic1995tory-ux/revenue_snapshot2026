@@ -1898,43 +1898,46 @@ const handleReset = () => {
             <div className="preview-main-column preview-main-column-structured">
               <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
-              <div className="preview-inline-inputs">
-                <div className="preview-inline-input-shell">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={clientsInput}
-                    onFocus={pushHistory}
-                    onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
-                    className="preview-inline-input"
-                    placeholder="клиенты/месяц"
-                  />
-                </div>
+             <div className="preview-inline-inputs">
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={clientsInput}
+      onFocus={pushHistory}
+      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="20"
+    />
+    <span className="preview-inline-input-meta">клиенты / месяц</span>
+  </div>
 
-                <div className="preview-inline-input-shell">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={checkInput}
-                    onFocus={pushHistory}
-                    onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
-                    className="preview-inline-input"
-                    placeholder="средний чек"
-                  />
-                </div>
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={checkInput}
+      onFocus={pushHistory}
+      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="2000"
+    />
+    <span className="preview-inline-input-meta">$ / средний чек</span>
+  </div>
 
-                <div className="preview-inline-input-shell">
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    value={marginInput}
-                    onFocus={pushHistory}
-                    onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
-                    className="preview-inline-input"
-                    placeholder="маржинальность %"
-                  />
-                </div>
-              </div>
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={marginInput}
+      onFocus={pushHistory}
+      onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="30"
+    />
+    <span className="preview-inline-input-meta">% / маржинальность</span>
+  </div>
+</div>
 
 <div className="preview-panel-label">Выберите стратегию</div>
 <div className="strategy-chip-row">
@@ -2984,8 +2987,10 @@ const handleReset = () => {
 .preview-inline-input-shell {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 18px;
   min-height: 76px;
-  padding: 0 18px;
+  padding: 0 22px;
   border-radius: 22px;
   background: rgba(224,225,227,.08);
   border: 1px solid rgba(255,255,255,.1);
@@ -2993,21 +2998,30 @@ const handleReset = () => {
 }
 
 .preview-inline-input {
-  width: 100%;
-  height: 100%;
+  width: 120px;
+  min-width: 120px;
   background: transparent;
   border: none;
   outline: none;
   color: #ffffff;
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -.02em;
 }
 
 .preview-inline-input::placeholder {
-  color: rgba(255,255,255,.88);
+  color: rgba(255,255,255,.92);
   opacity: 1;
+}
+
+.preview-inline-input-meta {
+  color: rgba(255,255,255,.9);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -.02em;
+  text-align: left;
 }
         .strategy-chip-row {
           display: flex;
@@ -4526,6 +4540,20 @@ const handleReset = () => {
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-strategy-layout { grid-template-columns: 1fr; }
           .preview-inline-inputs { grid-template-columns: 1fr; }
+          .preview-inline-input-shell {
+  min-height: 68px;
+  padding: 0 18px;
+}
+
+.preview-inline-input {
+  width: 90px;
+  min-width: 90px;
+  font-size: 18px;
+}
+
+.preview-inline-input-meta {
+  font-size: 15px;
+}
           .preview-input-grid-visible { grid-template-columns: 1fr; }
           .dashboard-grid-structured,
           .model-grid-structured,
