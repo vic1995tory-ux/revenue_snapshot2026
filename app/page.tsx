@@ -167,10 +167,22 @@ function InsightIcon() {
   );
 }
 
-function StrategyChip({ label }: { label: string }) {
+function StrategyChip({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
   return (
-    <button type="button" className="strategy-chip">
-      <span className="strategy-chip-dot" />
+    <button
+      type="button"
+      className={`strategy-chip ${active ? "is-active" : ""}`}
+      onClick={onClick}
+    >
+      <span className={`strategy-chip-dot ${active ? "is-active" : ""}`} />
       <span>{label}</span>
     </button>
   );
@@ -1227,18 +1239,22 @@ export default function Home() {
   const [avgCheckShift, setAvgCheckShift] = useState(0);
   const [efficiency, setEfficiency] = useState(0);
   const [ltv, setLtv] = useState(0);
+  const [selectedStrategy, setSelectedStrategy] = useState<
+  "aggressive" | "planned" | "cheap"
+>("aggressive");
 
-  const [history, setHistory] = useState<
-    Array<{
-      clientsInput: string;
-      checkInput: string;
-      marginInput: string;
-      marketing: number;
-      avgCheckShift: number;
-      efficiency: number;
-      ltv: number;
-    }>
-  >([]);
+const [history, setHistory] = useState<
+  Array<{
+    clientsInput: string;
+    checkInput: string;
+    marginInput: string;
+    marketing: number;
+    avgCheckShift: number;
+    efficiency: number;
+    ltv: number;
+    selectedStrategy: "aggressive" | "planned" | "cheap";
+  }>
+>([]);
 
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -1406,11 +1422,20 @@ AI не придумывает выводы произвольно — он ра
 Они не используются публично или в кейсах без вашего предварительного согласия.`,
     },
   ];
-  const strategyOptions = [
-    "агрессивный и рискованный рост",
-    "планомерный рост с отложенным эффектом",
-    "дешевый медленный рост",
-  ];
+const strategyOptions = [
+  {
+    key: "aggressive" as const,
+    label: "агрессивный и рискованный рост",
+  },
+  {
+    key: "planned" as const,
+    label: "планомерный рост с отложенным эффектом",
+  },
+  {
+    key: "cheap" as const,
+    label: "дешевый медленный рост",
+  },
+];
 
 
 
@@ -1510,46 +1535,49 @@ AI не придумывает выводы произвольно — он ра
     return () => cleanups.forEach((fn) => fn());
   }, []);
 
-  const pushHistory = () => {
-    setHistory((prev) => [
-      ...prev,
-      {
-        clientsInput,
-        checkInput,
-        marginInput,
-        marketing,
-        avgCheckShift,
-        efficiency,
-        ltv,
-      },
-    ]);
-  };
+const pushHistory = () => {
+  setHistory((prev) => [
+    ...prev,
+    {
+      clientsInput,
+      checkInput,
+      marginInput,
+      marketing,
+      avgCheckShift,
+      efficiency,
+      ltv,
+      selectedStrategy,
+    },
+  ]);
+};
 
-  const handleUndo = () => {
-    setHistory((prev) => {
-      if (!prev.length) return prev;
-      const last = prev[prev.length - 1];
-      setClientsInput(last.clientsInput);
-      setCheckInput(last.checkInput);
-      setMarginInput(last.marginInput);
-      setMarketing(last.marketing);
-      setAvgCheckShift(last.avgCheckShift);
-      setEfficiency(last.efficiency);
-      setLtv(last.ltv);
-      return prev.slice(0, -1);
-    });
-  };
+const handleUndo = () => {
+  setHistory((prev) => {
+    if (!prev.length) return prev;
+    const last = prev[prev.length - 1];
+    setClientsInput(last.clientsInput);
+    setCheckInput(last.checkInput);
+    setMarginInput(last.marginInput);
+    setMarketing(last.marketing);
+    setAvgCheckShift(last.avgCheckShift);
+    setEfficiency(last.efficiency);
+    setLtv(last.ltv);
+    setSelectedStrategy(last.selectedStrategy);
+    return prev.slice(0, -1);
+  });
+};
 
-  const handleReset = () => {
-    pushHistory();
-    setClientsInput("20");
-    setCheckInput("2000");
-    setMarginInput("30");
-    setMarketing(0);
-    setAvgCheckShift(0);
-    setEfficiency(0);
-    setLtv(0);
-  };
+const handleReset = () => {
+  pushHistory();
+  setClientsInput("20");
+  setCheckInput("2000");
+  setMarginInput("30");
+  setMarketing(0);
+  setAvgCheckShift(0);
+  setEfficiency(0);
+  setLtv(0);
+  setSelectedStrategy("aggressive");
+};
 
   const clamp = (n: number, min: number, max: number) => Math.min(max, Math.max(min, n));
   const safeDiv = (n: number, d: number) => (d === 0 ? 0 : (n / d) * 100);
@@ -1870,42 +1898,45 @@ AI не придумывает выводы произвольно — он ра
             <div className="preview-main-column preview-main-column-structured">
               <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
-              <div className="preview-example-row preview-example-row-structured">
-                <button
-                  type="button"
-                  className="preview-example-chip"
-                  onClick={() => {
-                    pushHistory();
-                    setClientsInput("20");
-                    setCheckInput("2000");
-                    setMarginInput("30");
-                  }}
-                >
-                  клиенты/месяц
-                </button>
-                <button
-                  type="button"
-                  className="preview-example-chip"
-                  onClick={() => {
-                    pushHistory();
-                    setCheckInput("2000");
-                  }}
-                >
-                  средний чек
-                </button>
-                <button
-                  type="button"
-                  className="preview-example-chip"
-                  onClick={() => {
-                    pushHistory();
-                    setMarginInput("30");
-                  }}
-                >
-                  маржинальность %
-                </button>
-              </div>
+       <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
-              <div className="input-grid mb-8 gap-3 preview-input-grid-advanced preview-input-grid-visible">
+<div className="preview-inline-inputs">
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={clientsInput}
+      onFocus={pushHistory}
+      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="клиенты/месяц"
+    />
+  </div>
+
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={checkInput}
+      onFocus={pushHistory}
+      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="средний чек"
+    />
+  </div>
+
+  <div className="preview-inline-input-shell">
+    <input
+      type="text"
+      inputMode="numeric"
+      value={marginInput}
+      onFocus={pushHistory}
+      onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
+      className="preview-inline-input"
+      placeholder="маржинальность %"
+    />
+  </div>
+</div>
                 <label className="input-shell input-shell-highlight">
                   <span className="input-label input-label-strong">Клиенты / месяц</span>
                   <div className="input-wrap input-wrap-primary">
@@ -1952,12 +1983,17 @@ AI не придумывает выводы произвольно — он ра
                 </label>
               </div>
 
-              <div className="preview-panel-label">Выберите стратегию</div>
-              <div className="strategy-chip-row">
-                {strategyOptions.map((item) => (
-                  <StrategyChip key={item} label={item} />
-                ))}
-              </div>
+<div className="preview-panel-label">Выберите стратегию</div>
+<div className="strategy-chip-row">
+  {strategyOptions.map((item) => (
+    <StrategyChip
+      key={item.key}
+      label={item.label}
+      active={selectedStrategy === item.key}
+      onClick={() => setSelectedStrategy(item.key)}
+    />
+  ))}
+</div>
 
               <section className="dashboard-grid dashboard-grid-structured mt-10">
                 <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
@@ -2984,44 +3020,91 @@ AI не придумывает выводы произвольно — он ра
         .preview-panel-label-muted {
           color: rgba(255,255,255,.74);
         }
-        .preview-example-row-structured {
-          margin-bottom: 18px;
-        }
-        .preview-input-grid-visible {
-          grid-template-columns: repeat(2, minmax(0,1fr));
-          max-width: 1120px;
-        }
-        .preview-input-grid-visible label:last-child {
-          grid-column: 1 / span 1;
-        }
+.preview-inline-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  max-width: 1120px;
+  margin-bottom: 28px;
+}
+
+.preview-inline-input-shell {
+  display: flex;
+  align-items: center;
+  min-height: 76px;
+  padding: 0 18px;
+  border-radius: 22px;
+  background: rgba(224,225,227,.08);
+  border: 1px solid rgba(255,255,255,.1);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+}
+
+.preview-inline-input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #ffffff;
+  font-size: 19px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -.02em;
+}
+
+.preview-inline-input::placeholder {
+  color: rgba(255,255,255,.88);
+  opacity: 1;
+}
         .strategy-chip-row {
           display: flex;
           flex-wrap: wrap;
           gap: 18px;
           margin-bottom: 6px;
         }
-        .strategy-chip {
-          display: inline-flex;
-          align-items: center;
-          gap: 12px;
-          min-height: 48px;
-          padding: 0 20px;
-          border-radius: 16px;
-          border: 1px solid rgba(255,255,255,.12);
-          background: rgba(255,255,255,.06);
-          color: rgba(255,255,255,.88);
-          font-size: 14px;
-          font-weight: 500;
-          letter-spacing: -.01em;
-        }
-        .strategy-chip-dot {
-          width: 10px;
-          height: 10px;
-          border-radius: 999px;
-          background: #f7d237;
-          box-shadow: 0 0 12px rgba(247,210,55,.32);
-          flex: none;
-        }
+ .strategy-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 48px;
+  padding: 0 20px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.88);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: -.01em;
+  cursor: pointer;
+  transition: background .2s ease, border-color .2s ease, transform .2s ease;
+}
+
+.strategy-chip:hover {
+  transform: translateY(-1px);
+  border-color: rgba(255,255,255,.18);
+  background: rgba(255,255,255,.09);
+}
+
+.strategy-chip.is-active {
+  border-color: rgba(247,210,55,.26);
+  background: rgba(255,255,255,.1);
+}
+
+.strategy-chip-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: transparent;
+  box-shadow: none;
+  border: 1px solid rgba(255,255,255,.24);
+  flex: none;
+}
+
+.strategy-chip-dot.is-active {
+  background: #f7d237;
+  border-color: #f7d237;
+  box-shadow: 0 0 12px rgba(247,210,55,.32);
+}
         .dashboard-grid-structured {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
