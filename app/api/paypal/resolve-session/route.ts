@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const expiresAt = addDays(new Date(), 365).toISOString();
 
     const makePayload = {
-      action: "resolve_session",
+      action: "resolve-session",
 
       payment_id: tx,
       paypal_status_raw: st,
