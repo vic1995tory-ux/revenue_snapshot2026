@@ -17,6 +17,12 @@ type ResolveResponse = {
   error?: string;
 };
 
+type StartResponse = {
+  ok: boolean;
+  error?: string;
+  access_token?: string;
+};
+
 function formatTimeLeft(expiresAt?: string) {
   if (!expiresAt) return "—";
 
@@ -67,30 +73,6 @@ function validatePassword(value: string) {
   return "";
 }
 
-async function postToMakeWebhook(
-  webhookUrl: string,
-  payload: Record<string, unknown>
-) {
-  const res = await fetch(webhookUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-    keepalive: true,
-  });
-
-  const raw = await res.text();
-
-  if (!res.ok) {
-    throw new Error(
-      `Webhook вернул ошибку ${res.status}. Ответ: ${raw.slice(0, 200)}`
-    );
-  }
-
-  return raw;
-}
-
 function StartPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -127,7 +109,12 @@ function StartPageContent() {
           throw new Error("Не найден Payment ID в ссылке.");
         }
 
-        if (String(st).toUpperCase() !== "COMPLETED") {
+        const normalizedStatus = String(st).trim().toUpperCase();
+        const isPaid =
+          normalizedStatus === "COMPLETED" ||
+          normalizedStatus === "CONFIRMED";
+
+        if (!isPaid) {
           throw new Error("Оплата не подтверждена.");
         }
 
@@ -146,6 +133,7 @@ function StartPageContent() {
             cc,
             current_url: currentUrl,
           }),
+          cache: "no-store",
         });
 
         const data: ResolveResponse = await res.json();
@@ -249,30 +237,31 @@ function StartPageContent() {
       const passwordHash = await sha256Hex(password.trim());
 
       const payload = {
-        action: "start_action",
-
         payment_id: tx,
         access_token: resolved.access_token,
-
         full_name: fullName.trim(),
         company_name: companyName.trim(),
         whatsapp: whatsapp.trim(),
-
-        client_name: fullName.trim(),
-        company: companyName.trim(),
-        client_whatsapp: whatsapp.trim(),
-
         login: cleanLogin,
         password_hash: passwordHash,
         password_version: "sha256-v1",
-
         start_page_link: currentUrl,
       };
 
-      await postToMakeWebhook(
-        "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr",
-        payload
-      );
+      const res = await fetch("/api/start", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+        cache: "no-store",
+      });
+
+      const data: StartResponse = await res.json();
+
+      if (!res.ok || !data?.ok) {
+        throw new Error(data?.error || "Не удалось сохранить данные.");
+      }
 
       router.push(`/account/${resolved.access_token}`);
     } catch (err) {
