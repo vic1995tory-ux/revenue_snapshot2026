@@ -296,14 +296,14 @@ function StartPageContent() {
         start_page_link: currentUrl,
       };
 
-      const res = await fetch("/api/start-action", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-        cache: "no-store",
-      });
+const res = await fetch("/api/paypal/start-action", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify(payload),
+  cache: "no-store",
+});
 
       const data: StartResponse = await res.json();
 
