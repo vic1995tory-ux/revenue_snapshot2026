@@ -46,6 +46,8 @@ export async function POST(req: NextRequest) {
       whatsapp: toTrimmedString(body?.whatsapp),
 
       login: toTrimmedString(body?.login).toLowerCase(),
+      unique_login: toTrimmedString(body?.unique_login).toLowerCase(),
+
       password_hash: toTrimmedString(body?.password_hash),
       password_version: toTrimmedString(body?.password_version) || "sha256-v1",
 
@@ -83,6 +85,13 @@ export async function POST(req: NextRequest) {
     if (!payload.login) {
       return NextResponse.json(
         { ok: false, error: "Missing login." },
+        { status: 400 }
+      );
+    }
+
+    if (!payload.unique_login) {
+      return NextResponse.json(
+        { ok: false, error: "Missing unique login." },
         { status: 400 }
       );
     }
