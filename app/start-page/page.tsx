@@ -17,11 +17,6 @@ type ResolveResponse = {
   error?: string;
 };
 
-type StartActionResponse = {
-  ok: boolean;
-  error?: string;
-};
-
 function formatTimeLeft(expiresAt?: string) {
   if (!expiresAt) return "—";
 
@@ -70,6 +65,30 @@ function validatePassword(value: string) {
   }
 
   return "";
+}
+
+async function postToMakeWebhook(
+  webhookUrl: string,
+  payload: Record<string, unknown>
+) {
+  const res = await fetch(webhookUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  });
+
+  const raw = await res.text();
+
+  if (!res.ok) {
+    throw new Error(
+      `Webhook вернул ошибку ${res.status}. Ответ: ${raw.slice(0, 200)}`
+    );
+  }
+
+  return raw;
 }
 
 function StartPageContent() {
@@ -230,39 +249,30 @@ function StartPageContent() {
       const passwordHash = await sha256Hex(password.trim());
 
       const payload = {
+        action: "start_action",
+
         payment_id: tx,
         access_token: resolved.access_token,
+
         full_name: fullName.trim(),
         company_name: companyName.trim(),
         whatsapp: whatsapp.trim(),
+
+        client_name: fullName.trim(),
+        company: companyName.trim(),
+        client_whatsapp: whatsapp.trim(),
+
         login: cleanLogin,
         password_hash: passwordHash,
         password_version: "sha256-v1",
+
         start_page_link: currentUrl,
       };
 
-      const res = await fetch("/api/paypal/start-action", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      const contentType = res.headers.get("content-type") || "";
-
-      if (!contentType.includes("application/json")) {
-        const raw = await res.text();
-        throw new Error(
-          `start-action вернул не JSON. Ответ: ${raw.slice(0, 120)}`
-        );
-      }
-
-      const data: StartActionResponse = await res.json();
-
-      if (!res.ok || !data?.ok) {
-        throw new Error(data?.error || "Не удалось сохранить данные.");
-      }
+      await postToMakeWebhook(
+        "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr",
+        payload
+      );
 
       router.push(`/account/${resolved.access_token}`);
     } catch (err) {
@@ -556,8 +566,8 @@ function StartPageContent() {
 
               {!resolving && resolved?.access_token && !error && (
                 <p style={styles.smallText}>
-                  После нажатия «Начать» данные будут сохранены, а затем откроется
-                  ваша персональная страница.
+                  После нажатия «Начать» данные будут отправлены в систему, а
+                  затем откроется ваша персональная страница.
                 </p>
               )}
             </div>
