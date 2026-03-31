@@ -1,23 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MAKE_WEBHOOK_URL =
+const MAKE_START_ACTION_WEBHOOK_URL =
   process.env.MAKE_START_ACTION_WEBHOOK_URL ||
-  "https://hook.us2.make.com/PUT_YOUR_REAL_WEBHOOK_HERE";
+  "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
+
+function tryParseJson(raw: string) {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return null;
+  }
+}
+
+function toTrimmedString(value: unknown) {
+  if (value === null || value === undefined) return "";
+  return String(value).trim();
+}
+
+function isSha256Hex(value: string) {
+  return /^[a-f0-9]{64}$/i.test(value);
+}
 
 export async function POST(req: NextRequest) {
   try {
+    if (!MAKE_START_ACTION_WEBHOOK_URL) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "MAKE_START_ACTION_WEBHOOK_URL is not configured.",
+        },
+        { status: 500 }
+      );
+    }
+
     const body = await req.json();
 
     const payload = {
-      payment_id: body?.payment_id ?? "",
-      access_token: body?.access_token ?? "",
-      full_name: body?.full_name ?? "",
-      company_name: body?.company_name ?? "",
-      whatsapp: body?.whatsapp ?? "",
-      login: body?.login ?? "",
-      password_hash: body?.password_hash ?? "",
-      password_version: body?.password_version ?? "sha256-v1",
-      start_page_link: body?.start_page_link ?? "",
+      action: "start-action",
+
+      payment_id: toTrimmedString(body?.payment_id),
+      access_token: toTrimmedString(body?.access_token),
+
+      full_name: toTrimmedString(body?.full_name),
+      company_name: toTrimmedString(body?.company_name),
+      whatsapp: toTrimmedString(body?.whatsapp),
+
+      login: toTrimmedString(body?.login).toLowerCase(),
+      password_hash: toTrimmedString(body?.password_hash),
+      password_version: toTrimmedString(body?.password_version) || "sha256-v1",
+
+      start_page_link: toTrimmedString(body?.start_page_link),
     };
 
     if (!payload.access_token) {
@@ -62,7 +94,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const webhookRes = await fetch(MAKE_WEBHOOK_URL, {
+    if (!isSha256Hex(payload.password_hash)) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Invalid password hash format.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const webhookRes = await fetch(MAKE_START_ACTION_WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -72,27 +114,72 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = webhookRes.headers.get("content-type") || "";
+    let webhookData: any = {};
+    let rawText = "";
 
     if (contentType.includes("application/json")) {
-      const data = await webhookRes.json();
-      return NextResponse.json(data, { status: webhookRes.status });
-    }
+      webhookData = await webhookRes.json();
+    } else {
+      rawText = await webhookRes.text();
 
-    const rawText = await webhookRes.text();
+      const parsed = tryParseJson(rawText);
+      if (parsed) {
+        webhookData = parsed;
+      } else {
+        const trimmed = rawText.trim();
+        const looksLikeHtml =
+          trimmed.startsWith("<!DOCTYPE") ||
+          trimmed.startsWith("<html") ||
+          trimmed.includes("<body");
+
+        if (looksLikeHtml) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "Make returned HTML instead of JSON.",
+              make_status: webhookRes.status,
+              make_content_type: contentType || null,
+              make_response_preview: rawText.slice(0, 500),
+            },
+            { status: 502 }
+          );
+        }
+
+        if (!webhookRes.ok) {
+          return NextResponse.json(
+            {
+              ok: false,
+              error: rawText || "Webhook returned an error.",
+              make_status: webhookRes.status,
+              make_content_type: contentType || null,
+            },
+            { status: webhookRes.status || 500 }
+          );
+        }
+
+        return NextResponse.json({
+          ok: true,
+          raw: rawText,
+        });
+      }
+    }
 
     if (!webhookRes.ok) {
       return NextResponse.json(
         {
           ok: false,
-          error: rawText || "Webhook returned an error.",
+          error: "Make webhook returned non-200 response.",
+          make_status: webhookRes.status,
+          make_content_type: contentType || null,
+          make_response: webhookData,
         },
-        { status: webhookRes.status || 500 }
+        { status: 502 }
       );
     }
 
     return NextResponse.json({
       ok: true,
-      raw: rawText,
+      data: webhookData,
     });
   } catch (error) {
     const message =
