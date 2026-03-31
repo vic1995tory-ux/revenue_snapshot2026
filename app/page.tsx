@@ -1585,14 +1585,18 @@ const strategyOptions = [
         return;
       }
 
-      const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.84 - rect.top) / sectionHeight;
-      const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
-      const nextIndex = Math.min(
-        journeySteps.length - 1,
-        Math.floor(progress * journeySteps.length)
-      );
+ const rect = section.getBoundingClientRect();
+
+const startLine = window.innerHeight * 0.72; // начало ниже по экрану
+const endOffset = window.innerHeight * 0.28; // конец выше, анимация заканчивается раньше
+
+const sectionHeight = Math.max(
+  section.offsetHeight - window.innerHeight + endOffset,
+  1
+);
+
+const rawProgress = (startLine - rect.top) / sectionHeight;
+const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
 
       setJourneyActiveIndex(nextIndex);
     };
@@ -2091,7 +2095,7 @@ if (allLeversAtMax) {
       className="preview-inline-input"
       placeholder="30"
     />
-    <span className="preview-inline-input-meta">% / маржинальность</span>
+    <span className="preview-inline-input-meta">% / маржа</span>
   </div>
 </div>
 
@@ -2990,7 +2994,7 @@ if (allLeversAtMax) {
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 250vh;
+          min-height: 185vh;
         }
         .journey-scroll-sticky {
           position: sticky;
