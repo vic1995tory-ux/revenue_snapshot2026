@@ -156,10 +156,29 @@ function Row({
   );
 }
 
-function ControlSlider({
+function InsightIcon() {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+      <path d="M10 2.9a6.1 6.1 0 0 0-3.86 10.82c.68.58 1.1 1.15 1.3 1.78h5.12c.2-.63.62-1.2 1.3-1.78A6.1 6.1 0 0 0 10 2.9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M8 17h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M8.7 19h2.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+      <path d="M10 6.1v1.6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  );
+}
+
+function StrategyChip({ label }: { label: string }) {
+  return (
+    <button type="button" className="strategy-chip">
+      <span className="strategy-chip-dot" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function ControlLever({
   title,
-  subtitle,
-  details,
+  tooltip,
   value,
   min,
   max,
@@ -169,11 +188,10 @@ function ControlSlider({
   onStart,
 }: {
   title: string;
-  subtitle: string;
-  details: {
+  tooltip: {
     effect: string;
-    difficulty: string;
-    sideEffect: string;
+    complexity: string;
+    downside: string;
     meaning: string;
   };
   value: number;
@@ -193,17 +211,13 @@ function ControlSlider({
   const formatted = value > 0 ? `+${value}${suffix}` : `${value}${suffix}`;
 
   return (
-    <div className="glass-card soft-glow glare-card slider-card slider-card-advanced">
-      <div className="slider-top-row">
-        <div className="slider-title-wrap">
-          <div className="slider-title">{title}</div>
-          <div className="slider-subtitle">{subtitle}</div>
-        </div>
-
+    <div className="control-lever">
+      <div className="control-lever-head">
+        <div className="control-lever-title">{title}</div>
         <button
           type="button"
-          className="slider-info-btn"
-          aria-label={`Подробнее о рычаге ${title}`}
+          className="control-tooltip-trigger"
+          aria-label={`Подробнее про ${title}`}
           aria-expanded={open}
           onMouseEnter={() => setOpen(true)}
           onMouseLeave={() => setOpen(false)}
@@ -211,42 +225,46 @@ function ControlSlider({
           onBlur={() => setOpen(false)}
           onClick={() => setOpen((v) => !v)}
         >
-          <AttentionIcon />
-          <span className={`slider-tooltip ${open ? "is-open" : ""}`}>
-            <span className="slider-tooltip-line"><b>Основной эффект:</b> {details.effect}</span>
-            <span className="slider-tooltip-line"><b>Сложность:</b> {details.difficulty}</span>
-            <span className="slider-tooltip-line"><b>Побочка:</b> {details.sideEffect}</span>
-            <span className="slider-tooltip-line"><b>Смысл:</b> {details.meaning}</span>
+          <InsightIcon />
+          <span className={`control-tooltip ${open ? "is-open" : ""}`}>
+            <span><b>Основной эффект:</b> {tooltip.effect}</span>
+            <span><b>Сложность:</b> {tooltip.complexity}</span>
+            <span><b>Побочка:</b> {tooltip.downside}</span>
+            <span><b>Смысл:</b> {tooltip.meaning}</span>
           </span>
         </button>
       </div>
 
-      <div className="mt-auto slider-control-area">
-        <input
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onMouseDown={() => {
-            if (!started) {
-              onStart();
-              setStarted(true);
-            }
-          }}
-          onTouchStart={() => {
-            if (!started) {
-              onStart();
-              setStarted(true);
-            }
-          }}
-          onMouseUp={() => setStarted(false)}
-          onTouchEnd={() => setStarted(false)}
-          onChange={(e) => set(Number(e.target.value))}
-          className="range-input mt-4 w-full accent-[#f7d237]"
-        />
-        <div className={`slider-percent ${tone}`}>{formatted}</div>
+      <div className="control-scale-row">
+        <span>{min}{suffix}</span>
+        <span>{max > 0 ? `+${max}${suffix}` : `${max}${suffix}`}</span>
       </div>
+
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onMouseDown={() => {
+          if (!started) {
+            onStart();
+            setStarted(true);
+          }
+        }}
+        onTouchStart={() => {
+          if (!started) {
+            onStart();
+            setStarted(true);
+          }
+        }}
+        onMouseUp={() => setStarted(false)}
+        onTouchEnd={() => setStarted(false)}
+        onChange={(e) => set(Number(e.target.value))}
+        className="range-input control-range-input"
+      />
+
+      <div className={`control-value ${tone}`}>{formatted}</div>
     </div>
   );
 }
@@ -1388,6 +1406,12 @@ AI не придумывает выводы произвольно — он ра
 Они не используются публично или в кейсах без вашего предварительного согласия.`,
     },
   ];
+  const strategyOptions = [
+    "агрессивный и рискованный рост",
+    "планомерный рост с отложенным эффектом",
+    "дешевый медленный рост",
+  ];
+
 
 
   const handlePay = (paypalUrl: string) => {
@@ -1638,22 +1662,6 @@ AI не придумывает выводы произвольно — он ра
       scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
     }
 
-    let strategySummary = "Сейчас модель близка к нейтральному сценарию: выраженный рычаг роста пока не выбран, поэтому эффект ограничен базовой экономикой.";
-
-    if (marketing > 8 && efficiency < 8) {
-      strategySummary = "Сценарий похож на агрессивный рост: упор идёт в привлечение и расширение потока, но без опоры на эффективность прибыльность становится более чувствительной к расходам.";
-    } else if (efficiency >= 10 && ltv >= 10) {
-      strategySummary = "Сценарий похож на планомерное усиление модели: акцент смещён в эффективность, удержание и монетизацию базы, поэтому рост выглядит более устойчивым по прибыли.";
-    } else if (avgCheckShift < 0 && ltv > 0) {
-      strategySummary = "Сценарий похож на дешёвый медленный рост: чек снижается ради расширения базы, а LTV компенсирует просадку через повторные продажи и более длинную монетизацию клиента.";
-    } else if (avgCheckShift > 0) {
-      strategySummary = "Сценарий похож на рост через монетизацию: ставка делается на более высокий чек и качество экономики, но часть спроса при этом становится менее конверсионной.";
-    } else if (efficiency >= 10) {
-      strategySummary = "Сценарий похож на внутреннюю оптимизацию: модель не форсирует спрос, а укрепляет прибыль за счёт снижения давления расходов и повышения capacity.";
-    } else if (ltv >= 10) {
-      strategySummary = "Сценарий похож на рост через удержание: дополнительная прибыль собирается с уже привлечённой базы, а не только через новый трафик.";
-    }
-
     return {
       revenue,
       costs,
@@ -1671,9 +1679,35 @@ AI не придумывает выводы произвольно — он ра
       cacDelta,
       marginDelta,
       scenarioFlags,
-      strategySummary,
     };
   }, [clientsBase, checkBase, marginBase, marketing, avgCheckShift, efficiency, ltv]);
+  const leverTooltips = {
+    marketing: {
+      effect: "рост клиентского потока, корректировка CAC и усиление спроса",
+      complexity: "низкая или средняя — запустить проще, чем перестроить модель",
+      downside: "давит на расходы и без внутренней эффективности может просаживать прибыль",
+      meaning: "это быстрый способ нарастить объем, но не бесплатный рост",
+    },
+    avgCheck: {
+      effect: "рост денег с одного клиента и усиление прибыльности сделки",
+      complexity: "высокая — требует сильнее упаковать продукт, ценность и позиционирование",
+      downside: "часть спроса может отвалиться, а затраты на продукт и сервис — вырасти",
+      meaning: "это рычаг дорогого роста, который работает только при сильной ценности",
+    },
+    efficiency: {
+      effect: "снижение давления расходов и улучшение общей экономики модели",
+      complexity: "средняя или высокая — требует пересборки процессов, команды и операционки",
+      downside: "не дает резкого скачка спроса и со временем упирается в потолок эффекта",
+      meaning: "это способ расти чище: не через объем, а через лучшую структуру модели",
+    },
+    ltv: {
+      effect: "усиление монетизации уже привлеченной базы и рост повторной выручки",
+      complexity: "высокая — требует удержания, апсейлов и более продуманного продукта",
+      downside: "может увеличить нагрузку на сервис, продукт и операционные расходы",
+      meaning: "это самый умный рост: больше денег из уже привлеченных клиентов",
+    },
+  };
+
 
 
   return (
@@ -1827,20 +1861,16 @@ AI не придумывает выводы произвольно — он ра
               Посмотрите, как меняется экономика бизнеса при разных управленческих решениях
             </h2>
             <p className="section-copy">
-              Это не упрощённая игрушка, а предварительная управленческая симуляция:
-              изменение одного рычага влияет сразу на несколько показателей и почти
-              всегда создаёт побочный эффект. Полный Snapshot идёт глубже и показывает
-              не только механику, но и ваше реальное ограничение роста.
+              Это предварительная симуляция бизнес-модели. Она показывает, как один управленческий рычаг
+              меняет несколько показателей сразу и где возникает компромисс между ростом, затратами и прибылью.
             </p>
           </div>
 
-          <div className="preview-grid preview-grid-advanced">
-            <div className="preview-main-column">
-              <div className="preview-input-intro">
-                Введите базовые параметры бизнеса или выберите один из примеров
-              </div>
+          <div className="preview-grid preview-grid-strategy-layout">
+            <div className="preview-main-column preview-main-column-structured">
+              <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
-              <div className="preview-example-row">
+              <div className="preview-example-row preview-example-row-structured">
                 <button
                   type="button"
                   className="preview-example-chip"
@@ -1851,24 +1881,31 @@ AI не придумывает выводы произвольно — он ра
                     setMarginInput("30");
                   }}
                 >
-                  Пример: 20 клиентов / $2000 / 30%
+                  клиенты/месяц
                 </button>
-
                 <button
                   type="button"
                   className="preview-example-chip"
                   onClick={() => {
                     pushHistory();
-                    setClientsInput("45");
-                    setCheckInput("1500");
-                    setMarginInput("24");
+                    setCheckInput("2000");
                   }}
                 >
-                  Пример: 45 клиентов / $1500 / 24%
+                  средний чек
+                </button>
+                <button
+                  type="button"
+                  className="preview-example-chip"
+                  onClick={() => {
+                    pushHistory();
+                    setMarginInput("30");
+                  }}
+                >
+                  маржинальность %
                 </button>
               </div>
 
-              <div className="input-grid mb-6 gap-3 preview-input-grid-advanced">
+              <div className="input-grid mb-8 gap-3 preview-input-grid-advanced preview-input-grid-visible">
                 <label className="input-shell input-shell-highlight">
                   <span className="input-label input-label-strong">Клиенты / месяц</span>
                   <div className="input-wrap input-wrap-primary">
@@ -1915,15 +1952,22 @@ AI не придумывает выводы произвольно — он ра
                 </label>
               </div>
 
-              <section className="dashboard-grid preview-metrics-grid">
+              <div className="preview-panel-label">Выберите стратегию</div>
+              <div className="strategy-chip-row">
+                {strategyOptions.map((item) => (
+                  <StrategyChip key={item} label={item} />
+                ))}
+              </div>
+
+              <section className="dashboard-grid dashboard-grid-structured mt-10">
                 <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
                 <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
                 <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
               </section>
 
-              <div className="mt-5">
-                <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 preview-economy-grid">
+              <div className="mt-8">
+                <div className="preview-panel-label preview-panel-label-muted">Формирование экономики</div>
+                <div className="model-grid-structured">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
                   <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
                   <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
@@ -1931,69 +1975,45 @@ AI не придумывает выводы произвольно — он ра
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 preview-controls-head">
-                <div className="text-sm text-white/58">Рычаги управления</div>
+              <div className="preview-controls-head mt-10">
+                <div className="preview-panel-label preview-panel-label-muted">Рычаги управления</div>
                 <div className="preview-actions-inline">
                   <button type="button" onClick={handleUndo} className="reset-link" disabled={!history.length}>Отменить действие</button>
                   <button type="button" onClick={handleReset} className="reset-link">Сбросить</button>
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 preview-sliders-grid">
-                <ControlSlider
+              <div className="control-levers-grid">
+                <ControlLever
                   title="Маркетинг"
-                  subtitle="Влияет на поток, CAC, средний чек и давление на расходы."
-                  details={{
-                    effect: "Рост потока и расширение спроса.",
-                    difficulty: "Низкая / средняя.",
-                    sideEffect: "Рост расходов и давление на маржу.",
-                    meaning: "Даёт объём, но без опоры на систему легко делает рост дорогим.",
-                  }}
+                  tooltip={leverTooltips.marketing}
                   value={marketing}
                   min={-20}
                   max={20}
                   set={setMarketing}
                   onStart={pushHistory}
                 />
-                <ControlSlider
+                <ControlLever
                   title="Средний чек"
-                  subtitle="Влияет на деньги с клиента, маржу и чувствительность спроса."
-                  details={{
-                    effect: "Рост выручки с одного клиента.",
-                    difficulty: "Высокая.",
-                    sideEffect: "Часть спроса становится менее конверсионной.",
-                    meaning: "Даёт прибыльный рост, но требует сильного продукта, упаковки и позиционирования.",
-                  }}
+                  tooltip={leverTooltips.avgCheck}
                   value={avgCheckShift}
                   min={-15}
                   max={30}
                   set={setAvgCheckShift}
                   onStart={pushHistory}
                 />
-                <ControlSlider
+                <ControlLever
                   title="Эффективность и автоматизация"
-                  subtitle="Влияет на CAC, OPEX, маржинальность и capacity команды."
-                  details={{
-                    effect: "Снижение издержек и укрепление экономики модели.",
-                    difficulty: "Средняя / высокая.",
-                    sideEffect: "Эффект не бесконечный и со временем замедляется.",
-                    meaning: "Не даёт резкого всплеска выручки, но заметно улучшает прибыльность.",
-                  }}
+                  tooltip={leverTooltips.efficiency}
                   value={efficiency}
                   min={0}
                   max={20}
                   set={setEfficiency}
                   onStart={pushHistory}
                 />
-                <ControlSlider
+                <ControlLever
                   title="LTV"
-                  subtitle="Влияет на повторные продажи, монетизацию базы и устойчивость прибыли."
-                  details={{
-                    effect: "Монетизация уже привлечённой клиентской базы.",
-                    difficulty: "Высокая.",
-                    sideEffect: "Требует вложений в удержание, сервис и продукт.",
-                    meaning: "Самый умный рост: усиливает выручку не только за счёт нового трафика, но и за счёт жизни клиента в системе.",
-                  }}
+                  tooltip={leverTooltips.ltv}
                   value={ltv}
                   min={0}
                   max={25}
@@ -2001,41 +2021,41 @@ AI не придумывает выводы произвольно — он ра
                   onStart={pushHistory}
                 />
               </div>
-
-              <div className="glass-card glare-card preview-reserve-wide mt-6">
-                <div className="preview-reserve-head">
-                  <div>
-                    <div className="reserve-kicker">Оценочный резерв</div>
-                    <div className="reserve-amount mt-3">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
-                  </div>
-                  <div className="preview-reserve-deltas text-sm">
-                    <Row label="Выручка" delta={preview.revDelta} />
-                    <Row label="Расходы" delta={preview.costDelta} invert />
-                    <Row label="Прибыль" delta={preview.profitDelta} />
-                  </div>
-                </div>
-
-                <div className="preview-reserve-body">
-                  <div className="preview-reserve-strategy">
-                    <div className="preview-side-note-title">Что показывает стратегия</div>
-                    <p className="preview-reserve-copy">{preview.strategySummary}</p>
-                  </div>
-
-                  <div className="preview-side-note-list preview-side-note-list-inline">
-                    {preview.scenarioFlags.map((item) => (
-                      <div key={item} className="preview-side-note-item">
-                        <span className="preview-side-note-bullet">•</span>
-                        <span>{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
-                  Попробовать Snapshot
-                </button>
-              </div>
             </div>
+
+            <aside className="glass-card glare-card preview-side preview-side-advanced preview-side-reserve-window">
+              <div className="reserve-kicker">Оценочный резерв</div>
+              <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
+                <div className="reserve-amount">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
+                <p className="mt-4 text-sm leading-7 text-white/65">
+                  Здесь будет собираться сценарная трактовка стратегии. Число справа уже показывает
+                  возможный прирост прибыли относительно базовой модели, а сама стратегия будет
+                  объяснять, за счёт какого компромисса достигается этот резерв.
+                </p>
+              </div>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <Row label="Выручка" delta={preview.revDelta} />
+                <Row label="Расходы" delta={preview.costDelta} invert />
+                <Row label="Прибыль" delta={preview.profitDelta} />
+              </div>
+
+              <div className="preview-side-note glass-card soft-glow glare-card mt-4">
+                <div className="preview-side-note-title">Что сейчас происходит в модели</div>
+                <div className="preview-side-note-list">
+                  {preview.scenarioFlags.map((item) => (
+                    <div key={item} className="preview-side-note-item">
+                      <span className="preview-side-note-bullet">•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
+                Попробовать Snapshot
+              </button>
+            </aside>
           </div>
         </section>
 
@@ -2946,103 +2966,192 @@ AI не придумывает выводы произвольно — он ра
           font-size: 16px;
           line-height: 1.45;
         }
-        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
-        .preview-grid-advanced {
-          grid-template-columns: 1fr;
-          gap: 22px;
+        .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 340px; gap: 24px; align-items: start; }
+        .preview-grid-strategy-layout {
+          grid-template-columns: minmax(0,1fr) 340px;
+          gap: 26px;
           align-items: start;
         }
-        .preview-input-grid-advanced {
-          grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        .preview-main-column {
+        .preview-main-column-structured {
           min-width: 0;
         }
-        .slider-card-advanced {
-          min-height: 210px;
+        .preview-panel-label {
+          margin-bottom: 14px;
+          color: rgba(255,255,255,.9);
+          font-size: 15px;
+          font-weight: 600;
         }
-        .slider-top-row {
+        .preview-panel-label-muted {
+          color: rgba(255,255,255,.74);
+        }
+        .preview-example-row-structured {
+          margin-bottom: 18px;
+        }
+        .preview-input-grid-visible {
+          grid-template-columns: repeat(2, minmax(0,1fr));
+          max-width: 1120px;
+        }
+        .preview-input-grid-visible label:last-child {
+          grid-column: 1 / span 1;
+        }
+        .strategy-chip-row {
           display: flex;
-          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 18px;
+          margin-bottom: 6px;
+        }
+        .strategy-chip {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+          min-height: 48px;
+          padding: 0 20px;
+          border-radius: 16px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.06);
+          color: rgba(255,255,255,.88);
+          font-size: 14px;
+          font-weight: 500;
+          letter-spacing: -.01em;
+        }
+        .strategy-chip-dot {
+          width: 10px;
+          height: 10px;
+          border-radius: 999px;
+          background: #f7d237;
+          box-shadow: 0 0 12px rgba(247,210,55,.32);
+          flex: none;
+        }
+        .dashboard-grid-structured {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 18px;
+        }
+        .model-grid-structured {
+          display: grid;
+          grid-template-columns: 1.18fr .95fr .72fr 1fr;
+          gap: 18px;
+        }
+        .preview-controls-head {
+          display: flex;
+          align-items: center;
           justify-content: space-between;
-          gap: 14px;
+          gap: 16px;
         }
-        .slider-title-wrap {
-          min-width: 0;
+        .control-levers-grid {
+          display: grid;
+          grid-template-columns: repeat(4, minmax(0,1fr));
+          gap: 0;
+          margin-top: 18px;
         }
-        .slider-control-area {
+        .control-lever {
+          position: relative;
+          min-height: 256px;
+          padding: 0 22px 0 22px;
           display: flex;
           flex-direction: column;
           justify-content: flex-end;
         }
-        .slider-info-btn {
+        .control-lever + .control-lever {
+          border-left: 1px solid rgba(255,255,255,.22);
+        }
+        .control-lever-head {
+          position: absolute;
+          top: 0;
+          left: 22px;
+          right: 22px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+        }
+        .control-lever-title {
+          max-width: 220px;
+          color: #ffffff;
+          font-size: 18px;
+          line-height: 1.1;
+          letter-spacing: -.03em;
+          font-weight: 700;
+        }
+        .control-tooltip-trigger {
           position: relative;
-          flex: none;
-          width: 34px;
-          height: 34px;
-          border-radius: 999px;
-          border: 1px solid rgba(247,210,55,.28);
-          background: rgba(247,210,55,.08);
-          color: #f7d237;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
+          width: 28px;
+          height: 28px;
+          border: none;
+          padding: 0;
+          background: transparent;
+          color: rgba(255,255,255,.92);
           cursor: pointer;
+          flex: none;
         }
-        .slider-info-btn svg {
-          width: 14px;
-          height: 14px;
+        .control-tooltip-trigger svg {
+          width: 24px;
+          height: 24px;
         }
-        .slider-tooltip {
+        .control-tooltip {
           position: absolute;
           top: calc(100% + 10px);
           right: 0;
-          width: min(290px, 72vw);
-          padding: 12px 14px;
+          width: min(280px, 42vw);
+          padding: 14px 15px;
           border-radius: 16px;
-          background: rgba(7,15,32,.97);
-          border: 1px solid rgba(247,210,55,.24);
-          box-shadow: 0 18px 34px rgba(0,0,0,.38);
-          color: rgba(255,255,255,.84);
+          background: rgba(10,18,36,.97);
+          border: 1px solid rgba(255,255,255,.16);
+          box-shadow: 0 18px 36px rgba(0,0,0,.32);
+          color: rgba(255,255,255,.82);
           font-size: 12px;
-          line-height: 1.5;
+          line-height: 1.55;
+          display: grid;
+          gap: 6px;
           text-align: left;
           opacity: 0;
           visibility: hidden;
           transform: translateY(6px);
           transition: .18s ease;
-          z-index: 20;
+          z-index: 30;
           pointer-events: none;
         }
-        .slider-tooltip.is-open {
+        .control-tooltip.is-open {
           opacity: 1;
           visibility: visible;
           transform: translateY(0);
         }
-        .slider-tooltip-line {
-          display: block;
+        .control-scale-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-top: auto;
+          margin-bottom: 10px;
+          color: rgba(255,255,255,.82);
+          font-size: 13px;
+          font-weight: 700;
         }
-        .slider-tooltip-line + .slider-tooltip-line {
-          margin-top: 6px;
+        .control-range-input {
+          width: 100%;
+          margin: 0;
         }
-        .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
-        .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
-        .preview-example-chip { display: inline-flex; align-items: center; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.05); color: rgba(255,255,255,.82); font-size: 12px; font-weight: 700; cursor: pointer; transition: transform .2s ease, border-color .2s ease, background .2s ease; }
-        .preview-example-chip:hover { transform: translateY(-1px); border-color: rgba(247,210,55,.28); background: rgba(247,210,55,.08); }
-        .input-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); }
-        .input-shell {
-          display: flex; flex-direction: column; gap: 8px;
-          border-radius: 22px; padding: 14px; background: rgba(224,225,227,.08); border: 1px solid rgba(255,255,255,.1);
+        .control-value {
+          margin-top: 24px;
+          color: #ffffff;
+          font-size: 18px;
+          line-height: 1;
+          font-weight: 700;
         }
-        .input-label { color: rgba(255,255,255,.62); font-size: 14px; font-weight: 600; }
-        .input-wrap { border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); }
-        .glass-input {
-          width: 100%; height: 48px; padding: 0 14px; background: transparent; border: none; outline: none;
-          color: #fff; font-size: 14px; font-weight: 600;
+        .preview-side-reserve-window {
+          position: sticky;
+          top: 96px;
         }
-        .glass-input::placeholder { color: rgba(255,255,255,.34); font-size: 14px; font-weight: 600; }
-        .dashboard-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
-        .metric-card,.model-card,.slider-card { min-height: 132px; padding: 16px; }
+        .preview-input-intro, .preview-grid-advanced, .preview-input-grid-advanced, .slider-card-advanced, .slider-scale-row, .slider-title, .slider-subtitle, .slider-percent { }
+        .preview-input-intro { display: none; }
+        .preview-grid-advanced { display: contents; }
+        .preview-input-grid-advanced { }
+        .slider-card-advanced { }
+        .slider-scale-row { }
+        .slider-title { }
+        .slider-subtitle { }
+        .slider-percent { }
+        .metric-card,.model-card { min-height: 132px; padding: 16px; }
         .metric-head,.model-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
         .metric-label,.model-label { color: rgba(255,255,255,.7); font-size: 13px; font-weight: 600; }
         .metric-flag {
@@ -3059,59 +3168,14 @@ AI не придумывает выводы произвольно — он ра
           letter-spacing: -.04em;
           font-weight: 700;
         }
-        .slider-title { font-size: 14px; line-height: 1.2; font-weight: 600; }
-        .slider-subtitle { margin-top: 10px; min-height: 34px; font-size: 12px; line-height: 1.45; color: rgba(255,255,255,.42); }
-        .slider-percent { margin-top: 8px; font-size: 12px; color: rgba(255,255,255,.5); }
-        .range-input { height: 18px; }
         .preview-actions-inline { display: flex; align-items: center; gap: 16px; }
         .reset-link {
           border: none; background: transparent; color: rgba(255,255,255,.54); cursor: pointer; padding: 0; font-size: 13px;
         }
         .reset-link:disabled { opacity: .35; cursor: not-allowed; }
-        .preview-side { position: static; top: auto; }
-        .preview-side-advanced {
-          top: 96px;
-        }
-        .preview-metrics-grid,
-        .preview-economy-grid,
-        .preview-sliders-grid {
-          align-items: stretch;
-        }
-        .preview-controls-head {
-          margin-top: 26px;
-        }
-        .preview-reserve-wide {
-          padding: 20px;
-        }
-        .preview-reserve-head {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) 260px;
-          gap: 18px;
-          align-items: start;
-        }
-        .preview-reserve-deltas {
-          display: grid;
-          gap: 10px;
-          margin-top: 2px;
-        }
-        .preview-reserve-body {
-          display: grid;
-          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-          gap: 18px;
-          margin-top: 18px;
-        }
-        .preview-reserve-copy {
-          margin: 12px 0 0;
-          color: rgba(255,255,255,.7);
-          font-size: 14px;
-          line-height: 1.65;
-        }
-        .preview-side-note-list-inline {
-          margin-top: 0;
-        }
-        .preview-reserve-box {
-          padding: 18px;
-        }
+        .preview-side { position: sticky; top: 100px; }
+        .preview-side-advanced { top: 96px; }
+        .preview-reserve-box { padding: 18px; }
         .preview-side-note {
           padding: 16px;
           border-radius: 20px;
@@ -4424,15 +4488,26 @@ AI не придумывает выводы произвольно — он ра
             justify-content: center;
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
-          .preview-grid-advanced { grid-template-columns: 1fr; }
-          .preview-input-grid-advanced { grid-template-columns: 1fr; }
-          .preview-reserve-head,
-          .preview-reserve-body {
-            grid-template-columns: 1fr;
+          .preview-grid-strategy-layout { grid-template-columns: 1fr; }
+          .preview-input-grid-visible { grid-template-columns: 1fr; }
+          .dashboard-grid-structured,
+          .model-grid-structured,
+          .control-levers-grid { grid-template-columns: 1fr; }
+          .control-lever {
+            min-height: 0;
+            padding: 0 0 22px;
+            border-left: none !important;
+            border-bottom: 1px solid rgba(255,255,255,.14);
           }
-          .slider-card-advanced {
-            min-height: 186px;
+          .control-lever:last-child { border-bottom: none; }
+          .control-lever-head {
+            position: relative;
+            left: auto;
+            right: auto;
+            top: auto;
+            margin-bottom: 24px;
           }
+          .strategy-chip-row { gap: 12px; }
           .hero-chart-float { display: none; }
           .stage-scheme-slide {
             flex: 0 0 100%;
