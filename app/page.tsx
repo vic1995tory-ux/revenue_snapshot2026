@@ -1086,50 +1086,50 @@ function StageCarousel() {
     {
       niche: "SaaS",
       stage: "Early Stage",
-      lever: "Разработка системы продаж и входа в продукт",
-      roadmap: "Выбор приоритетного сегмента ЦА, проработка позиционирования продукта, определение ценообразования и рисков кассового разрыва",
-      zones: ["finmodel", "product"],
-      result: ["deal cycle", "payback"],
+      lever: "Сборка первой устойчивой модели",
+      roadmap: "Сначала фиксируется факт экономики, затем приоритет и короткий RoadMap по усилению.",
+      zones: ["Leads", "Qual Leads"],
+      result: ["Cycle", "Payback"],
     },
     {
       niche: "HealthTech",
       stage: "Growth",
-      lever: "Сокращение цикла сделки",
-      roadmap: "Упрощение onboadring за счет CustDev и сокращение demo-периода",
-      zones: ["sales", "product"],
-      result: ["deal cycle", "unit-economic"],
+      lever: "Ускорение сделки без давления на маржу",
+      roadmap: "Snapshot собирает логику роста, выделяет ограничение и дает последовательность решений.",
+      zones: ["Sales", "Retention"],
+      result: ["CAC", "Margin"],
     },
     {
-      niche: "Marketing Agency",
+      niche: "B2B",
       stage: "Startup",
-      lever: "Разработка entry-услуги",
-      roadmap: "Исследование текущего CJM и его пересборка в соответствие с маржинальностью",
-      zones: ["pipeline", "unit-economic"],
-      result: ["deal cycle", "sales"],
+      lever: "Сокращение ручного управления ростом",
+      roadmap: "Результат показывает, где теряется скорость роста и какой сценарий дает наибольший эффект.",
+      zones: ["Pipeline", "Offer"],
+      result: ["Cycle", "Profit"],
     },
     {
       niche: "FinTech",
       stage: "Growth",
-      lever: "Изменение позиционирования под разные сегменты ЦА",
-      roadmap: "Строгое разделение позиционирования на B2B, B2C, P2P сегменты и создание формирование отдельных предложений под каждый",
-      zones: ["offer", "finmodel", "team"],
-      result: ["scale", "margin"],
+      lever: "Пересборка экономики привлечения",
+      roadmap: "Фокус смещается на каналы, payback и точку, которая реально тормозит масштабирование.",
+      zones: ["CAC", "Quality"],
+      result: ["Payback", "Scale"],
     },
     {
       niche: "EdTech",
       stage: "Expansion",
-      lever: "Масштабирование на другие страны с предварительным CustDev спикеров и фокус-групп ЦА",
-      roadmap: "Изучение культуры, особенностей языка новых стран, рынка труда и зарплатных ожиданий. Найм команды и реструктуризация текущей",
-      zones: ["team", "offer"],
-      result: ["stable margin", "new market"],
+      lever: "Рост без потери качества экономики",
+      roadmap: "Система показывает, как сохранить маржу и где нужна смена приоритета роста.",
+      zones: ["Offer", "Retention"],
+      result: ["Margin", "Load"],
     },
     {
       niche: "E-com",
       stage: "Expansion",
-      lever: "CustDev, Mystery Shopping (тайный покупатель) и формирование CJM на новые ГЕО",
-      roadmap: "Глубокое исследование конкурентов, корректировка продуктовой линейки. Найм новой команды, выбор логистических подрядчиков, пересборка позиционирования под новый рынок и работа с блогерами",
-      zones: ["product", "team"],
-      result: ["new market", "break-even in four months"],
+      lever: "Усиление прибыльности через модель",
+      roadmap: "Snapshot отделяет видимый рост от полезного роста и расставляет экономические приоритеты.",
+      zones: ["AOV", "Costs"],
+      result: ["Profit", "Structure"],
     },
   ];
 
@@ -1585,18 +1585,14 @@ const strategyOptions = [
         return;
       }
 
- const rect = section.getBoundingClientRect();
-
-const startLine = window.innerHeight * 0.72; // начало ниже по экрану
-const endOffset = window.innerHeight * 0.28; // конец выше, анимация заканчивается раньше
-
-const sectionHeight = Math.max(
-  section.offsetHeight - window.innerHeight + endOffset,
-  1
-);
-
-const rawProgress = (startLine - rect.top) / sectionHeight;
-const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
+      const rect = section.getBoundingClientRect();
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const rawProgress = (window.innerHeight * 0.84 - rect.top) / sectionHeight;
+      const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
+      const nextIndex = Math.min(
+        journeySteps.length - 1,
+        Math.floor(progress * journeySteps.length)
+      );
 
       setJourneyActiveIndex(nextIndex);
     };
@@ -1781,36 +1777,47 @@ const handleReset = () => {
 
     const reserveValue = Math.max(0, profit - baseProfit);
 
-const scenarioFlags: string[] = [];
+    const scenarioFlags: string[] = [];
 
-const allLeversAtMax =
-  marketing === 20 &&
-  avgCheckShift === 30 &&
-  efficiency === 20 &&
-  ltv === 25;
+    const allLeversAtMax =
+      marketing === 20 &&
+      avgCheckShift === 30 &&
+      efficiency === 20 &&
+      ltv === 25;
 
-if (allLeversAtMax) {
-  scenarioFlags.push("это утопия, ну ало");
-} else {
-  if (marketing > 0 && efficiency < 8) {
-    scenarioFlags.push("Маркетинг усиливает рост, но без эффективности давит на прибыль.");
-  }
-  if (avgCheckShift > 0) {
-    scenarioFlags.push("Рост среднего чека повышает прибыльность, но сдерживает часть спроса.");
-  }
-  if (avgCheckShift < 0 && ltv > 0) {
-    scenarioFlags.push("Снижение чека частично компенсируется LTV и ростом клиентской базы.");
-  }
-  if (efficiency >= 10) {
-    scenarioFlags.push("Эффективность и автоматизация снижают давление расходов на модель.");
-  }
-  if (ltv >= 10) {
-    scenarioFlags.push("LTV усиливает монетизацию уже привлечённой базы.");
-  }
-  if (!scenarioFlags.length) {
-    scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
-  }
-}
+    if (allLeversAtMax) {
+      scenarioFlags.push("это сказка");
+    } else {
+      if (revDelta >= 8) {
+        scenarioFlags.push("Модель ускоряет рост выручки за счёт усиления клиентского потока и более активной траектории роста.");
+      } else if (revDelta >= 3) {
+        scenarioFlags.push("Выручка растёт без резкого разрыва с базовой моделью — эффект уже заметен, но остаётся контролируемым.");
+      } else if (revDelta <= -3) {
+        scenarioFlags.push("Текущая комбинация рычагов снижает верхний предел выручки и делает модель более сдержанной по объёму.");
+      }
+
+      if (costDelta >= 8) {
+        scenarioFlags.push("Расходы растут ускоренно: сценарий покупает объём через дополнительное давление на CAC и OPEX.");
+      } else if (costDelta <= -3) {
+        scenarioFlags.push("Сценарий разгружает расходную часть и удерживает рост в более чистой экономической структуре.");
+      }
+
+      if (profitDelta >= 8) {
+        scenarioFlags.push("Прибыль растёт быстрее базы — модель усиливает не только оборот, но и полезный экономический результат.");
+      } else if (profitDelta <= -3) {
+        scenarioFlags.push("Прибыль остаётся под давлением: часть роста уходит в стоимость привлечения и операционную нагрузку.");
+      }
+
+      if (marginDelta >= 3) {
+        scenarioFlags.push("Маржинальность укрепляется: модель становится устойчивее к масштабированию и менее чувствительна к лишним затратам.");
+      } else if (marginDelta <= -3) {
+        scenarioFlags.push("Маржа проседает: сценарий усиливает рост, но делает его более дорогим для текущей экономики.");
+      }
+
+      if (!scenarioFlags.length) {
+        scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
+      }
+    }
 
     return {
       revenue,
@@ -1962,7 +1969,8 @@ if (allLeversAtMax) {
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-               это данные, которые отвечают на острые вопросы бизнеса.
+                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
+                Не общие выводы, а конкретные расчёты и приоритеты.
               </div>
 
               <p className="hero-main-copy">
@@ -2095,7 +2103,7 @@ if (allLeversAtMax) {
       className="preview-inline-input"
       placeholder="30"
     />
-    <span className="preview-inline-input-meta">% / маржа</span>
+    <span className="preview-inline-input-meta">% / маржинальность</span>
   </div>
 </div>
 
@@ -2244,7 +2252,7 @@ if (allLeversAtMax) {
 
           <div className="results-bottom-stack">
             <div className="results-roadmap-note">
-              После получения и изучения Revenue Snapshot у Вас есть возможность назначить <span>60-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
             <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
           </div>
@@ -2994,7 +3002,7 @@ if (allLeversAtMax) {
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 185vh;
+          min-height: 250vh;
         }
         .journey-scroll-sticky {
           position: sticky;
