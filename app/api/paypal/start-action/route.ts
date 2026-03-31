@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const payload = {
-      action: "start-action",
+      action: "start_action",
 
       payment_id: toTrimmedString(body?.payment_id),
       access_token: toTrimmedString(body?.access_token),
