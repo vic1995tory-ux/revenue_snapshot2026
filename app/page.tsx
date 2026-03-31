@@ -1801,14 +1801,9 @@ const handleReset = () => {
               <h1 className="hero-main-title">Revenue Snapshot</h1>
 
               <div className="hero-main-subtitle">
-                Revenue Snapshot — это данные, которые отвечают на острые вопросы бизнеса.
-                Не общие выводы, а конкретные расчёты и приоритеты.
+                 — это данные, которые отвечают на острые вопросы бизнеса.
+                КОНКРЕТНЫЕ РАСЧЁТЫ И ПРИОРИТЕТЫ
               </div>
-
-              <p className="hero-main-copy">
-                Система фиксирует ограничения роста, показывает точки потерь и
-                собирает управленческую последовательность решений на основе экономики бизнеса.
-              </p>
 
               <div className="hero-highlights-row hero-highlights-row-unified glare-card-lite">
                 <div className="hero-highlight-chip">ECONOMIC RATE</div>
