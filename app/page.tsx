@@ -1898,89 +1898,42 @@ const handleReset = () => {
             <div className="preview-main-column preview-main-column-structured">
               <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
-       <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
+              <div className="preview-inline-inputs">
+                <div className="preview-inline-input-shell">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={clientsInput}
+                    onFocus={pushHistory}
+                    onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
+                    className="preview-inline-input"
+                    placeholder="клиенты/месяц"
+                  />
+                </div>
 
-<div className="preview-inline-inputs">
-  <div className="preview-inline-input-shell">
-    <input
-      type="text"
-      inputMode="numeric"
-      value={clientsInput}
-      onFocus={pushHistory}
-      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
-      className="preview-inline-input"
-      placeholder="клиенты/месяц"
-    />
-  </div>
+                <div className="preview-inline-input-shell">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={checkInput}
+                    onFocus={pushHistory}
+                    onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
+                    className="preview-inline-input"
+                    placeholder="средний чек"
+                  />
+                </div>
 
-  <div className="preview-inline-input-shell">
-    <input
-      type="text"
-      inputMode="numeric"
-      value={checkInput}
-      onFocus={pushHistory}
-      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
-      className="preview-inline-input"
-      placeholder="средний чек"
-    />
-  </div>
-
-  <div className="preview-inline-input-shell">
-    <input
-      type="text"
-      inputMode="numeric"
-      value={marginInput}
-      onFocus={pushHistory}
-      onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
-      className="preview-inline-input"
-      placeholder="маржинальность %"
-    />
-  </div>
-</div>
-                <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">Клиенты / месяц</span>
-                  <div className="input-wrap input-wrap-primary">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={clientsInput}
-                      onFocus={pushHistory}
-                      onChange={(e) => setClientsInput(normalizeDigits(e.target.value))}
-                      className="glass-input glass-input-primary"
-                      placeholder="например, 20"
-                    />
-                  </div>
-                </label>
-
-                <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">Средний чек</span>
-                  <div className="input-wrap input-wrap-primary">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={checkInput}
-                      onFocus={pushHistory}
-                      onChange={(e) => setCheckInput(normalizeDigits(e.target.value))}
-                      className="glass-input glass-input-primary"
-                      placeholder="например, 2000"
-                    />
-                  </div>
-                </label>
-
-                <label className="input-shell input-shell-highlight">
-                  <span className="input-label input-label-strong">Маржинальность, %</span>
-                  <div className="input-wrap input-wrap-primary">
-                    <input
-                      type="text"
-                      inputMode="numeric"
-                      value={marginInput}
-                      onFocus={pushHistory}
-                      onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
-                      className="glass-input glass-input-primary"
-                      placeholder="например, 30"
-                    />
-                  </div>
-                </label>
+                <div className="preview-inline-input-shell">
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    value={marginInput}
+                    onFocus={pushHistory}
+                    onChange={(e) => setMarginInput(normalizeDigits(e.target.value))}
+                    className="preview-inline-input"
+                    placeholder="маржинальность %"
+                  />
+                </div>
               </div>
 
 <div className="preview-panel-label">Выберите стратегию</div>
@@ -4572,6 +4525,7 @@ const handleReset = () => {
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-strategy-layout { grid-template-columns: 1fr; }
+          .preview-inline-inputs { grid-template-columns: 1fr; }
           .preview-input-grid-visible { grid-template-columns: 1fr; }
           .dashboard-grid-structured,
           .model-grid-structured,
