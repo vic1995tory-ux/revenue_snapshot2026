@@ -159,6 +159,7 @@ function Row({
 function ControlSlider({
   title,
   subtitle,
+  details,
   value,
   min,
   max,
@@ -169,6 +170,12 @@ function ControlSlider({
 }: {
   title: string;
   subtitle: string;
+  details: {
+    effect: string;
+    difficulty: string;
+    sideEffect: string;
+    meaning: string;
+  };
   value: number;
   min: number;
   max: number;
@@ -178,6 +185,7 @@ function ControlSlider({
   onStart: () => void;
 }) {
   const [started, setStarted] = useState(false);
+  const [open, setOpen] = useState(false);
 
   const tone =
     value > 0 ? "text-emerald-300" : value < 0 ? "text-rose-300" : "text-white/50";
@@ -186,18 +194,34 @@ function ControlSlider({
 
   return (
     <div className="glass-card soft-glow glare-card slider-card slider-card-advanced">
-      <div>
-        <div className="slider-title">{title}</div>
-        <div className="slider-subtitle">{subtitle}</div>
-      </div>
-
-      <div className="mt-auto">
-        <div className="slider-scale-row">
-          <span>{min}{suffix}</span>
-          <span>0{suffix}</span>
-          <span>{max > 0 ? `+${max}${suffix}` : `${max}${suffix}`}</span>
+      <div className="slider-top-row">
+        <div className="slider-title-wrap">
+          <div className="slider-title">{title}</div>
+          <div className="slider-subtitle">{subtitle}</div>
         </div>
 
+        <button
+          type="button"
+          className="slider-info-btn"
+          aria-label={`Подробнее о рычаге ${title}`}
+          aria-expanded={open}
+          onMouseEnter={() => setOpen(true)}
+          onMouseLeave={() => setOpen(false)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setOpen(false)}
+          onClick={() => setOpen((v) => !v)}
+        >
+          <AttentionIcon />
+          <span className={`slider-tooltip ${open ? "is-open" : ""}`}>
+            <span className="slider-tooltip-line"><b>Основной эффект:</b> {details.effect}</span>
+            <span className="slider-tooltip-line"><b>Сложность:</b> {details.difficulty}</span>
+            <span className="slider-tooltip-line"><b>Побочка:</b> {details.sideEffect}</span>
+            <span className="slider-tooltip-line"><b>Смысл:</b> {details.meaning}</span>
+          </span>
+        </button>
+      </div>
+
+      <div className="mt-auto slider-control-area">
         <input
           type="range"
           min={min}
@@ -1614,6 +1638,22 @@ AI не придумывает выводы произвольно — он ра
       scenarioFlags.push("Сейчас показан базовый сценарий без выраженного управленческого сдвига.");
     }
 
+    let strategySummary = "Сейчас модель близка к нейтральному сценарию: выраженный рычаг роста пока не выбран, поэтому эффект ограничен базовой экономикой.";
+
+    if (marketing > 8 && efficiency < 8) {
+      strategySummary = "Сценарий похож на агрессивный рост: упор идёт в привлечение и расширение потока, но без опоры на эффективность прибыльность становится более чувствительной к расходам.";
+    } else if (efficiency >= 10 && ltv >= 10) {
+      strategySummary = "Сценарий похож на планомерное усиление модели: акцент смещён в эффективность, удержание и монетизацию базы, поэтому рост выглядит более устойчивым по прибыли.";
+    } else if (avgCheckShift < 0 && ltv > 0) {
+      strategySummary = "Сценарий похож на дешёвый медленный рост: чек снижается ради расширения базы, а LTV компенсирует просадку через повторные продажи и более длинную монетизацию клиента.";
+    } else if (avgCheckShift > 0) {
+      strategySummary = "Сценарий похож на рост через монетизацию: ставка делается на более высокий чек и качество экономики, но часть спроса при этом становится менее конверсионной.";
+    } else if (efficiency >= 10) {
+      strategySummary = "Сценарий похож на внутреннюю оптимизацию: модель не форсирует спрос, а укрепляет прибыль за счёт снижения давления расходов и повышения capacity.";
+    } else if (ltv >= 10) {
+      strategySummary = "Сценарий похож на рост через удержание: дополнительная прибыль собирается с уже привлечённой базы, а не только через новый трафик.";
+    }
+
     return {
       revenue,
       costs,
@@ -1631,6 +1671,7 @@ AI не придумывает выводы произвольно — он ра
       cacDelta,
       marginDelta,
       scenarioFlags,
+      strategySummary,
     };
   }, [clientsBase, checkBase, marginBase, marketing, avgCheckShift, efficiency, ltv]);
 
@@ -1874,23 +1915,23 @@ AI не придумывает выводы произвольно — он ра
                 </label>
               </div>
 
-              <section className="dashboard-grid">
+              <section className="dashboard-grid preview-metrics-grid">
                 <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
-                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
                 <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
+                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
               </section>
 
               <div className="mt-5">
                 <div className="mb-3 text-sm text-white/58">Формирование экономики</div>
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
+                <div className="grid grid-cols-2 gap-3 md:grid-cols-4 preview-economy-grid">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
+                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
                   <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
                   <ModelCard title="Средний чек" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 preview-controls-head">
                 <div className="text-sm text-white/58">Рычаги управления</div>
                 <div className="preview-actions-inline">
                   <button type="button" onClick={handleUndo} className="reset-link" disabled={!history.length}>Отменить действие</button>
@@ -1898,10 +1939,16 @@ AI не придумывает выводы произвольно — он ра
                 </div>
               </div>
 
-              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 preview-sliders-grid">
                 <ControlSlider
                   title="Маркетинг"
-                  subtitle="−20% … +20%. Влияет на поток, CAC, чек и давление на расходы."
+                  subtitle="Влияет на поток, CAC, средний чек и давление на расходы."
+                  details={{
+                    effect: "Рост потока и расширение спроса.",
+                    difficulty: "Низкая / средняя.",
+                    sideEffect: "Рост расходов и давление на маржу.",
+                    meaning: "Даёт объём, но без опоры на систему легко делает рост дорогим.",
+                  }}
                   value={marketing}
                   min={-20}
                   max={20}
@@ -1910,7 +1957,13 @@ AI не придумывает выводы произвольно — он ра
                 />
                 <ControlSlider
                   title="Средний чек"
-                  subtitle="−15% … +30%. Даёт рост денег с клиента, но может резать спрос."
+                  subtitle="Влияет на деньги с клиента, маржу и чувствительность спроса."
+                  details={{
+                    effect: "Рост выручки с одного клиента.",
+                    difficulty: "Высокая.",
+                    sideEffect: "Часть спроса становится менее конверсионной.",
+                    meaning: "Даёт прибыльный рост, но требует сильного продукта, упаковки и позиционирования.",
+                  }}
                   value={avgCheckShift}
                   min={-15}
                   max={30}
@@ -1919,7 +1972,13 @@ AI не придумывает выводы произвольно — он ра
                 />
                 <ControlSlider
                   title="Эффективность и автоматизация"
-                  subtitle="0% … +20%. Снижает давление расходов и улучшает экономику модели."
+                  subtitle="Влияет на CAC, OPEX, маржинальность и capacity команды."
+                  details={{
+                    effect: "Снижение издержек и укрепление экономики модели.",
+                    difficulty: "Средняя / высокая.",
+                    sideEffect: "Эффект не бесконечный и со временем замедляется.",
+                    meaning: "Не даёт резкого всплеска выручки, но заметно улучшает прибыльность.",
+                  }}
                   value={efficiency}
                   min={0}
                   max={20}
@@ -1928,7 +1987,13 @@ AI не придумывает выводы произвольно — он ра
                 />
                 <ControlSlider
                   title="LTV"
-                  subtitle="0% … +25%. Усиливает выручку с уже привлечённой базы."
+                  subtitle="Влияет на повторные продажи, монетизацию базы и устойчивость прибыли."
+                  details={{
+                    effect: "Монетизация уже привлечённой клиентской базы.",
+                    difficulty: "Высокая.",
+                    sideEffect: "Требует вложений в удержание, сервис и продукт.",
+                    meaning: "Самый умный рост: усиливает выручку не только за счёт нового трафика, но и за счёт жизни клиента в системе.",
+                  }}
                   value={ltv}
                   min={0}
                   max={25}
@@ -1936,42 +2001,41 @@ AI не придумывает выводы произвольно — он ра
                   onStart={pushHistory}
                 />
               </div>
-            </div>
 
-            <aside className="glass-card glare-card preview-side preview-side-advanced">
-              <div className="reserve-kicker">Оценочный резерв</div>
-              <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
-                <div className="reserve-amount">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
-                <p className="mt-4 text-sm leading-7 text-white/65">
-                  Здесь показан потенциальный прирост прибыли относительно базового
-                  состояния модели. Это не финальный вывод, а предварительный диапазон,
-                  который позволяет увидеть, насколько чувствительна ваша экономика к
-                  изменениям управленческих рычагов.
-                </p>
-              </div>
-
-              <div className="mt-4 space-y-3 text-sm">
-                <Row label="Выручка" delta={preview.revDelta} />
-                <Row label="Расходы" delta={preview.costDelta} invert />
-                <Row label="Прибыль" delta={preview.profitDelta} />
-              </div>
-
-              <div className="preview-side-note glass-card soft-glow glare-card mt-4">
-                <div className="preview-side-note-title">Что сейчас происходит в модели</div>
-                <div className="preview-side-note-list">
-                  {preview.scenarioFlags.map((item) => (
-                    <div key={item} className="preview-side-note-item">
-                      <span className="preview-side-note-bullet">•</span>
-                      <span>{item}</span>
-                    </div>
-                  ))}
+              <div className="glass-card glare-card preview-reserve-wide mt-6">
+                <div className="preview-reserve-head">
+                  <div>
+                    <div className="reserve-kicker">Оценочный резерв</div>
+                    <div className="reserve-amount mt-3">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
+                  </div>
+                  <div className="preview-reserve-deltas text-sm">
+                    <Row label="Выручка" delta={preview.revDelta} />
+                    <Row label="Расходы" delta={preview.costDelta} invert />
+                    <Row label="Прибыль" delta={preview.profitDelta} />
+                  </div>
                 </div>
-              </div>
 
-              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
-                Попробовать Snapshot
-              </button>
-            </aside>
+                <div className="preview-reserve-body">
+                  <div className="preview-reserve-strategy">
+                    <div className="preview-side-note-title">Что показывает стратегия</div>
+                    <p className="preview-reserve-copy">{preview.strategySummary}</p>
+                  </div>
+
+                  <div className="preview-side-note-list preview-side-note-list-inline">
+                    {preview.scenarioFlags.map((item) => (
+                      <div key={item} className="preview-side-note-item">
+                        <span className="preview-side-note-bullet">•</span>
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
+                  Попробовать Snapshot
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -2884,7 +2948,7 @@ AI не придумывает выводы произвольно — он ра
         }
         .preview-grid { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 20px; align-items: start; }
         .preview-grid-advanced {
-          grid-template-columns: minmax(0, 1fr) 340px;
+          grid-template-columns: 1fr;
           gap: 22px;
           align-items: start;
         }
@@ -2895,16 +2959,71 @@ AI не придумывает выводы произвольно — он ра
           min-width: 0;
         }
         .slider-card-advanced {
-          min-height: 156px;
+          min-height: 210px;
         }
-        .slider-scale-row {
+        .slider-top-row {
           display: flex;
+          align-items: flex-start;
           justify-content: space-between;
-          gap: 8px;
-          margin-top: 8px;
-          color: rgba(255,255,255,.42);
-          font-size: 11px;
-          line-height: 1;
+          gap: 14px;
+        }
+        .slider-title-wrap {
+          min-width: 0;
+        }
+        .slider-control-area {
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
+        }
+        .slider-info-btn {
+          position: relative;
+          flex: none;
+          width: 34px;
+          height: 34px;
+          border-radius: 999px;
+          border: 1px solid rgba(247,210,55,.28);
+          background: rgba(247,210,55,.08);
+          color: #f7d237;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+        }
+        .slider-info-btn svg {
+          width: 14px;
+          height: 14px;
+        }
+        .slider-tooltip {
+          position: absolute;
+          top: calc(100% + 10px);
+          right: 0;
+          width: min(290px, 72vw);
+          padding: 12px 14px;
+          border-radius: 16px;
+          background: rgba(7,15,32,.97);
+          border: 1px solid rgba(247,210,55,.24);
+          box-shadow: 0 18px 34px rgba(0,0,0,.38);
+          color: rgba(255,255,255,.84);
+          font-size: 12px;
+          line-height: 1.5;
+          text-align: left;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(6px);
+          transition: .18s ease;
+          z-index: 20;
+          pointer-events: none;
+        }
+        .slider-tooltip.is-open {
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+        .slider-tooltip-line {
+          display: block;
+        }
+        .slider-tooltip-line + .slider-tooltip-line {
+          margin-top: 6px;
         }
         .preview-input-intro { margin-bottom: 12px; color: rgba(255,255,255,.82); font-size: 15px; font-weight: 600; }
         .preview-example-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
@@ -2949,9 +3068,46 @@ AI не придумывает выводы произвольно — он ра
           border: none; background: transparent; color: rgba(255,255,255,.54); cursor: pointer; padding: 0; font-size: 13px;
         }
         .reset-link:disabled { opacity: .35; cursor: not-allowed; }
-        .preview-side { position: sticky; top: 100px; }
+        .preview-side { position: static; top: auto; }
         .preview-side-advanced {
           top: 96px;
+        }
+        .preview-metrics-grid,
+        .preview-economy-grid,
+        .preview-sliders-grid {
+          align-items: stretch;
+        }
+        .preview-controls-head {
+          margin-top: 26px;
+        }
+        .preview-reserve-wide {
+          padding: 20px;
+        }
+        .preview-reserve-head {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 260px;
+          gap: 18px;
+          align-items: start;
+        }
+        .preview-reserve-deltas {
+          display: grid;
+          gap: 10px;
+          margin-top: 2px;
+        }
+        .preview-reserve-body {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          gap: 18px;
+          margin-top: 18px;
+        }
+        .preview-reserve-copy {
+          margin: 12px 0 0;
+          color: rgba(255,255,255,.7);
+          font-size: 14px;
+          line-height: 1.65;
+        }
+        .preview-side-note-list-inline {
+          margin-top: 0;
         }
         .preview-reserve-box {
           padding: 18px;
@@ -4270,6 +4426,13 @@ AI не придумывает выводы произвольно — он ра
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-advanced { grid-template-columns: 1fr; }
           .preview-input-grid-advanced { grid-template-columns: 1fr; }
+          .preview-reserve-head,
+          .preview-reserve-body {
+            grid-template-columns: 1fr;
+          }
+          .slider-card-advanced {
+            min-height: 186px;
+          }
           .hero-chart-float { display: none; }
           .stage-scheme-slide {
             flex: 0 0 100%;
