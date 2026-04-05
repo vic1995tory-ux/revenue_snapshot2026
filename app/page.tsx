@@ -2140,9 +2140,9 @@ const handleReset = () => {
                 </div>
                 <div className="model-grid-structured">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
-                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
-                  <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
-                  <ModelCard title="Средний чек" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
+                  <ModelCard title="Изменения Маржинальности" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
+                  <ModelCard title="Количество Клиентов" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
+                  <ModelCard title="Изменения Среднего чека" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
                 </div>
               </div>
 
@@ -5325,7 +5325,6 @@ const handleReset = () => {
     height: 100%;
     position: relative;
     padding-bottom: 28px;
-      overflow: visible;
   }
 
   .model-grid-structured .model-head {
