@@ -5463,8 +5463,8 @@ const handleReset = () => {
     position: absolute;
     inset: 0;
     border: 0;
-    background: rgba(3,10,22,.85);
-    backdrop-filter: blur(12px);
+    background: rgba(3,10,22,.9);
+    backdrop-filter: blur(30px);
     -webkit-backdrop-filter: blur(20px);
   }
 
