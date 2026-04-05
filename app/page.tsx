@@ -1656,8 +1656,8 @@ const strategyOptions = [
       }
 
       const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
-      const rawProgress = (window.innerHeight * 0.84 - rect.top) / sectionHeight;
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1.5);
+      const rawProgress = (window.innerHeight * 1 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
         journeySteps.length - 1,
