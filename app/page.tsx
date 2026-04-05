@@ -183,7 +183,7 @@ function StrategyChip({
       onClick={onClick}
     >
       <span className={`strategy-chip-dot ${active ? "is-active" : ""}`} />
-      <span className="strategy-chip-label">{label}</span>
+      <span>{label}</span>
     </button>
   );
 }
@@ -623,8 +623,6 @@ function TariffParagraphContent({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
-    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
-    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   };
 }) {
   return (
@@ -665,45 +663,14 @@ function TariffParagraphContent({
       ) : null}
 
       {section.notes?.length ? (
-        section.notesRender === "list" ? (
-          <div className="tariff-check-list">
-            {section.notes.map((note) => (
-              <div key={note} className="tariff-check-item">
-                <span className="tariff-check-mark">
-                  <ChipIcon kind={section.notesIconKind ?? section.iconKind ?? "custom"} />
-                </span>
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        ) : section.notesRender === "tags" ? (
-          <TagList
-            items={section.notes}
-            variant="soft"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : section.notesRender === "icon-tags" ? (
-          <TagList
-            items={section.notes}
-            variant="icon-solid"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : section.notesRender === "yellow-tags" ? (
-          <TagList
-            items={section.notes}
-            variant="yellow"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : (
-          <div className="tariff-note-list">
-            {section.notes.map((note) => (
-              <div key={note} className="tariff-note-item">
-                <span className="tariff-note-bullet">•</span>
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        )
+        <div className="tariff-note-list">
+          {section.notes.map((note) => (
+            <div key={note} className="tariff-note-item">
+              <span className="tariff-note-bullet">•</span>
+              <span>{note}</span>
+            </div>
+          ))}
+        </div>
       ) : null}
     </div>
   );
@@ -719,8 +686,6 @@ function TariffCompareBlock({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
-    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
-    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   };
 }) {
   return (
@@ -763,45 +728,14 @@ function TariffCompareBlock({
       ) : null}
 
       {section.notes?.length ? (
-        section.notesRender === "list" ? (
-          <div className="tariff-check-list">
-            {section.notes.map((note) => (
-              <div key={note} className="tariff-check-item">
-                <span className="tariff-check-mark">
-                  <ChipIcon kind={section.notesIconKind ?? section.iconKind ?? "custom"} />
-                </span>
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        ) : section.notesRender === "tags" ? (
-          <TagList
-            items={section.notes}
-            variant="soft"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : section.notesRender === "icon-tags" ? (
-          <TagList
-            items={section.notes}
-            variant="icon-solid"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : section.notesRender === "yellow-tags" ? (
-          <TagList
-            items={section.notes}
-            variant="yellow"
-            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
-          />
-        ) : (
-          <div className="tariff-note-list">
-            {section.notes.map((note) => (
-              <div key={note} className="tariff-note-item">
-                <span className="tariff-note-bullet">•</span>
-                <span>{note}</span>
-              </div>
-            ))}
-          </div>
-        )
+        <div className="tariff-note-list">
+          {section.notes.map((note) => (
+            <div key={note} className="tariff-note-item">
+              <span className="tariff-note-bullet">•</span>
+              <span>{note}</span>
+            </div>
+          ))}
+        </div>
       ) : null}
     </div>
   );
@@ -819,8 +753,6 @@ function TariffCompareCard({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
-    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
-    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   }>;
   disclaimer?: string[];
 }) {
@@ -966,11 +898,9 @@ function TariffDetailsComparison() {
         "Индивидуальная проработка",
       ],
       notes: [
-        "Связь во время подготовки результата",
-        "Дополнительные уточнения в процессе",
+        "Связь во время подготовки результата.",
+        "Дополнительные уточнения в процессе.",
       ],
-      notesRender: "list" as const,
-      notesIconKind: "brief" as const,
     },
     {
       label: "Economic model",
@@ -1656,11 +1586,11 @@ const strategyOptions = [
       }
 
       const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 0.6);
-      const rawProgress = (window.innerHeight * 0.7 - rect.top) / sectionHeight;
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 0.65);
+      const rawProgress = (window.innerHeight * 0.65 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
-        journeySteps.length - 1,
+        journeySteps.length - 0.8,
         Math.floor(progress * journeySteps.length)
       );
 
@@ -2134,7 +2064,7 @@ const handleReset = () => {
 
           <div className="preview-grid preview-grid-strategy-layout">
             <div className="preview-main-column preview-main-column-structured">
-              <div className="preview-panel-label preview-panel-label-accent">Введите базовые параметры бизнеса</div>
+              <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
 
              <div className="preview-inline-inputs">
   <div className="preview-inline-input-shell">
@@ -2173,7 +2103,7 @@ const handleReset = () => {
       className="preview-inline-input"
       placeholder="30"
     />
-    <span className="preview-inline-input-meta">% / маржа</span>
+    <span className="preview-inline-input-meta">% / маржинальность</span>
   </div>
 </div>
 
@@ -2190,15 +2120,9 @@ const handleReset = () => {
 </div>
 
               <section className="dashboard-grid dashboard-grid-structured mt-10">
-                <div className="dashboard-metric-slot dashboard-metric-slot-revenue">
-                  <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
-                </div>
-                <div className="dashboard-metric-slot dashboard-metric-slot-costs">
-                  <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
-                </div>
-                <div className="dashboard-metric-slot dashboard-metric-slot-profit">
-                  <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
-                </div>
+                <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
+                <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
+                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
               </section>
 
               <div className="mt-8">
@@ -2210,7 +2134,7 @@ const handleReset = () => {
                 </div>
                 <div className="model-grid-structured">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
-                  <ModelCard title="Маржа" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
+                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
                   <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
                   <ModelCard title="Средний чек" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
                 </div>
@@ -2328,7 +2252,7 @@ const handleReset = () => {
 
           <div className="results-bottom-stack">
             <div className="results-roadmap-note">
-              После получения и изучения результатов у Вас есть возможность назначить <span>60-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
             <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
           </div>
@@ -3082,7 +3006,7 @@ const handleReset = () => {
         }
         .journey-scroll-sticky {
           position: sticky;
-          top: 100px;
+          top: 50px;
           padding-bottom: 12px;
           overflow: hidden;
         }
@@ -3235,9 +3159,6 @@ const handleReset = () => {
         .preview-panel-label-muted {
           color: rgba(255,255,255,.74);
         }
-        .preview-panel-label-accent {
-          color: #f7d237;
-        }
 .preview-inline-inputs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3332,8 +3253,6 @@ const handleReset = () => {
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  width: fit-content;
-  max-width: 100%;
   min-height: 48px;
   padding: 0 20px;
   border-radius: 16px;
@@ -3373,17 +3292,10 @@ const handleReset = () => {
   border-color: #f7d237;
   box-shadow: 0 0 12px rgba(247,210,55,.32);
 }
-.strategy-chip-label {
-  flex: 1 1 auto;
-  text-align: right;
-}
         .dashboard-grid-structured {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
-        }
-        .dashboard-metric-slot {
-          min-width: 0;
         }
         .model-grid-structured {
           display: grid;
@@ -4871,7 +4783,6 @@ const handleReset = () => {
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-strategy-layout { grid-template-columns: 1fr; }
-          .hero-main-copy { display: none; }
           .preview-inline-inputs { grid-template-columns: 1fr; }
           .preview-inline-input-shell {
   min-height: 68px;
@@ -4887,46 +4798,6 @@ const handleReset = () => {
 .preview-inline-input-meta {
   font-size: 15px;
 }
-          .strategy-chip-row {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-          }
-          .strategy-chip {
-            justify-content: flex-start;
-            padding: 0 18px 0 14px;
-          }
-          .strategy-chip-label {
-            text-align: right;
-          }
-          .dashboard-grid-structured {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            grid-template-areas:
-              "profit profit"
-              "revenue costs";
-            gap: 14px;
-          }
-          .dashboard-metric-slot-revenue { grid-area: revenue; }
-          .dashboard-metric-slot-costs { grid-area: costs; }
-          .dashboard-metric-slot-profit { grid-area: profit; }
-          .dashboard-metric-slot .metric-card {
-            min-height: 176px;
-          }
-          .dashboard-metric-slot-revenue .metric-card,
-          .dashboard-metric-slot-costs .metric-card {
-            min-height: 188px;
-          }
-          .dashboard-metric-slot-revenue .metric-main-value,
-          .dashboard-metric-slot-costs .metric-main-value {
-            font-size: clamp(20px, 6.4vw, 28px);
-          }
-          .model-grid-structured {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 14px;
-          }
-          .model-grid-structured .model-card {
-            min-height: 176px;
-          }
           .preview-section-headline {
             flex-direction: column;
             align-items: flex-start;
@@ -5346,6 +5217,50 @@ const handleReset = () => {
   }
 }
 
+@media (max-width: 767px) {
+  .dashboard-grid-structured {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "profit profit"
+      "revenue costs";
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .dashboard-metric-slot-revenue,
+  .dashboard-metric-slot-costs {
+    width: 100%;
+  }
+
+  .dashboard-metric-slot-revenue .metric-card,
+  .dashboard-metric-slot-costs .metric-card {
+    min-height: 188px;
+    height: 100%;
+  }
+
+  .model-grid-structured {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .model-grid-structured .model-card {
+    min-height: 176px;
+    height: 100%;
+  }
+
+  .strategy-chip-row {
+    align-items: stretch;
+  }
+
+  .strategy-chip {
+    width: 100%;
+  }
+
+  .strategy-chip-label {
+    text-align: left !important;
+  }
+}
 @media (max-width: 767px) {
   .tariff-compare-card {
     padding: 18px 16px 18px;
