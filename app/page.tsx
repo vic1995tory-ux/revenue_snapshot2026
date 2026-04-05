@@ -2831,7 +2831,7 @@ const handleReset = () => {
         .hero-main-subtitle {
           margin-top: 22px;
           color: #fff;
-          font-size: clamp(26px, 2vw, 34px);
+          font-size: clamp(22px, 2vw, 30px);
           line-height: .98;
           letter-spacing: -.045em;
           font-weight: 500;
