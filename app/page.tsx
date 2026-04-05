@@ -1586,7 +1586,7 @@ const strategyOptions = [
       }
 
       const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1);
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 0.85);
       const rawProgress = (window.innerHeight * 0.84 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
@@ -3002,7 +3002,7 @@ const handleReset = () => {
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 250vh;
+          min-height: 200vh;
         }
         .journey-scroll-sticky {
           position: sticky;
