@@ -183,7 +183,7 @@ function StrategyChip({
       onClick={onClick}
     >
       <span className={`strategy-chip-dot ${active ? "is-active" : ""}`} />
-      <span>{label}</span>
+      <span className="strategy-chip-label">{label}</span>
     </button>
   );
 }
@@ -1656,8 +1656,8 @@ const strategyOptions = [
       }
 
       const rect = section.getBoundingClientRect();
-      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 1.5);
-      const rawProgress = (window.innerHeight * 1 - rect.top) / sectionHeight;
+      const sectionHeight = Math.max(section.offsetHeight - window.innerHeight, 0.6);
+      const rawProgress = (window.innerHeight * 0.7 - rect.top) / sectionHeight;
       const progress = Math.min(Math.max(rawProgress, 0), 0.9999);
       const nextIndex = Math.min(
         journeySteps.length - 1,
@@ -2134,7 +2134,7 @@ const handleReset = () => {
 
           <div className="preview-grid preview-grid-strategy-layout">
             <div className="preview-main-column preview-main-column-structured">
-              <div className="preview-panel-label">Введите базовые параметры бизнеса</div>
+              <div className="preview-panel-label preview-panel-label-accent">Введите базовые параметры бизнеса</div>
 
              <div className="preview-inline-inputs">
   <div className="preview-inline-input-shell">
@@ -2190,9 +2190,15 @@ const handleReset = () => {
 </div>
 
               <section className="dashboard-grid dashboard-grid-structured mt-10">
-                <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
-                <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
-                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
+                <div className="dashboard-metric-slot dashboard-metric-slot-revenue">
+                  <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
+                </div>
+                <div className="dashboard-metric-slot dashboard-metric-slot-costs">
+                  <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
+                </div>
+                <div className="dashboard-metric-slot dashboard-metric-slot-profit">
+                  <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
+                </div>
               </section>
 
               <div className="mt-8">
@@ -2204,7 +2210,7 @@ const handleReset = () => {
                 </div>
                 <div className="model-grid-structured">
                   <ModelCard title="Привлечение клиента" value={fmtMoney(preview.cac)} delta={preview.cacDelta} invert />
-                  <ModelCard title="Маржинальность" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
+                  <ModelCard title="Маржа" value={`${Math.round(preview.marginPct)}%`} delta={preview.marginDelta} />
                   <ModelCard title="Клиенты" value={Math.round(preview.clients)} delta={preview.clientsDelta} />
                   <ModelCard title="Средний чек" value={fmtMoney(preview.avgCheck)} delta={preview.avgCheckDelta} />
                 </div>
@@ -3072,11 +3078,11 @@ const handleReset = () => {
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 120vh;
+          min-height: 220vh;
         }
         .journey-scroll-sticky {
           position: sticky;
-          top: 92px;
+          top: 120px;
           padding-bottom: 12px;
           overflow: hidden;
         }
@@ -3229,6 +3235,9 @@ const handleReset = () => {
         .preview-panel-label-muted {
           color: rgba(255,255,255,.74);
         }
+        .preview-panel-label-accent {
+          color: #f7d237;
+        }
 .preview-inline-inputs {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -3323,6 +3332,8 @@ const handleReset = () => {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  width: fit-content;
+  max-width: 100%;
   min-height: 48px;
   padding: 0 20px;
   border-radius: 16px;
@@ -3362,10 +3373,17 @@ const handleReset = () => {
   border-color: #f7d237;
   box-shadow: 0 0 12px rgba(247,210,55,.32);
 }
+.strategy-chip-label {
+  flex: 1 1 auto;
+  text-align: right;
+}
         .dashboard-grid-structured {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
+        }
+        .dashboard-metric-slot {
+          min-width: 0;
         }
         .model-grid-structured {
           display: grid;
@@ -4853,6 +4871,7 @@ const handleReset = () => {
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-strategy-layout { grid-template-columns: 1fr; }
+          .hero-main-copy { display: none; }
           .preview-inline-inputs { grid-template-columns: 1fr; }
           .preview-inline-input-shell {
   min-height: 68px;
@@ -4868,6 +4887,46 @@ const handleReset = () => {
 .preview-inline-input-meta {
   font-size: 15px;
 }
+          .strategy-chip-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+          }
+          .strategy-chip {
+            justify-content: flex-start;
+            padding: 0 18px 0 14px;
+          }
+          .strategy-chip-label {
+            text-align: right;
+          }
+          .dashboard-grid-structured {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-areas:
+              "profit profit"
+              "revenue costs";
+            gap: 14px;
+          }
+          .dashboard-metric-slot-revenue { grid-area: revenue; }
+          .dashboard-metric-slot-costs { grid-area: costs; }
+          .dashboard-metric-slot-profit { grid-area: profit; }
+          .dashboard-metric-slot .metric-card {
+            min-height: 176px;
+          }
+          .dashboard-metric-slot-revenue .metric-card,
+          .dashboard-metric-slot-costs .metric-card {
+            min-height: 188px;
+          }
+          .dashboard-metric-slot-revenue .metric-main-value,
+          .dashboard-metric-slot-costs .metric-main-value {
+            font-size: clamp(20px, 6.4vw, 28px);
+          }
+          .model-grid-structured {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 14px;
+          }
+          .model-grid-structured .model-card {
+            min-height: 176px;
+          }
           .preview-section-headline {
             flex-direction: column;
             align-items: flex-start;
