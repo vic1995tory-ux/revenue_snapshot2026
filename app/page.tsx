@@ -5334,7 +5334,7 @@ const handleReset = () => {
   .model-grid-structured .model-delta-top {
     position: absolute;
     right: 16px;
-    bottom: 3px;
+    bottom: -19px;
     font-size: 12px;
     line-height: 1;
   }
