@@ -2103,7 +2103,7 @@ const handleReset = () => {
       className="preview-inline-input"
       placeholder="30"
     />
-    <span className="preview-inline-input-meta">% / маржинальность</span>
+    <span className="preview-inline-input-meta">% / маржа</span>
   </div>
 </div>
 
