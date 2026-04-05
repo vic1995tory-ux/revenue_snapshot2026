@@ -2779,7 +2779,7 @@ const handleReset = () => {
           max-width: 840px;
           color: rgba(255,255,255,.7);
           font-size: 18px;
-          line-height: 1.55;
+          line-height: 1;
         }
         .hero-section {
           position: relative;
