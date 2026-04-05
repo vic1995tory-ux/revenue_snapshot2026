@@ -5325,6 +5325,7 @@ const handleReset = () => {
     height: 100%;
     position: relative;
     padding-bottom: 28px;
+      overflow: visible;
   }
 
   .model-grid-structured .model-head {
