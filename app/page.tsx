@@ -4875,7 +4875,7 @@ const handleReset = () => {
           100% { transform: scale(1); opacity: 1; }
         }
         @keyframes snapshotPulse {
-          0% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.08); opacity: .88; }
+          0% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.15); opacity: .88; }
           50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 10px rgba(247,210,55,0); opacity: 1; }
           100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.08); opacity: .88; }
         }
@@ -5463,9 +5463,9 @@ const handleReset = () => {
     position: absolute;
     inset: 0;
     border: 0;
-    background: rgba(3,10,22,.78);
+    background: rgba(3,10,22,.85);
     backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(20px);
   }
 
   .preview-mobile-popup-card {
