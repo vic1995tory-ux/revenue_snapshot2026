@@ -3002,7 +3002,7 @@ const handleReset = () => {
         }
         .journey-scroll-shell {
           position: relative;
-          min-height: 180vh;
+          min-height: 90vh;
         }
         .journey-scroll-sticky {
           position: sticky;
