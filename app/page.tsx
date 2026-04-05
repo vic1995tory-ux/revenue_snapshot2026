@@ -2841,7 +2841,7 @@ const handleReset = () => {
           margin-top: 22px;
           color: rgba(255,255,255,.78);
           font-size: 22px;
-          line-height: 1.5;
+          line-height: 1;
         }
         .hero-highlights-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
         .hero-actions-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
