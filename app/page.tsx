@@ -623,6 +623,8 @@ function TariffParagraphContent({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
+    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   };
 }) {
   return (
@@ -663,14 +665,45 @@ function TariffParagraphContent({
       ) : null}
 
       {section.notes?.length ? (
-        <div className="tariff-note-list">
-          {section.notes.map((note) => (
-            <div key={note} className="tariff-note-item">
-              <span className="tariff-note-bullet">•</span>
-              <span>{note}</span>
-            </div>
-          ))}
-        </div>
+        section.notesRender === "list" ? (
+          <div className="tariff-check-list">
+            {section.notes.map((note) => (
+              <div key={note} className="tariff-check-item">
+                <span className="tariff-check-mark">
+                  <ChipIcon kind={section.notesIconKind ?? section.iconKind ?? "custom"} />
+                </span>
+                <span>{note}</span>
+              </div>
+            ))}
+          </div>
+        ) : section.notesRender === "tags" ? (
+          <TagList
+            items={section.notes}
+            variant="soft"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : section.notesRender === "icon-tags" ? (
+          <TagList
+            items={section.notes}
+            variant="icon-solid"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : section.notesRender === "yellow-tags" ? (
+          <TagList
+            items={section.notes}
+            variant="yellow"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : (
+          <div className="tariff-note-list">
+            {section.notes.map((note) => (
+              <div key={note} className="tariff-note-item">
+                <span className="tariff-note-bullet">•</span>
+                <span>{note}</span>
+              </div>
+            ))}
+          </div>
+        )
       ) : null}
     </div>
   );
@@ -686,6 +719,8 @@ function TariffCompareBlock({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
+    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   };
 }) {
   return (
@@ -728,14 +763,45 @@ function TariffCompareBlock({
       ) : null}
 
       {section.notes?.length ? (
-        <div className="tariff-note-list">
-          {section.notes.map((note) => (
-            <div key={note} className="tariff-note-item">
-              <span className="tariff-note-bullet">•</span>
-              <span>{note}</span>
-            </div>
-          ))}
-        </div>
+        section.notesRender === "list" ? (
+          <div className="tariff-check-list">
+            {section.notes.map((note) => (
+              <div key={note} className="tariff-check-item">
+                <span className="tariff-check-mark">
+                  <ChipIcon kind={section.notesIconKind ?? section.iconKind ?? "custom"} />
+                </span>
+                <span>{note}</span>
+              </div>
+            ))}
+          </div>
+        ) : section.notesRender === "tags" ? (
+          <TagList
+            items={section.notes}
+            variant="soft"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : section.notesRender === "icon-tags" ? (
+          <TagList
+            items={section.notes}
+            variant="icon-solid"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : section.notesRender === "yellow-tags" ? (
+          <TagList
+            items={section.notes}
+            variant="yellow"
+            icon={section.notesIconKind ?? section.iconKind ?? "custom"}
+          />
+        ) : (
+          <div className="tariff-note-list">
+            {section.notes.map((note) => (
+              <div key={note} className="tariff-note-item">
+                <span className="tariff-note-bullet">•</span>
+                <span>{note}</span>
+              </div>
+            ))}
+          </div>
+        )
       ) : null}
     </div>
   );
@@ -753,6 +819,8 @@ function TariffCompareCard({
     notes?: string[];
     render?: "list" | "tags" | "icon-tags" | "yellow-tags";
     iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+    notesRender?: "notes" | "list" | "tags" | "icon-tags" | "yellow-tags";
+    notesIconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
   }>;
   disclaimer?: string[];
 }) {
@@ -898,9 +966,11 @@ function TariffDetailsComparison() {
         "Индивидуальная проработка",
       ],
       notes: [
-        "Связь во время подготовки результата.",
-        "Дополнительные уточнения в процессе.",
+        "Связь во время подготовки результата",
+        "Дополнительные уточнения в процессе",
       ],
+      notesRender: "list" as const,
+      notesIconKind: "brief" as const,
     },
     {
       label: "Economic model",
