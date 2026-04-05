@@ -2252,7 +2252,7 @@ const handleReset = () => {
 
           <div className="results-bottom-stack">
             <div className="results-roadmap-note">
-              После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
+              После получения и изучения результатов у Вас есть возможность назначить <span>60-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
             <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
           </div>
