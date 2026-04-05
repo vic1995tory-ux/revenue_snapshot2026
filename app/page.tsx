@@ -5271,7 +5271,7 @@ const handleReset = () => {
   }
 
   .model-grid-structured .model-card {
-    min-height: 176px;
+    min-height: 100px;
     height: 100%;
   }
 
@@ -5306,12 +5306,12 @@ const handleReset = () => {
   }
 
   .dashboard-metric-slot-profit .metric-card {
-    min-height: 176px;
+    min-height: 155px;
   }
 
   .dashboard-metric-slot-revenue .metric-card,
   .dashboard-metric-slot-costs .metric-card {
-    min-height: 188px;
+    min-height: 168px;
   }
 
   .model-grid-structured {
@@ -5335,7 +5335,7 @@ const handleReset = () => {
     position: absolute;
     right: 16px;
     bottom: 14px;
-    font-size: 12px;
+    font-size: 3px;
     line-height: 1;
   }
 
