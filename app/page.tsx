@@ -183,7 +183,7 @@ function StrategyChip({
       onClick={onClick}
     >
       <span className={`strategy-chip-dot ${active ? "is-active" : ""}`} />
-      <span>{label}</span>
+      <span className="strategy-chip-label">{label}</span>
     </button>
   );
 }
@@ -2120,9 +2120,15 @@ const handleReset = () => {
 </div>
 
               <section className="dashboard-grid dashboard-grid-structured mt-10">
-                <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
-                <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
-                <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
+                <div className="dashboard-metric-slot dashboard-metric-slot-revenue">
+                  <TopMetricCard title="Выручка" value={fmtMoney(preview.revenue)} delta={preview.revDelta} type="revenue" />
+                </div>
+                <div className="dashboard-metric-slot dashboard-metric-slot-costs">
+                  <TopMetricCard title="Расходы" value={fmtMoney(preview.costs)} delta={preview.costDelta} type="costs" invert />
+                </div>
+                <div className="dashboard-metric-slot dashboard-metric-slot-profit">
+                  <TopMetricCard title="Прибыль" value={fmtMoney(preview.profit)} delta={preview.profitDelta} type="profit" />
+                </div>
               </section>
 
               <div className="mt-8">
@@ -3292,10 +3298,17 @@ const handleReset = () => {
   border-color: #f7d237;
   box-shadow: 0 0 12px rgba(247,210,55,.32);
 }
+.strategy-chip-label {
+  flex: 1 1 auto;
+  text-align: left;
+}
         .dashboard-grid-structured {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
           gap: 18px;
+        }
+        .dashboard-metric-slot {
+          min-width: 0;
         }
         .model-grid-structured {
           display: grid;
@@ -4783,6 +4796,8 @@ const handleReset = () => {
           }
           .preview-grid,.cta-card,.hero-grid-frame { grid-template-columns: 1fr; }
           .preview-grid-strategy-layout { grid-template-columns: 1fr; }
+          .hero-main-copy { display: none; }
+          .journey-progress-wrap { display: none; }
           .preview-inline-inputs { grid-template-columns: 1fr; }
           .preview-inline-input-shell {
   min-height: 68px;
@@ -4824,7 +4839,18 @@ const handleReset = () => {
             top: auto;
             margin-bottom: 24px;
           }
-          .strategy-chip-row { gap: 12px; }
+          .strategy-chip-row {
+            gap: 12px;
+            flex-direction: column;
+            align-items: stretch;
+          }
+          .strategy-chip {
+            width: 100%;
+            justify-content: flex-start;
+          }
+          .strategy-chip-label {
+            text-align: left;
+          }
           .preview-controls-head {
             flex-direction: column;
             align-items: flex-start;
@@ -5259,6 +5285,62 @@ const handleReset = () => {
 
   .strategy-chip-label {
     text-align: left !important;
+  }
+}
+@media (max-width: 767px) {
+  .dashboard-grid-structured {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "profit profit"
+      "revenue costs";
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .dashboard-metric-slot-revenue { grid-area: revenue; }
+  .dashboard-metric-slot-costs { grid-area: costs; }
+  .dashboard-metric-slot-profit { grid-area: profit; }
+
+  .dashboard-metric-slot .metric-card {
+    height: 100%;
+  }
+
+  .dashboard-metric-slot-profit .metric-card {
+    min-height: 176px;
+  }
+
+  .dashboard-metric-slot-revenue .metric-card,
+  .dashboard-metric-slot-costs .metric-card {
+    min-height: 188px;
+  }
+
+  .model-grid-structured {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 14px;
+    align-items: stretch;
+  }
+
+  .model-grid-structured .model-card {
+    min-height: 148px;
+    height: 100%;
+    position: relative;
+    padding-bottom: 28px;
+  }
+
+  .model-grid-structured .model-head {
+    display: block;
+  }
+
+  .model-grid-structured .model-delta-top {
+    position: absolute;
+    right: 16px;
+    bottom: 14px;
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .model-grid-structured .model-main-value {
+    margin-top: 18px;
   }
 }
 @media (max-width: 767px) {
