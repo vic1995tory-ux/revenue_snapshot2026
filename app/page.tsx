@@ -2786,7 +2786,7 @@ const handleReset = () => {
           border-radius: 36px;
           overflow: hidden;
           padding: 34px 28px 30px;
-          min-height: 860px;
+          min-height: 600px;
         }
         .hero-section::before {
           content: "";
