@@ -206,7 +206,7 @@ function StrategyMetaBadges({
   if (!items.length) return null;
 
   return (
-    <div className={`strategy-meta-row ${tone === "soft" ? "is-soft" : ""}`}>
+    <div className={`strategy-meta-row ${tone === "soft" ? "is-soft" : ""} is-yellow`}>
       {items.map((item) => (
         <div key={`${item.label}-${item.value}`} className="strategy-meta-badge">
           <span className="strategy-meta-badge-label">{item.label}</span>
@@ -1286,6 +1286,9 @@ const [history, setHistory] = useState<
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
+  const [previewMobilePopupOpen, setPreviewMobilePopupOpen] = useState(false);
+  const [previewMobileFloatingVisible, setPreviewMobileFloatingVisible] = useState(false);
+  const previewSectionRef = useRef<HTMLElement | null>(null);
   const journeySectionRef = useRef<HTMLElement | null>(null);
   const [journeyActiveIndex, setJourneyActiveIndex] = useState(0);
   const journeySteps: Array<{
@@ -1470,7 +1473,7 @@ const STRATEGY_CONFIG: Record<StrategyKey, {
       ltv: 4,
     },
     formationParams: [
-      { label: "Реализация", value: "средне-высокая" },
+      { label: "Сложность", value: "средне-высокая" },
       { label: "Время до KPI", value: "быстро" },
     ],
     leverParams: [
@@ -1493,7 +1496,7 @@ const STRATEGY_CONFIG: Record<StrategyKey, {
       ltv: 15,
     },
     formationParams: [
-      { label: "Реализация", value: "высокая" },
+      { label: "Сложность", value: "высокая" },
       { label: "Время до KPI", value: "среднее" },
     ],
     leverParams: [
@@ -1516,7 +1519,7 @@ const STRATEGY_CONFIG: Record<StrategyKey, {
       ltv: 20,
     },
     formationParams: [
-      { label: "Реализация", value: "низкая" },
+      { label: "Сложность", value: "низкая" },
       { label: "Время до KPI", value: "долго" },
     ],
     leverParams: [
@@ -1575,6 +1578,39 @@ const strategyOptions = [
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [faqOpen]);
+
+  useEffect(() => {
+    const handlePreviewMobileButton = () => {
+      const section = previewSectionRef.current;
+      if (!section) return;
+
+      if (window.innerWidth > 767) {
+        setPreviewMobileFloatingVisible(false);
+        setPreviewMobilePopupOpen(false);
+        return;
+      }
+
+      const rect = section.getBoundingClientRect();
+      const isVisible =
+        rect.top <= window.innerHeight * 0.3 &&
+        rect.bottom >= window.innerHeight * 0.38;
+
+      setPreviewMobileFloatingVisible(isVisible);
+
+      if (!isVisible) {
+        setPreviewMobilePopupOpen(false);
+      }
+    };
+
+    handlePreviewMobileButton();
+    window.addEventListener("scroll", handlePreviewMobileButton, { passive: true });
+    window.addEventListener("resize", handlePreviewMobileButton);
+
+    return () => {
+      window.removeEventListener("scroll", handlePreviewMobileButton);
+      window.removeEventListener("resize", handlePreviewMobileButton);
+    };
+  }, []);
 
 
   useEffect(() => {
@@ -1869,6 +1905,7 @@ const handleReset = () => {
 
 
   const selectedStrategyMeta = selectedStrategy ? STRATEGY_CONFIG[selectedStrategy] : null;
+  const hasPreviewInteraction = selectedStrategy !== null || marketing !== 0 || avgCheckShift !== 0 || efficiency !== 0 || ltv !== 0;
 
   const handleStrategySelect = (key: StrategyKey) => {
     pushHistory();
@@ -2050,7 +2087,7 @@ const handleReset = () => {
           </div>
         </section>
 
-        <section id="preview" className="mb-16">
+        <section id="preview" className="mb-16" ref={previewSectionRef}>
           <div className="section-head">
             <div className="section-kicker">Интерактивное превью</div>
             <h2 className="section-title">
@@ -2199,6 +2236,15 @@ const handleReset = () => {
               </div>
             </div>
 
+            <button
+              type="button"
+              className={`preview-mobile-fab ${hasPreviewInteraction ? "is-pulsing" : ""} ${previewMobileFloatingVisible ? "is-visible" : ""}`}
+              aria-label="Открыть Snapshot reserve"
+              onClick={() => setPreviewMobilePopupOpen(true)}
+            >
+              S
+            </button>
+
             <aside className="glass-card glare-card preview-side preview-side-advanced preview-side-reserve-window">
               <div className="reserve-kicker">Оценочный резерв</div>
               <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
@@ -2336,6 +2382,71 @@ const handleReset = () => {
         </footer>
       </div>
 
+
+      {previewMobilePopupOpen && (
+        <div className="preview-mobile-popup-root" role="dialog" aria-modal="true" aria-label="Snapshot reserve">
+          <button
+            type="button"
+            className="preview-mobile-popup-backdrop"
+            aria-label="Закрыть Snapshot reserve"
+            onClick={() => setPreviewMobilePopupOpen(false)}
+          />
+          <div className="preview-mobile-popup-card glass-card glare-card">
+            <button
+              type="button"
+              className="preview-mobile-popup-close"
+              aria-label="Закрыть"
+              onClick={() => setPreviewMobilePopupOpen(false)}
+            >
+              ✕
+            </button>
+
+            <div className="reserve-kicker">Оценочный резерв</div>
+            <div className="hero-preview-box mt-4 glare-card-lite preview-reserve-box">
+              <div className="reserve-amount">≈ {fmtMoney(preview.reserveValue)} <span>/ мес</span></div>
+              {selectedStrategyMeta ? (
+                <div className="reserve-strategy-copy">
+                  {selectedStrategyMeta.behavior.map((item) => (
+                    <div key={item} className="reserve-strategy-item">
+                      <span className="reserve-strategy-bullet">•</span>
+                      <span>{item}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-4 space-y-3 text-sm">
+              <Row label="Выручка" delta={preview.revDelta} />
+              <Row label="Расходы" delta={preview.costDelta} invert />
+              <Row label="Прибыль" delta={preview.profitDelta} />
+            </div>
+
+            <div className="preview-side-note glass-card soft-glow glare-card mt-4">
+              <div className="preview-side-note-title">Что сейчас происходит в модели</div>
+              <div className="preview-side-note-list">
+                {preview.scenarioFlags.map((item) => (
+                  <div key={item} className="preview-side-note-item">
+                    <span className="preview-side-note-bullet">•</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              className="tg-gradient-btn mt-5 block w-full text-center"
+              onClick={() => {
+                setPreviewMobilePopupOpen(false);
+                handlePay(payUrl);
+              }}
+            >
+              Попробовать Snapshot
+            </button>
+          </div>
+        </div>
+      )}
 
       {paymentState !== "idle" && (
         <div className="payment-overlay-root" role="dialog" aria-modal="true" aria-label="Ожидание оплаты">
@@ -3235,17 +3346,17 @@ const handleReset = () => {
   min-height: 32px;
   padding: 0 10px;
   border-radius: 999px;
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(247,210,55,.14);
+  border: 1px solid rgba(247,210,55,.26);
 }
 .strategy-meta-badge-label {
-  color: rgba(255,255,255,.58);
+  color: rgba(247,210,55,.76);
   font-size: 11px;
   font-weight: 700;
   letter-spacing: .04em;
 }
 .strategy-meta-badge-value {
-  color: #ffffff;
+  color: #fff8d4;
   font-size: 12px;
   font-weight: 700;
 }
@@ -3430,6 +3541,12 @@ const handleReset = () => {
         .preview-side-reserve-window {
           position: sticky;
           top: 96px;
+        }
+        .preview-mobile-fab {
+          display: none;
+        }
+        .preview-mobile-popup-root {
+          display: none;
         }
         .preview-input-intro, .preview-grid-advanced, .preview-input-grid-advanced, .slider-card-advanced, .slider-scale-row, .slider-title, .slider-subtitle, .slider-percent { }
         .preview-input-intro { display: none; }
@@ -4757,6 +4874,11 @@ const handleReset = () => {
           50% { transform: scale(1.22); opacity: .72; }
           100% { transform: scale(1); opacity: 1; }
         }
+        @keyframes snapshotPulse {
+          0% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.08); opacity: .88; }
+          50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 10px rgba(247,210,55,0); opacity: 1; }
+          100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.08); opacity: .88; }
+        }
         @media (max-width: 1280px) {
           .hero-section { min-height: 720px; }
           .hero-main-copy,.section-copy { font-size: 19px; }
@@ -5285,6 +5407,88 @@ const handleReset = () => {
 
   .strategy-chip-label {
     text-align: left !important;
+  }
+}
+@media (max-width: 767px) {
+  .preview-side-reserve-window {
+    display: none;
+  }
+
+  .preview-mobile-fab {
+    position: fixed;
+    top: 30vh;
+    right: 20px;
+    z-index: 90;
+    width: 54px;
+    height: 54px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,.12);
+    background: rgba(11,29,58,.78);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26);
+    color: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: 700;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .24s ease, transform .24s ease, visibility .24s ease, box-shadow .24s ease;
+    transform: translateY(6px);
+  }
+
+  .preview-mobile-fab.is-visible {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+
+  .preview-mobile-fab.is-pulsing {
+    animation: snapshotPulse 2.2s ease-in-out infinite;
+  }
+
+  .preview-mobile-popup-root {
+    position: fixed;
+    inset: 0;
+    z-index: 130;
+    display: grid;
+    place-items: center;
+    padding: 18px;
+  }
+
+  .preview-mobile-popup-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(3,10,22,.78);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+
+  .preview-mobile-popup-card {
+    position: relative;
+    z-index: 1;
+    width: min(720px, 100%);
+    max-height: min(78vh, 900px);
+    overflow: auto;
+    padding-top: 48px;
+  }
+
+  .preview-mobile-popup-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.14);
+    background: rgba(255,255,255,.06);
+    color: #ffffff;
+    font-size: 16px;
+    line-height: 1;
   }
 }
 @media (max-width: 767px) {
