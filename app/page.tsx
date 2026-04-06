@@ -2450,7 +2450,7 @@ const handleReset = () => {
                     price={selectedOfferCard.price}
                     href={selectedOfferCard.href}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
-                    priceMobile={{ top: "71%", right: "6.4%" }}
+                    priceMobile={{ top: "73%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                     onPay={handlePay}
