@@ -2403,7 +2403,7 @@ const handleReset = () => {
                     price="$114"
                     href={payUrl}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
-                    priceMobile={{ top: "18.5%", right: "8.5%" }}
+                    priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
                     onPay={handlePay}
