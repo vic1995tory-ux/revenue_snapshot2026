@@ -2470,10 +2470,10 @@ const handleReset = () => {
         <section id="try" className="pb-8">
           <div className="glass-card glare-card cta-card cta-card-single">
             <div>
-              <div className="section-kicker">CTA</div>
-              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Revenue Snapshot – платформа детальной диагностики бизнеса</h2>
+              <div className="section-kicker">Long story short</div>
+              <h2 className="mt-3 text-3xl font-semibold text-white md:text-4xl">Revenue Snapshot – ваш флюгер в мире капитализма/h2>
               <p className="mt-4 max-w-2xl text-base leading-7 text-white/68">
-                После оплаты пользователь попадает внутрь нашей платформы, проходит диагностику и получает структурированный результат с финансовой логикой, проблемными зонами и главным направлением усиления.
+                Вдохновением для создания RS стала наша рутинная работа и постоянные аудиты бизнеса, в течение которых мы поняли, что мир автоматизаций не обойдет и нас  Мы создали инстурмент, который позволяет за довольно короткое время понять куда вам двигаться именно сейчас – не абстрактно, а с чего начать и какие цели рационально поставить сейчас
               </p>
             </div>
           </div>
