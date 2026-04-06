@@ -797,168 +797,189 @@ function TariffCompareCard({
   );
 }
 
+type TariffSection = {
+  label: string;
+  items?: string[];
+  notes?: string[];
+  render?: "list" | "tags" | "icon-tags" | "yellow-tags";
+  iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
+};
+
+type TariffOfferKey = "playground" | "onrec";
+
+type TariffOfferConfig = {
+  title: string;
+  disclaimer: string[];
+  sections: TariffSection[];
+};
+
+const TARIFF_COMPARE_CONFIG: Record<TariffOfferKey, TariffOfferConfig> = {
+  playground: {
+    title: "ONLINE PLAYGROUND",
+    disclaimer: [
+      "Инструмент не заменяет глубокую операционную работу.",
+      "Рекомендации требуют адаптации под конкретный бизнес.",
+    ],
+    sections: [
+      {
+        label: "Input Data",
+        render: "tags",
+        iconKind: "custom",
+        items: [
+          "Сбор данных",
+          "Позиционирование",
+          "Экономика бизнеса",
+          "Клиенты и поток",
+          "Продукт и продажи",
+          "Структура и процессы",
+          "Аналитика и управление",
+          "Стратегия",
+        ],
+      },
+      {
+        label: "Format",
+        render: "icon-tags",
+        iconKind: "solo",
+        items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
+      },
+      {
+        label: "Economic model",
+        iconKind: "rate",
+        items: [
+          "Сборка модели на основе введенных данных",
+          "Оценка текущей эффективности",
+          "Выявление возможных точек потерь",
+        ],
+      },
+      {
+        label: "Leverages",
+        iconKind: "rate",
+        items: [
+          "Определение потенциальных драйверов роста",
+          "Приоритизация по предполагаемому влиянию",
+          "Связка с текущей бизнес-моделью",
+        ],
+      },
+      {
+        label: "Final Results",
+        render: "yellow-tags",
+        iconKind: "jtbd",
+        items: [
+          "Economic Rate (оценка модели на основе вводных)",
+          "Главный фактор, сдерживающий рост (гипотеза)",
+          "Приоритетные рычаги роста",
+          "JTBD под каждый рычаг",
+        ],
+      },
+      {
+        label: "Decompose",
+        iconKind: "chat",
+        items: [
+          "Онлайн-встреча 60 минут",
+          "Обсуждение результатов и допущений",
+          "Пояснение логики выводов",
+          "Ответы на вопросы",
+        ],
+      },
+    ],
+  },
+  onrec: {
+    title: "ON REC",
+    disclaimer: [
+      "Результат формируется на основе совместной работы и предоставленной информации.",
+      "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса.",
+      "Рекомендации требуют внедрения и управленческих решений.",
+    ],
+    sections: [
+      {
+        label: "Input Data",
+        render: "tags",
+        iconKind: "custom",
+        items: [
+          "Персональный сбор данных",
+          "Позиционирование",
+          "Экономика бизнеса",
+          "Клиенты и поток",
+          "Продукт и продажи",
+          "Структура и процессы",
+          "Аналитика и управление",
+          "Стратегия",
+        ],
+      },
+      {
+        label: "Format",
+        render: "icon-tags",
+        iconKind: "team",
+        items: [
+          "Работа с участием команды",
+          "Онлайн-коммуникация",
+          "Индивидуальная проработка",
+        ],
+        notes: [
+          "Связь во время подготовки результата.",
+          "Дополнительные уточнения в процессе.",
+        ],
+      },
+      {
+        label: "Economic model",
+        iconKind: "rate",
+        items: [
+          "Сборка модели на основе интервью и уточнений",
+          "Углубленная оценка эффективности",
+          "Выявление точек потерь с учетом контекста",
+        ],
+      },
+      {
+        label: "Leverages",
+        iconKind: "rate",
+        items: [
+          "Определение ключевых драйверов роста",
+          "Приоритизация с учетом реальной операционной ситуации",
+          "Связка с текущими ограничениями бизнеса",
+        ],
+      },
+      {
+        label: "Final Results",
+        render: "yellow-tags",
+        iconKind: "swot",
+        items: [
+          "Economic Rate",
+          "Главный фактор, сдерживающий рост",
+          "Приоритетные рычаги роста",
+          "JTBD под каждый рычаг",
+          "SWOT-анализ",
+          "Сегментация и позиционирование",
+          "Практики для внедрения",
+        ],
+      },
+      {
+        label: "Decompose",
+        iconKind: "brief",
+        items: [
+          "Личный брифинг с командой",
+          "Дополнительные уточнения в процессе",
+          "Связь во время подготовки результата",
+        ],
+        notes: [
+          "Результат готовится самостоятельно командой на основе более глубокого контекста.",
+        ],
+      },
+    ],
+  },
+};
+
 function TariffDetailsComparison() {
-  const playgroundDisclaimer = [
-    "Инструмент не заменяет глубокую операционную работу.",
-    "Рекомендации требуют адаптации под конкретный бизнес.",
-  ];
-
-  const onRecDisclaimer = [
-    "Результат формируется на основе совместной работы и предоставленной информации.",
-    "Выводы учитывают контекст, но не заменяют полную трансформацию бизнеса.",
-    "Рекомендации требуют внедрения и управленческих решений.",
-  ];
-
-  const playgroundSections = [
-    {
-      label: "Input Data",
-      render: "tags" as const,
-      iconKind: "custom" as const,
-      items: [
-        "Сбор данных",
-        "Позиционирование",
-        "Экономика бизнеса",
-        "Клиенты и поток",
-        "Продукт и продажи",
-        "Структура и процессы",
-        "Аналитика и управление",
-        "Стратегия",
-      ],
-    },
-    {
-      label: "Format",
-      render: "icon-tags" as const,
-      iconKind: "solo" as const,
-      items: ["Самостоятельное прохождение", "Онлайн-интерфейс"],
-    },
-    {
-      label: "Economic model",
-      iconKind: "rate" as const,
-      items: [
-        "Сборка модели на основе введенных данных",
-        "Оценка текущей эффективности",
-        "Выявление возможных точек потерь",
-      ],
-    },
-    {
-      label: "Leverages",
-      iconKind: "rate" as const,
-      items: [
-        "Определение потенциальных драйверов роста",
-        "Приоритизация по предполагаемому влиянию",
-        "Связка с текущей бизнес-моделью",
-      ],
-    },
-    {
-      label: "Final Results",
-      render: "yellow-tags" as const,
-      iconKind: "jtbd" as const,
-      items: [
-        "Economic Rate (оценка модели на основе вводных)",
-        "Главный фактор, сдерживающий рост (гипотеза)",
-        "Приоритетные рычаги роста",
-        "JTBD под каждый рычаг",
-      ],
-    },
-    {
-      label: "Decompose",
-      iconKind: "chat" as const,
-      items: [
-        "Онлайн-встреча 60 минут",
-        "Обсуждение результатов и допущений",
-        "Пояснение логики выводов",
-        "Ответы на вопросы",
-      ],
-    },
-  ];
-
-  const onRecSections = [
-    {
-      label: "Input Data",
-      render: "tags" as const,
-      iconKind: "custom" as const,
-      items: [
-        "Персональный сбор данных",
-        "Позиционирование",
-        "Экономика бизнеса",
-        "Клиенты и поток",
-        "Продукт и продажи",
-        "Структура и процессы",
-        "Аналитика и управление",
-        "Стратегия",
-      ],
-    },
-    {
-      label: "Format",
-      render: "icon-tags" as const,
-      iconKind: "team" as const,
-      items: [
-        "Работа с участием команды",
-        "Онлайн-коммуникация",
-        "Индивидуальная проработка",
-      ],
-      notes: [
-        "Связь во время подготовки результата.",
-        "Дополнительные уточнения в процессе.",
-      ],
-    },
-    {
-      label: "Economic model",
-      iconKind: "rate" as const,
-      items: [
-        "Сборка модели на основе интервью и уточнений",
-        "Углубленная оценка эффективности",
-        "Выявление точек потерь с учетом контекста",
-      ],
-    },
-    {
-      label: "Leverages",
-      iconKind: "rate" as const,
-      items: [
-        "Определение ключевых драйверов роста",
-        "Приоритизация с учетом реальной операционной ситуации",
-        "Связка с текущими ограничениями бизнеса",
-      ],
-    },
-    {
-      label: "Final Results",
-      render: "yellow-tags" as const,
-      iconKind: "swot" as const,
-      items: [
-        "Economic Rate",
-        "Главный фактор, сдерживающий рост",
-        "Приоритетные рычаги роста",
-        "JTBD под каждый рычаг",
-        "SWOT-анализ",
-        "Сегментация и позиционирование",
-        "Практики для внедрения",
-      ],
-    },
-    {
-      label: "Decompose",
-      iconKind: "brief" as const,
-      items: [
-        "Личный брифинг с командой",
-        "Дополнительные уточнения в процессе",
-        "Связь во время подготовки результата",
-      ],
-      notes: [
-        "Результат готовится самостоятельно командой на основе более глубокого контекста.",
-      ],
-    },
-  ];
-
   return (
     <div className="tariff-comparison-grid tariff-comparison-grid-parallel">
       <TariffCompareCard
-        title="ONLINE PLAYGROUND"
-        sections={playgroundSections}
-        disclaimer={playgroundDisclaimer}
+        title={TARIFF_COMPARE_CONFIG.playground.title}
+        sections={TARIFF_COMPARE_CONFIG.playground.sections}
+        disclaimer={TARIFF_COMPARE_CONFIG.playground.disclaimer}
       />
       <TariffCompareCard
-        title="ON REC"
-        sections={onRecSections}
-        disclaimer={onRecDisclaimer}
+        title={TARIFF_COMPARE_CONFIG.onrec.title}
+        sections={TARIFF_COMPARE_CONFIG.onrec.sections}
+        disclaimer={TARIFF_COMPARE_CONFIG.onrec.disclaimer}
       />
     </div>
   );
@@ -1133,7 +1154,19 @@ function StageCarousel() {
     },
   ];
 
-  const visibleCount = 3;
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsMobile(window.innerWidth <= 1180);
+    };
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
+  }, []);
+
+  const visibleCount = isMobile ? 1 : 3;
   const headClones = items.slice(-visibleCount);
   const tailClones = items.slice(0, visibleCount);
   const trackItems = [...headClones, ...items, ...tailClones];
@@ -1142,6 +1175,18 @@ function StageCarousel() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [direction, setDirection] = useState<"next" | "prev">("next");
   const [isSnapReset, setIsSnapReset] = useState(false);
+
+  useEffect(() => {
+    setCurrentIndex(visibleCount);
+    setIsAnimating(false);
+    setIsSnapReset(true);
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+    }
+  }, [visibleCount]);
 
   const goToNext = () => {
     if (isAnimating) return;
@@ -1286,6 +1331,7 @@ const [history, setHistory] = useState<
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [faqOpen, setFaqOpen] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<TariffOfferKey>("playground");
   const [previewMobilePopupOpen, setPreviewMobilePopupOpen] = useState(false);
   const [previewMobileFloatingVisible, setPreviewMobileFloatingVisible] = useState(false);
   const previewSectionRef = useRef<HTMLElement | null>(null);
@@ -1340,6 +1386,24 @@ const [history, setHistory] = useState<
     "Я случайно закрыла PayPal после оплаты. Проверьте, пожалуйста, мою запись и, если найдёте оплату, отправьте повторно ссылку на завершение регистрации."
   )}`;
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+
+  const selectedOfferConfig = TARIFF_COMPARE_CONFIG[selectedOffer];
+  const selectedOfferCard =
+    selectedOffer === "playground"
+      ? {
+          title: "Online-playground",
+          icon: "/online_playground_desc.svg",
+          mobileIcon: "/online-playground_mobile.svg",
+          price: "$114",
+          href: payUrl,
+        }
+      : {
+          title: "On Rec",
+          icon: "/onrec_desc.svg",
+          mobileIcon: "/on-rec_mobile.svg",
+          price: "$770",
+          href: onRecUrl,
+        };
 
   const faqItems = [
     {
@@ -2330,33 +2394,75 @@ const handleReset = () => {
 
           <div className="analysis-single-column">
             <div className="analysis-right-card analysis-right-card-plain analysis-right-card-full">
-              <div className="start-cards-row start-cards-row-horizontal">
-                <StartCard
-                  title="Online-playground"
-                  icon="/online_playground_desc.svg"
-                  mobileIcon="/online-playground_mobile.svg"
-                  price="$114"
-                  href={payUrl}
-                  priceDesktop={{ top: "18%", right: "6.6%" }}
-                  priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
-                  onPay={handlePay}
-                />
-                <StartCard
-                  title="On Rec"
-                  icon="/onrec_desc.svg"
-                  mobileIcon="/on-rec_mobile.svg"
-                  price="$770"
-                  href={onRecUrl}
-      priceDesktop={{ top: "18%", right: "6.6%" }}
-                  priceMobile={{ top: "18.5%", right: "8.5%" }}
-                  buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                  buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
-                  onPay={handlePay}
+              <div className="analysis-offers-desktop">
+                <div className="start-cards-row start-cards-row-horizontal">
+                  <StartCard
+                    title="Online-playground"
+                    icon="/online_playground_desc.svg"
+                    mobileIcon="/online-playground_mobile.svg"
+                    price="$114"
+                    href={payUrl}
+                    priceDesktop={{ top: "18%", right: "6.6%" }}
+                    priceMobile={{ top: "18.5%", right: "8.5%" }}
+                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
+                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    onPay={handlePay}
+                  />
+                  <StartCard
+                    title="On Rec"
+                    icon="/onrec_desc.svg"
+                    mobileIcon="/on-rec_mobile.svg"
+                    price="$770"
+                    href={onRecUrl}
+                    priceDesktop={{ top: "18%", right: "6.6%" }}
+                    priceMobile={{ top: "18.5%", right: "8.5%" }}
+                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
+                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    onPay={handlePay}
+                  />
+                </div>
+                <TariffDetailsComparison />
+              </div>
+
+              <div className="analysis-offers-mobile">
+                <div className="offer-switch-row">
+                  <button
+                    type="button"
+                    className={`offer-switch-btn ${selectedOffer === "playground" ? "is-active" : ""}`}
+                    onClick={() => setSelectedOffer("playground")}
+                  >
+                    Offer1
+                  </button>
+                  <button
+                    type="button"
+                    className={`offer-switch-btn ${selectedOffer === "onrec" ? "is-active" : ""}`}
+                    onClick={() => setSelectedOffer("onrec")}
+                  >
+                    Offer2
+                  </button>
+                </div>
+
+                <div className="analysis-mobile-offer-card">
+                  <StartCard
+                    title={selectedOfferCard.title}
+                    icon={selectedOfferCard.icon}
+                    mobileIcon={selectedOfferCard.mobileIcon}
+                    price={selectedOfferCard.price}
+                    href={selectedOfferCard.href}
+                    priceDesktop={{ top: "18%", right: "6.6%" }}
+                    priceMobile={{ top: "18.5%", right: "8.5%" }}
+                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
+                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    onPay={handlePay}
+                  />
+                </div>
+
+                <TariffCompareCard
+                  title={selectedOfferConfig.title}
+                  sections={selectedOfferConfig.sections}
+                  disclaimer={selectedOfferConfig.disclaimer}
                 />
               </div>
-              <TariffDetailsComparison />
             </div>
           </div>
         </section>
@@ -4081,6 +4187,34 @@ const handleReset = () => {
         .analysis-right-card-full {
           width: 100%;
         }
+        .analysis-offers-mobile { display: none; }
+        .offer-switch-row {
+          display: flex;
+          gap: 10px;
+          margin: 0 0 16px;
+        }
+        .offer-switch-btn {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 40px;
+          padding: 0 18px;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.12);
+          background: rgba(255,255,255,.06);
+          color: rgba(255,255,255,.84);
+          font-size: 13px;
+          font-weight: 700;
+        }
+        .offer-switch-btn.is-active {
+          color: #0b1d3a;
+          border-color: rgba(247,210,55,.28);
+          background: linear-gradient(135deg, rgba(247,210,55,.98), rgba(247,210,55,.88));
+          box-shadow: 0 12px 28px rgba(247,210,55,.14);
+        }
+        .analysis-mobile-offer-card {
+          margin-bottom: 14px;
+        }
         .start-cards-row {
           display: grid;
           grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -4949,9 +5083,8 @@ const handleReset = () => {
           .control-levers-grid { grid-template-columns: 1fr; }
           .control-lever {
             min-height: 0;
-            padding: 0 0 22px;
-            border-left: none !important;
-            border-bottom: 1px solid rgba(255,255,255,.14);
+            padding: 0 0 14px;
+            border: none !important;
           }
           .control-lever:last-child { border-bottom: none; }
           .control-lever-head {
@@ -4959,7 +5092,7 @@ const handleReset = () => {
             left: auto;
             right: auto;
             top: auto;
-            margin-bottom: 24px;
+            margin-bottom: 14px;
           }
           .strategy-chip-row {
             gap: 12px;
@@ -4985,6 +5118,8 @@ const handleReset = () => {
           .stage-scheme-card { border-left: none; }
           .stage-scheme-bottom { grid-template-columns: 1fr; }
           .start-cards-row-horizontal { grid-template-columns: 1fr; }
+          .analysis-offers-desktop { display: none; }
+          .analysis-offers-mobile { display: block; }
           .preview-side { position: static; }
           .journey-compact,.results-grid-2x2,.tariff-comparison-grid { grid-template-columns: 1fr; }
           .journey-scroll-grid { grid-template-columns: 1fr; }
@@ -5409,6 +5544,64 @@ const handleReset = () => {
     text-align: left !important;
   }
 }
+@media (max-width: 767px) {
+  .offer-switch-row {
+    margin: 0 0 14px;
+  }
+
+  .offer-switch-btn {
+    flex: 1 1 0;
+    min-height: 42px;
+    padding: 0 12px;
+  }
+
+  .analysis-mobile-offer-card {
+    margin-bottom: 12px;
+  }
+
+  .control-levers-grid {
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .control-lever {
+    padding-bottom: 8px;
+  }
+
+  .control-lever-title {
+    font-size: 16px;
+  }
+
+  .control-scale-row {
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+
+  .control-value {
+    margin-top: 14px;
+    font-size: 16px;
+  }
+
+  .control-range-input::-webkit-slider-runnable-track {
+    height: 5px;
+  }
+
+  .control-range-input::-moz-range-track {
+    height: 5px;
+  }
+
+  .control-range-input::-webkit-slider-thumb {
+    width: 18px;
+    height: 18px;
+    margin-top: -6px;
+  }
+
+  .control-range-input::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 @media (max-width: 767px) {
   .preview-side-reserve-window {
     display: none;
