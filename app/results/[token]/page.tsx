@@ -1,732 +1,631 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useParams } from "next/navigation";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  CartesianGrid,
+  Tooltip,
+  XAxis,
+  YAxis,
+  BarChart,
+  Bar,
+  FunnelChart,
+  Funnel,
+  LabelList,
+  Sankey,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  Briefcase,
+  Building2,
+  CheckCircle2,
+  CircleOff,
+  Clock3,
+  Filter,
+  Gauge,
+  Layers3,
+  Lock,
+  LucideIcon,
+  Radar,
+  Scale,
+  Settings2,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Users,
+  Wallet,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 
-type MetricItem = {
+// =========================================================
+// Revenue Snapshot — Results Page
+// Single-file page for Next.js App Router
+// Drop into: app/results-demo/page.tsx
+// Then replace mockPayload with webhook / API response.
+// =========================================================
+
+type HeroTag = {
+  label: string;
+  tone?: "neutral" | "warning" | "good";
+};
+
+type KPI = {
   label: string;
   value: string;
+  sub?: string;
+  kind?: "base" | "calculated" | "loss";
 };
 
-type BlockDetails = {
-  summary: string;
-  strengths: string[];
-  risks: string[];
-  actions: string[];
-  metrics: MetricItem[];
+type SummaryItem = {
+  label: string;
+  value: string;
+  note?: string;
+  icon?: keyof typeof ICONS;
 };
 
-type InsightBlock = {
+type BlockInterpretation = {
   id: string;
   title: string;
-  subtitle: string;
-  icon: string;
-  score: number;
-  status: string;
-  shortPoints: string[];
-  tags: string[];
-  links: string[];
-  details: BlockDetails;
+  signal: string;
+  interpretation: string;
+  relation: string;
+  risk: string;
+  unknown: string;
+  conclusion: string;
 };
 
-type CompanyData = {
+type LeverNode = {
   name: string;
-  project: string;
-  summary: string;
-  executive: string;
+  role: "primary" | "amplifies" | "unlocks" | "stabilizes" | "rejected";
+  zone: string;
+  reason?: string;
+};
+
+type StrategyStep = {
+  horizon: "0–3 months" | "3–6 months";
+  title: string;
+  text: string;
+};
+
+type Dependency = {
+  label: string;
   score: number;
-  maturity: string;
-  horizon: string;
-  expires: string;
-  resultLabel: string;
+};
+
+type ControlMetric = {
+  name: string;
+  current: number;
+  target: number;
+  unit?: string;
+  direction: "up" | "down";
+};
+
+type AlertRule = {
+  label: string;
+  status: "watch" | "good" | "risk";
+  logic: string;
 };
 
 type ResultsPayload = {
-  company: CompanyData;
-  blocks: InsightBlock[];
-  solution?: {
-    title?: string;
-    subtitle?: string;
-    sections?: string[];
-  };
-};
-
-type SlotItem = {
-  id: string;
-  label: string;
-  iso?: string;
-};
-
-type ActivePanel =
-  | {
-      type: "block" | "solution";
-      id?: string;
-    }
-  | null;
-
-const RESULTS_WEBHOOK =
-  "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
-
-const SLOTS_WEBHOOK =
-  "https://hook.us2.make.com/1ksamfmvyq0c30rtse55qj61e0wd698r";
-
-const FALLBACK_DATA: ResultsPayload = {
   company: {
-    name: "GROWTH AVENUE",
-    project: "Revenue Snapshot Results",
-    summary:
-      "Бизнес выглядит жизнеспособным, но рост сейчас ограничен не спросом как таковым, а связкой позиционирования, перегруженной обработки входящего потока и неоднородной продуктовой структуры.",
-    executive:
-      "Главный вывод: компания уже создаёт ценность для рынка, но часть выручки теряется между интересом клиента, обработкой спроса и упаковкой наиболее маржинальных решений. Потенциал роста есть, но его раскрытие требует не просто наращивания трафика, а выравнивания модели: что продаём, кому продаём, как ведём до результата и где управляем цифрами, а не ощущениями.",
-    score: 74,
-    maturity: "Growth Model with Friction",
-    horizon: "Primary 6–12 week unlock",
-    expires: "27 March 2027",
-    resultLabel: "Snapshot ready",
+    name: string;
+    niche: string;
+    stage: string;
+    country: string;
+    marketTakeaway: string;
+  };
+  hero: {
+    summary: string;
+    tags: HeroTag[];
+    growthLimit: {
+      type: string;
+      bottleneck: string;
+      why: string;
+    };
+    primaryLever: {
+      name: string;
+      essence: string;
+      zone: string;
+    };
+  };
+  economics: {
+    headlineKpis: KPI[];
+    baseKpis: KPI[];
+    calculatedKpis: KPI[];
+    losses: KPI[];
+    revenueWaterfall: { name: string; value: number }[];
+    demandCapacity: { name: string; value: number }[];
+    funnel: { value: number; name: string }[];
+    economicsShift: { name: string; before: number; after: number }[];
+  };
+  quickFacts: SummaryItem[];
+  blockInterpretation: BlockInterpretation[];
+  strategy: {
+    scenario: {
+      type: string;
+      why: string;
+      marketLimits: string;
+      notNow: string;
+    };
+    leverMap: LeverNode[];
+    leverMechanics: {
+      chain: Array<{
+        lever: string;
+        metric: string;
+        economics: string;
+        result: string;
+      }>;
+      sankey: {
+        nodes: { name: string }[];
+        links: { source: number; target: number; value: number }[];
+      };
+    };
+    implementationLogic: {
+      change: string;
+      applicationPoint: string;
+      systemMustAppear: string;
+    };
+    timeHorizon: StrategyStep[];
+    dependencies: Dependency[];
+    risks: {
+      mainRisk: string;
+      failCondition: string;
+    };
+    expectedShift: {
+      decreases: string;
+      grows: string;
+      keyMetric: string;
+    };
+    strategicPriority: {
+      primary: string;
+      secondary: string[];
+      forbiddenNow: string[];
+    };
+    rejectedLevers: LeverNode[];
+  };
+  management: {
+    controlMetrics: ControlMetric[];
+    alertRules: AlertRule[];
+    scenarios: {
+      conservative: { revenue: number; profit: number; lossReduction: number };
+      balanced: { revenue: number; profit: number; lossReduction: number };
+      aggressive: { revenue: number; profit: number; lossReduction: number };
+    };
+  };
+  notAProblem: string[];
+};
+
+const ICONS = {
+  Target,
+  TrendingUp,
+  Gauge,
+  Wallet,
+  Users,
+  Radar,
+  Layers3,
+  Briefcase,
+  BarChart3,
+  Building2,
+  Settings2,
+  Scale,
+};
+
+const mockPayload: ResultsPayload = {
+  company: {
+    name: "Northwave Studio",
+    niche: "DTC / designer apparel",
+    stage: "Developing",
+    country: "Italy",
+    marketTakeaway:
+      "Спрос чувствителен к доверию и качеству продукта, но рынок конкурентный, а рост без усиления конверсии и структуры будет неустойчивым.",
   },
-  solution: {
-    title: "Solutions & Practice",
-    subtitle: "Placeholder layer ready for later content",
-    sections: [
-      "Primary Growth Lever",
-      "Revenue Loss Source",
-      "Model Change Recommendation",
-      "Strategic Priority",
-      "Business Impact",
-      "Implementation Conditions",
+  hero: {
+    summary:
+      "Основная потеря бизнеса связана не с отсутствием спроса, а с потерями на переходе от интереса к покупке. При текущей структуре команда обрабатывает поток неравномерно, а продуктовая подача и продажа не превращают уже существующий интерес в стабильную выручку.",
+    tags: [
+      { label: "#ConversionLoss", tone: "warning" },
+      { label: "#SalesBottleneck", tone: "warning" },
+      { label: "#HighCompetition", tone: "neutral" },
+      { label: "#TrustDrivenDemand", tone: "neutral" },
+      { label: "#ManagementOverload", tone: "warning" },
+      { label: "#PremiumMidSegment", tone: "good" },
+    ],
+    growthLimit: {
+      type: "Conversion / Funnel",
+      bottleneck: "Низкая конверсия из интереса в оплату",
+      why: "Экономика показывает высокий Lost Revenue на этапе сделки, рынок усиливает роль доверия и понятности выбора, а rules поддерживают lever в зоне conversion и structure.",
+    },
+    primaryLever: {
+      name: "Rebuild of conversion system",
+      essence: "Пересборка логики входа в продукт, выбора оффера и прохождения клиента по CJM.",
+      zone: "conversion",
+    },
+  },
+  economics: {
+    headlineKpis: [
+      { label: "Revenue", value: "€42,000", sub: "last month", kind: "base" },
+      { label: "Profit", value: "€8,400", sub: "estimated", kind: "base" },
+      { label: "Margin", value: "20%", sub: "after expenses", kind: "base" },
+      { label: "Clients", value: "56", sub: "monthly", kind: "base" },
+      { label: "Avg Check", value: "€750", sub: "calculated", kind: "calculated" },
+      { label: "Utilization", value: "78%", sub: "team / ops", kind: "calculated" },
+    ],
+    baseKpis: [
+      { label: "Revenue", value: "€42,000" },
+      { label: "Profit", value: "€8,400" },
+      { label: "Margin %", value: "20%" },
+      { label: "Clients", value: "56" },
+      { label: "Leads", value: "190" },
+    ],
+    calculatedKpis: [
+      { label: "Avg Check", value: "€750" },
+      { label: "Lead → Sale", value: "29.5%" },
+      { label: "Gross Profit", value: "€8,400" },
+      { label: "Demand / Capacity", value: "190 / 150" },
+      { label: "Capacity Gap", value: "26.7%" },
+    ],
+    losses: [
+      { label: "Lost Revenue", value: "€12,500", kind: "loss" },
+      { label: "Lost Profit", value: "€2,500", kind: "loss" },
+      { label: "Conversion Loss", value: "18%", kind: "loss" },
+      { label: "Capacity Loss", value: "7%", kind: "loss" },
+    ],
+    revenueWaterfall: [
+      { name: "Actual Revenue", value: 42000 },
+      { name: "Lost Revenue", value: 12500 },
+      { name: "Potential Revenue", value: 54500 },
+    ],
+    demandCapacity: [
+      { name: "Demand", value: 190 },
+      { name: "Capacity", value: 150 },
+    ],
+    funnel: [
+      { name: "Leads", value: 190 },
+      { name: "Qualified", value: 128 },
+      { name: "Offers", value: 79 },
+      { name: "Sales", value: 56 },
+    ],
+    economicsShift: [
+      { name: "Revenue", before: 42000, after: 49800 },
+      { name: "Profit", before: 8400, after: 11700 },
+      { name: "Conversion", before: 29.5, after: 35.2 },
     ],
   },
-  blocks: [
+  quickFacts: [
     {
-      id: "economics",
-      title: "Economics",
-      subtitle: "Margin, revenue, structure, KPI",
-      icon: "◔",
-      score: 71,
-      status: "Stable, but margin-sensitive",
-      shortPoints: [
-        "Маржа держится, но запас прочности не выглядит высоким.",
-        "Выручка формируется без явного разделения сильных и слабых единиц экономики.",
-        "KPI есть, но управленческий слой по цифрам пока неполный.",
-        "Рост расходов может съедать часть эффекта от расширения спроса.",
-      ],
-      tags: ["Margin", "Revenue", "KPI", "Costs"],
-      links: ["product", "flow", "analytics"],
-      details: {
-        summary:
-          "Экономика не выглядит критичной, но она реагирует на рост неидеально: при усилении потока или расширении команды прибыльность может размываться быстрее, чем должна.",
-        strengths: [
-          "Есть базовая управляемость по выручке и объёму.",
-          "Бизнес не выглядит убыточным на уровне модели.",
-          "Есть пространство для роста без немедленной перестройки всей структуры.",
-        ],
-        risks: [
-          "Нет явной защиты маржи на уровне ассортимента и каналов.",
-          "Не все метрики замыкаются в понятные решения.",
-          "При росте расходов команда может переоценить реальную эффективность.",
-        ],
-        actions: [
-          "Разложить выручку по сегментам и маржинальности.",
-          "Отделить управляющие KPI от наблюдаемых KPI.",
-          "Собрать быстрый unit view: канал → клиент → чек → маржа.",
-        ],
-        metrics: [
-          { label: "Economic Rate", value: "71/100" },
-          { label: "Margin Resilience", value: "Medium" },
-          { label: "Decision Readiness", value: "Partial" },
-        ],
-      },
+      label: "Loss Type",
+      value: "Conversion",
+      note: "главная потеря денег сейчас",
+      icon: "Target",
     },
     {
-      id: "flow",
-      title: "Clients & Flow",
-      subtitle: "Segment, demand, capacity, channels",
-      icon: "◎",
-      score: 67,
-      status: "Demand exists, capacity leaks",
-      shortPoints: [
-        "Спрос есть, но обработка потока неравномерна.",
-        "Самый прибыльный сегмент не выглядит жёстко закреплённым.",
-        "Каналы приводят поток, но не все дают одинаково сильный результат.",
-        "Часть обращений может теряться на этапе квалификации и доведения.",
-      ],
-      tags: ["Demand", "Segments", "Capacity", "Channels"],
-      links: ["positioning", "product", "structure"],
-      details: {
-        summary:
-          "Клиентский поток создаётся, но система пока не выглядит идеально настроенной на извлечение максимума из входящего спроса. Ограничение похоже не на отсутствие рынка, а на пропускную способность и фокус по сегментам.",
-        strengths: [
-          "У компании уже есть рабочие каналы привлечения.",
-          "Рынок реагирует, то есть точка входа в спрос существует.",
-          "Есть база для усиления конверсии без полного перезапуска маркетинга.",
-        ],
-        risks: [
-          "Слабое разделение сегментов снижает эффективность усилий.",
-          "Поток и capacity не синхронизированы.",
-          "Часть лидов может быть слишком дорогой или плохо обрабатываться.",
-        ],
-        actions: [
-          "Закрепить приоритетный сегмент как управленческую ось.",
-          "Собрать карту: канал → тип лида → скорость обработки → сделка.",
-          "Убрать перегруз на первом касании и квалификации.",
-        ],
-        metrics: [
-          { label: "Flow Quality", value: "67/100" },
-          { label: "Demand vs Capacity", value: "Unbalanced" },
-          { label: "Channel Focus", value: "Blurred" },
-        ],
-      },
+      label: "Bottleneck",
+      value: "Deal stage",
+      note: "интерес не превращается в оплату",
+      icon: "Gauge",
     },
     {
-      id: "product",
-      title: "Product & Sales",
-      subtitle: "Offer mix, retention, CJM",
-      icon: "◈",
-      score: 79,
-      status: "Strong leverage zone",
-      shortPoints: [
-        "Здесь, вероятно, лежит главный рычаг роста прибыли.",
-        "Маржинальные решения есть, но они не доминируют в общей модели.",
-        "CJM даёт ценность, но местами выглядит длиннее нужного.",
-        "Повторная monetization может быть сильнее, чем сейчас.",
-      ],
-      tags: ["Offer", "CJM", "Retention", "Sales"],
-      links: ["economics", "flow", "positioning"],
-      details: {
-        summary:
-          "Продуктово-продажный блок выглядит самым перспективным для вмешательства: здесь можно усиливать и выручку, и маржу одновременно, не только за счёт большего числа лидов, но и через другой акцент в продаже и упаковке решений.",
-        strengths: [
-          "Есть база для выделения наиболее сильных офферов.",
-          "Продажа уже опирается на понятную клиентскую ценность.",
-          "Потенциал upsell / repeat / bundle выглядит реальным.",
-        ],
-        risks: [
-          "Не самый маржинальный продукт может забирать слишком много внимания.",
-          "Путь клиента может содержать лишние точки трения.",
-          "Удержание может быть скорее ситуативным, чем системным.",
-        ],
-        actions: [
-          "Выстроить продуктовый приоритет вокруг маржинального ядра.",
-          "Упростить CJM там, где клиент уже готов двигаться дальше.",
-          "Собрать механику повторной ценности после первого результата.",
-        ],
-        metrics: [
-          { label: "Growth Lever", value: "Primary" },
-          { label: "Offer Clarity", value: "Medium-High" },
-          { label: "Retention Potential", value: "High" },
-        ],
-      },
+      label: "Market Signal",
+      value: "Trust + competition",
+      note: "рынок требует ясного и убедительного выбора",
+      icon: "Radar",
     },
+    {
+      label: "Model Risk",
+      value: "Founder overload",
+      note: "управление завязано на одном центре решений",
+      icon: "Briefcase",
+    },
+  ],
+  blockInterpretation: [
     {
       id: "positioning",
-      title: "Positioning",
-      subtitle: "Narrative, perception, geography",
-      icon: "◌",
-      score: 73,
-      status: "Readable, but not sharp enough",
-      shortPoints: [
-        "Обещание считывается, но может быть недостаточно заострено.",
-        "Не до конца ясно, какой сегмент должен реагировать первым.",
-        "Рынок присутствия и рынок продаж стоит развести сильнее.",
-        "Упаковка может недодавать ценность сильным решениям.",
-      ],
-      tags: ["Narrative", "Perception", "Market", "Segment"],
-      links: ["flow", "product", "strategy"],
-      details: {
-        summary:
-          "Позиционирование не выглядит слабым, но оно может быть слишком общим для того уровня роста, которого бизнес хочет добиться. Не хватает более жёсткого ответа на вопрос: кому именно это решение нужно в первую очередь и почему сейчас.",
-        strengths: [
-          "Образ компании уже существует и не выглядит хаотичным.",
-          "Есть база для сильного B2B / expert framing.",
-          "Можно усилить конверсию без смены сути продукта.",
-        ],
-        risks: [
-          "Широкий образ размывает фокус на прибыльном сегменте.",
-          "Клиент может не сразу считывать главный differentiator.",
-          "География продаж и коммуникация могут жить в разной логике.",
-        ],
-        actions: [
-          "Собрать одну ведущую формулу обещания.",
-          "Привязать упаковку к самому прибыльному типу клиента.",
-          "Усилить message hierarchy на первом экране и в продаже.",
-        ],
-        metrics: [
-          { label: "Clarity", value: "73/100" },
-          { label: "Segment Fit", value: "Needs sharpening" },
-          { label: "Market Readiness", value: "Good" },
-        ],
-      },
+      title: "POSITIONING",
+      signal:
+        "Бизнес работает в B2C/DTC-модели с рационально-эмоциональным спросом и средним циклом сделки.",
+      interpretation:
+        "Покупка требует доверия к продукту и понятности выбора, поэтому рост зависит не только от трафика, но и от качества подачи оффера.",
+      relation:
+        "Это усиливает значение блока Product & Sales и объясняет чувствительность конверсии к оформлению входа в продукт.",
+      risk:
+        "Без явной логики выбора клиент откладывает решение или уходит к более понятному конкуренту.",
+      unknown:
+        "Не доказан точный ценовой сегмент и глубина различия между сегментами клиентов.",
+      conclusion:
+        "Ограничение роста связано с упаковкой спроса в покупку, а не только с объемом спроса.",
     },
     {
-      id: "structure",
-      title: "Structure & Processes",
-      subtitle: "Roles, overload, execution",
-      icon: "▣",
-      score: 62,
-      status: "Execution bottleneck",
-      shortPoints: [
-        "Рост, вероятно, упирается в ручное управление и перегруз.",
-        "Связки между ролями могут тормозить скорость изменений.",
-        "Система не выглядит ещё полностью собранной под масштаб.",
-        "Часть усилий команды может идти в компенсацию процессов.",
-      ],
-      tags: ["Team", "Execution", "Roles", "Overload"],
-      links: ["flow", "analytics", "strategy"],
-      details: {
-        summary:
-          "Структурно бизнес, вероятно, уже вышел из стадии, где всё можно тянуть вручную, но ещё не до конца перешёл в режим предсказуемой системы. Это создаёт ограничение для скорости и качества роста.",
-        strengths: [
-          "Команда уже выполняет ключевые функции.",
-          "Есть операционная база для улучшений без полной перестройки.",
-          "Рычаги роста понятны и могут быть распределены по ролям.",
-        ],
-        risks: [
-          "Founder dependency может оставаться слишком высокой.",
-          "Задержки между функциями бьют по конверсии и качеству решения.",
-          "Рост объёма может усиливать хаос, а не результат.",
-        ],
-        actions: [
-          "Определить критичные handoff points между ролями.",
-          "Развести ownership по revenue-цепочке.",
-          "Убрать ручные решения из повторяющихся сценариев.",
-        ],
-        metrics: [
-          { label: "Scalability", value: "62/100" },
-          { label: "Founder Load", value: "High" },
-          { label: "Process Integrity", value: "Medium-Low" },
-        ],
-      },
+      id: "economics",
+      title: "ECONOMICS",
+      signal:
+        "Выручка есть, маржа положительная, но разрыв между текущей и потенциальной выручкой уже заметен.",
+      interpretation:
+        "Экономика не находится в состоянии коллапса, но теряет деньги на неэффективном превращении потока в оплаченные сделки.",
+      relation:
+        "Подтверждает вывод из Clients & Flow: проблема не только в потоке, а в прохождении клиента через систему продажи.",
+      risk:
+        "При масштабировании трафика потери будут расти быстрее выручки.",
+      unknown:
+        "Не доказана точная динамика CAC и повторных продаж.",
+      conclusion:
+        "Главная экономическая потеря — conversion leak с прямым ударом по Lost Revenue.",
     },
     {
-      id: "analytics",
-      title: "Analytics & Management",
-      subtitle: "Visibility, decisions, control",
-      icon: "▤",
-      score: 69,
-      status: "Enough to steer, not enough to scale confidently",
-      shortPoints: [
-        "Решения принимаются не вслепую, но и не на полном контуре данных.",
-        "Улучшения уже делаются, однако не все замыкаются в контроль.",
-        "Управление может опережать аналитическая глубина не всегда.",
-        "Есть пространство для более жёсткой причинно-следственной модели.",
-      ],
-      tags: ["Analytics", "Control", "Management", "KPI"],
-      links: ["economics", "structure", "strategy"],
-      details: {
-        summary:
-          "Управление не выглядит хаотичным, но аналитическая глубина пока не всегда достаточна, чтобы уверенно выбирать, что масштабировать, что сокращать, а что перестраивать.",
-        strengths: [
-          "Есть привычка смотреть на метрики и улучшения.",
-          "Команда уже предпринимает изменения, а не стоит на месте.",
-          "Базовая опора для управленческой модели присутствует.",
-        ],
-        risks: [
-          "Часть решений может приниматься по ощущению силы сигнала, а не по реальной экономике.",
-          "Связка между цифрами, сегментом и действиями неполная.",
-          "Можно усилить контроль без увеличения бюрократии.",
-        ],
-        actions: [
-          "Свести ключевые сигналы в единый управленческий слой.",
-          "Привязать решения к сегментам и unit-эффекту.",
-          "Выделить 5–7 контрольных точек для weekly review.",
-        ],
-        metrics: [
-          { label: "Control Layer", value: "69/100" },
-          { label: "Decision Confidence", value: "Medium" },
-          { label: "Signal Quality", value: "Improving" },
-        ],
-      },
+      id: "clients-flow",
+      title: "CLIENTS & FLOW",
+      signal:
+        "Спрос присутствует, но его обработка ограничена и неравномерна.",
+      interpretation:
+        "Часть клиентов теряется либо до предложения, либо в моменте выбора, что снижает монетизацию имеющегося интереса.",
+      relation:
+        "Связано с перегрузом структуры и отсутствием четкого сценария прохождения по воронке.",
+      risk:
+        "Рост трафика без пересборки системы усилит хаос, а не выручку.",
+      unknown:
+        "Не доказано, на каком именно микроэтапе воронки происходит максимальный обрыв.",
+      conclusion:
+        "Поток нельзя считать главной проблемой; слабее работает сама система конверсии.",
+    },
+    {
+      id: "product-sales",
+      title: "PRODUCT & SALES",
+      signal:
+        "Продукт интересен, но вход в него и логика выбора недостаточно упрощены для быстрой оплаты.",
+      interpretation:
+        "Клиенту трудно быстро понять, что ему подходит и почему покупать сейчас.",
+      relation:
+        "Это напрямую поддерживает primary lever в зоне conversion.",
+      risk:
+        "Даже качественный продукт будет недомонетизироваться.",
+      unknown:
+        "Не доказана роль retention и повторных покупок как второго источника роста.",
+      conclusion:
+        "Главное ограничение монетизации сейчас — слабая конверсионная архитектура продукта и продажи.",
+    },
+    {
+      id: "analytics-management",
+      title: "ANALYTICS & MANAGEMENT",
+      signal:
+        "Аналитика присутствует частично, но не дает полного контроля над точками потерь.",
+      interpretation:
+        "Управление происходит скорее по ощущениям и общему результату, чем по этапам системы.",
+      relation:
+        "Это ограничивает качество управляемости primary lever и усложняет проверку гипотез.",
+      risk:
+        "Без контрольных метрик система не сможет удержать результат после улучшения.",
+      unknown:
+        "Не доказана регулярность использования аналитики в принятии решений.",
+      conclusion:
+        "Для роста нужен не только lever, но и слой управляемости вокруг него.",
+    },
+    {
+      id: "structure-processes",
+      title: "STRUCTURE & PROCESSES",
+      signal:
+        "Критические решения и узлы координации сосредоточены слишком близко к руководителю.",
+      interpretation:
+        "Система роста зависит от ручного управления, а не от воспроизводимого процесса.",
+      relation:
+        "Это усиливает conversion-проблему: хороший спрос не проходит через систему стабильно.",
+      risk:
+        "При росте входящего потока перегруз усилится быстрее, чем вырастет выручка.",
+      unknown:
+        "Не доказана глубина перегруза по конкретным ролям.",
+      conclusion:
+        "Операционная структура не разрушает бизнес, но ограничивает его воспроизводимый рост.",
     },
     {
       id: "strategy",
-      title: "Strategy",
-      subtitle: "Targets, direction, sequencing",
-      icon: "✦",
-      score: 76,
-      status: "Good ambition, sequence needs discipline",
-      shortPoints: [
-        "Амбиция роста считывается и выглядит реалистично.",
-        "Основной риск не в цели, а в последовательности действий.",
-        "Часть инициатив может конкурировать между собой за ресурс.",
-        "Нужен более жёсткий приоритетный порядок, а не параллельность.",
+      title: "STRATEGY",
+      signal:
+        "Бизнесу сейчас больше нужен не expansion, а conversion-led scenario.",
+      interpretation:
+        "Расти трафиком раньше пересборки конверсии экономически невыгодно.",
+      relation:
+        "Стратегия подтверждается economics, market context и rules.",
+      risk:
+        "Неверная приоритизация сместит ресурсы в привлечение, а не в устранение core loss.",
+      unknown:
+        "Не доказан предельный эффект secondary levers без улучшения основного сценария.",
+      conclusion:
+        "Стратегически сначала нужно уменьшить conversion loss, а уже потом масштабировать спрос.",
+    },
+  ],
+  strategy: {
+    scenario: {
+      type: "Conversion",
+      why: "Экономика показывает основной Lost Revenue в воронке, рынок требует большей понятности и доверия, rules поддерживают lever в зоне conversion и structure, а не expansion.",
+      marketLimits:
+        "Высокая конкуренция и чувствительность к качеству выбора ограничивают эффективность простого увеличения трафика.",
+      notNow:
+        "Не имеет смысла aggressively scale acquisition до пересборки логики оффера и продажи.",
+    },
+    leverMap: [
+      {
+        name: "Rebuild of conversion system",
+        role: "primary",
+        zone: "conversion",
+      },
+      {
+        name: "Offer architecture",
+        role: "amplifies",
+        zone: "conversion",
+      },
+      {
+        name: "Sales process formalization",
+        role: "unlocks",
+        zone: "structure",
+      },
+      {
+        name: "Decision analytics",
+        role: "stabilizes",
+        zone: "analytics",
+      },
+    ],
+    leverMechanics: {
+      chain: [
+        {
+          lever: "Rebuild of conversion system",
+          metric: "Lead → Sale conversion",
+          economics: "Lost Revenue decreases",
+          result: "Revenue grows without proportional CAC growth",
+        },
+        {
+          lever: "Offer architecture",
+          metric: "Offer acceptance rate",
+          economics: "Avg monetization per lead improves",
+          result: "Profitability of existing flow rises",
+        },
+        {
+          lever: "Sales process formalization",
+          metric: "Processing speed / consistency",
+          economics: "Capacity leak decreases",
+          result: "More demand is converted into paid clients",
+        },
       ],
-      tags: ["Priority", "Targets", "Roadmap", "Focus"],
-      links: ["positioning", "structure", "analytics"],
-      details: {
-        summary:
-          "Стратегически компания уже думает про следующий уровень, но для реального перехода нужно сократить расфокус и выстроить очередность: сначала что открывает рост, затем что закрепляет его, и только после — что масштабирует.",
-        strengths: [
-          "Есть горизонт и стремление к понятному результату.",
-          "Бизнес не выглядит застрявшим в коротком операционном цикле.",
-          "Можно быстро собрать сильный JTBD-приоритет.",
+      sankey: {
+        nodes: [
+          { name: "Primary Lever" },
+          { name: "Conversion" },
+          { name: "Lost Revenue" },
+          { name: "Revenue" },
+          { name: "Profit" },
         ],
-        risks: [
-          "Параллельные инициативы могут растаскивать команду.",
-          "Без sequencing даже хорошие гипотезы не дадут полного эффекта.",
-          "Часть стратегических решений может не иметь операционной опоры.",
-        ],
-        actions: [
-          "Определить один primary growth objective.",
-          "Собрать приоритеты 1/2/3 по влиянию на выручку и прибыль.",
-          "Увязать roadmap с ownership и контрольными точками.",
-        ],
-        metrics: [
-          { label: "Strategic Readiness", value: "76/100" },
-          { label: "Priority Discipline", value: "Needs tightening" },
-          { label: "Execution Alignment", value: "Medium" },
+        links: [
+          { source: 0, target: 1, value: 8 },
+          { source: 1, target: 2, value: 6 },
+          { source: 2, target: 3, value: 5 },
+          { source: 3, target: 4, value: 4 },
         ],
       },
     },
+    implementationLogic: {
+      change:
+        "Должна измениться логика входа клиента в продукт, структура выбора оффера и воспроизводимость прохождения по воронке.",
+      applicationPoint:
+        "Точка приложения — вход в продукт, этап квалификации, предложение, принятие решения.",
+      systemMustAppear:
+        "В системе должны появиться единая логика оффера, формализованные этапы продажи и контрольные метрики на каждом узле.",
+    },
+    timeHorizon: [
+      {
+        horizon: "0–3 months",
+        title: "Fast effect",
+        text: "Снижение потерь в воронке и рост конверсии за счет пересборки сценария выбора и продажи.",
+      },
+      {
+        horizon: "3–6 months",
+        title: "System effect",
+        text: "Закрепление процесса, снижение зависимости от ручного управления и рост воспроизводимой выручки.",
+      },
+    ],
+    dependencies: [
+      { label: "Team readiness", score: 68 },
+      { label: "Analytics visibility", score: 52 },
+      { label: "Offer clarity", score: 61 },
+      { label: "Operational discipline", score: 57 },
+    ],
+    risks: {
+      mainRisk:
+        "Попытка усилить трафик до пересборки системы продажи приведет к росту хаоса, а не к росту прибыли.",
+      failCondition:
+        "Lever не сработает, если не будет зафиксирована единая логика предложения и контроль по этапам воронки.",
+    },
+    expectedShift: {
+      decreases: "Conversion loss and part of capacity leak",
+      grows: "Revenue, profit, predictability of monetization",
+      keyMetric: "Lead → Sale conversion",
+    },
+    strategicPriority: {
+      primary: "Rebuild of conversion system",
+      secondary: [
+        "Offer architecture",
+        "Sales process formalization",
+        "Decision analytics",
+      ],
+      forbiddenNow: [
+        "Aggressive traffic scaling",
+        "New market expansion",
+        "Broad product-line expansion",
+      ],
+    },
+    rejectedLevers: [
+      {
+        name: "CAC scaling",
+        role: "rejected",
+        zone: "marketing",
+        reason:
+          "Не влияет на корневой bottleneck и усиливает потери при текущей конверсионной системе.",
+      },
+      {
+        name: "Retention-first scenario",
+        role: "rejected",
+        zone: "LTV",
+        reason:
+          "Может дать эффект позже, но не решает главный текущий loss source.",
+      },
+    ],
+  },
+  management: {
+    controlMetrics: [
+      { name: "Lead → Sale", current: 29.5, target: 35.2, unit: "%", direction: "up" },
+      { name: "Offer Acceptance", current: 61, target: 70, unit: "%", direction: "up" },
+      { name: "Processing Speed", current: 4.4, target: 3.1, unit: "days", direction: "down" },
+      { name: "Utilization", current: 78, target: 84, unit: "%", direction: "up" },
+    ],
+    alertRules: [
+      {
+        label: "Conversion below threshold",
+        status: "risk",
+        logic: "If Lead → Sale < 30% for 2 weeks, investigate qualification and offer stage.",
+      },
+      {
+        label: "Processing speed within target",
+        status: "watch",
+        logic: "If average processing time > 4 days, capacity leak risk increases.",
+      },
+      {
+        label: "Offer acceptance improving",
+        status: "good",
+        logic: "If offer acceptance > 68%, scenario is moving toward planned economics.",
+      },
+    ],
+    scenarios: {
+      conservative: { revenue: 45600, profit: 9500, lossReduction: 18 },
+      balanced: { revenue: 49800, profit: 11700, lossReduction: 34 },
+      aggressive: { revenue: 53200, profit: 12900, lossReduction: 43 },
+    },
+  },
+  notAProblem: [
+    "Спрос как таковой не выглядит главным ограничением на текущем этапе.",
+    "Маржа не идеальна, но сама по себе не объясняет основной разрыв в выручке.",
+    "Рынок сложный, но не блокирующий: проблема в том, как бизнес в нем проходит путь к покупке.",
   ],
-};
-
-const ICON_BY_ID: Record<string, string> = {
-  economics: "◔",
-  flow: "◎",
-  clients_flow: "◎",
-  clientsandflow: "◎",
-  product: "◈",
-  productsales: "◈",
-  product_sales: "◈",
-  positioning: "◌",
-  structure: "▣",
-  structure_processes: "▣",
-  analytics: "▤",
-  analytics_management: "▤",
-  strategy: "✦",
 };
 
 function cn(...classes: Array<string | false | null | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-function clampScore(value: unknown, fallback = 0) {
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric)) return fallback;
-  return Math.max(0, Math.min(100, Math.round(numeric)));
-}
-
-function toArray(value: unknown): string[] {
-  if (Array.isArray(value)) {
-    return value.map((item) => String(item).trim()).filter(Boolean);
+function formatCompact(value: number, suffix = "") {
+  if (Math.abs(value) >= 1000) {
+    return `${new Intl.NumberFormat("en-US", {
+      notation: "compact",
+      maximumFractionDigits: 1,
+    }).format(value)}${suffix}`;
   }
-  if (typeof value === "string") {
-    return value
-      .split(/\n|•|- /g)
-      .map((item) => item.trim())
-      .filter(Boolean);
-  }
-  return [];
-}
-
-function humanizeTitle(value: string) {
-  return value
-    .replace(/[_-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .replace(/\b\w/g, (char) => char.toUpperCase());
-}
-
-function normalizeLinks(value: unknown): string[] {
-  return toArray(value).map((item) => {
-    const clean = item.toLowerCase().replace(/\s+/g, "_");
-    if (clean.includes("client") && clean.includes("flow")) return "flow";
-    if (clean.includes("product")) return "product";
-    if (clean.includes("position")) return "positioning";
-    if (clean.includes("structure")) return "structure";
-    if (clean.includes("analytic")) return "analytics";
-    if (clean.includes("strateg")) return "strategy";
-    if (clean.includes("economic")) return "economics";
-    return clean;
-  });
-}
-
-function normalizeMetrics(value: unknown): MetricItem[] {
-  if (Array.isArray(value)) {
-    return value
-      .map((item) => {
-        if (!item || typeof item !== "object") return null;
-        const entry = item as Record<string, unknown>;
-        const label = String(entry.label ?? entry.name ?? "").trim();
-        const rawValue = entry.value ?? entry.score ?? entry.text ?? "";
-        const metricValue = String(rawValue).trim();
-        if (!label || !metricValue) return null;
-        return { label, value: metricValue };
-      })
-      .filter(Boolean) as MetricItem[];
-  }
-
-  if (value && typeof value === "object") {
-    return Object.entries(value as Record<string, unknown>)
-      .map(([label, metricValue]) => ({
-        label: humanizeTitle(label),
-        value: String(metricValue ?? "").trim(),
-      }))
-      .filter((item) => item.label && item.value);
-  }
-
-  return [];
-}
-
-function normalizeBlock(raw: unknown, index: number): InsightBlock {
-  const fallback = FALLBACK_DATA.blocks[index] ?? FALLBACK_DATA.blocks[0];
-  const item = (raw ?? {}) as Record<string, unknown>;
-  const idSource = String(item.id ?? item.key ?? fallback.id).toLowerCase();
-  const id =
-    idSource
-      .replace(/&/g, "and")
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_]/g, "") || fallback.id;
-
-  const detailsRaw = (item.details ?? item.inner ?? {}) as Record<string, unknown>;
-
-  const shortPoints = toArray(
-    item.shortPoints ?? item.points ?? item.preview_points ?? item.card_points,
-  ).slice(0, 4);
-  const tags = toArray(item.tags ?? item.relations ?? item.logic_tags);
-  const links = normalizeLinks(
-    item.links ?? item.connected_blocks ?? item.related_blocks,
-  );
-  const strengths = toArray(detailsRaw.strengths ?? item.strengths);
-  const risks = toArray(detailsRaw.risks ?? item.risks ?? item.losses);
-  const actions = toArray(
-    detailsRaw.actions ?? item.actions ?? item.recommendations,
-  );
-  const metrics = normalizeMetrics(detailsRaw.metrics ?? item.metrics);
-
-  return {
-    id,
-    title: String(item.title ?? item.name ?? fallback.title),
-    subtitle: String(item.subtitle ?? item.description ?? fallback.subtitle),
-    icon: String(item.icon ?? ICON_BY_ID[id] ?? fallback.icon),
-    score: clampScore(item.score ?? item.rate ?? item.rating, fallback.score),
-    status: String(item.status ?? item.label ?? fallback.status),
-    shortPoints: shortPoints.length > 0 ? shortPoints : fallback.shortPoints,
-    tags: tags.length > 0 ? tags : fallback.tags,
-    links: links.length > 0 ? links : fallback.links,
-    details: {
-      summary: String(
-        detailsRaw.summary ?? item.summary ?? fallback.details.summary,
-      ),
-      strengths: strengths.length > 0 ? strengths : fallback.details.strengths,
-      risks: risks.length > 0 ? risks : fallback.details.risks,
-      actions: actions.length > 0 ? actions : fallback.details.actions,
-      metrics: metrics.length > 0 ? metrics : fallback.details.metrics,
-    },
-  };
-}
-
-function normalizePayload(raw: unknown): ResultsPayload {
-  const base =
-    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const payload = (base.data && typeof base.data === "object"
-    ? (base.data as Record<string, unknown>)
-    : base) as Record<string, unknown>;
-
-  const companyRaw = (payload.company ??
-    payload.hero ??
-    payload.summary ??
-    {}) as Record<string, unknown>;
-
-  const blocksRaw = Array.isArray(payload.blocks)
-    ? payload.blocks
-    : Array.isArray(payload.cards)
-      ? payload.cards
-      : Array.isArray(payload.sections)
-        ? payload.sections
-        : FALLBACK_DATA.blocks;
-
-  const solutionRaw = (payload.solution ??
-    payload.solutions ??
-    {}) as Record<string, unknown>;
-
-  return {
-    company: {
-      name: String(
-        companyRaw.name ??
-          companyRaw.company_name ??
-          payload.company_name ??
-          FALLBACK_DATA.company.name,
-      ),
-      project: String(
-        companyRaw.project ?? payload.project ?? FALLBACK_DATA.company.project,
-      ),
-      summary: String(
-        companyRaw.summary ??
-          companyRaw.short_summary ??
-          payload.summary ??
-          FALLBACK_DATA.company.summary,
-      ),
-      executive: String(
-        companyRaw.executive ??
-          companyRaw.executive_summary ??
-          payload.executive_summary ??
-          FALLBACK_DATA.company.executive,
-      ),
-      score: clampScore(
-        companyRaw.score ?? companyRaw.overall_score ?? payload.overall_score,
-        FALLBACK_DATA.company.score,
-      ),
-      maturity: String(
-        companyRaw.maturity ??
-          companyRaw.model_label ??
-          payload.model_label ??
-          FALLBACK_DATA.company.maturity,
-      ),
-      horizon: String(
-        companyRaw.horizon ??
-          companyRaw.primary_horizon ??
-          payload.primary_horizon ??
-          FALLBACK_DATA.company.horizon,
-      ),
-      expires: String(
-        companyRaw.expires ??
-          companyRaw.expiration_date ??
-          payload.expiration_date ??
-          FALLBACK_DATA.company.expires,
-      ),
-      resultLabel: String(
-        companyRaw.resultLabel ??
-          companyRaw.result_label ??
-          payload.result_label ??
-          FALLBACK_DATA.company.resultLabel,
-      ),
-    },
-    solution: {
-      title: String(
-        solutionRaw.title ?? FALLBACK_DATA.solution?.title ?? "Solutions & Practice",
-      ),
-      subtitle: String(
-        solutionRaw.subtitle ??
-          solutionRaw.summary ??
-          FALLBACK_DATA.solution?.subtitle ??
-          "Placeholder layer ready for later content",
-      ),
-      sections:
-        toArray(solutionRaw.sections ?? solutionRaw.items).length > 0
-          ? toArray(solutionRaw.sections ?? solutionRaw.items)
-          : FALLBACK_DATA.solution?.sections ?? [],
-    },
-    blocks: blocksRaw.map((block, index) => normalizeBlock(block, index)),
-  };
-}
-
-function formatDateInCET(input: string) {
-  const date = new Date(input);
-  if (Number.isNaN(date.getTime())) return input;
-
-  return new Intl.DateTimeFormat("en-GB", {
-    timeZone: "CET",
-    weekday: "short",
-    day: "2-digit",
-    month: "short",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
-}
-
-function normalizeSlotsPayload(raw: unknown): SlotItem[] {
-  const base =
-    raw && typeof raw === "object" ? (raw as Record<string, unknown>) : {};
-  const payload = (base.data && typeof base.data === "object"
-    ? (base.data as Record<string, unknown>)
-    : base) as Record<string, unknown>;
-
-  const sourceArray = Array.isArray(payload.slots)
-    ? payload.slots
-    : Array.isArray(payload.items)
-      ? payload.items
-      : Array.isArray(payload.options)
-        ? payload.options
-        : Array.isArray(payload.data)
-          ? payload.data
-          : [];
-
-  return sourceArray
-    .map((item, index) => {
-      if (typeof item === "string") {
-        return {
-          id: `slot-${index + 1}`,
-          label: `${formatDateInCET(item)} CET`,
-          iso: item,
-        };
-      }
-
-      if (!item || typeof item !== "object") return null;
-      const entry = item as Record<string, unknown>;
-      const iso = String(
-        entry.iso ?? entry.datetime ?? entry.date ?? entry.start ?? "",
-      ).trim();
-      const label =
-        String(entry.label ?? entry.text ?? "").trim() ||
-        (iso ? formatDateInCET(iso) : "");
-
-      if (!label) return null;
-
-      return {
-        id: String(entry.id ?? `slot-${index + 1}`),
-        label: label.includes("CET") ? label : `${label} CET`,
-        iso: iso || undefined,
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 4) as SlotItem[];
-}
-
-function Ring({ progress, size = 104 }: { progress: number; size?: number }) {
-  const radius = 44;
-  const stroke = 7;
-  const normalizedRadius = radius - stroke / 2;
-  const circumference = normalizedRadius * 2 * Math.PI;
-  const strokeDashoffset = circumference - (progress / 100) * circumference;
-
-  return (
-    <div className="relative shrink-0" style={{ width: size, height: size }}>
-      <svg width={size} height={size} viewBox="0 0 88 88" className="-rotate-90">
-        <defs>
-          <linearGradient id={`grad-${size}-${progress}`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#47adff" />
-            <stop offset="55%" stopColor="#7e84ff" />
-            <stop offset="100%" stopColor="#f7d237" />
-          </linearGradient>
-        </defs>
-        <circle
-          cx="44"
-          cy="44"
-          r={normalizedRadius}
-          stroke="rgba(255,255,255,0.06)"
-          strokeWidth={stroke}
-          fill="transparent"
-        />
-        <circle
-          cx="44"
-          cy="44"
-          r={normalizedRadius}
-          stroke={`url(#grad-${size}-${progress})`}
-          strokeWidth={stroke}
-          fill="transparent"
-          strokeLinecap="round"
-          strokeDasharray={`${circumference} ${circumference}`}
-          strokeDashoffset={strokeDashoffset}
-          style={{
-            filter: "drop-shadow(0 0 10px rgba(90,146,255,0.25))",
-            transition: "all 420ms cubic-bezier(0.22,1,0.36,1)",
-          }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <div className="text-[28px] font-semibold leading-none text-white">{progress}</div>
-        <div className="mt-1 text-[10px] uppercase tracking-[0.26em] text-white/45">
-          score
-        </div>
-      </div>
-    </div>
-  );
+  return `${value}${suffix}`;
 }
 
 function GlassCard({
   children,
-  className = "",
+  className,
 }: {
   children: React.ReactNode;
   className?: string;
@@ -734,914 +633,725 @@ function GlassCard({
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.045] backdrop-blur-2xl",
+        "rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_60px_rgba(0,0,0,0.28)]",
         className,
       )}
-      style={{
-        boxShadow:
-          "0 18px 70px rgba(0,0,0,0.26), inset 0 1px 0 rgba(255,255,255,0.045)",
-      }}
-    >
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.08),transparent_24%),radial-gradient(circle_at_bottom_left,rgba(71,173,255,0.10),transparent_28%),radial-gradient(circle_at_70%_20%,rgba(247,210,55,0.07),transparent_22%)]" />
-      <div className="relative">{children}</div>
-    </div>
-  );
-}
-
-function TiltButton({
-  children,
-  onClick,
-  highlight,
-}: {
-  children: React.ReactNode;
-  onClick: () => void;
-  highlight?: boolean;
-}) {
-  const [style, setStyle] = useState({
-    transform:
-      "perspective(1600px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
-  });
-
-  function handleMove(e: React.MouseEvent<HTMLButtonElement>) {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - rect.left) / rect.width;
-    const py = (e.clientY - rect.top) / rect.height;
-    const rotateY = (px - 0.5) * 10;
-    const rotateX = (0.5 - py) * 8;
-
-    setStyle({
-      transform: `perspective(1600px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-5px) scale(1.004)`,
-    });
-  }
-
-  function reset() {
-    setStyle({
-      transform:
-        "perspective(1600px) rotateX(0deg) rotateY(0deg) translateY(0px) scale(1)",
-    });
-  }
-
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      onMouseMove={handleMove}
-      onMouseLeave={reset}
-      onBlur={reset}
-      className={cn(
-        "group block w-full text-left transition-[filter] duration-300",
-        highlight && "drop-shadow-[0_0_24px_rgba(247,210,55,0.12)]",
-      )}
-      style={{
-        ...style,
-        transformStyle: "preserve-3d",
-        transition:
-          "transform 220ms cubic-bezier(0.22,1,0.36,1), filter 220ms ease",
-      }}
     >
       {children}
-    </button>
+    </div>
   );
 }
 
-function RelationPills({
-  block,
-  onTagClick,
-  onBlockJump,
-  activeTag,
-  allBlocks,
+function SectionTitle({
+  eyebrow,
+  title,
+  description,
+  icon: Icon,
 }: {
-  block: InsightBlock;
-  onTagClick: (tag: string) => void;
-  onBlockJump: (id: string) => void;
-  activeTag: string | null;
-  allBlocks: InsightBlock[];
+  eyebrow: string;
+  title: string;
+  description?: string;
+  icon?: LucideIcon;
 }) {
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
-        {block.tags.map((tag) => (
-          <button
-            key={tag}
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onTagClick(tag);
-            }}
-            className={cn(
-              "rounded-full border px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] transition",
-              activeTag === tag
-                ? "border-[#f7d237]/35 bg-[#f7d237]/12 text-[#fff1a1]"
-                : "border-white/10 bg-white/[0.04] text-white/55 hover:bg-white/[0.07]",
-            )}
-          >
-            {tag}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        {block.links.map((linkId) => {
-          const target = allBlocks.find((item) => item.id === linkId);
-          if (!target) return null;
-
-          return (
-            <button
-              key={linkId}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onBlockJump(linkId);
-              }}
-              className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-cyan-100 transition hover:bg-cyan-400/16"
-            >
-              ↗ {target.title}
-            </button>
-          );
-        })}
+    <div className="mb-6 flex items-start gap-4">
+      {Icon ? (
+        <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-[#f7d237]/20 bg-[#f7d237]/10 text-[#f7d237]">
+          <Icon className="h-5 w-5" />
+        </div>
+      ) : null}
+      <div>
+        <div className="text-xs font-medium uppercase tracking-[0.28em] text-[#a5aeb2]">{eyebrow}</div>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">{title}</h2>
+        {description ? <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c9cdd8]">{description}</p> : null}
       </div>
     </div>
   );
 }
 
-export default function Page() {
-  const params = useParams<{ token: string }>();
-  const token = typeof params?.token === "string" ? params.token : "";
-
-  const [data, setData] = useState<ResultsPayload>(FALLBACK_DATA);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<string | null>(null);
-  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
-  const [activeTag, setActiveTag] = useState<string | null>(null);
-
-  const [slotsOpen, setSlotsOpen] = useState(false);
-  const [slotsLoading, setSlotsLoading] = useState(false);
-  const [slotsError, setSlotsError] = useState<string | null>(null);
-  const [slots, setSlots] = useState<SlotItem[]>([]);
-
-  const cardRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  useEffect(() => {
-    let isMounted = true;
-
-    async function loadResults() {
-      setLoading(true);
-      setFetchError(null);
-
-      try {
-        const response = await fetch(RESULTS_WEBHOOK, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            source: "vercel_results_page",
-            page: "results",
-            token,
-          }),
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error(`Webhook responded with ${response.status}`);
-        }
-
-        const responseText = await response.text();
-        let parsed: unknown = {};
-
-        try {
-          parsed = JSON.parse(responseText);
-        } catch {
-          parsed = { summary: responseText };
-        }
-
-        if (!isMounted) return;
-        setData(normalizePayload(parsed));
-      } catch (error) {
-        if (!isMounted) return;
-        setFetchError(error instanceof Error ? error.message : "Unknown error");
-        setData(FALLBACK_DATA);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-
-    if (token) {
-      void loadResults();
-    } else {
-      setLoading(false);
-      setFetchError("Token not found in route.");
-    }
-
-    return () => {
-      isMounted = false;
-    };
-  }, [token]);
-
-  async function openSlotsPopup() {
-    setSlotsOpen(true);
-    setSlotsLoading(true);
-    setSlotsError(null);
-
-    try {
-      const response = await fetch(SLOTS_WEBHOOK, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          source: "results_decompose",
-          token,
-          timezone: "CET",
-        }),
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error(`Slots webhook responded with ${response.status}`);
-      }
-
-      const responseText = await response.text();
-      let parsed: unknown = {};
-
-      try {
-        parsed = JSON.parse(responseText);
-      } catch {
-        parsed = { slots: [responseText] };
-      }
-
-      setSlots(normalizeSlotsPayload(parsed));
-    } catch (error) {
-      setSlots([]);
-      setSlotsError(error instanceof Error ? error.message : "Unknown error");
-    } finally {
-      setSlotsLoading(false);
-    }
-  }
-
-  const relatedCards = useMemo(() => {
-    if (!activeTag) return new Set<string>();
-    return new Set(
-      data.blocks
-        .filter((block) => block.tags.includes(activeTag))
-        .map((block) => block.id),
-    );
-  }, [activeTag, data.blocks]);
-
-  function jumpToCard(id: string) {
-    const el = cardRefs.current[id];
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      setTimeout(() => setActivePanel({ type: "block", id }), 220);
-    }
-  }
-
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setActivePanel(null);
-        setSlotsOpen(false);
-      }
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  const activeBlock =
-    activePanel?.type === "block"
-      ? data.blocks.find((block) => block.id === activePanel.id) ?? null
-      : null;
-
-  const allTags = [...new Set(data.blocks.flatMap((block) => block.tags))];
-  const profileHref = token ? `/account/${token}` : "/account";
-
+function MetricCard({ item }: { item: KPI }) {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#06142a] text-white">
-      <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
+    <GlassCard className="p-5">
+      <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">{item.label}</div>
+      <div className="mt-3 text-3xl font-semibold tracking-tight text-white">{item.value}</div>
+      {item.sub ? <div className="mt-2 text-sm text-[#bfc4d7]">{item.sub}</div> : null}
+    </GlassCard>
+  );
+}
 
-        body {
-          background: #06142a;
-        }
-
-        @keyframes floatA {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(30px, -20px, 0) scale(1.05); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
-        }
-
-        @keyframes floatB {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(-40px, 30px, 0) scale(1.08); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
-        }
-
-        @keyframes floatC {
-          0% { transform: translate3d(0, 0, 0) scale(1); }
-          50% { transform: translate3d(10px, 20px, 0) scale(0.98); }
-          100% { transform: translate3d(0, 0, 0) scale(1); }
-        }
-
-        @keyframes panelIn {
-          from {
-            opacity: 0;
-            transform: translateX(42px) scale(0.985);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-          }
-        }
-
-        @keyframes overlayIn {
-          from {
-            opacity: 0;
-            backdrop-filter: blur(0px);
-          }
-          to {
-            opacity: 1;
-            backdrop-filter: blur(6px);
-          }
-        }
-
-        @keyframes popupIn {
-          from {
-            opacity: 0;
-            transform: translateY(22px) scale(0.985);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0px) scale(1);
-          }
-        }
-
-        @keyframes shimmer {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
-        }
-      `}</style>
-
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div
-          className="absolute -left-[10%] top-[-5%] h-[42rem] w-[42rem] rounded-full bg-[radial-gradient(circle,rgba(95,149,255,0.22),transparent_62%)] blur-3xl"
-          style={{ animation: "floatA 20s ease-in-out infinite" }}
-        />
-        <div
-          className="absolute right-[-10%] top-[12%] h-[34rem] w-[34rem] rounded-full bg-[radial-gradient(circle,rgba(247,210,55,0.13),transparent_62%)] blur-3xl"
-          style={{ animation: "floatB 24s ease-in-out infinite" }}
-        />
-        <div
-          className="absolute left-[20%] bottom-[-10%] h-[36rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgba(190,118,255,0.12),transparent_62%)] blur-3xl"
-          style={{ animation: "floatC 22s ease-in-out infinite" }}
-        />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(4,12,25,0.18),rgba(4,12,25,0.4))]" />
-        <div className="absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(255,255,255,0.5)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.5)_1px,transparent_1px)] [background-size:72px_72px]" />
+function QuickFactCard({ item }: { item: SummaryItem }) {
+  const Icon = item.icon ? ICONS[item.icon] : Sparkles;
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">{item.label}</div>
+        <Icon className="h-4 w-4 text-[#f7d237]" />
       </div>
+      <div className="mt-3 text-lg font-semibold text-white">{item.value}</div>
+      {item.note ? <div className="mt-2 text-sm leading-6 text-[#c9cdd8]">{item.note}</div> : null}
+    </GlassCard>
+  );
+}
 
-      <div className="relative mx-auto max-w-[1520px] px-5 pb-16 pt-6 md:px-8 lg:px-10">
-        <header className="mb-8 flex items-center justify-between gap-4">
-          <img src="/logo.svg" alt="growth avenue" className="h-10 w-auto md:h-12" />
+function Tag({ tag }: { tag: HeroTag }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-[0.14em] uppercase",
+        tag.tone === "warning" && "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]",
+        tag.tone === "good" && "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+        (!tag.tone || tag.tone === "neutral") && "border-white/10 bg-white/5 text-[#d8dbea]",
+      )}
+    >
+      {tag.label}
+    </span>
+  );
+}
 
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={openSlotsPopup}
-              className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/85 transition hover:bg-white/[0.07]"
-            >
-              Decompose
-            </button>
-            <a
-              href={profileHref}
-              className="rounded-full border border-white/10 bg-white/[0.04] px-5 py-3 text-sm font-medium text-white/85 transition hover:bg-white/[0.07]"
-            >
-              Profile
-            </a>
-          </div>
-        </header>
+function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <GlassCard className="overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center justify-between gap-4 p-5 text-left"
+      >
+        <div>
+          <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">Block interpretation</div>
+          <div className="mt-2 text-lg font-semibold text-white">{block.title}</div>
+        </div>
+        <div className="text-sm text-[#f7d237]">{open ? "Hide" : "Open"}</div>
+      </button>
+      {open ? (
+        <div className="grid gap-4 border-t border-white/8 p-5 md:grid-cols-2">
+          <InfoRow title="Signal" text={block.signal} />
+          <InfoRow title="Interpretation" text={block.interpretation} />
+          <InfoRow title="Relation" text={block.relation} />
+          <InfoRow title="Risk" text={block.risk} />
+          <InfoRow title="Not proven" text={block.unknown} />
+          <InfoRow title="Interim conclusion" text={block.conclusion} highlight />
+        </div>
+      ) : null}
+    </GlassCard>
+  );
+}
 
-        <div className="mb-5 flex flex-wrap gap-3">
-          <div className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-100">
-            Snapshot status
-          </div>
-          <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff1a1]">
-            {loading ? "Loading" : data.company.resultLabel}
-          </div>
-          <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white/70">
-            Result page assembled
-          </div>
-          <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white/70">
-            Key growth zone found
-          </div>
-          <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-white/70">
-            Cross-block links available
+function InfoRow({
+  title,
+  text,
+  highlight,
+}: {
+  title: string;
+  text: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div className={cn("rounded-2xl border p-4", highlight ? "border-[#f7d237]/20 bg-[#f7d237]/8" : "border-white/8 bg-white/4")}>
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <p className="mt-2 text-sm leading-6 text-[#dde2f2]">{text}</p>
+    </div>
+  );
+}
+
+function LeverPill({ node }: { node: LeverNode }) {
+  const colors: Record<LeverNode["role"], string> = {
+    primary: "border-[#f7d237]/35 bg-[#f7d237]/10 text-[#f7d237]",
+    amplifies: "border-white/10 bg-white/5 text-white",
+    unlocks: "border-white/10 bg-white/5 text-white",
+    stabilizes: "border-white/10 bg-white/5 text-white",
+    rejected: "border-red-300/20 bg-red-400/10 text-red-200",
+  };
+  return (
+    <div className={cn("rounded-2xl border px-4 py-3", colors[node.role])}>
+      <div className="text-xs uppercase tracking-[0.18em] opacity-80">{node.role}</div>
+      <div className="mt-2 font-medium">{node.name}</div>
+      <div className="mt-1 text-sm opacity-90">{node.zone}</div>
+      {node.reason ? <div className="mt-2 text-sm leading-6 opacity-90">{node.reason}</div> : null}
+    </div>
+  );
+}
+
+function ControlMetricCard({ metric }: { metric: ControlMetric }) {
+  const progress = Math.max(
+    8,
+    Math.min(100, metric.direction === "up" ? (metric.current / metric.target) * 100 : (metric.target / metric.current) * 100),
+  );
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{metric.name}</div>
+          <div className="mt-3 text-2xl font-semibold text-white">
+            {metric.current}
+            {metric.unit || ""}
           </div>
         </div>
+        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#cbd1e5]">
+          target {metric.target}
+          {metric.unit || ""}
+        </div>
+      </div>
+      <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-white/8">
+        <div className="h-full rounded-full bg-[#f7d237]" style={{ width: `${progress}%` }} />
+      </div>
+      <div className="mt-3 text-sm text-[#cbd1e5]">
+        Direction: {metric.direction === "up" ? "increase" : "decrease"}
+      </div>
+    </GlassCard>
+  );
+}
 
-        <section className="grid gap-6 xl:grid-cols-[1.55fr_0.85fr]">
-          <GlassCard className="p-6 md:p-8">
-            <div className="grid gap-8 lg:grid-cols-[1.18fr_0.82fr] lg:items-end">
-              <div>
-                <div className="mb-4 flex flex-wrap items-center gap-3 text-[11px] uppercase tracking-[0.24em] text-white/42">
-                  <span className="text-[#f7d237]">●</span>
-                  {data.company.project}
-                  <span className="rounded-full border border-white/10 px-3 py-1.5 text-white/55">
-                    {data.company.horizon}
-                  </span>
-                </div>
+function AlertRuleCard({ item }: { item: AlertRule }) {
+  return (
+    <GlassCard className="p-5">
+      <div className="flex items-center justify-between gap-3">
+        <div className="text-sm font-medium text-white">{item.label}</div>
+        <span
+          className={cn(
+            "rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.18em]",
+            item.status === "good" && "bg-emerald-400/10 text-emerald-300",
+            item.status === "watch" && "bg-white/8 text-[#d7dcef]",
+            item.status === "risk" && "bg-[#f7d237]/10 text-[#f7d237]",
+          )}
+        >
+          {item.status}
+        </span>
+      </div>
+      <p className="mt-3 text-sm leading-6 text-[#cbd1e5]">{item.logic}</p>
+    </GlassCard>
+  );
+}
 
-                <h1 className="max-w-4xl text-4xl font-semibold leading-[0.96] text-[#fefefe] md:text-6xl xl:text-[72px]">
-                  {data.company.name}
-                </h1>
+export default function RevenueSnapshotResultsPage() {
+  const data = mockPayload;
+  const [scenario, setScenario] = useState<"conservative" | "balanced" | "aggressive">("balanced");
 
-                <p className="mt-5 max-w-4xl text-lg leading-8 text-[#d8dde7] md:text-[22px] md:leading-9">
-                  {loading
-                    ? "Собираем итоговую выдачу по блокам и связям между ними..."
-                    : data.company.summary}
-                </p>
+  const scenarioData = data.management.scenarios[scenario];
+  const pieData = useMemo(
+    () => [
+      { name: "Current", value: 100 - scenarioData.lossReduction },
+      { name: "Recovered", value: scenarioData.lossReduction },
+    ],
+    [scenarioData],
+  );
 
-                <p className="mt-5 max-w-4xl text-sm leading-7 text-[#a5aeb2] md:text-base">
-                  {loading
-                    ? "Webhook response is loading from Make."
-                    : data.company.executive}
-                </p>
-
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <div className="rounded-full border border-[#f7d237]/22 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff1a1]">
-                    Executive Summary
-                  </div>
-                  <div className="rounded-full border border-cyan-300/20 bg-cyan-400/10 px-4 py-2 text-sm text-cyan-100">
-                    {data.company.maturity}
-                  </div>
-                  {fetchError && (
-                    <div className="rounded-full border border-rose-300/20 bg-rose-400/10 px-4 py-2 text-sm text-rose-100">
-                      fallback mode
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="relative min-h-[280px]">
-                <div className="absolute right-0 top-0 flex flex-col items-end gap-6 text-right">
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                      Overall score
-                    </div>
-                    <div className="mt-3 flex items-center justify-end">
-                      <Ring progress={data.company.score} size={148} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                      Expiration
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold leading-tight text-white">
-                      {data.company.expires}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </GlassCard>
-
-          <TiltButton onClick={() => setActivePanel({ type: "solution" })}>
-            <GlassCard className="h-full min-h-[320px] p-6 md:p-7">
-              <div className="flex h-full flex-col justify-between">
-                <div>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-3 text-[11px] uppercase tracking-[0.22em] text-white/45">
-                      {data.solution?.title ?? "Solutions & Practice"}
-                    </div>
-                    <div className="rounded-full border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff1a1]">
-                      open full view
-                    </div>
-                  </div>
-
-                  <div className="mt-8 max-w-md text-3xl font-semibold leading-tight text-white md:text-[42px]">
-                    Main follow-up layer for transformation and implementation
-                  </div>
-
-                  <p className="mt-4 max-w-md text-sm leading-7 text-white/58">
-                    {data.solution?.subtitle ??
-                      "Здесь откроется отдельный полноэкранный слой справа. Пока это каркас под будущий Solution & Practice."}
-                  </p>
-                </div>
-
-                <div className="mt-8 rounded-[28px] border border-white/10 bg-[linear-gradient(135deg,rgba(71,173,255,0.18),rgba(189,95,234,0.16),rgba(247,210,55,0.12))] p-5">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-white/45">
-                    What will live here
-                  </div>
-                  <div className="mt-4 grid gap-3 text-sm text-white/80 sm:grid-cols-2">
-                    {(data.solution?.sections ?? []).map((item) => (
-                      <div
-                        key={item}
-                        className="rounded-2xl border border-white/10 bg-black/10 px-4 py-3"
-                      >
-                        {item}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </GlassCard>
-          </TiltButton>
-        </section>
-
-        <section className="mt-8">
-          <GlassCard className="p-5 md:p-6">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <div className="text-[12px] uppercase tracking-[0.24em] text-[#f7d237]">
-                  Cross-block logic
-                </div>
-                <h2 className="mt-2 text-3xl font-semibold text-white md:text-5xl">
-                  How the blocks interact
-                </h2>
-                <p className="mt-3 max-w-3xl text-sm leading-7 text-white/58 md:text-base">
-                  Нажмите на тег, чтобы подсветить связанные карточки. Так можно
-                  быстро увидеть, где один вывод влияет на соседние блоки.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2">
-                {allTags.map((tag) => (
-                  <button
-                    key={tag}
-                    type="button"
-                    onClick={() =>
-                      setActiveTag((prev) => (prev === tag ? null : tag))
-                    }
-                    className={cn(
-                      "rounded-full border px-4 py-2 text-[11px] uppercase tracking-[0.2em] transition",
-                      activeTag === tag
-                        ? "border-[#f7d237]/35 bg-[#f7d237]/12 text-[#fff1a1] shadow-[0_0_18px_rgba(247,210,55,0.12)]"
-                        : "border-white/10 bg-white/[0.04] text-white/55 hover:bg-white/[0.07]",
-                    )}
-                  >
-                    {tag}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </GlassCard>
-        </section>
-
-        {loading ? (
-          <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {Array.from({ length: 7 }).map((_, index) => (
-              <GlassCard key={index} className="h-[430px] p-5 md:p-6">
-                <div
-                  className="h-full animate-pulse rounded-[24px] bg-[linear-gradient(90deg,rgba(255,255,255,0.04),rgba(255,255,255,0.08),rgba(255,255,255,0.04))] bg-[length:200%_100%]"
-                  style={{ animation: "shimmer 1.8s linear infinite" }}
-                />
-              </GlassCard>
-            ))}
-          </section>
-        ) : (
-          <section className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-            {data.blocks.map((block, index) => {
-              const highlighted = !activeTag || relatedCards.has(block.id);
-              const dimmed = !!activeTag && !relatedCards.has(block.id);
-
-              return (
-                <div
-                  key={block.id}
-                  ref={(el) => {
-                    cardRefs.current[block.id] = el;
-                  }}
-                  className={cn(
-                    "transition duration-300",
-                    dimmed && "opacity-45 saturate-[0.8]",
-                  )}
-                >
-                  <TiltButton
-                    onClick={() =>
-                      setActivePanel({ type: "block", id: block.id })
-                    }
-                    highlight={highlighted}
-                  >
-                    <GlassCard className="h-full p-5 md:p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-xl text-[#f7d237] shadow-[0_0_24px_rgba(247,210,55,0.08)]">
-                          {block.icon}
-                        </div>
-                        <Ring progress={block.score} size={82} />
-                      </div>
-
-                      <div className="mt-6">
-                        <div className="text-[11px] uppercase tracking-[0.22em] text-white/32">
-                          Block {index + 1}
-                        </div>
-                        <div className="mt-2 text-[32px] font-semibold leading-[1.02] text-[#fefefe]">
-                          {block.title}
-                        </div>
-                        <div className="mt-2 text-sm leading-6 text-[#a5aeb2]">
-                          {block.subtitle}
-                        </div>
-                        <div className="mt-4 inline-flex rounded-full border border-cyan-300/20 bg-cyan-400/10 px-3 py-1.5 text-[11px] uppercase tracking-[0.2em] text-cyan-100">
-                          {block.status}
-                        </div>
-                      </div>
-
-                      <div className="mt-6 space-y-3">
-                        {block.shortPoints.map((point, pointIndex) => (
-                          <div
-                            key={pointIndex}
-                            className="flex items-start gap-3 text-sm leading-7 text-white/70"
-                          >
-                            <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
-                            <span>{point}</span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <div className="mt-6 border-t border-white/8 pt-4">
-                        <RelationPills
-                          block={block}
-                          onTagClick={setActiveTag}
-                          onBlockJump={jumpToCard}
-                          activeTag={activeTag}
-                          allBlocks={data.blocks}
-                        />
-                      </div>
-
-                      <div className="mt-6 flex items-center justify-between rounded-2xl border border-white/8 bg-black/10 px-4 py-3 text-sm transition duration-300 group-hover:border-[#f7d237]/20 group-hover:bg-[#f7d237]/[0.04]">
-                        <span className="text-white/55">Открыть выводы</span>
-                        <div className="flex items-center gap-2 text-[#f7d237]">
-                          <span>{block.score}</span>
-                          <span>→</span>
-                        </div>
-                      </div>
-                    </GlassCard>
-                  </TiltButton>
-                </div>
-              );
-            })}
-          </section>
-        )}
+  return (
+    <main className="min-h-screen bg-[#0b1d3a] text-white">
+      <div className="pointer-events-none fixed inset-0 overflow-hidden">
+        <div className="absolute -top-24 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute right-[-8rem] top-[10rem] h-[22rem] w-[22rem] rounded-full bg-[#f7d237]/10 blur-3xl" />
+        <div className="absolute bottom-[-6rem] left-[-6rem] h-[20rem] w-[20rem] rounded-full bg-white/5 blur-3xl" />
       </div>
 
-      {slotsOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-[60] bg-black/55 backdrop-blur-sm"
-            style={{ animation: "overlayIn 280ms cubic-bezier(0.22,1,0.36,1)" }}
-            onClick={() => setSlotsOpen(false)}
-          />
-
-          <div
-            className="fixed left-1/2 top-1/2 z-[70] w-[calc(100%-32px)] max-w-[760px] -translate-x-1/2 -translate-y-1/2"
-            style={{ animation: "popupIn 320ms cubic-bezier(0.22,1,0.36,1)" }}
-          >
-            <GlassCard className="p-6 md:p-7">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                    Decompose
-                  </div>
-                  <h3 className="mt-3 text-3xl font-semibold text-white md:text-4xl">
-                    ближайшие свободные слоты
-                  </h3>
-                  <p className="mt-3 text-sm leading-7 text-white/60">
-                    Показываем ближайшие 4 свободных слота. Время отображается в CET.
-                  </p>
+      <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
+        {/* HERO */}
+        <section className="mb-8">
+          <GlassCard className="overflow-hidden p-6 md:p-8">
+            <div className="grid gap-8 xl:grid-cols-[1.4fr_0.9fr]">
+              <div>
+                <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-[#a5aeb2]">
+                  <span>Revenue Snapshot</span>
+                  <span className="h-1 w-1 rounded-full bg-[#f7d237]" />
+                  <span>{data.company.name}</span>
+                  <span className="h-1 w-1 rounded-full bg-[#f7d237]" />
+                  <span>{data.company.niche}</span>
+                  <span className="h-1 w-1 rounded-full bg-[#f7d237]" />
+                  <span>{data.company.country}</span>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setSlotsOpen(false)}
-                  className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
-                >
-                  Закрыть
-                </button>
+                <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
+                  Growth is constrained by a conversion bottleneck, not by the absence of demand.
+                </h1>
+
+                <p className="mt-5 max-w-3xl text-base leading-7 text-[#d6dbeb] md:text-lg">
+                  {data.hero.summary}
+                </p>
+
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {data.hero.tags.map((tag) => (
+                    <Tag key={tag.label} tag={tag} />
+                  ))}
+                </div>
+
+                <div className="mt-8 grid gap-4 md:grid-cols-3">
+                  {data.economics.headlineKpis.map((item) => (
+                    <MetricCard key={item.label} item={item} />
+                  ))}
+                </div>
               </div>
 
-              <div className="mt-6 grid gap-4 md:grid-cols-2">
-                {slotsLoading ? (
-                  Array.from({ length: 4 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="min-h-[110px] animate-pulse rounded-[24px] border border-white/10 bg-white/[0.04]"
-                    />
-                  ))
-                ) : slotsError ? (
-                  <div className="md:col-span-2 rounded-[24px] border border-rose-300/20 bg-rose-400/10 p-5 text-sm leading-7 text-rose-100">
-                    Не удалось загрузить слоты. {slotsError}
+              <div className="grid gap-4">
+                <GlassCard className="p-5">
+                  <div className="flex items-center gap-3 text-[#f7d237]">
+                    <Lock className="h-5 w-5" />
+                    <div className="text-xs uppercase tracking-[0.22em]">Growth Limit</div>
                   </div>
-                ) : slots.length > 0 ? (
-                  slots.map((slot) => (
-                    <div
-                      key={slot.id}
-                      className="rounded-[24px] border border-white/10 bg-white/[0.04] p-5"
-                    >
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                        CET slot
-                      </div>
-                      <div className="mt-4 text-2xl font-semibold text-white">
-                        {slot.label}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="md:col-span-2 rounded-[24px] border border-white/10 bg-white/[0.04] p-5 text-sm leading-7 text-white/65">
-                    Свободные слоты пока не пришли из webhook.
+                  <div className="mt-4 text-2xl font-semibold">{data.hero.growthLimit.type}</div>
+                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                    <span className="font-medium text-white">Bottleneck:</span> {data.hero.growthLimit.bottleneck}
                   </div>
-                )}
+                  <div className="mt-3 text-sm leading-6 text-[#c9cdd8]">{data.hero.growthLimit.why}</div>
+                </GlassCard>
+
+                <GlassCard className="p-5">
+                  <div className="flex items-center gap-3 text-[#f7d237]">
+                    <Sparkles className="h-5 w-5" />
+                    <div className="text-xs uppercase tracking-[0.22em]">Primary Lever</div>
+                  </div>
+                  <div className="mt-4 text-2xl font-semibold">{data.hero.primaryLever.name}</div>
+                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">{data.hero.primaryLever.essence}</div>
+                  <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#cfd5e9]">
+                    Zone: {data.hero.primaryLever.zone}
+                  </div>
+                </GlassCard>
+
+                <GlassCard className="p-5">
+                  <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">Market adjustment</div>
+                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">{data.company.marketTakeaway}</div>
+                </GlassCard>
+              </div>
+            </div>
+          </GlassCard>
+        </section>
+
+        {/* QUICK FACTS */}
+        <section className="mb-12">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {data.quickFacts.map((item) => (
+              <QuickFactCard key={item.label} item={item} />
+            ))}
+          </div>
+        </section>
+
+        {/* UNIT ECONOMICS */}
+        <section className="mb-14">
+          <SectionTitle
+            eyebrow="Economics"
+            title="Unit economics and loss map"
+            description="Сухие показатели, расчетные значения и зона прямых потерь. Этот блок нужен как объективная база для всех стратегических выводов."
+            icon={Wallet}
+          />
+
+          <div className="grid gap-4 lg:grid-cols-3">
+            <GlassCard className="p-5 lg:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Base metrics</div>
+              <div className="mt-4 space-y-3">
+                {data.economics.baseKpis.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
+                    <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                    <span className="font-medium text-white">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-5 lg:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Calculated metrics</div>
+              <div className="mt-4 space-y-3">
+                {data.economics.calculatedKpis.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
+                    <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                    <span className="font-medium text-white">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-5 lg:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Loss metrics</div>
+              <div className="mt-4 space-y-3">
+                {data.economics.losses.map((item) => (
+                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-[#f7d237]/15 bg-[#f7d237]/6 px-4 py-3">
+                    <span className="text-sm text-[#f1f3fa]">{item.label}</span>
+                    <span className="font-medium text-[#f7d237]">{item.value}</span>
+                  </div>
+                ))}
               </div>
             </GlassCard>
           </div>
-        </>
-      )}
 
-      {activePanel && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/55 backdrop-blur-sm"
-            style={{ animation: "overlayIn 280ms cubic-bezier(0.22,1,0.36,1)" }}
-            onClick={() => setActivePanel(null)}
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <GlassCard className="p-5 xl:col-span-1">
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Revenue waterfall</div>
+              <div className="h-[280px] w-full">
+                <ResponsiveContainer>
+                  <BarChart data={data.economics.revenueWaterfall}>
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+                    <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
+                    <YAxis stroke="#9aa3be" fontSize={12} />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                    <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="rgba(247,210,55,0.9)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-5 xl:col-span-1">
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Demand vs capacity</div>
+              <div className="h-[280px] w-full">
+                <ResponsiveContainer>
+                  <BarChart data={data.economics.demandCapacity} layout="vertical">
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
+                    <XAxis type="number" stroke="#9aa3be" fontSize={12} />
+                    <YAxis dataKey="name" type="category" stroke="#9aa3be" fontSize={12} width={80} />
+                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                    <Bar dataKey="value" radius={[0, 10, 10, 0]} fill="rgba(255,255,255,0.85)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-5 xl:col-span-1">
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Funnel</div>
+              <div className="h-[280px] w-full">
+                <ResponsiveContainer>
+                  <FunnelChart>
+                    <Tooltip />
+                    <Funnel dataKey="value" data={data.economics.funnel} isAnimationActive>
+                      <LabelList position="right" fill="#ffffff" stroke="none" dataKey="name" />
+                    </Funnel>
+                  </FunnelChart>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+          </div>
+        </section>
+
+        {/* BLOCK INTERPRETATION */}
+        <section className="mb-14">
+          <SectionTitle
+            eyebrow="Interpretation"
+            title="Block-by-block reading of client answers"
+            description="Интерпретация ответов в логике анкеты: не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
+            icon={Layers3}
+          />
+          <div className="grid gap-4">
+            {data.blockInterpretation.map((block) => (
+              <InterpretationAccordion key={block.id} block={block} />
+            ))}
+          </div>
+        </section>
+
+        {/* STRATEGY */}
+        <section className="mb-14">
+          <SectionTitle
+            eyebrow="Strategy"
+            title="Strategy and lever system"
+            description="Главный блок страницы: сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
+            icon={Target}
           />
 
-          <div
-            className="fixed right-0 top-0 z-50 h-screen w-full max-w-[980px] overflow-y-auto border-l border-white/10 bg-[#08162df2] backdrop-blur-3xl"
-            style={{ animation: "panelIn 420ms cubic-bezier(0.22,1,0.36,1)" }}
-          >
-            <div className="sticky top-0 z-10 border-b border-white/8 bg-[#08162dd9] px-5 py-4 backdrop-blur-2xl md:px-7">
-              <div className="flex items-center justify-between gap-4">
-                <div>
-                  <div className="text-[11px] uppercase tracking-[0.24em] text-white/40">
-                    {activePanel.type === "solution"
-                      ? "full-screen layer"
-                      : "insight block"}
-                  </div>
-                  <div className="mt-1 text-2xl font-semibold text-[#fefefe] md:text-3xl">
-                    {activePanel.type === "solution"
-                      ? data.solution?.title ?? "Solutions & Practice"
-                      : activeBlock?.title}
-                  </div>
-                  <div className="mt-1 text-sm text-[#a5aeb2]">
-                    {activePanel.type === "solution"
-                      ? data.solution?.subtitle ??
-                        "Placeholder layer ready for later content"
-                      : activeBlock?.subtitle}
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => setActivePanel(null)}
-                  className="rounded-2xl border border-white/10 px-4 py-2 text-sm text-white/70 transition hover:bg-white/[0.05] hover:text-white"
-                >
-                  Закрыть
-                </button>
+          <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Strategic scenario</div>
+              <div className="mt-4 text-3xl font-semibold text-white">{data.strategy.scenario.type}</div>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <InfoRow title="Why this scenario" text={data.strategy.scenario.why} />
+                <InfoRow title="Market limits" text={data.strategy.scenario.marketLimits} />
+                <InfoRow title="Not now" text={data.strategy.scenario.notNow} highlight />
               </div>
-            </div>
+            </GlassCard>
 
-            {activePanel.type === "solution" ? (
-              <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
-                <GlassCard className="p-6 md:p-7">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                    Structure placeholder
-                  </div>
-                  <h3 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
-                    {data.solution?.title ?? "Solution & Practice will live here"}
-                  </h3>
-                  <p className="mt-4 max-w-3xl text-sm leading-7 text-white/60 md:text-base">
-                    {data.solution?.subtitle ??
-                      "Этот слой уже подключён как отдельная полноэкранная плоскость справа. Его можно будет наполнить позже блоками Primary Growth Lever, Revenue Loss Source, Model Change Recommendation, Strategic Priority, Business Impact, Implementation Conditions и дальнейшей JTBD-логикой."}
-                  </p>
-                </GlassCard>
-
-                <div className="grid gap-5 md:grid-cols-2">
-                  {(data.solution?.sections ?? []).map((item) => (
-                    <GlassCard key={item} className="min-h-[180px] p-5">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                        Future section
-                      </div>
-                      <div className="mt-4 text-2xl font-semibold text-white">
-                        {item}
-                      </div>
-                      <div className="mt-4 text-sm leading-7 text-white/50">
-                        Empty placeholder card for later prompt-driven content.
-                      </div>
-                    </GlassCard>
-                  ))}
-                </div>
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Lever map</div>
+              <div className="mt-4 grid gap-3">
+                {data.strategy.leverMap.map((node) => (
+                  <LeverPill key={`${node.role}-${node.name}`} node={node} />
+                ))}
               </div>
-            ) : activeBlock ? (
-              <div className="space-y-5 px-5 py-5 md:px-7 md:py-7">
-                <GlassCard className="p-6 md:p-7">
-                  <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="max-w-3xl">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                        Summary
-                      </div>
-                      <h3 className="mt-3 text-3xl font-semibold text-white md:text-5xl">
-                        {activeBlock.status}
-                      </h3>
-                      <p className="mt-4 text-sm leading-7 text-white/65 md:text-base">
-                        {activeBlock.details.summary}
-                      </p>
-                    </div>
-                    <Ring progress={activeBlock.score} size={150} />
-                  </div>
-                </GlassCard>
-
-                <div className="grid gap-5 md:grid-cols-3">
-                  {activeBlock.details.metrics.map((metric) => (
-                    <GlassCard key={metric.label} className="p-5">
-                      <div className="text-[11px] uppercase tracking-[0.22em] text-white/35">
-                        {metric.label}
-                      </div>
-                      <div className="mt-4 text-3xl font-semibold text-white">
-                        {metric.value}
-                      </div>
-                    </GlassCard>
-                  ))}
-                </div>
-
-                <div className="grid gap-5 xl:grid-cols-3">
-                  <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                      Strengths
-                    </div>
-                    <div className="mt-5 space-y-3">
-                      {activeBlock.details.strengths.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
-                        >
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-cyan-300" />
-                          <span>{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </GlassCard>
-
-                  <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                      Risks
-                    </div>
-                    <div className="mt-5 space-y-3">
-                      {activeBlock.details.risks.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
-                        >
-                          <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#f7d237]" />
-                          <span>{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </GlassCard>
-
-                  <GlassCard className="p-5 md:p-6">
-                    <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                      Priority actions
-                    </div>
-                    <div className="mt-5 space-y-3">
-                      {activeBlock.details.actions.map((item, index) => (
-                        <div
-                          key={index}
-                          className="flex items-start gap-3 text-sm leading-7 text-white/75"
-                        >
-                          <span className="mt-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[10px] text-white/55">
-                            {index + 1}
-                          </span>
-                          <span>{item}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </GlassCard>
-                </div>
-
-                <GlassCard className="p-5 md:p-6">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                    Cross-links
-                  </div>
-                  <div className="mt-5">
-                    <RelationPills
-                      block={activeBlock}
-                      onTagClick={(tag) => {
-                        setActiveTag(tag);
-                        setActivePanel(null);
-                        setTimeout(() => jumpToCard(activeBlock.id), 120);
-                      }}
-                      onBlockJump={(id) => {
-                        setActivePanel(null);
-                        setTimeout(() => jumpToCard(id), 120);
-                      }}
-                      activeTag={activeTag}
-                      allBlocks={data.blocks}
-                    />
-                  </div>
-                </GlassCard>
-              </div>
-            ) : null}
+            </GlassCard>
           </div>
-        </>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Lever mechanics</div>
+              <div className="mt-4 space-y-4">
+                {data.strategy.leverMechanics.chain.map((step, index) => (
+                  <div key={`${step.lever}-${index}`} className="rounded-3xl border border-white/8 bg-white/4 p-4">
+                    <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-center">
+                      <MechanicBox title="Lever" value={step.lever} />
+                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                      <MechanicBox title="Metric" value={step.metric} />
+                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                      <MechanicBox title="Economics" value={step.economics} />
+                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                      <MechanicBox title="Result" value={step.result} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Cause-effect diagram</div>
+              <div className="mt-4 h-[320px] w-full">
+                <ResponsiveContainer>
+                  <Sankey
+                    data={data.strategy.leverMechanics.sankey}
+                    nodePadding={40}
+                    margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
+                    link={{ stroke: "rgba(247,210,55,0.55)" }}
+                  >
+                    <Tooltip />
+                  </Sankey>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <GlassCard className="p-6 xl:col-span-2">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Implementation logic</div>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <InfoRow title="What changes" text={data.strategy.implementationLogic.change} />
+                <InfoRow title="Application point" text={data.strategy.implementationLogic.applicationPoint} />
+                <InfoRow title="Must appear in system" text={data.strategy.implementationLogic.systemMustAppear} highlight />
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6 xl:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Time horizon</div>
+              <div className="mt-4 space-y-3">
+                {data.strategy.timeHorizon.map((step) => (
+                  <div key={step.horizon} className="rounded-2xl border border-white/8 bg-white/4 p-4">
+                    <div className="flex items-center gap-2 text-[#f7d237]">
+                      <Clock3 className="h-4 w-4" />
+                      <div className="text-xs uppercase tracking-[0.18em]">{step.horizon}</div>
+                    </div>
+                    <div className="mt-3 text-base font-medium text-white">{step.title}</div>
+                    <div className="mt-2 text-sm leading-6 text-[#cfd5e9]">{step.text}</div>
+                  </div>
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <GlassCard className="p-6 xl:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Dependencies</div>
+              <div className="mt-4 h-[300px] w-full">
+                <ResponsiveContainer>
+                  <BarChart data={data.strategy.dependencies} layout="vertical">
+                    <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
+                    <XAxis type="number" stroke="#9aa3be" fontSize={12} domain={[0, 100]} />
+                    <YAxis dataKey="label" type="category" stroke="#9aa3be" fontSize={12} width={120} />
+                    <Tooltip />
+                    <Bar dataKey="score" radius={[0, 10, 10, 0]} fill="rgba(247,210,55,0.9)" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6 xl:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Risks</div>
+              <div className="mt-4 space-y-4">
+                <InfoRow title="Main risk" text={data.strategy.risks.mainRisk} />
+                <InfoRow title="Fail condition" text={data.strategy.risks.failCondition} highlight />
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6 xl:col-span-1">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Expected economic shift</div>
+              <div className="mt-4 space-y-4">
+                <InfoRow title="Decreases" text={data.strategy.expectedShift.decreases} />
+                <InfoRow title="Grows" text={data.strategy.expectedShift.grows} />
+                <InfoRow title="Key metric" text={data.strategy.expectedShift.keyMetric} highlight />
+              </div>
+            </GlassCard>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Strategic priority</div>
+              <div className="mt-4 grid gap-4 md:grid-cols-3">
+                <PriorityColumn
+                  title="Primary"
+                  items={[data.strategy.strategicPriority.primary]}
+                  accent
+                />
+                <PriorityColumn title="Secondary" items={data.strategy.strategicPriority.secondary} />
+                <PriorityColumn title="Do not do now" items={data.strategy.strategicPriority.forbiddenNow} warning />
+              </div>
+            </GlassCard>
+
+            <GlassCard className="p-6">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Rejected levers</div>
+              <div className="mt-4 space-y-3">
+                {data.strategy.rejectedLevers.map((node) => (
+                  <LeverPill key={node.name} node={node} />
+                ))}
+              </div>
+            </GlassCard>
+          </div>
+        </section>
+
+        {/* MANAGEMENT LAYER */}
+        <section className="mb-14">
+          <SectionTitle
+            eyebrow="Management"
+            title="Control panel and strategy management tools"
+            description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
+            icon={Settings2}
+          />
+
+          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+            <GlassCard className="p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Scenario switcher</div>
+                  <div className="mt-2 text-2xl font-semibold">{scenario}</div>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {(["conservative", "balanced", "aggressive"] as const).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setScenario(key)}
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm transition",
+                        scenario === key
+                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]"
+                          : "border-white/10 bg-white/5 text-[#d5daeb] hover:bg-white/8",
+                      )}
+                    >
+                      {key}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4 md:grid-cols-3">
+                <ScenarioMetric title="Revenue" value={scenarioData.revenue} prefix="€" />
+                <ScenarioMetric title="Profit" value={scenarioData.profit} prefix="€" />
+                <ScenarioMetric title="Loss Reduction" value={scenarioData.lossReduction} suffix="%" />
+              </div>
+
+              <div className="mt-6 grid gap-4 xl:grid-cols-2">
+                <div className="h-[260px] w-full">
+                  <ResponsiveContainer>
+                    <AreaChart data={data.economics.economicsShift}>
+                      <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
+                      <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
+                      <YAxis stroke="#9aa3be" fontSize={12} />
+                      <Tooltip />
+                      <Area type="monotone" dataKey="before" stroke="rgba(255,255,255,0.9)" fill="rgba(255,255,255,0.12)" />
+                      <Area type="monotone" dataKey="after" stroke="rgba(247,210,55,0.95)" fill="rgba(247,210,55,0.22)" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="h-[260px] w-full">
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" innerRadius={60} outerRadius={90} stroke="none">
+                        <Cell fill="rgba(255,255,255,0.14)" />
+                        <Cell fill="rgba(247,210,55,0.92)" />
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </GlassCard>
+
+            <div className="grid gap-4">
+              {data.management.controlMetrics.map((metric) => (
+                <ControlMetricCard key={metric.name} metric={metric} />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            {data.management.alertRules.map((item) => (
+              <AlertRuleCard key={item.label} item={item} />
+            ))}
+          </div>
+        </section>
+
+        {/* WHAT IS NOT THE PROBLEM */}
+        <section className="mb-8">
+          <SectionTitle
+            eyebrow="Trust layer"
+            title="What is not the core problem"
+            description="Этот блок нужен, чтобы страница не выглядела как набор общих претензий к бизнесу. Он фиксирует, что модель не считает главным источником текущей потери."
+            icon={CircleOff}
+          />
+          <div className="grid gap-4 md:grid-cols-3">
+            {data.notAProblem.map((item) => (
+              <GlassCard key={item} className="p-5">
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="mt-1 h-5 w-5 text-[#f7d237]" />
+                  <p className="text-sm leading-6 text-[#d5daeb]">{item}</p>
+                </div>
+              </GlassCard>
+            ))}
+          </div>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+function MechanicBox({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-center">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <div className="mt-2 text-sm font-medium leading-6 text-white">{value}</div>
+    </div>
+  );
+}
+
+function PriorityColumn({
+  title,
+  items,
+  accent,
+  warning,
+}: {
+  title: string;
+  items: string[];
+  accent?: boolean;
+  warning?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-3xl border p-5",
+        accent && "border-[#f7d237]/20 bg-[#f7d237]/8",
+        warning && "border-red-300/15 bg-red-400/8",
+        !accent && !warning && "border-white/8 bg-white/4",
       )}
+    >
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <div className="mt-4 space-y-3">
+        {items.map((item) => (
+          <div key={item} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm leading-6 text-white">
+            {item}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ScenarioMetric({
+  title,
+  value,
+  prefix,
+  suffix,
+}: {
+  title: string;
+  value: number;
+  prefix?: string;
+  suffix?: string;
+}) {
+  return (
+    <div className="rounded-3xl border border-white/8 bg-white/4 p-5">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <div className="mt-3 text-3xl font-semibold text-white">
+        {prefix || ""}
+        {formatCompact(value)}
+        {suffix || ""}
+      </div>
     </div>
   );
 }
