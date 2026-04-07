@@ -19,7 +19,6 @@ import {
   Cell,
 } from "recharts";
 import {
-  AlertTriangle,
   ArrowRight,
   BarChart3,
   Briefcase,
@@ -27,7 +26,6 @@ import {
   CheckCircle2,
   CircleOff,
   Clock3,
-  Filter,
   Gauge,
   Layers3,
   Lock,
@@ -42,13 +40,6 @@ import {
   Wallet,
 } from "lucide-react";
 import { useMemo, useState } from "react";
-
-// =========================================================
-// Revenue Snapshot — Results Page
-// Single-file page for Next.js App Router
-// Drop into: app/results-demo/page.tsx
-// Then replace mockPayload with webhook / API response.
-// =========================================================
 
 type HeroTag = {
   label: string;
@@ -201,6 +192,12 @@ type ResultsPayload = {
   notAProblem: string[];
 };
 
+type ChapterKey =
+  | "economics"
+  | "interpretation"
+  | "strategy"
+  | "management";
+
 const ICONS = {
   Target,
   TrendingUp,
@@ -215,6 +212,13 @@ const ICONS = {
   Settings2,
   Scale,
 };
+
+const CHAPTER_TABS: Array<{ key: ChapterKey; label: string }> = [
+  { key: "economics", label: "Unit economics and loss map" },
+  { key: "interpretation", label: "Разбор ответов по блокам" },
+  { key: "strategy", label: "Стратегия и система рычагов" },
+  { key: "management", label: "Control panel and strategy management tools" },
+];
 
 const mockPayload: ResultsPayload = {
   company: {
@@ -243,7 +247,8 @@ const mockPayload: ResultsPayload = {
     },
     primaryLever: {
       name: "Rebuild of conversion system",
-      essence: "Пересборка логики входа в продукт, выбора оффера и прохождения клиента по CJM.",
+      essence:
+        "Пересборка логики входа в продукт, выбора оффера и прохождения клиента по CJM.",
       zone: "conversion",
     },
   },
@@ -253,8 +258,18 @@ const mockPayload: ResultsPayload = {
       { label: "Profit", value: "€8,400", sub: "estimated", kind: "base" },
       { label: "Margin", value: "20%", sub: "after expenses", kind: "base" },
       { label: "Clients", value: "56", sub: "monthly", kind: "base" },
-      { label: "Avg Check", value: "€750", sub: "calculated", kind: "calculated" },
-      { label: "Utilization", value: "78%", sub: "team / ops", kind: "calculated" },
+      {
+        label: "Avg Check",
+        value: "€750",
+        sub: "calculated",
+        kind: "calculated",
+      },
+      {
+        label: "Utilization",
+        value: "78%",
+        sub: "team / ops",
+        kind: "calculated",
+      },
     ],
     baseKpis: [
       { label: "Revenue", value: "€42,000" },
@@ -440,7 +455,8 @@ const mockPayload: ResultsPayload = {
   strategy: {
     scenario: {
       type: "Conversion",
-      why: "Экономика показывает основной Lost Revenue в воронке, рынок требует большей понятности и доверия, rules поддерживают lever в зоне conversion и structure, а не expansion.",
+      why:
+        "Экономика показывает основной Lost Revenue в воронке, рынок требует большей понятности и доверия, rules поддерживают lever в зоне conversion и structure, а не expansion.",
       marketLimits:
         "Высокая конкуренция и чувствительность к качеству выбора ограничивают эффективность простого увеличения трафика.",
       notNow:
@@ -517,12 +533,14 @@ const mockPayload: ResultsPayload = {
       {
         horizon: "0–3 months",
         title: "Fast effect",
-        text: "Снижение потерь в воронке и рост конверсии за счет пересборки сценария выбора и продажи.",
+        text:
+          "Снижение потерь в воронке и рост конверсии за счет пересборки сценария выбора и продажи.",
       },
       {
         horizon: "3–6 months",
         title: "System effect",
-        text: "Закрепление процесса, снижение зависимости от ручного управления и рост воспроизводимой выручки.",
+        text:
+          "Закрепление процесса, снижение зависимости от ручного управления и рост воспроизводимой выручки.",
       },
     ],
     dependencies: [
@@ -574,26 +592,53 @@ const mockPayload: ResultsPayload = {
   },
   management: {
     controlMetrics: [
-      { name: "Lead → Sale", current: 29.5, target: 35.2, unit: "%", direction: "up" },
-      { name: "Offer Acceptance", current: 61, target: 70, unit: "%", direction: "up" },
-      { name: "Processing Speed", current: 4.4, target: 3.1, unit: "days", direction: "down" },
-      { name: "Utilization", current: 78, target: 84, unit: "%", direction: "up" },
+      {
+        name: "Lead → Sale",
+        current: 29.5,
+        target: 35.2,
+        unit: "%",
+        direction: "up",
+      },
+      {
+        name: "Offer Acceptance",
+        current: 61,
+        target: 70,
+        unit: "%",
+        direction: "up",
+      },
+      {
+        name: "Processing Speed",
+        current: 4.4,
+        target: 3.1,
+        unit: "days",
+        direction: "down",
+      },
+      {
+        name: "Utilization",
+        current: 78,
+        target: 84,
+        unit: "%",
+        direction: "up",
+      },
     ],
     alertRules: [
       {
         label: "Conversion below threshold",
         status: "risk",
-        logic: "If Lead → Sale < 30% for 2 weeks, investigate qualification and offer stage.",
+        logic:
+          "If Lead → Sale < 30% for 2 weeks, investigate qualification and offer stage.",
       },
       {
         label: "Processing speed within target",
         status: "watch",
-        logic: "If average processing time > 4 days, capacity leak risk increases.",
+        logic:
+          "If average processing time > 4 days, capacity leak risk increases.",
       },
       {
         label: "Offer acceptance improving",
         status: "good",
-        logic: "If offer acceptance > 68%, scenario is moving toward planned economics.",
+        logic:
+          "If offer acceptance > 68%, scenario is moving toward planned economics.",
       },
     ],
     scenarios: {
@@ -633,7 +678,7 @@ function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-[28px] border border-white/10 bg-white/5 backdrop-blur-xl shadow-[0_10px_60px_rgba(0,0,0,0.28)]",
+        "rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(48,79,148,0.38)_0%,rgba(18,37,74,0.9)_100%)] backdrop-blur-xl shadow-[0_10px_60px_rgba(0,0,0,0.28)]",
         className,
       )}
     >
@@ -656,14 +701,22 @@ function SectionTitle({
   return (
     <div className="mb-6 flex items-start gap-4">
       {Icon ? (
-        <div className="mt-1 flex h-11 w-11 items-center justify-center rounded-2xl border border-[#f7d237]/20 bg-[#f7d237]/10 text-[#f7d237]">
+        <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-[22px] border border-[#f7d237]/20 bg-[#f7d237]/10 text-[#f7d237]">
           <Icon className="h-5 w-5" />
         </div>
       ) : null}
       <div>
-        <div className="text-xs font-medium uppercase tracking-[0.28em] text-[#a5aeb2]">{eyebrow}</div>
-        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">{title}</h2>
-        {description ? <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c9cdd8]">{description}</p> : null}
+        <div className="text-xs font-medium uppercase tracking-[0.28em] text-[#a5aeb2]">
+          {eyebrow}
+        </div>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">
+          {title}
+        </h2>
+        {description ? (
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c9cdd8]">
+            {description}
+          </p>
+        ) : null}
       </div>
     </div>
   );
@@ -672,9 +725,15 @@ function SectionTitle({
 function MetricCard({ item }: { item: KPI }) {
   return (
     <GlassCard className="p-5">
-      <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">{item.label}</div>
-      <div className="mt-3 text-3xl font-semibold tracking-tight text-white">{item.value}</div>
-      {item.sub ? <div className="mt-2 text-sm text-[#bfc4d7]">{item.sub}</div> : null}
+      <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+        {item.label}
+      </div>
+      <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
+        {item.value}
+      </div>
+      {item.sub ? (
+        <div className="mt-2 text-sm text-[#bfc4d7]">{item.sub}</div>
+      ) : null}
     </GlassCard>
   );
 }
@@ -684,11 +743,15 @@ function QuickFactCard({ item }: { item: SummaryItem }) {
   return (
     <GlassCard className="p-5">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">{item.label}</div>
+        <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+          {item.label}
+        </div>
         <Icon className="h-4 w-4 text-[#f7d237]" />
       </div>
       <div className="mt-3 text-lg font-semibold text-white">{item.value}</div>
-      {item.note ? <div className="mt-2 text-sm leading-6 text-[#c9cdd8]">{item.note}</div> : null}
+      {item.note ? (
+        <div className="mt-2 text-sm leading-6 text-[#c9cdd8]">{item.note}</div>
+      ) : null}
     </GlassCard>
   );
 }
@@ -698,9 +761,12 @@ function Tag({ tag }: { tag: HeroTag }) {
     <span
       className={cn(
         "inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium tracking-[0.14em] uppercase",
-        tag.tone === "warning" && "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]",
-        tag.tone === "good" && "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-        (!tag.tone || tag.tone === "neutral") && "border-white/10 bg-white/5 text-[#d8dbea]",
+        tag.tone === "warning" &&
+          "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]",
+        tag.tone === "good" &&
+          "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+        (!tag.tone || tag.tone === "neutral") &&
+          "border-white/10 bg-white/5 text-[#d8dbea]",
       )}
     >
       {tag.label}
@@ -710,6 +776,7 @@ function Tag({ tag }: { tag: HeroTag }) {
 
 function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
   const [open, setOpen] = useState(false);
+
   return (
     <GlassCard className="overflow-hidden">
       <button
@@ -718,19 +785,31 @@ function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
         className="flex w-full items-center justify-between gap-4 p-5 text-left"
       >
         <div>
-          <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">Block interpretation</div>
-          <div className="mt-2 text-lg font-semibold text-white">{block.title}</div>
+          <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+            Block interpretation
+          </div>
+          <div className="mt-2 text-lg font-semibold text-white">
+            {block.title}
+          </div>
         </div>
         <div className="text-sm text-[#f7d237]">{open ? "Hide" : "Open"}</div>
       </button>
+
       {open ? (
         <div className="grid gap-4 border-t border-white/8 p-5 md:grid-cols-2">
           <InfoRow title="Сигнал" text={block.signal} />
-          <InfoRow title="Интерпритация" text={block.interpretation} />
-          <InfoRow title="Свзяь" text={block.relation} />
+          <InfoRow title="Интерпретация" text={block.interpretation} />
+          <InfoRow title="Связь" text={block.relation} />
           <InfoRow title="Риск" text={block.risk} />
-          <InfoRow title="Не доказано, требует отдельного исследования" text={block.unknown} />
-          <InfoRow title="Промежуточный вывод" text={block.conclusion} highlight />
+          <InfoRow
+            title="Не доказано, требует отдельного исследования"
+            text={block.unknown}
+          />
+          <InfoRow
+            title="Промежуточный вывод"
+            text={block.conclusion}
+            highlight
+          />
         </div>
       ) : null}
     </GlassCard>
@@ -747,8 +826,17 @@ function InfoRow({
   highlight?: boolean;
 }) {
   return (
-    <div className={cn("rounded-2xl border p-4", highlight ? "border-[#f7d237]/20 bg-[#f7d237]/8" : "border-white/8 bg-white/4")}>
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+    <div
+      className={cn(
+        "rounded-2xl border p-4",
+        highlight
+          ? "border-[#f7d237]/20 bg-[#f7d237]/8"
+          : "border-white/8 bg-white/4",
+      )}
+    >
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+        {title}
+      </div>
       <p className="mt-2 text-sm leading-6 text-[#dde2f2]">{text}</p>
     </div>
   );
@@ -762,12 +850,17 @@ function LeverPill({ node }: { node: LeverNode }) {
     stabilizes: "border-white/10 bg-white/5 text-white",
     rejected: "border-red-300/20 bg-red-400/10 text-red-200",
   };
+
   return (
     <div className={cn("rounded-2xl border px-4 py-3", colors[node.role])}>
-      <div className="text-xs uppercase tracking-[0.18em] opacity-80">{node.role}</div>
+      <div className="text-xs uppercase tracking-[0.18em] opacity-80">
+        {node.role}
+      </div>
       <div className="mt-2 font-medium">{node.name}</div>
       <div className="mt-1 text-sm opacity-90">{node.zone}</div>
-      {node.reason ? <div className="mt-2 text-sm leading-6 opacity-90">{node.reason}</div> : null}
+      {node.reason ? (
+        <div className="mt-2 text-sm leading-6 opacity-90">{node.reason}</div>
+      ) : null}
     </div>
   );
 }
@@ -775,13 +868,21 @@ function LeverPill({ node }: { node: LeverNode }) {
 function ControlMetricCard({ metric }: { metric: ControlMetric }) {
   const progress = Math.max(
     8,
-    Math.min(100, metric.direction === "up" ? (metric.current / metric.target) * 100 : (metric.target / metric.current) * 100),
+    Math.min(
+      100,
+      metric.direction === "up"
+        ? (metric.current / metric.target) * 100
+        : (metric.target / metric.current) * 100,
+    ),
   );
+
   return (
     <GlassCard className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{metric.name}</div>
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            {metric.name}
+          </div>
           <div className="mt-3 text-2xl font-semibold text-white">
             {metric.current}
             {metric.unit || ""}
@@ -793,7 +894,10 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
         </div>
       </div>
       <div className="mt-5 h-2 w-full overflow-hidden rounded-full bg-white/8">
-        <div className="h-full rounded-full bg-[#f7d237]" style={{ width: `${progress}%` }} />
+        <div
+          className="h-full rounded-full bg-[#f7d237]"
+          style={{ width: `${progress}%` }}
+        />
       </div>
       <div className="mt-3 text-sm text-[#cbd1e5]">
         Direction: {metric.direction === "up" ? "increase" : "decrease"}
@@ -823,17 +927,516 @@ function AlertRuleCard({ item }: { item: AlertRule }) {
   );
 }
 
+function ChapterMenu({
+  active,
+  onChange,
+}: {
+  active: ChapterKey;
+  onChange: (value: ChapterKey) => void;
+}) {
+  return (
+    <div className="mb-6">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        {CHAPTER_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => onChange(tab.key)}
+            className={cn(
+              "flex min-h-[92px] items-center justify-center rounded-[28px] border px-6 py-5 text-center text-base leading-5 transition",
+              active === tab.key
+                ? "border-[#f7d237] bg-[#f7d237] text-[#0b1d3a]"
+                : "border-white/10 bg-[linear-gradient(180deg,rgba(56,86,156,0.95)_0%,rgba(45,74,141,0.95)_100%)] text-white hover:bg-[linear-gradient(180deg,rgba(64,96,171,1)_0%,rgba(49,80,151,1)_100%)]",
+            )}
+          >
+            <span className="max-w-[16rem]">{tab.label}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function RevenueSnapshotResultsPage() {
   const data = mockPayload;
-  const [scenario, setScenario] = useState<"conservative" | "balanced" | "aggressive">("balanced");
+  const [scenario, setScenario] = useState<
+    "conservative" | "balanced" | "aggressive"
+  >("balanced");
+  const [activeChapter, setActiveChapter] =
+    useState<ChapterKey>("interpretation");
 
   const scenarioData = data.management.scenarios[scenario];
+
   const pieData = useMemo(
     () => [
       { name: "Current", value: 100 - scenarioData.lossReduction },
       { name: "Recovered", value: scenarioData.lossReduction },
     ],
     [scenarioData],
+  );
+
+  const renderEconomics = () => (
+    <div className="space-y-4">
+      <div className="grid gap-4 lg:grid-cols-3">
+        <GlassCard className="p-5 lg:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Базовые метрики
+          </div>
+          <div className="mt-4 space-y-3">
+            {data.economics.baseKpis.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3"
+              >
+                <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                <span className="font-medium text-white">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-5 lg:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Расчетные метрики
+          </div>
+          <div className="mt-4 space-y-3">
+            {data.economics.calculatedKpis.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3"
+              >
+                <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                <span className="font-medium text-white">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-5 lg:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Метрики потерь
+          </div>
+          <div className="mt-4 space-y-3">
+            {data.economics.losses.map((item) => (
+              <div
+                key={item.label}
+                className="flex items-center justify-between gap-3 rounded-2xl border border-[#f7d237]/15 bg-[#f7d237]/6 px-4 py-3"
+              >
+                <span className="text-sm text-[#f1f3fa]">{item.label}</span>
+                <span className="font-medium text-[#f7d237]">{item.value}</span>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        <GlassCard className="p-5 xl:col-span-1">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Структура выручки
+          </div>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={data.economics.revenueWaterfall}>
+                <CartesianGrid
+                  stroke="rgba(255,255,255,0.08)"
+                  vertical={false}
+                />
+                <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
+                <YAxis stroke="#9aa3be" fontSize={12} />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                <Bar
+                  dataKey="value"
+                  radius={[10, 10, 0, 0]}
+                  fill="rgba(247,210,55,0.9)"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-5 xl:col-span-1">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Спрос vs мощность
+          </div>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={data.economics.demandCapacity} layout="vertical">
+                <CartesianGrid
+                  stroke="rgba(255,255,255,0.08)"
+                  horizontal={false}
+                />
+                <XAxis type="number" stroke="#9aa3be" fontSize={12} />
+                <YAxis
+                  dataKey="name"
+                  type="category"
+                  stroke="#9aa3be"
+                  fontSize={12}
+                  width={80}
+                />
+                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                <Bar
+                  dataKey="value"
+                  radius={[0, 10, 10, 0]}
+                  fill="rgba(255,255,255,0.85)"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-5 xl:col-span-1">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Воронка
+          </div>
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer>
+              <FunnelChart>
+                <Tooltip />
+                <Funnel dataKey="value" data={data.economics.funnel} isAnimationActive>
+                  <LabelList
+                    position="right"
+                    fill="#ffffff"
+                    stroke="none"
+                    dataKey="name"
+                  />
+                </Funnel>
+              </FunnelChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  );
+
+  const renderInterpretation = () => (
+    <div className="grid gap-4">
+      {data.blockInterpretation.map((block) => (
+        <InterpretationAccordion key={block.id} block={block} />
+      ))}
+    </div>
+  );
+
+  const renderStrategy = () => (
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Стратегический сценарий
+          </div>
+          <div className="mt-4 text-3xl font-semibold text-white">
+            {data.strategy.scenario.type}
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <InfoRow title="Why this scenario" text={data.strategy.scenario.why} />
+            <InfoRow title="Market limits" text={data.strategy.scenario.marketLimits} />
+            <InfoRow title="Not now" text={data.strategy.scenario.notNow} highlight />
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Карта рычагов
+          </div>
+          <div className="mt-4 grid gap-3">
+            {data.strategy.leverMap.map((node) => (
+              <LeverPill key={`${node.role}-${node.name}`} node={node} />
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Механики рычагов
+          </div>
+          <div className="mt-4 space-y-4">
+            {data.strategy.leverMechanics.chain.map((step, index) => (
+              <div
+                key={`${step.lever}-${index}`}
+                className="rounded-3xl border border-white/8 bg-white/4 p-4"
+              >
+                <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-center">
+                  <MechanicBox title="Lever" value={step.lever} />
+                  <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                  <MechanicBox title="Metric" value={step.metric} />
+                  <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                  <MechanicBox title="Economics" value={step.economics} />
+                  <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
+                  <MechanicBox title="Result" value={step.result} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Cause-effect diagram
+          </div>
+          <div className="mt-4 h-[320px] w-full">
+            <ResponsiveContainer>
+              <Sankey
+                data={data.strategy.leverMechanics.sankey}
+                nodePadding={40}
+                margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
+                link={{ stroke: "rgba(247,210,55,0.55)" }}
+              >
+                <Tooltip />
+              </Sankey>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        <GlassCard className="p-6 xl:col-span-2">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Implementation logic
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <InfoRow title="What changes" text={data.strategy.implementationLogic.change} />
+            <InfoRow
+              title="Application point"
+              text={data.strategy.implementationLogic.applicationPoint}
+            />
+            <InfoRow
+              title="Must appear in system"
+              text={data.strategy.implementationLogic.systemMustAppear}
+              highlight
+            />
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6 xl:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Time horizon
+          </div>
+          <div className="mt-4 space-y-3">
+            {data.strategy.timeHorizon.map((step) => (
+              <div
+                key={step.horizon}
+                className="rounded-2xl border border-white/8 bg-white/4 p-4"
+              >
+                <div className="flex items-center gap-2 text-[#f7d237]">
+                  <Clock3 className="h-4 w-4" />
+                  <div className="text-xs uppercase tracking-[0.18em]">
+                    {step.horizon}
+                  </div>
+                </div>
+                <div className="mt-3 text-base font-medium text-white">
+                  {step.title}
+                </div>
+                <div className="mt-2 text-sm leading-6 text-[#cfd5e9]">
+                  {step.text}
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        <GlassCard className="p-6 xl:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Dependencies
+          </div>
+          <div className="mt-4 h-[300px] w-full">
+            <ResponsiveContainer>
+              <BarChart data={data.strategy.dependencies} layout="vertical">
+                <CartesianGrid
+                  stroke="rgba(255,255,255,0.08)"
+                  horizontal={false}
+                />
+                <XAxis
+                  type="number"
+                  stroke="#9aa3be"
+                  fontSize={12}
+                  domain={[0, 100]}
+                />
+                <YAxis
+                  dataKey="label"
+                  type="category"
+                  stroke="#9aa3be"
+                  fontSize={12}
+                  width={120}
+                />
+                <Tooltip />
+                <Bar
+                  dataKey="score"
+                  radius={[0, 10, 10, 0]}
+                  fill="rgba(247,210,55,0.9)"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6 xl:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Risks
+          </div>
+          <div className="mt-4 space-y-4">
+            <InfoRow title="Main risk" text={data.strategy.risks.mainRisk} />
+            <InfoRow
+              title="Fail condition"
+              text={data.strategy.risks.failCondition}
+              highlight
+            />
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6 xl:col-span-1">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Expected economic shift
+          </div>
+          <div className="mt-4 space-y-4">
+            <InfoRow title="Decreases" text={data.strategy.expectedShift.decreases} />
+            <InfoRow title="Grows" text={data.strategy.expectedShift.grows} />
+            <InfoRow title="Key metric" text={data.strategy.expectedShift.keyMetric} highlight />
+          </div>
+        </GlassCard>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Strategic priority
+          </div>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <PriorityColumn
+              title="Primary"
+              items={[data.strategy.strategicPriority.primary]}
+              accent
+            />
+            <PriorityColumn
+              title="Secondary"
+              items={data.strategy.strategicPriority.secondary}
+            />
+            <PriorityColumn
+              title="Do not do now"
+              items={data.strategy.strategicPriority.forbiddenNow}
+              warning
+            />
+          </div>
+        </GlassCard>
+
+        <GlassCard className="p-6">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+            Rejected levers
+          </div>
+          <div className="mt-4 space-y-3">
+            {data.strategy.rejectedLevers.map((node) => (
+              <LeverPill key={node.name} node={node} />
+            ))}
+          </div>
+        </GlassCard>
+      </div>
+    </div>
+  );
+
+  const renderManagement = () => (
+    <div className="space-y-4">
+      <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
+        <GlassCard className="p-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+                Scenario switcher
+              </div>
+              <div className="mt-2 text-2xl font-semibold">{scenario}</div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {(["conservative", "balanced", "aggressive"] as const).map(
+                (key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => setScenario(key)}
+                    className={cn(
+                      "rounded-full border px-4 py-2 text-sm transition",
+                      scenario === key
+                        ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]"
+                        : "border-white/10 bg-white/5 text-[#d5daeb] hover:bg-white/8",
+                    )}
+                  >
+                    {key}
+                  </button>
+                ),
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            <ScenarioMetric title="Revenue" value={scenarioData.revenue} prefix="€" />
+            <ScenarioMetric title="Profit" value={scenarioData.profit} prefix="€" />
+            <ScenarioMetric
+              title="Loss Reduction"
+              value={scenarioData.lossReduction}
+              suffix="%"
+            />
+          </div>
+
+          <div className="mt-6 grid gap-4 xl:grid-cols-2">
+            <div className="h-[260px] w-full">
+              <ResponsiveContainer>
+                <AreaChart data={data.economics.economicsShift}>
+                  <CartesianGrid
+                    stroke="rgba(255,255,255,0.08)"
+                    vertical={false}
+                  />
+                  <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
+                  <YAxis stroke="#9aa3be" fontSize={12} />
+                  <Tooltip />
+                  <Area
+                    type="monotone"
+                    dataKey="before"
+                    stroke="rgba(255,255,255,0.9)"
+                    fill="rgba(255,255,255,0.12)"
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="after"
+                    stroke="rgba(247,210,55,0.95)"
+                    fill="rgba(247,210,55,0.22)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="h-[260px] w-full">
+              <ResponsiveContainer>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    innerRadius={60}
+                    outerRadius={90}
+                    stroke="none"
+                  >
+                    <Cell fill="rgba(255,255,255,0.14)" />
+                    <Cell fill="rgba(247,210,55,0.92)" />
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </GlassCard>
+
+        <div className="grid gap-4">
+          {data.management.controlMetrics.map((metric) => (
+            <ControlMetricCard key={metric.name} metric={metric} />
+          ))}
+        </div>
+      </div>
+
+      <div className="grid gap-4 xl:grid-cols-3">
+        {data.management.alertRules.map((item) => (
+          <AlertRuleCard key={item.label} item={item} />
+        ))}
+      </div>
+    </div>
   );
 
   return (
@@ -845,7 +1448,6 @@ export default function RevenueSnapshotResultsPage() {
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
-        {/* HERO */}
         <section className="mb-8">
           <GlassCard className="overflow-hidden p-6 md:p-8">
             <div className="grid gap-8 xl:grid-cols-[1.4fr_0.9fr]">
@@ -885,37 +1487,53 @@ export default function RevenueSnapshotResultsPage() {
                 <GlassCard className="p-5">
                   <div className="flex items-center gap-3 text-[#f7d237]">
                     <Lock className="h-5 w-5" />
-                    <div className="text-xs uppercase tracking-[0.22em]">Growth Limit</div>
+                    <div className="text-xs uppercase tracking-[0.22em]">
+                      Growth Limit
+                    </div>
                   </div>
-                  <div className="mt-4 text-2xl font-semibold">{data.hero.growthLimit.type}</div>
+                  <div className="mt-4 text-2xl font-semibold">
+                    {data.hero.growthLimit.type}
+                  </div>
                   <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
-                    <span className="font-medium text-white">Bottleneck:</span> {data.hero.growthLimit.bottleneck}
+                    <span className="font-medium text-white">Bottleneck:</span>{" "}
+                    {data.hero.growthLimit.bottleneck}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-[#c9cdd8]">{data.hero.growthLimit.why}</div>
+                  <div className="mt-3 text-sm leading-6 text-[#c9cdd8]">
+                    {data.hero.growthLimit.why}
+                  </div>
                 </GlassCard>
 
                 <GlassCard className="p-5">
                   <div className="flex items-center gap-3 text-[#f7d237]">
                     <Sparkles className="h-5 w-5" />
-                    <div className="text-xs uppercase tracking-[0.22em]">Primary Lever</div>
+                    <div className="text-xs uppercase tracking-[0.22em]">
+                      Primary Lever
+                    </div>
                   </div>
-                  <div className="mt-4 text-2xl font-semibold">{data.hero.primaryLever.name}</div>
-                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">{data.hero.primaryLever.essence}</div>
+                  <div className="mt-4 text-2xl font-semibold">
+                    {data.hero.primaryLever.name}
+                  </div>
+                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                    {data.hero.primaryLever.essence}
+                  </div>
                   <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#cfd5e9]">
                     Zone: {data.hero.primaryLever.zone}
                   </div>
                 </GlassCard>
 
                 <GlassCard className="p-5">
-                  <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">Market adjustment</div>
-                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">{data.company.marketTakeaway}</div>
+                  <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+                    Market adjustment
+                  </div>
+                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                    {data.company.marketTakeaway}
+                  </div>
                 </GlassCard>
               </div>
             </div>
           </GlassCard>
         </section>
 
-        {/* QUICK FACTS */}
         <section className="mb-12">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {data.quickFacts.map((item) => (
@@ -924,364 +1542,28 @@ export default function RevenueSnapshotResultsPage() {
           </div>
         </section>
 
-        {/* UNIT ECONOMICS */}
         <section className="mb-14">
-          <SectionTitle
-            eyebrow="Economics"
-            title="Unit economics and loss map"
-            description="Сухие показатели, расчетные значения и зона прямых потерь. Этот блок нужен как объективная база для всех стратегических выводов."
-            icon={Wallet}
-          />
+          <ChapterMenu active={activeChapter} onChange={setActiveChapter} />
 
-          <div className="grid gap-4 lg:grid-cols-3">
-            <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Базовые метрики</div>
-              <div className="mt-4 space-y-3">
-                {data.economics.baseKpis.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                    <span className="text-sm text-[#d0d5e7]">{item.label}</span>
-                    <span className="font-medium text-white">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Расчетные метрики</div>
-              <div className="mt-4 space-y-3">
-                {data.economics.calculatedKpis.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
-                    <span className="text-sm text-[#d0d5e7]">{item.label}</span>
-                    <span className="font-medium text-white">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Петрики потерь</div>
-              <div className="mt-4 space-y-3">
-                {data.economics.losses.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-[#f7d237]/15 bg-[#f7d237]/6 px-4 py-3">
-                    <span className="text-sm text-[#f1f3fa]">{item.label}</span>
-                    <span className="font-medium text-[#f7d237]">{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Структура выручки</div>
-              <div className="h-[280px] w-full">
-                <ResponsiveContainer>
-                  <BarChart data={data.economics.revenueWaterfall}>
-                    <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-                    <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
-                    <YAxis stroke="#9aa3be" fontSize={12} />
-                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                    <Bar dataKey="value" radius={[10, 10, 0, 0]} fill="rgba(247,210,55,0.9)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Спрос vs мощность</div>
-              <div className="h-[280px] w-full">
-                <ResponsiveContainer>
-                  <BarChart data={data.economics.demandCapacity} layout="vertical">
-                    <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
-                    <XAxis type="number" stroke="#9aa3be" fontSize={12} />
-                    <YAxis dataKey="name" type="category" stroke="#9aa3be" fontSize={12} width={80} />
-                    <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                    <Bar dataKey="value" radius={[0, 10, 10, 0]} fill="rgba(255,255,255,0.85)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Воронка</div>
-              <div className="h-[280px] w-full">
-                <ResponsiveContainer>
-                  <FunnelChart>
-                    <Tooltip />
-                    <Funnel dataKey="value" data={data.economics.funnel} isAnimationActive>
-                      <LabelList position="right" fill="#ffffff" stroke="none" dataKey="name" />
-                    </Funnel>
-                  </FunnelChart>
-                </ResponsiveContainer>
-              </div>
-            </GlassCard>
-          </div>
+          {activeChapter === "economics" && renderEconomics()}
+          {activeChapter === "interpretation" && renderInterpretation()}
+          {activeChapter === "strategy" && renderStrategy()}
+          {activeChapter === "management" && renderManagement()}
         </section>
 
-        {/* BLOCK INTERPRETATION */}
-        <section className="mb-14">
-          <SectionTitle
-            eyebrow="Interpretation"
-            title="Разбор ответов по блокам"
-            description="Интерпретация ответов в логике анкеты: не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
-            icon={Layers3}
-          />
-          <div className="grid gap-4">
-            {data.blockInterpretation.map((block) => (
-              <InterpretationAccordion key={block.id} block={block} />
-            ))}
-          </div>
-        </section>
-
-        {/* STRATEGY */}
-        <section className="mb-14">
-          <SectionTitle
-            eyebrow="Strategy"
-            title="Стратегия и система рычагов"
-            description="Главный блок страницы: сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
-            icon={Target}
-          />
-
-          <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Стратегический сценарий</div>
-              <div className="mt-4 text-3xl font-semibold text-white">{data.strategy.scenario.type}</div>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <InfoRow title="Why this scenario" text={data.strategy.scenario.why} />
-                <InfoRow title="Market limits" text={data.strategy.scenario.marketLimits} />
-                <InfoRow title="Not now" text={data.strategy.scenario.notNow} highlight />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Карта рычагов</div>
-              <div className="mt-4 grid gap-3">
-                {data.strategy.leverMap.map((node) => (
-                  <LeverPill key={`${node.role}-${node.name}`} node={node} />
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Механики рычагов</div>
-              <div className="mt-4 space-y-4">
-                {data.strategy.leverMechanics.chain.map((step, index) => (
-                  <div key={`${step.lever}-${index}`} className="rounded-3xl border border-white/8 bg-white/4 p-4">
-                    <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-center">
-                      <MechanicBox title="Lever" value={step.lever} />
-                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                      <MechanicBox title="Metric" value={step.metric} />
-                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                      <MechanicBox title="Economics" value={step.economics} />
-                      <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                      <MechanicBox title="Result" value={step.result} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Cause-effect diagram</div>
-              <div className="mt-4 h-[320px] w-full">
-                <ResponsiveContainer>
-                  <Sankey
-                    data={data.strategy.leverMechanics.sankey}
-                    nodePadding={40}
-                    margin={{ left: 10, right: 10, top: 20, bottom: 20 }}
-                    link={{ stroke: "rgba(247,210,55,0.55)" }}
-                  >
-                    <Tooltip />
-                  </Sankey>
-                </ResponsiveContainer>
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <GlassCard className="p-6 xl:col-span-2">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Implementation logic</div>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <InfoRow title="What changes" text={data.strategy.implementationLogic.change} />
-                <InfoRow title="Application point" text={data.strategy.implementationLogic.applicationPoint} />
-                <InfoRow title="Must appear in system" text={data.strategy.implementationLogic.systemMustAppear} highlight />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6 xl:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Time horizon</div>
-              <div className="mt-4 space-y-3">
-                {data.strategy.timeHorizon.map((step) => (
-                  <div key={step.horizon} className="rounded-2xl border border-white/8 bg-white/4 p-4">
-                    <div className="flex items-center gap-2 text-[#f7d237]">
-                      <Clock3 className="h-4 w-4" />
-                      <div className="text-xs uppercase tracking-[0.18em]">{step.horizon}</div>
-                    </div>
-                    <div className="mt-3 text-base font-medium text-white">{step.title}</div>
-                    <div className="mt-2 text-sm leading-6 text-[#cfd5e9]">{step.text}</div>
-                  </div>
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            <GlassCard className="p-6 xl:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Dependencies</div>
-              <div className="mt-4 h-[300px] w-full">
-                <ResponsiveContainer>
-                  <BarChart data={data.strategy.dependencies} layout="vertical">
-                    <CartesianGrid stroke="rgba(255,255,255,0.08)" horizontal={false} />
-                    <XAxis type="number" stroke="#9aa3be" fontSize={12} domain={[0, 100]} />
-                    <YAxis dataKey="label" type="category" stroke="#9aa3be" fontSize={12} width={120} />
-                    <Tooltip />
-                    <Bar dataKey="score" radius={[0, 10, 10, 0]} fill="rgba(247,210,55,0.9)" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6 xl:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Risks</div>
-              <div className="mt-4 space-y-4">
-                <InfoRow title="Main risk" text={data.strategy.risks.mainRisk} />
-                <InfoRow title="Fail condition" text={data.strategy.risks.failCondition} highlight />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6 xl:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Expected economic shift</div>
-              <div className="mt-4 space-y-4">
-                <InfoRow title="Decreases" text={data.strategy.expectedShift.decreases} />
-                <InfoRow title="Grows" text={data.strategy.expectedShift.grows} />
-                <InfoRow title="Key metric" text={data.strategy.expectedShift.keyMetric} highlight />
-              </div>
-            </GlassCard>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Strategic priority</div>
-              <div className="mt-4 grid gap-4 md:grid-cols-3">
-                <PriorityColumn
-                  title="Primary"
-                  items={[data.strategy.strategicPriority.primary]}
-                  accent
-                />
-                <PriorityColumn title="Secondary" items={data.strategy.strategicPriority.secondary} />
-                <PriorityColumn title="Do not do now" items={data.strategy.strategicPriority.forbiddenNow} warning />
-              </div>
-            </GlassCard>
-
-            <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Rejected levers</div>
-              <div className="mt-4 space-y-3">
-                {data.strategy.rejectedLevers.map((node) => (
-                  <LeverPill key={node.name} node={node} />
-                ))}
-              </div>
-            </GlassCard>
-          </div>
-        </section>
-
-        {/* MANAGEMENT LAYER */}
-        <section className="mb-14">
-          <SectionTitle
-            eyebrow="Management"
-            title="Control panel and strategy management tools"
-            description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
-            icon={Settings2}
-          />
-
-          <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
-            <GlassCard className="p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Scenario switcher</div>
-                  <div className="mt-2 text-2xl font-semibold">{scenario}</div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {(["conservative", "balanced", "aggressive"] as const).map((key) => (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setScenario(key)}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition",
-                        scenario === key
-                          ? "border-[#f7d237]/30 bg-[#f7d237]/10 text-[#f7d237]"
-                          : "border-white/10 bg-white/5 text-[#d5daeb] hover:bg-white/8",
-                      )}
-                    >
-                      {key}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-6 grid gap-4 md:grid-cols-3">
-                <ScenarioMetric title="Revenue" value={scenarioData.revenue} prefix="€" />
-                <ScenarioMetric title="Profit" value={scenarioData.profit} prefix="€" />
-                <ScenarioMetric title="Loss Reduction" value={scenarioData.lossReduction} suffix="%" />
-              </div>
-
-              <div className="mt-6 grid gap-4 xl:grid-cols-2">
-                <div className="h-[260px] w-full">
-                  <ResponsiveContainer>
-                    <AreaChart data={data.economics.economicsShift}>
-                      <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-                      <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
-                      <YAxis stroke="#9aa3be" fontSize={12} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="before" stroke="rgba(255,255,255,0.9)" fill="rgba(255,255,255,0.12)" />
-                      <Area type="monotone" dataKey="after" stroke="rgba(247,210,55,0.95)" fill="rgba(247,210,55,0.22)" />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="h-[260px] w-full">
-                  <ResponsiveContainer>
-                    <PieChart>
-                      <Pie data={pieData} dataKey="value" innerRadius={60} outerRadius={90} stroke="none">
-                        <Cell fill="rgba(255,255,255,0.14)" />
-                        <Cell fill="rgba(247,210,55,0.92)" />
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </GlassCard>
-
-            <div className="grid gap-4">
-              {data.management.controlMetrics.map((metric) => (
-                <ControlMetricCard key={metric.name} metric={metric} />
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            {data.management.alertRules.map((item) => (
-              <AlertRuleCard key={item.label} item={item} />
-            ))}
-          </div>
-        </section>
-
-        {/* WHAT IS NOT THE PROBLEM */}
         <section className="mb-8">
           <SectionTitle
             eyebrow="Trust layer"
             title="What is not the core problem"
-            description="Этот блок нужен, чтобы страница не выглядела как набор общих претензий к бизнесу. Он фиксирует, что модель не считает главным источником текущей потери."
+            description="Что модель не считает главным источником текущих потерь."
             icon={CircleOff}
           />
           <div className="grid gap-4 md:grid-cols-3">
             {data.notAProblem.map((item) => (
-              <GlassCard key={item} className="p-5">
+              <GlassCard key={item} className="p-6">
                 <div className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-1 h-5 w-5 text-[#f7d237]" />
-                  <p className="text-sm leading-6 text-[#d5daeb]">{item}</p>
+                  <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-[#f7d237]" />
+                  <p className="text-base leading-8 text-[#d5daeb]">{item}</p>
                 </div>
               </GlassCard>
             ))}
@@ -1295,8 +1577,12 @@ export default function RevenueSnapshotResultsPage() {
 function MechanicBox({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-center">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
-      <div className="mt-2 text-sm font-medium leading-6 text-white">{value}</div>
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f96b5]">
+        {title}
+      </div>
+      <div className="mt-2 text-sm font-medium leading-6 text-white">
+        {value}
+      </div>
     </div>
   );
 }
@@ -1321,10 +1607,15 @@ function PriorityColumn({
         !accent && !warning && "border-white/8 bg-white/4",
       )}
     >
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+        {title}
+      </div>
       <div className="mt-4 space-y-3">
         {items.map((item) => (
-          <div key={item} className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm leading-6 text-white">
+          <div
+            key={item}
+            className="rounded-2xl border border-white/8 bg-white/5 px-4 py-3 text-sm leading-6 text-white"
+          >
             {item}
           </div>
         ))}
@@ -1346,7 +1637,9 @@ function ScenarioMetric({
 }) {
   return (
     <div className="rounded-3xl border border-white/8 bg-white/4 p-5">
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">{title}</div>
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+        {title}
+      </div>
       <div className="mt-3 text-3xl font-semibold text-white">
         {prefix || ""}
         {formatCompact(value)}
