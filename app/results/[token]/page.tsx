@@ -40,7 +40,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type HeroTag = {
   label: string;
@@ -225,34 +225,34 @@ const CHAPTER_TABS: Array<{
 }> = [
   {
     key: "economics",
-    label: "Юнит-экономика и карта потерь",
-    eyebrow: "Глава 1",
+    label: "Unit economics and loss map",
+    eyebrow: "1 chapter",
     summary: "База, расчетные метрики и прямые потери.",
-    tags: ["Выручка", "Маржа", "Потери"],
+    tags: ["Revenue", "Margin", "Losses"],
     icon: Wallet,
   },
   {
     key: "interpretation",
     label: "Разбор ответов по блокам",
-    eyebrow: "Глава 2",
+    eyebrow: "2 chapter",
     summary: "Сигналы, ограничения и связь между блоками.",
-    tags: ["Сигналы", "Риски", "Связи"],
+    tags: ["Signal", "Risks", "Relations"],
     icon: Layers3,
   },
   {
     key: "strategy",
     label: "Стратегия и система рычагов",
-    eyebrow: "Глава 3",
+    eyebrow: "3 chapter",
     summary: "Сценарий, механика рычага и приоритет действий.",
-    tags: ["Главный рычаг", "Сценарий", "План"],
+    tags: ["Primary lever", "Scenario", "Roadmap"],
     icon: Target,
   },
   {
     key: "management",
-    label: "Панель контроля и управления стратегией",
-    eyebrow: "Глава 4",
+    label: "Control panel and strategy management tools",
+    eyebrow: "4 chapter",
     summary: "Контрольные метрики, сценарии и триггеры.",
-    tags: ["Контроль", "Сценарии", "Сигналы"],
+    tags: ["Control", "Scenarios", "Alerts"],
     icon: Settings2,
   },
 ];
@@ -260,9 +260,9 @@ const CHAPTER_TABS: Array<{
 const mockPayload: ResultsPayload = {
   company: {
     name: "Northwave Studio",
-    niche: "DTC / дизайнерская одежда",
-    stage: "Развивающийся",
-    country: "Италия",
+    niche: "DTC / designer apparel",
+    stage: "Developing",
+    country: "Italy",
     marketTakeaway:
       "Спрос чувствителен к доверию и качеству продукта, но рынок конкурентный, а рост без усиления конверсии и структуры будет неустойчивым.",
   },
@@ -270,63 +270,63 @@ const mockPayload: ResultsPayload = {
     summary:
       "Основная потеря бизнеса связана не с отсутствием спроса, а с потерями на переходе от интереса к покупке. При текущей структуре команда обрабатывает поток неравномерно, а продуктовая подача и продажа не превращают уже существующий интерес в стабильную выручку.",
     tags: [
-      { label: "#ПотериКонверсии", tone: "warning" },
-      { label: "#УзкоеМестоПродаж", tone: "warning" },
-      { label: "#ВысокаяКонкуренция", tone: "neutral" },
-      { label: "#СпросЧерезДоверие", tone: "neutral" },
-      { label: "#ПерегрузУправления", tone: "warning" },
-      { label: "#СреднеПремиальныйСегмент", tone: "good" },
+      { label: "#ConversionLoss", tone: "warning" },
+      { label: "#SalesBottleneck", tone: "warning" },
+      { label: "#HighCompetition", tone: "neutral" },
+      { label: "#TrustDrivenDemand", tone: "neutral" },
+      { label: "#ManagementOverload", tone: "warning" },
+      { label: "#PremiumMidSegment", tone: "good" },
     ],
     growthLimit: {
-      type: "Конверсия / воронка",
+      type: "Conversion / Funnel",
       bottleneck: "Низкая конверсия из интереса в оплату",
       why: "Экономика показывает высокий Lost Revenue на этапе сделки, рынок усиливает роль доверия и понятности выбора, а rules поддерживают lever в зоне conversion и structure.",
     },
     primaryLever: {
-      name: "Пересборка системы конверсии",
+      name: "Rebuild of conversion system",
       essence:
         "Пересборка логики входа в продукт, выбора оффера и прохождения клиента по CJM.",
-      zone: "конверсия",
+      zone: "conversion",
     },
   },
   economics: {
     headlineKpis: [
-      { label: "Выручка", value: "€42,000", sub: "за прошлый месяц", kind: "base" },
-      { label: "Прибыль", value: "€8,400", sub: "оценочно", kind: "base" },
-      { label: "Маржа", value: "20%", sub: "после расходов", kind: "base" },
-      { label: "Клиенты", value: "56", sub: "в месяц", kind: "base" },
+      { label: "Revenue", value: "€42,000", sub: "last month", kind: "base" },
+      { label: "Profit", value: "€8,400", sub: "estimated", kind: "base" },
+      { label: "Margin", value: "20%", sub: "after expenses", kind: "base" },
+      { label: "Clients", value: "56", sub: "monthly", kind: "base" },
       {
-        label: "Средний чек",
+        label: "Avg Check",
         value: "€750",
-        sub: "расчетно",
+        sub: "calculated",
         kind: "calculated",
       },
       {
-        label: "Загрузка",
+        label: "Utilization",
         value: "78%",
-        sub: "команда / операции",
+        sub: "team / ops",
         kind: "calculated",
       },
     ],
     baseKpis: [
-      { label: "Выручка", value: "€42,000" },
-      { label: "Прибыль", value: "€8,400" },
-      { label: "Маржа %", value: "20%" },
-      { label: "Клиенты", value: "56" },
-      { label: "Лиды", value: "190" },
+      { label: "Revenue", value: "€42,000" },
+      { label: "Profit", value: "€8,400" },
+      { label: "Margin %", value: "20%" },
+      { label: "Clients", value: "56" },
+      { label: "Leads", value: "190" },
     ],
     calculatedKpis: [
-      { label: "Средний чек", value: "€750" },
-      { label: "Лид → продажа", value: "29.5%" },
-      { label: "Валовая прибыль", value: "€8,400" },
-      { label: "Спрос / мощность", value: "190 / 150" },
-      { label: "Разрыв мощности", value: "26.7%" },
+      { label: "Avg Check", value: "€750" },
+      { label: "Lead → Sale", value: "29.5%" },
+      { label: "Gross Profit", value: "€8,400" },
+      { label: "Demand / Capacity", value: "190 / 150" },
+      { label: "Capacity Gap", value: "26.7%" },
     ],
     losses: [
-      { label: "Потерянная выручка", value: "€12,500", kind: "loss" },
-      { label: "Потерянная прибыль", value: "€2,500", kind: "loss" },
-      { label: "Потери конверсии", value: "18%", kind: "loss" },
-      { label: "Потери мощности", value: "7%", kind: "loss" },
+      { label: "Lost Revenue", value: "€12,500", kind: "loss" },
+      { label: "Lost Profit", value: "€2,500", kind: "loss" },
+      { label: "Conversion Loss", value: "18%", kind: "loss" },
+      { label: "Capacity Loss", value: "7%", kind: "loss" },
     ],
     revenueWaterfall: [
       { name: "Фактическая выручка", value: 42000 },
@@ -338,10 +338,10 @@ const mockPayload: ResultsPayload = {
       { name: "Мощность", value: 150 },
     ],
     funnel: [
-      { name: "Лиды", value: 190 },
-      { name: "Квалифицированные", value: 128 },
-      { name: "Предложения", value: 79 },
-      { name: "Продажи", value: 56 },
+      { name: "Leads", value: 190 },
+      { name: "Qualified", value: 128 },
+      { name: "Offers", value: 79 },
+      { name: "Sales", value: 56 },
     ],
     economicsShift: [
       { name: "Выручка", before: 42000, after: 49800 },
@@ -352,25 +352,25 @@ const mockPayload: ResultsPayload = {
   quickFacts: [
     {
       label: "Тип потери",
-      value: "Конверсия",
+      value: "Conversion",
       note: "главная потеря денег сейчас",
       icon: "Target",
     },
     {
       label: "Узкое место",
-      value: "Этап сделки",
+      value: "Deal stage",
       note: "интерес не превращается в оплату",
       icon: "Gauge",
     },
     {
       label: "Сигнал рынка",
-      value: "Доверие + конкуренция",
+      value: "Trust + competition",
       note: "рынок требует ясного и убедительного выбора",
       icon: "Radar",
     },
     {
       label: "Риск модели",
-      value: "Перегруз руководителя",
+      value: "Founder overload",
       note: "управление завязано на одном центре решений",
       icon: "Briefcase",
     },
@@ -378,7 +378,7 @@ const mockPayload: ResultsPayload = {
   blockInterpretation: [
     {
       id: "positioning",
-      title: "ПОЗИЦИОНИРОВАНИЕ",
+      title: "POSITIONING",
       signal:
         "Бизнес работает в B2C/DTC-модели с рационально-эмоциональным спросом и средним циклом сделки.",
       interpretation:
@@ -394,7 +394,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "economics",
-      title: "ЭКОНОМИКА",
+      title: "ECONOMICS",
       signal:
         "Выручка есть, маржа положительная, но разрыв между текущей и потенциальной выручкой уже заметен.",
       interpretation:
@@ -410,7 +410,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "clients-flow",
-      title: "КЛИЕНТЫ И ПОТОК",
+      title: "CLIENTS & FLOW",
       signal:
         "Спрос присутствует, но его обработка ограничена и неравномерна.",
       interpretation:
@@ -426,7 +426,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "product-sales",
-      title: "ПРОДУКТ И ПРОДАЖИ",
+      title: "PRODUCT & SALES",
       signal:
         "Продукт интересен, но вход в него и логика выбора недостаточно упрощены для быстрой оплаты.",
       interpretation:
@@ -442,7 +442,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "analytics-management",
-      title: "АНАЛИТИКА И УПРАВЛЕНИЕ",
+      title: "ANALYTICS & MANAGEMENT",
       signal:
         "Аналитика присутствует частично, но не дает полного контроля над точками потерь.",
       interpretation:
@@ -458,7 +458,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "structure-processes",
-      title: "СТРУКТУРА И ПРОЦЕССЫ",
+      title: "STRUCTURE & PROCESSES",
       signal:
         "Критические решения и узлы координации сосредоточены слишком близко к руководителю.",
       interpretation:
@@ -474,7 +474,7 @@ const mockPayload: ResultsPayload = {
     },
     {
       id: "strategy",
-      title: "СТРАТЕГИЯ",
+      title: "STRATEGY",
       signal:
         "Бизнесу сейчас больше нужен не expansion, а conversion-led scenario.",
       interpretation:
@@ -491,7 +491,7 @@ const mockPayload: ResultsPayload = {
   ],
   strategy: {
     scenario: {
-      type: "Конверсионный",
+      type: "Conversion",
       why:
         "Экономика показывает основной Lost Revenue в воронке, рынок требует большей понятности и доверия, rules поддерживают lever в зоне conversion и structure, а не expansion.",
       marketLimits:
@@ -501,54 +501,54 @@ const mockPayload: ResultsPayload = {
     },
     leverMap: [
       {
-        name: "Пересборка системы конверсии",
+        name: "Rebuild of conversion system",
         role: "primary",
-        zone: "конверсия",
+        zone: "conversion",
       },
       {
-        name: "Архитектура оффера",
+        name: "Offer architecture",
         role: "amplifies",
-        zone: "конверсия",
+        zone: "conversion",
       },
       {
-        name: "Формализация продаж",
+        name: "Sales process formalization",
         role: "unlocks",
-        zone: "структура",
+        zone: "structure",
       },
       {
-        name: "Аналитика решений",
+        name: "Decision analytics",
         role: "stabilizes",
-        zone: "аналитика",
+        zone: "analytics",
       },
     ],
     leverMechanics: {
       chain: [
         {
           lever: "Rebuild of conversion system",
-          metric: "Конверсия лид → продажа",
-          economics: "Снижается потерянная выручка",
-          result: "Выручка растет без пропорционального роста CAC",
+          metric: "Lead → Sale conversion",
+          economics: "Lost Revenue decreases",
+          result: "Revenue grows without proportional CAC growth",
         },
         {
-          lever: "Архитектура оффера",
-          metric: "Доля принятых офферов",
-          economics: "Растет монетизация каждого лида",
-          result: "Повышается прибыльность текущего потока",
+          lever: "Offer architecture",
+          metric: "Offer acceptance rate",
+          economics: "Avg monetization per lead improves",
+          result: "Profitability of existing flow rises",
         },
         {
-          lever: "Формализация продаж",
-          metric: "Скорость / стабильность обработки",
-          economics: "Снижаются потери мощности",
-          result: "Большая часть спроса превращается в платящих клиентов",
+          lever: "Sales process formalization",
+          metric: "Processing speed / consistency",
+          economics: "Capacity leak decreases",
+          result: "More demand is converted into paid clients",
         },
       ],
       sankey: {
         nodes: [
-          { name: "Главный рычаг" },
-          { name: "Конверсия" },
-          { name: "Потерянная выручка" },
-          { name: "Выручка" },
-          { name: "Прибыль" },
+          { name: "Primary Lever" },
+          { name: "Conversion" },
+          { name: "Lost Revenue" },
+          { name: "Revenue" },
+          { name: "Profit" },
         ],
         links: [
           { source: 0, target: 1, value: 8 },
@@ -569,22 +569,22 @@ const mockPayload: ResultsPayload = {
     timeHorizon: [
       {
         horizon: "0–3 months",
-        title: "Быстрый эффект",
+        title: "Fast effect",
         text:
           "Снижение потерь в воронке и рост конверсии за счет пересборки сценария выбора и продажи.",
       },
       {
         horizon: "3–6 months",
-        title: "Системный эффект",
+        title: "System effect",
         text:
           "Закрепление процесса, снижение зависимости от ручного управления и рост воспроизводимой выручки.",
       },
     ],
     dependencies: [
-      { label: "Готовность команды", score: 68 },
-      { label: "Прозрачность аналитики", score: 52 },
-      { label: "Ясность оффера", score: 61 },
-      { label: "Операционная дисциплина", score: 57 },
+      { label: "Team readiness", score: 68 },
+      { label: "Analytics visibility", score: 52 },
+      { label: "Offer clarity", score: 61 },
+      { label: "Operational discipline", score: 57 },
     ],
     risks: {
       mainRisk:
@@ -593,33 +593,33 @@ const mockPayload: ResultsPayload = {
         "Lever не сработает, если не будет зафиксирована единая логика предложения и контроль по этапам воронки.",
     },
     expectedShift: {
-      decreases: "Потери конверсии и часть потерь мощности",
-      grows: "Выручка, прибыль и предсказуемость монетизации",
-      keyMetric: "Конверсия лид → продажа",
+      decreases: "Conversion loss and part of capacity leak",
+      grows: "Revenue, profit, predictability of monetization",
+      keyMetric: "Lead → Sale conversion",
     },
     strategicPriority: {
-      primary: "Пересборка системы конверсии",
+      primary: "Rebuild of conversion system",
       secondary: [
-        "Архитектура оффера",
-        "Формализация продаж",
-        "Аналитика решений",
+        "Offer architecture",
+        "Sales process formalization",
+        "Decision analytics",
       ],
       forbiddenNow: [
-        "Агрессивное масштабирование трафика",
-        "Выход на новые рынки",
-        "Широкое расширение продуктовой линейки",
+        "Aggressive traffic scaling",
+        "New market expansion",
+        "Broad product-line expansion",
       ],
     },
     rejectedLevers: [
       {
-        name: "Масштабирование CAC",
+        name: "CAC scaling",
         role: "rejected",
-        zone: "маркетинг",
+        zone: "marketing",
         reason:
           "Не влияет на корневой bottleneck и усиливает потери при текущей конверсионной системе.",
       },
       {
-        name: "Сценарий через удержание",
+        name: "Retention-first scenario",
         role: "rejected",
         zone: "LTV",
         reason:
@@ -637,17 +637,17 @@ const mockPayload: ResultsPayload = {
         direction: "up",
       },
       {
-        name: "Принятие оффера",
+        name: "Offer Acceptance",
         current: 61,
         target: 70,
         unit: "%",
         direction: "up",
       },
       {
-        name: "Скорость обработки",
+        name: "Processing Speed",
         current: 4.4,
         target: 3.1,
-        unit: "дн.",
+        unit: "days",
         direction: "down",
       },
       {
@@ -660,22 +660,22 @@ const mockPayload: ResultsPayload = {
     ],
     alertRules: [
       {
-        label: "Конверсия ниже порога",
+        label: "Conversion below threshold",
         status: "risk",
         logic:
-          "Если конверсия лид → продажа держится ниже 30% две недели, проверьте квалификацию и этап оффера.",
+          "If Lead → Sale < 30% for 2 weeks, investigate qualification and offer stage.",
       },
       {
-        label: "Скорость обработки в целевом диапазоне",
+        label: "Processing speed within target",
         status: "watch",
         logic:
-          "Если среднее время обработки выше 4 дней, растет риск потерь мощности.",
+          "If average processing time > 4 days, capacity leak risk increases.",
       },
       {
-        label: "Принятие оффера растет",
+        label: "Offer acceptance improving",
         status: "good",
         logic:
-          "Если принятие оффера выше 68%, сценарий движется к плановой экономике.",
+          "If offer acceptance > 68%, scenario is moving toward planned economics.",
       },
     ],
     scenarios: {
@@ -697,7 +697,7 @@ function cn(...classes: Array<string | false | null | undefined>) {
 
 function formatCompact(value: number, suffix = "") {
   if (Math.abs(value) >= 1000) {
-    return `${new Intl.NumberFormat("ru-RU", {
+    return `${new Intl.NumberFormat("en-US", {
       notation: "compact",
       maximumFractionDigits: 1,
     }).format(value)}${suffix}`;
@@ -823,13 +823,13 @@ function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
       >
         <div>
           <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
-            Разбор блока
+            Block interpretation
           </div>
           <div className="mt-2 text-lg font-semibold text-white">
             {block.title}
           </div>
         </div>
-        <div className="text-sm text-[#f7d237]">{open ? "Скрыть" : "Открыть"}</div>
+        <div className="text-sm text-[#f7d237]">{open ? "Hide" : "Open"}</div>
       </button>
 
       {open ? (
@@ -888,18 +888,10 @@ function LeverPill({ node }: { node: LeverNode }) {
     rejected: "border-red-300/20 bg-red-400/10 text-red-200",
   };
 
-  const roleLabel: Record<LeverNode["role"], string> = {
-    primary: "основной",
-    amplifies: "усиливает",
-    unlocks: "разблокирует",
-    stabilizes: "стабилизирует",
-    rejected: "отклонено",
-  };
-
   return (
     <div className={cn("rounded-2xl border px-4 py-3", colors[node.role])}>
       <div className="text-xs uppercase tracking-[0.18em] opacity-80">
-        {roleLabel[node.role]}
+        {node.role}
       </div>
       <div className="mt-2 font-medium">{node.name}</div>
       <div className="mt-1 text-sm opacity-90">{node.zone}</div>
@@ -934,7 +926,7 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
           </div>
         </div>
         <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#cbd3ea]">
-          цель {metric.target}
+          target {metric.target}
           {metric.unit || ""}
         </div>
       </div>
@@ -979,127 +971,166 @@ function ChapterCarousel({
   active: ChapterKey;
   onChange: (value: ChapterKey) => void;
 }) {
-  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const visibleCount = isMobile ? 1 : 3;
+  const headClones = CHAPTER_TABS.slice(-visibleCount);
+  const tailClones = CHAPTER_TABS.slice(0, visibleCount);
+  const trackItems = [...headClones, ...CHAPTER_TABS, ...tailClones];
 
-  const scrollTrack = (direction: "left" | "right") => {
-    if (!trackRef.current) return;
-    trackRef.current.scrollBy({
-      left: direction === "left" ? -360 : 360,
-      behavior: "smooth",
-    });
+  const [currentIndex, setCurrentIndex] = useState(visibleCount);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isSnapReset, setIsSnapReset] = useState(false);
+  const [direction, setDirection] = useState<"next" | "prev">("next");
+
+  useEffect(() => {
+    const syncViewport = () => {
+      setIsMobile(window.innerWidth <= 1180);
+    };
+
+    syncViewport();
+    window.addEventListener("resize", syncViewport);
+    return () => window.removeEventListener("resize", syncViewport);
+  }, []);
+
+  useEffect(() => {
+    const activeIndex = CHAPTER_TABS.findIndex((tab) => tab.key === active);
+    setCurrentIndex(activeIndex >= 0 ? activeIndex + visibleCount : visibleCount);
+    setIsAnimating(false);
+    setIsSnapReset(true);
+
+    if (typeof window !== "undefined") {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+    }
+  }, [active, visibleCount]);
+
+  const goToNext = () => {
+    if (isAnimating) return;
+    setDirection("next");
+    setIsAnimating(true);
+    const nextIndex = currentIndex + 1;
+    const originalIndex = ((nextIndex - visibleCount) % CHAPTER_TABS.length + CHAPTER_TABS.length) % CHAPTER_TABS.length;
+    onChange(CHAPTER_TABS[originalIndex].key);
+  };
+
+  const goToPrev = () => {
+    if (isAnimating) return;
+    setDirection("prev");
+    setIsAnimating(true);
+    const nextIndex = currentIndex - 1;
+    const originalIndex = ((nextIndex - visibleCount) % CHAPTER_TABS.length + CHAPTER_TABS.length) % CHAPTER_TABS.length;
+    onChange(CHAPTER_TABS[originalIndex].key);
+  };
+
+  const handleTransitionEnd = () => {
+    setIsAnimating(false);
+
+    if (currentIndex >= CHAPTER_TABS.length + visibleCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(visibleCount);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+      return;
+    }
+
+    if (currentIndex < visibleCount) {
+      setIsSnapReset(true);
+      setCurrentIndex(CHAPTER_TABS.length + currentIndex);
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => setIsSnapReset(false));
+      });
+    }
   };
 
   return (
-    <div className="mb-10">
-      <div className="mb-4 flex items-center justify-end gap-3">
+    <div className="stage-scheme-wrap mb-10">
+      <div className="stage-scheme-nav">
         <button
           type="button"
-          onClick={() => scrollTrack("left")}
-          className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
-          aria-label="Назад"
+          className="stage-scheme-arrow"
+          onClick={goToPrev}
+          aria-label="Предыдущая карточка"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
         <button
           type="button"
-          onClick={() => scrollTrack("right")}
-          className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
-          aria-label="Вперед"
+          className="stage-scheme-arrow"
+          onClick={goToNext}
+          aria-label="Следующая карточка"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
       </div>
 
-      <div
-        ref={trackRef}
-        className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {CHAPTER_TABS.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = active === tab.key;
+      <div className="stage-scheme-viewport">
+        <div
+          className={cn(
+            "stage-scheme-track",
+            isAnimating && `is-animating direction-${direction}`,
+            isSnapReset && "is-snap-reset",
+          )}
+          style={{ transform: `translate3d(-${(currentIndex * 100) / visibleCount}%, 0, 0)` }}
+          onTransitionEnd={handleTransitionEnd}
+        >
+          {trackItems.map((tab, idx) => {
+            const Icon = tab.icon;
+            const isActive = active === tab.key;
 
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => onChange(tab.key)}
-              className="min-w-[320px] max-w-[320px] flex-shrink-0 snap-start text-left"
-            >
-              <div
-                className={cn(
-                  "h-full rounded-[34px] border p-8 transition",
-                  isActive
-                    ? "border-[#f7d237]/55 bg-[linear-gradient(180deg,#f7d237_0%,#efcb34_100%)] text-[#0b1d3a] shadow-[0_18px_50px_rgba(247,210,55,0.22)]"
-                    : "border-white/10 bg-[linear-gradient(180deg,rgba(70,104,186,0.88)_0%,rgba(42,74,148,0.88)_100%)] text-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
-                )}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div
-                    className={cn(
-                      "flex h-20 w-20 items-center justify-center rounded-[24px] border",
-                      isActive
-                        ? "border-[#0b1d3a]/12 bg-white/20 text-[#0b1d3a]"
-                        : "border-white/10 bg-white/8 text-[#f7d237]",
-                    )}
-                  >
-                    <Icon className="h-8 w-8" />
+            return (
+              <div key={`${tab.key}-${idx}`} className="stage-scheme-slide">
+                <button
+                  type="button"
+                  onClick={() => onChange(tab.key)}
+                  className={cn("stage-scheme-card", isActive && "is-active")}
+                >
+                  <div className="stage-scheme-bg" />
+                  <div className="stage-scheme-overlay" />
+
+                  <div className="stage-scheme-card-inner">
+                    <div className="stage-scheme-top-row">
+                      <div className={cn("stage-scheme-icon-box", isActive && "is-active")}>
+                        <Icon className="stage-scheme-icon" />
+                      </div>
+                      <ChevronRight className={cn("stage-scheme-chevron", isActive && "is-active")} />
+                    </div>
+
+                    <div className="stage-scheme-kicker">{tab.eyebrow}</div>
+                    <div className="stage-scheme-title">{tab.label}</div>
+                    <div className="stage-scheme-stage">{tab.summary}</div>
+
+                    <div className="stage-scheme-bottom">
+                      <div className="stage-scheme-group">
+                        <div className="stage-scheme-tags">
+                          {tab.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className={cn(
+                                "stage-scheme-tag",
+                                isActive && "is-active",
+                              )}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
-
-                  <ChevronRight
-                    className={cn(
-                      "mt-1 h-8 w-8 shrink-0",
-                      isActive ? "text-[#0b1d3a]" : "text-white/70",
-                    )}
-                  />
-                </div>
-
-                <div
-                  className={cn(
-                    "mt-6 text-[11px] uppercase tracking-[0.3em]",
-                    isActive ? "text-[#0b1d3a]/70" : "text-[#c6d0ea]",
-                  )}
-                >
-                  {tab.eyebrow}
-                </div>
-
-                <div className="mt-3 text-[28px] font-medium leading-[1.25]">
-                  {tab.label}
-                </div>
-
-                <div
-                  className={cn(
-                    "mt-8 text-[18px] leading-8",
-                    isActive ? "text-[#0b1d3a]/85" : "text-[#dbe3f8]",
-                  )}
-                >
-                  {tab.summary}
-                </div>
-
-                <div className="mt-8 flex flex-wrap gap-3">
-                  {tab.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={cn(
-                        "rounded-full border px-5 py-2 text-[11px] uppercase tracking-[0.18em]",
-                        isActive
-                          ? "border-[#0b1d3a]/12 bg-white/20 text-[#0b1d3a]/85"
-                          : "border-white/10 bg-white/6 text-[#d7e0f5]",
-                      )}
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                </button>
               </div>
-            </button>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
 export default function RevenueSnapshotResultsPage() {
+
   const data = mockPayload;
   const [scenario, setScenario] = useState<
     "conservative" | "balanced" | "aggressive"
@@ -1120,8 +1151,8 @@ export default function RevenueSnapshotResultsPage() {
   const renderEconomics = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="ЭКОНОМИКА"
-        title="Юнит-экономика и карта потерь"
+        eyebrow="ECONOMICS"
+        title="Unit economics and loss map"
         description="Сухие показатели, расчетные значения и зона прямых потерь."
         icon={Wallet}
       />
@@ -1277,7 +1308,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderInterpretation = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="ИНТЕРПРЕТАЦИЯ"
+        eyebrow="INTERPRETATION"
         title="Разбор ответов по блокам"
         description="Не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
         icon={Layers3}
@@ -1293,7 +1324,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderStrategy = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="СТРАТЕГИЯ"
+        eyebrow="STRATEGY"
         title="Стратегия и система рычагов"
         description="Сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
         icon={Target}
@@ -1338,13 +1369,13 @@ export default function RevenueSnapshotResultsPage() {
                 className="rounded-3xl border border-white/8 bg-white/4 p-4"
               >
                 <div className="grid gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr] md:items-center">
-                  <MechanicBox title="Рычаг" value={step.lever} />
+                  <MechanicBox title="Lever" value={step.lever} />
                   <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                  <MechanicBox title="Метрика" value={step.metric} />
+                  <MechanicBox title="Metric" value={step.metric} />
                   <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                  <MechanicBox title="Экономика" value={step.economics} />
+                  <MechanicBox title="Economics" value={step.economics} />
                   <ArrowRight className="mx-auto h-4 w-4 text-[#f7d237]" />
-                  <MechanicBox title="Результат" value={step.result} />
+                  <MechanicBox title="Result" value={step.result} />
                 </div>
               </div>
             ))}
@@ -1353,7 +1384,7 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-6">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Причинно-следственная схема
+            Cause-effect diagram
           </div>
           <div className="mt-4 h-[320px] w-full">
             <ResponsiveContainer>
@@ -1391,7 +1422,7 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-6 xl:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Горизонт реализации
+            Time horizon
           </div>
           <div className="mt-4 space-y-3">
             {data.strategy.timeHorizon.map((step) => (
@@ -1519,8 +1550,8 @@ export default function RevenueSnapshotResultsPage() {
   const renderManagement = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="УПРАВЛЕНИЕ"
-        title="Панель контроля и управления стратегией"
+        eyebrow="MANAGEMENT"
+        title="Control panel and strategy management tools"
         description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
         icon={Settings2}
       />
@@ -1532,13 +1563,13 @@ export default function RevenueSnapshotResultsPage() {
               <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
                 Переключатель сценария
               </div>
-              <div className="mt-2 text-2xl font-semibold">{scenario === "conservative" ? "консервативный" : scenario === "balanced" ? "сбалансированный" : "агрессивный"}</div>
+              <div className="mt-2 text-2xl font-semibold">{scenario}</div>
             </div>
             <div className="flex flex-wrap gap-2">
               {(["conservative", "balanced", "aggressive"] as const).map(
                 (key) => (
                   <button
-                    key={key === "conservative" ? "консервативный" : key === "balanced" ? "сбалансированный" : "агрессивный"}
+                    key={key}
                     type="button"
                     onClick={() => setScenario(key)}
                     className={cn(
@@ -1548,7 +1579,7 @@ export default function RevenueSnapshotResultsPage() {
                         : "border-white/10 bg-white/5 text-[#d5daeb] hover:bg-white/8",
                     )}
                   >
-                    {key === "conservative" ? "консервативный" : key === "balanced" ? "сбалансированный" : "агрессивный"}
+                    {key}
                   </button>
                 ),
               )}
@@ -1627,8 +1658,7 @@ export default function RevenueSnapshotResultsPage() {
   );
 
   return (
-    <>
-      <main className="results-shell min-h-screen overflow-x-hidden text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#071b43] text-white">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(92,124,194,0.18),transparent_28%),radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.05),transparent_22%),linear-gradient(180deg,rgba(4,16,38,0)_0%,rgba(4,16,38,0.18)_100%)]" />
         <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(rgba(255,255,255,0.75)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
@@ -1678,14 +1708,14 @@ export default function RevenueSnapshotResultsPage() {
                   <div className="flex items-center gap-3 text-[#f7d237]">
                     <Lock className="h-5 w-5" />
                     <div className="text-xs uppercase tracking-[0.22em]">
-                      Ограничение роста
+                      Growth Limit
                     </div>
                   </div>
                   <div className="mt-4 text-2xl font-semibold">
                     {data.hero.growthLimit.type}
                   </div>
                   <div className="mt-3 text-sm leading-6 text-[#d7def2]">
-                    <span className="font-medium text-white">Узкое место:</span>{" "}
+                    <span className="font-medium text-white">Bottleneck:</span>{" "}
                     {data.hero.growthLimit.bottleneck}
                   </div>
                   <div className="mt-3 text-sm leading-6 text-[#c9d0e4]">
@@ -1697,7 +1727,7 @@ export default function RevenueSnapshotResultsPage() {
                   <div className="flex items-center gap-3 text-[#f7d237]">
                     <Sparkles className="h-5 w-5" />
                     <div className="text-xs uppercase tracking-[0.22em]">
-                      Главный рычаг
+                      Primary Lever
                     </div>
                   </div>
                   <div className="mt-4 text-2xl font-semibold">
@@ -1707,7 +1737,7 @@ export default function RevenueSnapshotResultsPage() {
                     {data.hero.primaryLever.essence}
                   </div>
                   <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#cfd6ea]">
-                    Зона: {data.hero.primaryLever.zone}
+                    Zone: {data.hero.primaryLever.zone}
                   </div>
                 </GlassCard>
 
@@ -1715,7 +1745,7 @@ export default function RevenueSnapshotResultsPage() {
                   <div className="flex items-center gap-3 text-[#f7d237]">
                     <Globe2 className="h-5 w-5" />
                     <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
-                      Корректировка по рынку
+                      Market adjustment
                     </div>
                   </div>
                   <div className="mt-3 text-sm leading-6 text-[#d7def2]">
@@ -1748,8 +1778,8 @@ export default function RevenueSnapshotResultsPage() {
 
         <section className="mb-8">
           <SectionTitle
-            eyebrow="Слой доверия"
-            title="Что не является корневой проблемой"
+            eyebrow="Trust layer"
+            title="What is not the core problem"
             description="Что модель не считает главным источником текущих потерь."
             icon={CircleOff}
           />
@@ -1765,38 +1795,7 @@ export default function RevenueSnapshotResultsPage() {
           </div>
         </section>
       </div>
-
-      </main>
-
-      <style jsx global>{`
-        html { scroll-behavior: smooth; }
-        body {
-          background: #0a1526;
-          color: #fefefe;
-        }
-        .results-shell {
-          position: relative;
-          min-height: 100vh;
-          background:
-            radial-gradient(circle at 18% 16%, rgba(112,134,255,0.14), transparent 24%),
-            radial-gradient(circle at 84% 14%, rgba(255,255,255,0.05), transparent 18%),
-            radial-gradient(circle at 72% 72%, rgba(135,97,255,0.08), transparent 20%),
-            linear-gradient(130deg, #0a1526 0%, #0c1830 36%, #0a1526 68%, #121f39 100%);
-        }
-        .results-shell::before {
-          content: "";
-          position: fixed;
-          inset: 0;
-          pointer-events: none;
-          z-index: 0;
-          background:
-            radial-gradient(circle at 20% 22%, rgba(80,127,255,0.12), transparent 26%),
-            radial-gradient(circle at 82% 18%, rgba(247,210,55,0.08), transparent 22%),
-            radial-gradient(circle at 62% 70%, rgba(135,97,255,0.07), transparent 22%);
-          filter: blur(6px);
-        }
-      `}</style>
-    </>
+    </main>
   );
 }
 
