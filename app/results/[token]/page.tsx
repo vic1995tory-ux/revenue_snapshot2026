@@ -40,7 +40,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type HeroTag = {
   label: string;
@@ -225,34 +225,34 @@ const CHAPTER_TABS: Array<{
 }> = [
   {
     key: "economics",
-    label: "Unit economics and loss map",
-    eyebrow: "1 chapter",
+    label: "Юнит-экономика и карта потерь",
+    eyebrow: "Глава 1",
     summary: "База, расчетные метрики и прямые потери.",
-    tags: ["Revenue", "Margin", "Losses"],
+    tags: ["Выручка", "Маржа", "Потери"],
     icon: Wallet,
   },
   {
     key: "interpretation",
     label: "Разбор ответов по блокам",
-    eyebrow: "2 chapter",
+    eyebrow: "Глава 2",
     summary: "Сигналы, ограничения и связь между блоками.",
-    tags: ["Signal", "Risks", "Relations"],
+    tags: ["Сигналы", "Риски", "Связи"],
     icon: Layers3,
   },
   {
     key: "strategy",
     label: "Стратегия и система рычагов",
-    eyebrow: "3 chapter",
+    eyebrow: "Глава 3",
     summary: "Сценарий, механика рычага и приоритет действий.",
-    tags: ["Primary lever", "Scenario", "Roadmap"],
+    tags: ["Главный рычаг", "Сценарий", "План"],
     icon: Target,
   },
   {
     key: "management",
-    label: "Control panel and strategy management tools",
-    eyebrow: "4 chapter",
+    label: "Панель контроля и управления стратегией",
+    eyebrow: "Глава 4",
     summary: "Контрольные метрики, сценарии и триггеры.",
-    tags: ["Control", "Scenarios", "Alerts"],
+    tags: ["Контроль", "Сценарии", "Сигналы"],
     icon: Settings2,
   },
 ];
@@ -971,77 +971,14 @@ function ChapterCarousel({
   active: ChapterKey;
   onChange: (value: ChapterKey) => void;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
-  const visibleCount = isMobile ? 1 : 3;
-  const headClones = CHAPTER_TABS.slice(-visibleCount);
-  const tailClones = CHAPTER_TABS.slice(0, visibleCount);
-  const trackItems = [...headClones, ...CHAPTER_TABS, ...tailClones];
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
-  const [currentIndex, setCurrentIndex] = useState(visibleCount);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [isSnapReset, setIsSnapReset] = useState(false);
-  const [direction, setDirection] = useState<"next" | "prev">("next");
-
-  useEffect(() => {
-    const syncViewport = () => {
-      setIsMobile(window.innerWidth <= 1180);
-    };
-
-    syncViewport();
-    window.addEventListener("resize", syncViewport);
-    return () => window.removeEventListener("resize", syncViewport);
-  }, []);
-
-  useEffect(() => {
-    const activeIndex = CHAPTER_TABS.findIndex((tab) => tab.key === active);
-    setCurrentIndex(activeIndex >= 0 ? activeIndex + visibleCount : visibleCount);
-    setIsAnimating(false);
-    setIsSnapReset(true);
-
-    if (typeof window !== "undefined") {
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setIsSnapReset(false));
-      });
-    }
-  }, [active, visibleCount]);
-
-  const goToNext = () => {
-    if (isAnimating) return;
-    setDirection("next");
-    setIsAnimating(true);
-    const nextIndex = currentIndex + 1;
-    const originalIndex = ((nextIndex - visibleCount) % CHAPTER_TABS.length + CHAPTER_TABS.length) % CHAPTER_TABS.length;
-    onChange(CHAPTER_TABS[originalIndex].key);
-  };
-
-  const goToPrev = () => {
-    if (isAnimating) return;
-    setDirection("prev");
-    setIsAnimating(true);
-    const nextIndex = currentIndex - 1;
-    const originalIndex = ((nextIndex - visibleCount) % CHAPTER_TABS.length + CHAPTER_TABS.length) % CHAPTER_TABS.length;
-    onChange(CHAPTER_TABS[originalIndex].key);
-  };
-
-  const handleTransitionEnd = () => {
-    setIsAnimating(false);
-
-    if (currentIndex >= CHAPTER_TABS.length + visibleCount) {
-      setIsSnapReset(true);
-      setCurrentIndex(visibleCount);
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setIsSnapReset(false));
-      });
-      return;
-    }
-
-    if (currentIndex < visibleCount) {
-      setIsSnapReset(true);
-      setCurrentIndex(CHAPTER_TABS.length + currentIndex);
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => setIsSnapReset(false));
-      });
-    }
+  const scrollTrack = (direction: "left" | "right") => {
+    if (!trackRef.current) return;
+    trackRef.current.scrollBy({
+      left: direction === "left" ? -360 : 360,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -1049,17 +986,17 @@ function ChapterCarousel({
       <div className="stage-scheme-nav">
         <button
           type="button"
+          onClick={() => scrollTrack("left")}
           className="stage-scheme-arrow"
-          onClick={goToPrev}
-          aria-label="Предыдущая карточка"
+          aria-label="Назад"
         >
           <ChevronLeft className="h-6 w-6" />
         </button>
         <button
           type="button"
+          onClick={() => scrollTrack("right")}
           className="stage-scheme-arrow"
-          onClick={goToNext}
-          aria-label="Следующая карточка"
+          aria-label="Вперед"
         >
           <ChevronRight className="h-6 w-6" />
         </button>
@@ -1067,60 +1004,56 @@ function ChapterCarousel({
 
       <div className="stage-scheme-viewport">
         <div
-          className={cn(
-            "stage-scheme-track",
-            isAnimating && `is-animating direction-${direction}`,
-            isSnapReset && "is-snap-reset",
-          )}
-          style={{ transform: `translate3d(-${(currentIndex * 100) / visibleCount}%, 0, 0)` }}
-          onTransitionEnd={handleTransitionEnd}
+          ref={trackRef}
+          className="stage-scheme-track [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         >
-          {trackItems.map((tab, idx) => {
+          {CHAPTER_TABS.map((tab) => {
             const Icon = tab.icon;
             const isActive = active === tab.key;
 
             return (
-              <div key={`${tab.key}-${idx}`} className="stage-scheme-slide">
-                <button
-                  type="button"
-                  onClick={() => onChange(tab.key)}
-                  className={cn("stage-scheme-card", isActive && "is-active")}
-                >
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => onChange(tab.key)}
+                className="stage-scheme-slide text-left"
+              >
+                <div className={cn("stage-scheme-card stage-scheme-card-chapter", isActive && "is-active")}>
                   <div className="stage-scheme-bg" />
                   <div className="stage-scheme-overlay" />
 
                   <div className="stage-scheme-card-inner">
-                    <div className="stage-scheme-top-row">
-                      <div className={cn("stage-scheme-icon-box", isActive && "is-active")}>
-                        <Icon className="stage-scheme-icon" />
+                    <div className="stage-scheme-card-top">
+                      <div className={cn("stage-scheme-icon-wrap", isActive && "is-active")}>
+                        <Icon className="h-8 w-8" />
                       </div>
-                      <ChevronRight className={cn("stage-scheme-chevron", isActive && "is-active")} />
+
+                      <ChevronRight className={cn("stage-scheme-card-arrow", isActive && "is-active")} />
                     </div>
 
                     <div className="stage-scheme-kicker">{tab.eyebrow}</div>
-                    <div className="stage-scheme-title">{tab.label}</div>
-                    <div className="stage-scheme-stage">{tab.summary}</div>
 
-                    <div className="stage-scheme-bottom">
-                      <div className="stage-scheme-group">
-                        <div className="stage-scheme-tags">
-                          {tab.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className={cn(
-                                "stage-scheme-tag",
-                                isActive && "is-active",
-                              )}
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="stage-scheme-title stage-scheme-title-chapter">
+                      {tab.label}
+                    </div>
+
+                    <div className="stage-scheme-stage stage-scheme-stage-chapter">
+                      {tab.summary}
+                    </div>
+
+                    <div className="stage-scheme-tags stage-scheme-tags-chapter">
+                      {tab.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={cn("stage-scheme-tag", isActive && "is-active")}
+                        >
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </button>
-              </div>
+                </div>
+              </button>
             );
           })}
         </div>
@@ -1130,7 +1063,6 @@ function ChapterCarousel({
 }
 
 export default function RevenueSnapshotResultsPage() {
-
   const data = mockPayload;
   const [scenario, setScenario] = useState<
     "conservative" | "balanced" | "aggressive"
@@ -1151,8 +1083,8 @@ export default function RevenueSnapshotResultsPage() {
   const renderEconomics = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="ECONOMICS"
-        title="Unit economics and loss map"
+        eyebrow="ЭКОНОМИКА"
+        title="Юнит-экономика и карта потерь"
         description="Сухие показатели, расчетные значения и зона прямых потерь."
         icon={Wallet}
       />
@@ -1308,7 +1240,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderInterpretation = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="INTERPRETATION"
+        eyebrow="ИНТЕРПРЕТАЦИЯ"
         title="Разбор ответов по блокам"
         description="Не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
         icon={Layers3}
@@ -1324,7 +1256,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderStrategy = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="STRATEGY"
+        eyebrow="СТРАТЕГИЯ"
         title="Стратегия и система рычагов"
         description="Сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
         icon={Target}
@@ -1550,8 +1482,8 @@ export default function RevenueSnapshotResultsPage() {
   const renderManagement = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="MANAGEMENT"
-        title="Control panel and strategy management tools"
+        eyebrow="УПРАВЛЕНИЕ"
+        title="Панель контроля и управления стратегией"
         description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
         icon={Settings2}
       />
