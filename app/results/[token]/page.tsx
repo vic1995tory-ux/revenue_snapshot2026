@@ -38,6 +38,8 @@ import {
   TrendingUp,
   Users,
   Wallet,
+  Globe2,
+  ChevronRight,
 } from "lucide-react";
 import { useMemo, useState } from "react";
 
@@ -211,13 +213,49 @@ const ICONS = {
   Building2,
   Settings2,
   Scale,
+  Globe2,
 };
 
-const CHAPTER_TABS: Array<{ key: ChapterKey; label: string }> = [
-  { key: "economics", label: "Unit economics and loss map" },
-  { key: "interpretation", label: "Разбор ответов по блокам" },
-  { key: "strategy", label: "Стратегия и система рычагов" },
-  { key: "management", label: "Control panel and strategy management tools" },
+const CHAPTER_TABS: Array<{
+  key: ChapterKey;
+  label: string;
+  eyebrow: string;
+  summary: string;
+  tags: string[];
+  icon: LucideIcon;
+}> = [
+  {
+    key: "economics",
+    label: "Unit economics and loss map",
+    eyebrow: "1 chapter",
+    summary: "База, расчетные метрики и прямые потери.",
+    tags: ["Revenue", "Margin", "Losses"],
+    icon: Wallet,
+  },
+  {
+    key: "interpretation",
+    label: "Разбор ответов по блокам",
+    eyebrow: "2 chapter",
+    summary: "Сигналы, ограничения и связь между блоками.",
+    tags: ["Signal", "Risks", "Relations"],
+    icon: Layers3,
+  },
+  {
+    key: "strategy",
+    label: "Стратегия и система рычагов",
+    eyebrow: "3 chapter",
+    summary: "Сценарий, механика рычага и приоритет действий.",
+    tags: ["Primary lever", "Scenario", "Roadmap"],
+    icon: Target,
+  },
+  {
+    key: "management",
+    label: "Control panel and strategy management tools",
+    eyebrow: "4 chapter",
+    summary: "Контрольные метрики, сценарии и триггеры.",
+    tags: ["Control", "Scenarios", "Alerts"],
+    icon: Settings2,
+  },
 ];
 
 const mockPayload: ResultsPayload = {
@@ -678,7 +716,7 @@ function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(48,79,148,0.38)_0%,rgba(18,37,74,0.9)_100%)] backdrop-blur-xl shadow-[0_10px_60px_rgba(0,0,0,0.28)]",
+        "rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(57,88,157,0.18)_0%,rgba(17,39,78,0.62)_45%,rgba(8,27,59,0.92)_100%)] backdrop-blur-xl shadow-[0_20px_90px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]",
         className,
       )}
     >
@@ -699,21 +737,21 @@ function SectionTitle({
   icon?: LucideIcon;
 }) {
   return (
-    <div className="mb-6 flex items-start gap-4">
+    <div className="mb-6 flex items-start gap-5">
       {Icon ? (
-        <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-[22px] border border-[#f7d237]/20 bg-[#f7d237]/10 text-[#f7d237]">
+        <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-[22px] border border-[#f7d237]/20 bg-[#f7d237]/8 text-[#f7d237] shadow-[0_0_0_1px_rgba(247,210,55,0.03),0_10px_30px_rgba(247,210,55,0.08)]">
           <Icon className="h-5 w-5" />
         </div>
       ) : null}
       <div>
-        <div className="text-xs font-medium uppercase tracking-[0.28em] text-[#a5aeb2]">
+        <div className="text-xs font-medium uppercase tracking-[0.32em] text-[#a8b0c8]">
           {eyebrow}
         </div>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-white md:text-3xl">
           {title}
         </h2>
         {description ? (
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c9cdd8]">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#c9d0e4]">
             {description}
           </p>
         ) : null}
@@ -725,14 +763,14 @@ function SectionTitle({
 function MetricCard({ item }: { item: KPI }) {
   return (
     <GlassCard className="p-5">
-      <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+      <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
         {item.label}
       </div>
       <div className="mt-3 text-3xl font-semibold tracking-tight text-white">
         {item.value}
       </div>
       {item.sub ? (
-        <div className="mt-2 text-sm text-[#bfc4d7]">{item.sub}</div>
+        <div className="mt-2 text-sm text-[#bfc7dd]">{item.sub}</div>
       ) : null}
     </GlassCard>
   );
@@ -743,14 +781,14 @@ function QuickFactCard({ item }: { item: SummaryItem }) {
   return (
     <GlassCard className="p-5">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+        <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
           {item.label}
         </div>
         <Icon className="h-4 w-4 text-[#f7d237]" />
       </div>
       <div className="mt-3 text-lg font-semibold text-white">{item.value}</div>
       {item.note ? (
-        <div className="mt-2 text-sm leading-6 text-[#c9cdd8]">{item.note}</div>
+        <div className="mt-2 text-sm leading-6 text-[#c9d0e4]">{item.note}</div>
       ) : null}
     </GlassCard>
   );
@@ -766,7 +804,7 @@ function Tag({ tag }: { tag: HeroTag }) {
         tag.tone === "good" &&
           "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
         (!tag.tone || tag.tone === "neutral") &&
-          "border-white/10 bg-white/5 text-[#d8dbea]",
+          "border-white/10 bg-white/5 text-[#d8dff2]",
       )}
     >
       {tag.label}
@@ -785,7 +823,7 @@ function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
         className="flex w-full items-center justify-between gap-4 p-5 text-left"
       >
         <div>
-          <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
             Block interpretation
           </div>
           <div className="mt-2 text-lg font-semibold text-white">
@@ -830,14 +868,14 @@ function InfoRow({
       className={cn(
         "rounded-2xl border p-4",
         highlight
-          ? "border-[#f7d237]/20 bg-[#f7d237]/8"
+          ? "border-[#f7d237]/20 bg-[#f7d237]/7"
           : "border-white/8 bg-white/4",
       )}
     >
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
         {title}
       </div>
-      <p className="mt-2 text-sm leading-6 text-[#dde2f2]">{text}</p>
+      <p className="mt-2 text-sm leading-6 text-[#dde4f6]">{text}</p>
     </div>
   );
 }
@@ -880,7 +918,7 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
     <GlassCard className="p-5">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             {metric.name}
           </div>
           <div className="mt-3 text-2xl font-semibold text-white">
@@ -888,7 +926,7 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
             {metric.unit || ""}
           </div>
         </div>
-        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#cbd1e5]">
+        <div className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-[#cbd3ea]">
           target {metric.target}
           {metric.unit || ""}
         </div>
@@ -899,7 +937,7 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
           style={{ width: `${progress}%` }}
         />
       </div>
-      <div className="mt-3 text-sm text-[#cbd1e5]">
+      <div className="mt-3 text-sm text-[#cbd3ea]">
         Direction: {metric.direction === "up" ? "increase" : "decrease"}
       </div>
     </GlassCard>
@@ -922,7 +960,7 @@ function AlertRuleCard({ item }: { item: AlertRule }) {
           {item.status}
         </span>
       </div>
-      <p className="mt-3 text-sm leading-6 text-[#cbd1e5]">{item.logic}</p>
+      <p className="mt-3 text-sm leading-6 text-[#cbd3ea]">{item.logic}</p>
     </GlassCard>
   );
 }
@@ -935,24 +973,94 @@ function ChapterMenu({
   onChange: (value: ChapterKey) => void;
 }) {
   return (
-    <div className="mb-6">
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {CHAPTER_TABS.map((tab) => (
+    <div className="grid gap-4 lg:sticky lg:top-6">
+      {CHAPTER_TABS.map((tab) => {
+        const Icon = tab.icon;
+        const isActive = active === tab.key;
+
+        return (
           <button
             key={tab.key}
             type="button"
             onClick={() => onChange(tab.key)}
             className={cn(
-              "flex min-h-[92px] items-center justify-center rounded-[28px] border px-6 py-5 text-center text-base leading-5 transition",
-              active === tab.key
-                ? "border-[#f7d237] bg-[#f7d237] text-[#0b1d3a]"
-                : "border-white/10 bg-[linear-gradient(180deg,rgba(56,86,156,0.95)_0%,rgba(45,74,141,0.95)_100%)] text-white hover:bg-[linear-gradient(180deg,rgba(64,96,171,1)_0%,rgba(49,80,151,1)_100%)]",
+              "group w-full text-left transition",
+              isActive ? "scale-[1.01]" : "hover:translate-x-[2px]",
             )}
           >
-            <span className="max-w-[16rem]">{tab.label}</span>
+            <div
+              className={cn(
+                "overflow-hidden rounded-[30px] border p-5 shadow-[0_14px_40px_rgba(0,0,0,0.2)] transition",
+                isActive
+                  ? "border-[#f7d237]/55 bg-[linear-gradient(180deg,#f7d237_0%,#efcb34_100%)] text-[#0b1d3a]"
+                  : "border-white/10 bg-[linear-gradient(180deg,rgba(70,104,186,0.9)_0%,rgba(42,74,148,0.9)_100%)] text-white",
+              )}
+            >
+              <div className="flex items-start gap-4">
+                <div
+                  className={cn(
+                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] border",
+                    isActive
+                      ? "border-[#0b1d3a]/10 bg-white/20 text-[#0b1d3a]"
+                      : "border-white/10 bg-white/8 text-[#f7d237]",
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      "text-[11px] uppercase tracking-[0.26em]",
+                      isActive ? "text-[#0b1d3a]/70" : "text-[#c6d0ea]",
+                    )}
+                  >
+                    {tab.eyebrow}
+                  </div>
+
+                  <div className="mt-2 text-xl font-medium leading-7">
+                    {tab.label}
+                  </div>
+
+                  <div
+                    className={cn(
+                      "mt-3 text-sm leading-6",
+                      isActive ? "text-[#0b1d3a]/85" : "text-[#dbe3f8]",
+                    )}
+                  >
+                    {tab.summary}
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {tab.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={cn(
+                          "rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.16em]",
+                          isActive
+                            ? "border-[#0b1d3a]/12 bg-white/25 text-[#0b1d3a]/85"
+                            : "border-white/10 bg-white/6 text-[#d7e0f5]",
+                        )}
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <ChevronRight
+                  className={cn(
+                    "mt-1 h-5 w-5 shrink-0 transition",
+                    isActive
+                      ? "text-[#0b1d3a]"
+                      : "text-white/70 group-hover:translate-x-0.5",
+                  )}
+                />
+              </div>
+            </div>
           </button>
-        ))}
-      </div>
+        );
+      })}
     </div>
   );
 }
@@ -977,9 +1085,16 @@ export default function RevenueSnapshotResultsPage() {
 
   const renderEconomics = () => (
     <div className="space-y-4">
+      <SectionTitle
+        eyebrow="Economics"
+        title="Unit economics and loss map"
+        description="Сухие показатели, расчетные значения и зона прямых потерь."
+        icon={Wallet}
+      />
+
       <div className="grid gap-4 lg:grid-cols-3">
         <GlassCard className="p-5 lg:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Базовые метрики
           </div>
           <div className="mt-4 space-y-3">
@@ -988,7 +1103,7 @@ export default function RevenueSnapshotResultsPage() {
                 key={item.label}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3"
               >
-                <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                <span className="text-sm text-[#d6def2]">{item.label}</span>
                 <span className="font-medium text-white">{item.value}</span>
               </div>
             ))}
@@ -996,7 +1111,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-5 lg:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Расчетные метрики
           </div>
           <div className="mt-4 space-y-3">
@@ -1005,7 +1120,7 @@ export default function RevenueSnapshotResultsPage() {
                 key={item.label}
                 className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3"
               >
-                <span className="text-sm text-[#d0d5e7]">{item.label}</span>
+                <span className="text-sm text-[#d6def2]">{item.label}</span>
                 <span className="font-medium text-white">{item.value}</span>
               </div>
             ))}
@@ -1013,7 +1128,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-5 lg:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Метрики потерь
           </div>
           <div className="mt-4 space-y-3">
@@ -1032,7 +1147,7 @@ export default function RevenueSnapshotResultsPage() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <GlassCard className="p-5 xl:col-span-1">
-          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Структура выручки
           </div>
           <div className="h-[280px] w-full">
@@ -1042,8 +1157,8 @@ export default function RevenueSnapshotResultsPage() {
                   stroke="rgba(255,255,255,0.08)"
                   vertical={false}
                 />
-                <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
-                <YAxis stroke="#9aa3be" fontSize={12} />
+                <XAxis dataKey="name" stroke="#9aa7c8" fontSize={12} />
+                <YAxis stroke="#9aa7c8" fontSize={12} />
                 <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
                 <Bar
                   dataKey="value"
@@ -1056,7 +1171,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-5 xl:col-span-1">
-          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Спрос vs мощность
           </div>
           <div className="h-[280px] w-full">
@@ -1066,11 +1181,11 @@ export default function RevenueSnapshotResultsPage() {
                   stroke="rgba(255,255,255,0.08)"
                   horizontal={false}
                 />
-                <XAxis type="number" stroke="#9aa3be" fontSize={12} />
+                <XAxis type="number" stroke="#9aa7c8" fontSize={12} />
                 <YAxis
                   dataKey="name"
                   type="category"
-                  stroke="#9aa3be"
+                  stroke="#9aa7c8"
                   fontSize={12}
                   width={80}
                 />
@@ -1086,7 +1201,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-5 xl:col-span-1">
-          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Воронка
           </div>
           <div className="h-[280px] w-full">
@@ -1110,18 +1225,33 @@ export default function RevenueSnapshotResultsPage() {
   );
 
   const renderInterpretation = () => (
-    <div className="grid gap-4">
-      {data.blockInterpretation.map((block) => (
-        <InterpretationAccordion key={block.id} block={block} />
-      ))}
+    <div className="space-y-4">
+      <SectionTitle
+        eyebrow="Interpretation"
+        title="Разбор ответов по блокам"
+        description="Не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
+        icon={Layers3}
+      />
+      <div className="grid gap-4">
+        {data.blockInterpretation.map((block) => (
+          <InterpretationAccordion key={block.id} block={block} />
+        ))}
+      </div>
     </div>
   );
 
   const renderStrategy = () => (
     <div className="space-y-4">
+      <SectionTitle
+        eyebrow="Strategy"
+        title="Стратегия и система рычагов"
+        description="Сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
+        icon={Target}
+      />
+
       <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Стратегический сценарий
           </div>
           <div className="mt-4 text-3xl font-semibold text-white">
@@ -1135,7 +1265,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Карта рычагов
           </div>
           <div className="mt-4 grid gap-3">
@@ -1148,7 +1278,7 @@ export default function RevenueSnapshotResultsPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Механики рычагов
           </div>
           <div className="mt-4 space-y-4">
@@ -1172,7 +1302,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Cause-effect diagram
           </div>
           <div className="mt-4 h-[320px] w-full">
@@ -1192,7 +1322,7 @@ export default function RevenueSnapshotResultsPage() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <GlassCard className="p-6 xl:col-span-2">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Implementation logic
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -1210,7 +1340,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6 xl:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Time horizon
           </div>
           <div className="mt-4 space-y-3">
@@ -1228,7 +1358,7 @@ export default function RevenueSnapshotResultsPage() {
                 <div className="mt-3 text-base font-medium text-white">
                   {step.title}
                 </div>
-                <div className="mt-2 text-sm leading-6 text-[#cfd5e9]">
+                <div className="mt-2 text-sm leading-6 text-[#cfd7ee]">
                   {step.text}
                 </div>
               </div>
@@ -1239,7 +1369,7 @@ export default function RevenueSnapshotResultsPage() {
 
       <div className="grid gap-4 xl:grid-cols-3">
         <GlassCard className="p-6 xl:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Dependencies
           </div>
           <div className="mt-4 h-[300px] w-full">
@@ -1251,14 +1381,14 @@ export default function RevenueSnapshotResultsPage() {
                 />
                 <XAxis
                   type="number"
-                  stroke="#9aa3be"
+                  stroke="#9aa7c8"
                   fontSize={12}
                   domain={[0, 100]}
                 />
                 <YAxis
                   dataKey="label"
                   type="category"
-                  stroke="#9aa3be"
+                  stroke="#9aa7c8"
                   fontSize={12}
                   width={120}
                 />
@@ -1274,7 +1404,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6 xl:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Risks
           </div>
           <div className="mt-4 space-y-4">
@@ -1288,7 +1418,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6 xl:col-span-1">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Expected economic shift
           </div>
           <div className="mt-4 space-y-4">
@@ -1301,7 +1431,7 @@ export default function RevenueSnapshotResultsPage() {
 
       <div className="grid gap-4 xl:grid-cols-2">
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Strategic priority
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
@@ -1323,7 +1453,7 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
 
         <GlassCard className="p-6">
-          <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+          <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
             Rejected levers
           </div>
           <div className="mt-4 space-y-3">
@@ -1338,11 +1468,18 @@ export default function RevenueSnapshotResultsPage() {
 
   const renderManagement = () => (
     <div className="space-y-4">
+      <SectionTitle
+        eyebrow="Management"
+        title="Control panel and strategy management tools"
+        description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
+        icon={Settings2}
+      />
+
       <div className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <GlassCard className="p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
                 Scenario switcher
               </div>
               <div className="mt-2 text-2xl font-semibold">{scenario}</div>
@@ -1386,8 +1523,8 @@ export default function RevenueSnapshotResultsPage() {
                     stroke="rgba(255,255,255,0.08)"
                     vertical={false}
                   />
-                  <XAxis dataKey="name" stroke="#9aa3be" fontSize={12} />
-                  <YAxis stroke="#9aa3be" fontSize={12} />
+                  <XAxis dataKey="name" stroke="#9aa7c8" fontSize={12} />
+                  <YAxis stroke="#9aa7c8" fontSize={12} />
                   <Tooltip />
                   <Area
                     type="monotone"
@@ -1440,11 +1577,13 @@ export default function RevenueSnapshotResultsPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#0b1d3a] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#0b1d3a] text-white">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-24 left-1/2 h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(87,118,187,0.22),transparent_32%),linear-gradient(180deg,rgba(4,16,38,0)_0%,rgba(4,16,38,0.12)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(rgba(255,255,255,0.8)_0.6px,transparent_0.6px)] [background-size:12px_12px]" />
+        <div className="absolute -top-24 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute right-[-8rem] top-[10rem] h-[22rem] w-[22rem] rounded-full bg-[#f7d237]/10 blur-3xl" />
-        <div className="absolute bottom-[-6rem] left-[-6rem] h-[20rem] w-[20rem] rounded-full bg-white/5 blur-3xl" />
+        <div className="absolute bottom-[-6rem] left-[-6rem] h-[20rem] w-[20rem] rounded-full bg-[#3f63bd]/12 blur-3xl" />
       </div>
 
       <div className="relative mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-10">
@@ -1452,7 +1591,7 @@ export default function RevenueSnapshotResultsPage() {
           <GlassCard className="overflow-hidden p-6 md:p-8">
             <div className="grid gap-8 xl:grid-cols-[1.4fr_0.9fr]">
               <div>
-                <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-[#a5aeb2]">
+                <div className="flex flex-wrap items-center gap-3 text-xs uppercase tracking-[0.22em] text-[#a5aec8]">
                   <span>Revenue Snapshot</span>
                   <span className="h-1 w-1 rounded-full bg-[#f7d237]" />
                   <span>{data.company.name}</span>
@@ -1466,7 +1605,7 @@ export default function RevenueSnapshotResultsPage() {
                   Рост ограничен узким местом в конверсии, а не отсутствием спроса.
                 </h1>
 
-                <p className="mt-5 max-w-3xl text-base leading-7 text-[#d6dbeb] md:text-lg">
+                <p className="mt-5 max-w-3xl text-base leading-7 text-[#d7def2] md:text-lg">
                   {data.hero.summary}
                 </p>
 
@@ -1494,11 +1633,11 @@ export default function RevenueSnapshotResultsPage() {
                   <div className="mt-4 text-2xl font-semibold">
                     {data.hero.growthLimit.type}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                  <div className="mt-3 text-sm leading-6 text-[#d7def2]">
                     <span className="font-medium text-white">Bottleneck:</span>{" "}
                     {data.hero.growthLimit.bottleneck}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-[#c9cdd8]">
+                  <div className="mt-3 text-sm leading-6 text-[#c9d0e4]">
                     {data.hero.growthLimit.why}
                   </div>
                 </GlassCard>
@@ -1513,19 +1652,22 @@ export default function RevenueSnapshotResultsPage() {
                   <div className="mt-4 text-2xl font-semibold">
                     {data.hero.primaryLever.name}
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                  <div className="mt-3 text-sm leading-6 text-[#d7def2]">
                     {data.hero.primaryLever.essence}
                   </div>
-                  <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#cfd5e9]">
+                  <div className="mt-4 inline-flex rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs uppercase tracking-[0.18em] text-[#cfd6ea]">
                     Zone: {data.hero.primaryLever.zone}
                   </div>
                 </GlassCard>
 
                 <GlassCard className="p-5">
-                  <div className="text-xs uppercase tracking-[0.22em] text-[#8f96b5]">
-                    Market adjustment
+                  <div className="flex items-center gap-3 text-[#f7d237]">
+                    <Globe2 className="h-5 w-5" />
+                    <div className="text-xs uppercase tracking-[0.22em] text-[#8f9abb]">
+                      Market adjustment
+                    </div>
                   </div>
-                  <div className="mt-3 text-sm leading-6 text-[#d6dbeb]">
+                  <div className="mt-3 text-sm leading-6 text-[#d7def2]">
                     {data.company.marketTakeaway}
                   </div>
                 </GlassCard>
@@ -1543,12 +1685,16 @@ export default function RevenueSnapshotResultsPage() {
         </section>
 
         <section className="mb-14">
-          <ChapterMenu active={activeChapter} onChange={setActiveChapter} />
+          <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+            <ChapterMenu active={activeChapter} onChange={setActiveChapter} />
 
-          {activeChapter === "economics" && renderEconomics()}
-          {activeChapter === "interpretation" && renderInterpretation()}
-          {activeChapter === "strategy" && renderStrategy()}
-          {activeChapter === "management" && renderManagement()}
+            <div className="min-w-0">
+              {activeChapter === "economics" && renderEconomics()}
+              {activeChapter === "interpretation" && renderInterpretation()}
+              {activeChapter === "strategy" && renderStrategy()}
+              {activeChapter === "management" && renderManagement()}
+            </div>
+          </div>
         </section>
 
         <section className="mb-8">
@@ -1563,7 +1709,7 @@ export default function RevenueSnapshotResultsPage() {
               <GlassCard key={item} className="p-6">
                 <div className="flex items-start gap-3">
                   <CheckCircle2 className="mt-1 h-5 w-5 shrink-0 text-[#f7d237]" />
-                  <p className="text-base leading-8 text-[#d5daeb]">{item}</p>
+                  <p className="text-base leading-8 text-[#d7def2]">{item}</p>
                 </div>
               </GlassCard>
             ))}
@@ -1577,7 +1723,7 @@ export default function RevenueSnapshotResultsPage() {
 function MechanicBox({ title, value }: { title: string; value: string }) {
   return (
     <div className="rounded-2xl border border-white/8 bg-white/4 p-4 text-center">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f96b5]">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#8f9abb]">
         {title}
       </div>
       <div className="mt-2 text-sm font-medium leading-6 text-white">
@@ -1607,7 +1753,7 @@ function PriorityColumn({
         !accent && !warning && "border-white/8 bg-white/4",
       )}
     >
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
         {title}
       </div>
       <div className="mt-4 space-y-3">
@@ -1637,7 +1783,7 @@ function ScenarioMetric({
 }) {
   return (
     <div className="rounded-3xl border border-white/8 bg-white/4 p-5">
-      <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
         {title}
       </div>
       <div className="mt-3 text-3xl font-semibold text-white">
