@@ -725,12 +725,12 @@ function InterpretationAccordion({ block }: { block: BlockInterpretation }) {
       </button>
       {open ? (
         <div className="grid gap-4 border-t border-white/8 p-5 md:grid-cols-2">
-          <InfoRow title="Signal" text={block.signal} />
-          <InfoRow title="Interpretation" text={block.interpretation} />
-          <InfoRow title="Relation" text={block.relation} />
-          <InfoRow title="Risk" text={block.risk} />
-          <InfoRow title="Not proven" text={block.unknown} />
-          <InfoRow title="Interim conclusion" text={block.conclusion} highlight />
+          <InfoRow title="Сигнал" text={block.signal} />
+          <InfoRow title="Интерпритация" text={block.interpretation} />
+          <InfoRow title="Свзяь" text={block.relation} />
+          <InfoRow title="Риск" text={block.risk} />
+          <InfoRow title="Не доказано, требует отдельного исследования" text={block.unknown} />
+          <InfoRow title="Промежуточный вывод" text={block.conclusion} highlight />
         </div>
       ) : null}
     </GlassCard>
@@ -861,7 +861,7 @@ export default function RevenueSnapshotResultsPage() {
                 </div>
 
                 <h1 className="mt-4 max-w-4xl text-3xl font-semibold tracking-tight text-white md:text-5xl">
-                  Growth is constrained by a conversion bottleneck, not by the absence of demand.
+                  Рост ограничен узким местом в конверсии, а не отсутствием спроса.
                 </h1>
 
                 <p className="mt-5 max-w-3xl text-base leading-7 text-[#d6dbeb] md:text-lg">
@@ -935,7 +935,7 @@ export default function RevenueSnapshotResultsPage() {
 
           <div className="grid gap-4 lg:grid-cols-3">
             <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Base metrics</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Базовые метрики</div>
               <div className="mt-4 space-y-3">
                 {data.economics.baseKpis.map((item) => (
                   <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
@@ -947,7 +947,7 @@ export default function RevenueSnapshotResultsPage() {
             </GlassCard>
 
             <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Calculated metrics</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Расчетные метрики</div>
               <div className="mt-4 space-y-3">
                 {data.economics.calculatedKpis.map((item) => (
                   <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-white/8 bg-white/4 px-4 py-3">
@@ -959,7 +959,7 @@ export default function RevenueSnapshotResultsPage() {
             </GlassCard>
 
             <GlassCard className="p-5 lg:col-span-1">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Loss metrics</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Петрики потерь</div>
               <div className="mt-4 space-y-3">
                 {data.economics.losses.map((item) => (
                   <div key={item.label} className="flex items-center justify-between gap-3 rounded-2xl border border-[#f7d237]/15 bg-[#f7d237]/6 px-4 py-3">
@@ -973,7 +973,7 @@ export default function RevenueSnapshotResultsPage() {
 
           <div className="mt-4 grid gap-4 xl:grid-cols-3">
             <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Revenue waterfall</div>
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Структура выручки</div>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer>
                   <BarChart data={data.economics.revenueWaterfall}>
@@ -988,7 +988,7 @@ export default function RevenueSnapshotResultsPage() {
             </GlassCard>
 
             <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Demand vs capacity</div>
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Спрос vs мощность</div>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer>
                   <BarChart data={data.economics.demandCapacity} layout="vertical">
@@ -1003,7 +1003,7 @@ export default function RevenueSnapshotResultsPage() {
             </GlassCard>
 
             <GlassCard className="p-5 xl:col-span-1">
-              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Funnel</div>
+              <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Воронка</div>
               <div className="h-[280px] w-full">
                 <ResponsiveContainer>
                   <FunnelChart>
@@ -1022,7 +1022,7 @@ export default function RevenueSnapshotResultsPage() {
         <section className="mb-14">
           <SectionTitle
             eyebrow="Interpretation"
-            title="Block-by-block reading of client answers"
+            title="Разбор ответов по блокам"
             description="Интерпретация ответов в логике анкеты: не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
             icon={Layers3}
           />
@@ -1037,14 +1037,14 @@ export default function RevenueSnapshotResultsPage() {
         <section className="mb-14">
           <SectionTitle
             eyebrow="Strategy"
-            title="Strategy and lever system"
+            title="Стратегия и система рычагов"
             description="Главный блок страницы: сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
             icon={Target}
           />
 
           <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
             <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Strategic scenario</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Стратегический сценарий</div>
               <div className="mt-4 text-3xl font-semibold text-white">{data.strategy.scenario.type}</div>
               <div className="mt-4 grid gap-4 md:grid-cols-3">
                 <InfoRow title="Why this scenario" text={data.strategy.scenario.why} />
@@ -1054,7 +1054,7 @@ export default function RevenueSnapshotResultsPage() {
             </GlassCard>
 
             <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Lever map</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Карта рычагов</div>
               <div className="mt-4 grid gap-3">
                 {data.strategy.leverMap.map((node) => (
                   <LeverPill key={`${node.role}-${node.name}`} node={node} />
@@ -1065,7 +1065,7 @@ export default function RevenueSnapshotResultsPage() {
 
           <div className="mt-4 grid gap-4 xl:grid-cols-2">
             <GlassCard className="p-6">
-              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Lever mechanics</div>
+              <div className="text-xs uppercase tracking-[0.18em] text-[#8f96b5]">Механики рычагов</div>
               <div className="mt-4 space-y-4">
                 {data.strategy.leverMechanics.chain.map((step, index) => (
                   <div key={`${step.lever}-${index}`} className="rounded-3xl border border-white/8 bg-white/4 p-4">
