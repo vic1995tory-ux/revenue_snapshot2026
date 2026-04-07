@@ -2,8 +2,6 @@
 
 import {
   ResponsiveContainer,
-  AreaChart,
-  Area,
   CartesianGrid,
   Tooltip,
   XAxis,
@@ -39,9 +37,10 @@ import {
   Users,
   Wallet,
   Globe2,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 type HeroTag = {
   label: string;
@@ -330,13 +329,13 @@ const mockPayload: ResultsPayload = {
       { label: "Capacity Loss", value: "7%", kind: "loss" },
     ],
     revenueWaterfall: [
-      { name: "Actual Revenue", value: 42000 },
-      { name: "Lost Revenue", value: 12500 },
-      { name: "Potential Revenue", value: 54500 },
+      { name: "Фактическая выручка", value: 42000 },
+      { name: "Потерянная выручка", value: 12500 },
+      { name: "Потенциальная выручка", value: 54500 },
     ],
     demandCapacity: [
-      { name: "Demand", value: 190 },
-      { name: "Capacity", value: 150 },
+      { name: "Спрос", value: 190 },
+      { name: "Мощность", value: 150 },
     ],
     funnel: [
       { name: "Leads", value: 190 },
@@ -345,32 +344,32 @@ const mockPayload: ResultsPayload = {
       { name: "Sales", value: 56 },
     ],
     economicsShift: [
-      { name: "Revenue", before: 42000, after: 49800 },
-      { name: "Profit", before: 8400, after: 11700 },
-      { name: "Conversion", before: 29.5, after: 35.2 },
+      { name: "Выручка", before: 42000, after: 49800 },
+      { name: "Прибыль", before: 8400, after: 11700 },
+      { name: "Конверсия", before: 29.5, after: 35.2 },
     ],
   },
   quickFacts: [
     {
-      label: "Loss Type",
+      label: "Тип потери",
       value: "Conversion",
       note: "главная потеря денег сейчас",
       icon: "Target",
     },
     {
-      label: "Bottleneck",
+      label: "Узкое место",
       value: "Deal stage",
       note: "интерес не превращается в оплату",
       icon: "Gauge",
     },
     {
-      label: "Market Signal",
+      label: "Сигнал рынка",
       value: "Trust + competition",
       note: "рынок требует ясного и убедительного выбора",
       icon: "Radar",
     },
     {
-      label: "Model Risk",
+      label: "Риск модели",
       value: "Founder overload",
       note: "управление завязано на одном центре решений",
       icon: "Briefcase",
@@ -716,7 +715,7 @@ function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-[32px] border border-white/10 bg-[linear-gradient(180deg,rgba(57,88,157,0.18)_0%,rgba(17,39,78,0.62)_45%,rgba(8,27,59,0.92)_100%)] backdrop-blur-xl shadow-[0_20px_90px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.05)]",
+        "rounded-[32px] border border-white/8 bg-[linear-gradient(180deg,rgba(39,70,132,0.22)_0%,rgba(11,33,74,0.62)_45%,rgba(5,23,55,0.96)_100%)] shadow-[0_20px_90px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl",
         className,
       )}
     >
@@ -739,7 +738,7 @@ function SectionTitle({
   return (
     <div className="mb-6 flex items-start gap-5">
       {Icon ? (
-        <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-[22px] border border-[#f7d237]/20 bg-[#f7d237]/8 text-[#f7d237] shadow-[0_0_0_1px_rgba(247,210,55,0.03),0_10px_30px_rgba(247,210,55,0.08)]">
+        <div className="mt-1 flex h-12 w-12 items-center justify-center rounded-[22px] border border-[#f7d237]/20 bg-[#f7d237]/8 text-[#f7d237] shadow-[0_10px_30px_rgba(247,210,55,0.08)]">
           <Icon className="h-5 w-5" />
         </div>
       ) : null}
@@ -938,7 +937,7 @@ function ControlMetricCard({ metric }: { metric: ControlMetric }) {
         />
       </div>
       <div className="mt-3 text-sm text-[#cbd3ea]">
-        Direction: {metric.direction === "up" ? "increase" : "decrease"}
+        Направление: {metric.direction === "up" ? "рост" : "снижение"}
       </div>
     </GlassCard>
   );
@@ -965,102 +964,129 @@ function AlertRuleCard({ item }: { item: AlertRule }) {
   );
 }
 
-function ChapterMenu({
+function ChapterCarousel({
   active,
   onChange,
 }: {
   active: ChapterKey;
   onChange: (value: ChapterKey) => void;
 }) {
-  return (
-    <div className="grid gap-4 lg:sticky lg:top-6">
-      {CHAPTER_TABS.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = active === tab.key;
+  const trackRef = useRef<HTMLDivElement | null>(null);
 
-        return (
-          <button
-            key={tab.key}
-            type="button"
-            onClick={() => onChange(tab.key)}
-            className={cn(
-              "group w-full text-left transition",
-              isActive ? "scale-[1.01]" : "hover:translate-x-[2px]",
-            )}
-          >
-            <div
-              className={cn(
-                "overflow-hidden rounded-[30px] border p-5 shadow-[0_14px_40px_rgba(0,0,0,0.2)] transition",
-                isActive
-                  ? "border-[#f7d237]/55 bg-[linear-gradient(180deg,#f7d237_0%,#efcb34_100%)] text-[#0b1d3a]"
-                  : "border-white/10 bg-[linear-gradient(180deg,rgba(70,104,186,0.9)_0%,rgba(42,74,148,0.9)_100%)] text-white",
-              )}
+  const scrollTrack = (direction: "left" | "right") => {
+    if (!trackRef.current) return;
+    trackRef.current.scrollBy({
+      left: direction === "left" ? -360 : 360,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <div className="mb-10">
+      <div className="mb-4 flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={() => scrollTrack("left")}
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+          aria-label="Назад"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          onClick={() => scrollTrack("right")}
+          className="flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
+          aria-label="Вперед"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
+      </div>
+
+      <div
+        ref={trackRef}
+        className="flex snap-x snap-mandatory gap-6 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {CHAPTER_TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = active === tab.key;
+
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => onChange(tab.key)}
+              className="min-w-[320px] max-w-[320px] flex-shrink-0 snap-start text-left"
             >
-              <div className="flex items-start gap-4">
+              <div
+                className={cn(
+                  "h-full rounded-[34px] border p-8 transition",
+                  isActive
+                    ? "border-[#f7d237]/55 bg-[linear-gradient(180deg,#f7d237_0%,#efcb34_100%)] text-[#0b1d3a] shadow-[0_18px_50px_rgba(247,210,55,0.22)]"
+                    : "border-white/10 bg-[linear-gradient(180deg,rgba(70,104,186,0.88)_0%,rgba(42,74,148,0.88)_100%)] text-white shadow-[0_18px_50px_rgba(0,0,0,0.18)]",
+                )}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div
+                    className={cn(
+                      "flex h-20 w-20 items-center justify-center rounded-[24px] border",
+                      isActive
+                        ? "border-[#0b1d3a]/12 bg-white/20 text-[#0b1d3a]"
+                        : "border-white/10 bg-white/8 text-[#f7d237]",
+                    )}
+                  >
+                    <Icon className="h-8 w-8" />
+                  </div>
+
+                  <ChevronRight
+                    className={cn(
+                      "mt-1 h-8 w-8 shrink-0",
+                      isActive ? "text-[#0b1d3a]" : "text-white/70",
+                    )}
+                  />
+                </div>
+
                 <div
                   className={cn(
-                    "flex h-12 w-12 shrink-0 items-center justify-center rounded-[18px] border",
-                    isActive
-                      ? "border-[#0b1d3a]/10 bg-white/20 text-[#0b1d3a]"
-                      : "border-white/10 bg-white/8 text-[#f7d237]",
+                    "mt-6 text-[11px] uppercase tracking-[0.3em]",
+                    isActive ? "text-[#0b1d3a]/70" : "text-[#c6d0ea]",
                   )}
                 >
-                  <Icon className="h-5 w-5" />
+                  {tab.eyebrow}
                 </div>
 
-                <div className="min-w-0 flex-1">
-                  <div
-                    className={cn(
-                      "text-[11px] uppercase tracking-[0.26em]",
-                      isActive ? "text-[#0b1d3a]/70" : "text-[#c6d0ea]",
-                    )}
-                  >
-                    {tab.eyebrow}
-                  </div>
-
-                  <div className="mt-2 text-xl font-medium leading-7">
-                    {tab.label}
-                  </div>
-
-                  <div
-                    className={cn(
-                      "mt-3 text-sm leading-6",
-                      isActive ? "text-[#0b1d3a]/85" : "text-[#dbe3f8]",
-                    )}
-                  >
-                    {tab.summary}
-                  </div>
-
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {tab.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={cn(
-                          "rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.16em]",
-                          isActive
-                            ? "border-[#0b1d3a]/12 bg-white/25 text-[#0b1d3a]/85"
-                            : "border-white/10 bg-white/6 text-[#d7e0f5]",
-                        )}
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
+                <div className="mt-3 text-[28px] font-medium leading-[1.25]">
+                  {tab.label}
                 </div>
 
-                <ChevronRight
+                <div
                   className={cn(
-                    "mt-1 h-5 w-5 shrink-0 transition",
-                    isActive
-                      ? "text-[#0b1d3a]"
-                      : "text-white/70 group-hover:translate-x-0.5",
+                    "mt-8 text-[18px] leading-8",
+                    isActive ? "text-[#0b1d3a]/85" : "text-[#dbe3f8]",
                   )}
-                />
+                >
+                  {tab.summary}
+                </div>
+
+                <div className="mt-8 flex flex-wrap gap-3">
+                  {tab.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className={cn(
+                        "rounded-full border px-5 py-2 text-[11px] uppercase tracking-[0.18em]",
+                        isActive
+                          ? "border-[#0b1d3a]/12 bg-white/20 text-[#0b1d3a]/85"
+                          : "border-white/10 bg-white/6 text-[#d7e0f5]",
+                      )}
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
-            </div>
-          </button>
-        );
-      })}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -1077,8 +1103,8 @@ export default function RevenueSnapshotResultsPage() {
 
   const pieData = useMemo(
     () => [
-      { name: "Current", value: 100 - scenarioData.lossReduction },
-      { name: "Recovered", value: scenarioData.lossReduction },
+      { name: "Текущая зона", value: 100 - scenarioData.lossReduction },
+      { name: "Возвращено", value: scenarioData.lossReduction },
     ],
     [scenarioData],
   );
@@ -1086,7 +1112,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderEconomics = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="Economics"
+        eyebrow="ECONOMICS"
         title="Unit economics and loss map"
         description="Сухие показатели, расчетные значения и зона прямых потерь."
         icon={Wallet}
@@ -1095,7 +1121,7 @@ export default function RevenueSnapshotResultsPage() {
       <div className="grid gap-4 lg:grid-cols-3">
         <GlassCard className="p-5 lg:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Базовые метрики
+            БАЗОВЫЕ МЕТРИКИ
           </div>
           <div className="mt-4 space-y-3">
             {data.economics.baseKpis.map((item) => (
@@ -1112,7 +1138,7 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-5 lg:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Расчетные метрики
+            РАСЧЕТНЫЕ МЕТРИКИ
           </div>
           <div className="mt-4 space-y-3">
             {data.economics.calculatedKpis.map((item) => (
@@ -1129,7 +1155,7 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-5 lg:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Метрики потерь
+            МЕТРИКИ ПОТЕРЬ
           </div>
           <div className="mt-4 space-y-3">
             {data.economics.losses.map((item) => (
@@ -1145,66 +1171,82 @@ export default function RevenueSnapshotResultsPage() {
         </GlassCard>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-3">
-        <GlassCard className="p-5 xl:col-span-1">
-          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Структура выручки
-          </div>
-          <div className="h-[280px] w-full">
-            <ResponsiveContainer>
-              <BarChart data={data.economics.revenueWaterfall}>
-                <CartesianGrid
-                  stroke="rgba(255,255,255,0.08)"
-                  vertical={false}
-                />
-                <XAxis dataKey="name" stroke="#9aa7c8" fontSize={12} />
-                <YAxis stroke="#9aa7c8" fontSize={12} />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                <Bar
-                  dataKey="value"
-                  radius={[10, 10, 0, 0]}
-                  fill="rgba(247,210,55,0.9)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
+      <div className="grid gap-4 xl:grid-cols-[1fr_1fr_1.15fr]">
+        <div className="grid gap-4">
+          <GlassCard className="p-5">
+            <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
+              СТРУКТУРА ВЫРУЧКИ
+            </div>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer>
+                <BarChart
+                  data={data.economics.revenueWaterfall}
+                  layout="vertical"
+                  margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid
+                    stroke="rgba(255,255,255,0.08)"
+                    horizontal={false}
+                  />
+                  <XAxis type="number" stroke="#9aa7c8" fontSize={12} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    stroke="#9aa7c8"
+                    fontSize={12}
+                    width={130}
+                  />
+                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                  <Bar
+                    dataKey="value"
+                    radius={[0, 10, 10, 0]}
+                    fill="rgba(247,210,55,0.9)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
+
+          <GlassCard className="p-5">
+            <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
+              СПРОС VS МОЩНОСТЬ
+            </div>
+            <div className="h-[280px] w-full">
+              <ResponsiveContainer>
+                <BarChart
+                  data={data.economics.demandCapacity}
+                  layout="vertical"
+                  margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+                >
+                  <CartesianGrid
+                    stroke="rgba(255,255,255,0.08)"
+                    horizontal={false}
+                  />
+                  <XAxis type="number" stroke="#9aa7c8" fontSize={12} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    stroke="#9aa7c8"
+                    fontSize={12}
+                    width={120}
+                  />
+                  <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                  <Bar
+                    dataKey="value"
+                    radius={[0, 10, 10, 0]}
+                    fill="rgba(255,255,255,0.85)"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </GlassCard>
+        </div>
 
         <GlassCard className="p-5 xl:col-span-1">
           <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Спрос vs мощность
+            ВОРОНКА
           </div>
-          <div className="h-[280px] w-full">
-            <ResponsiveContainer>
-              <BarChart data={data.economics.demandCapacity} layout="vertical">
-                <CartesianGrid
-                  stroke="rgba(255,255,255,0.08)"
-                  horizontal={false}
-                />
-                <XAxis type="number" stroke="#9aa7c8" fontSize={12} />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  stroke="#9aa7c8"
-                  fontSize={12}
-                  width={80}
-                />
-                <Tooltip cursor={{ fill: "rgba(255,255,255,0.04)" }} />
-                <Bar
-                  dataKey="value"
-                  radius={[0, 10, 10, 0]}
-                  fill="rgba(255,255,255,0.85)"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </GlassCard>
-
-        <GlassCard className="p-5 xl:col-span-1">
-          <div className="mb-4 text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Воронка
-          </div>
-          <div className="h-[280px] w-full">
+          <div className="h-[584px] w-full">
             <ResponsiveContainer>
               <FunnelChart>
                 <Tooltip />
@@ -1227,7 +1269,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderInterpretation = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="Interpretation"
+        eyebrow="INTERPRETATION"
         title="Разбор ответов по блокам"
         description="Не пересказ, а выделение сигнала, причин и ограничений по каждому блоку."
         icon={Layers3}
@@ -1243,7 +1285,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderStrategy = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="Strategy"
+        eyebrow="STRATEGY"
         title="Стратегия и система рычагов"
         description="Сценарий, механика рычага, карта поддерживающих рычагов и логика системных изменений."
         icon={Target}
@@ -1258,9 +1300,9 @@ export default function RevenueSnapshotResultsPage() {
             {data.strategy.scenario.type}
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <InfoRow title="Why this scenario" text={data.strategy.scenario.why} />
-            <InfoRow title="Market limits" text={data.strategy.scenario.marketLimits} />
-            <InfoRow title="Not now" text={data.strategy.scenario.notNow} highlight />
+            <InfoRow title="Почему этот сценарий" text={data.strategy.scenario.why} />
+            <InfoRow title="Ограничения рынка" text={data.strategy.scenario.marketLimits} />
+            <InfoRow title="Не сейчас" text={data.strategy.scenario.notNow} highlight />
           </div>
         </GlassCard>
 
@@ -1323,16 +1365,16 @@ export default function RevenueSnapshotResultsPage() {
       <div className="grid gap-4 xl:grid-cols-3">
         <GlassCard className="p-6 xl:col-span-2">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Implementation logic
+            Логика внедрения
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
-            <InfoRow title="What changes" text={data.strategy.implementationLogic.change} />
+            <InfoRow title="Что меняется" text={data.strategy.implementationLogic.change} />
             <InfoRow
-              title="Application point"
+              title="Точка приложения"
               text={data.strategy.implementationLogic.applicationPoint}
             />
             <InfoRow
-              title="Must appear in system"
+              title="Что должно появиться в системе"
               text={data.strategy.implementationLogic.systemMustAppear}
               highlight
             />
@@ -1370,7 +1412,7 @@ export default function RevenueSnapshotResultsPage() {
       <div className="grid gap-4 xl:grid-cols-3">
         <GlassCard className="p-6 xl:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Dependencies
+            Зависимости
           </div>
           <div className="mt-4 h-[300px] w-full">
             <ResponsiveContainer>
@@ -1405,12 +1447,12 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-6 xl:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Risks
+            Риски
           </div>
           <div className="mt-4 space-y-4">
-            <InfoRow title="Main risk" text={data.strategy.risks.mainRisk} />
+            <InfoRow title="Главный риск" text={data.strategy.risks.mainRisk} />
             <InfoRow
-              title="Fail condition"
+              title="Условие сбоя"
               text={data.strategy.risks.failCondition}
               highlight
             />
@@ -1419,12 +1461,12 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-6 xl:col-span-1">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Expected economic shift
+            Ожидаемый экономический сдвиг
           </div>
           <div className="mt-4 space-y-4">
-            <InfoRow title="Decreases" text={data.strategy.expectedShift.decreases} />
-            <InfoRow title="Grows" text={data.strategy.expectedShift.grows} />
-            <InfoRow title="Key metric" text={data.strategy.expectedShift.keyMetric} highlight />
+            <InfoRow title="Снижается" text={data.strategy.expectedShift.decreases} />
+            <InfoRow title="Растет" text={data.strategy.expectedShift.grows} />
+            <InfoRow title="Ключевая метрика" text={data.strategy.expectedShift.keyMetric} highlight />
           </div>
         </GlassCard>
       </div>
@@ -1432,20 +1474,20 @@ export default function RevenueSnapshotResultsPage() {
       <div className="grid gap-4 xl:grid-cols-2">
         <GlassCard className="p-6">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Strategic priority
+            Стратегический приоритет
           </div>
           <div className="mt-4 grid gap-4 md:grid-cols-3">
             <PriorityColumn
-              title="Primary"
+              title="Основное"
               items={[data.strategy.strategicPriority.primary]}
               accent
             />
             <PriorityColumn
-              title="Secondary"
+              title="Следом"
               items={data.strategy.strategicPriority.secondary}
             />
             <PriorityColumn
-              title="Do not do now"
+              title="Не делать сейчас"
               items={data.strategy.strategicPriority.forbiddenNow}
               warning
             />
@@ -1454,7 +1496,7 @@ export default function RevenueSnapshotResultsPage() {
 
         <GlassCard className="p-6">
           <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-            Rejected levers
+            Отклоненные рычаги
           </div>
           <div className="mt-4 space-y-3">
             {data.strategy.rejectedLevers.map((node) => (
@@ -1469,7 +1511,7 @@ export default function RevenueSnapshotResultsPage() {
   const renderManagement = () => (
     <div className="space-y-4">
       <SectionTitle
-        eyebrow="Management"
+        eyebrow="MANAGEMENT"
         title="Control panel and strategy management tools"
         description="Инструменты управления выбранным рычагом: контрольные метрики, сценарии и триггеры отклонения."
         icon={Settings2}
@@ -1480,7 +1522,7 @@ export default function RevenueSnapshotResultsPage() {
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <div className="text-xs uppercase tracking-[0.18em] text-[#8f9abb]">
-                Scenario switcher
+                Переключатель сценария
               </div>
               <div className="mt-2 text-2xl font-semibold">{scenario}</div>
             </div>
@@ -1506,10 +1548,10 @@ export default function RevenueSnapshotResultsPage() {
           </div>
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
-            <ScenarioMetric title="Revenue" value={scenarioData.revenue} prefix="€" />
-            <ScenarioMetric title="Profit" value={scenarioData.profit} prefix="€" />
+            <ScenarioMetric title="Выручка" value={scenarioData.revenue} prefix="€" />
+            <ScenarioMetric title="Прибыль" value={scenarioData.profit} prefix="€" />
             <ScenarioMetric
-              title="Loss Reduction"
+              title="Снижение потерь"
               value={scenarioData.lossReduction}
               suffix="%"
             />
@@ -1518,27 +1560,27 @@ export default function RevenueSnapshotResultsPage() {
           <div className="mt-6 grid gap-4 xl:grid-cols-2">
             <div className="h-[260px] w-full">
               <ResponsiveContainer>
-                <AreaChart data={data.economics.economicsShift}>
+                <BarChart
+                  data={data.economics.economicsShift}
+                  layout="vertical"
+                  margin={{ top: 10, right: 20, left: 20, bottom: 10 }}
+                >
                   <CartesianGrid
                     stroke="rgba(255,255,255,0.08)"
-                    vertical={false}
+                    horizontal={false}
                   />
-                  <XAxis dataKey="name" stroke="#9aa7c8" fontSize={12} />
-                  <YAxis stroke="#9aa7c8" fontSize={12} />
+                  <XAxis type="number" stroke="#9aa7c8" fontSize={12} />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    stroke="#9aa7c8"
+                    fontSize={12}
+                    width={90}
+                  />
                   <Tooltip />
-                  <Area
-                    type="monotone"
-                    dataKey="before"
-                    stroke="rgba(255,255,255,0.9)"
-                    fill="rgba(255,255,255,0.12)"
-                  />
-                  <Area
-                    type="monotone"
-                    dataKey="after"
-                    stroke="rgba(247,210,55,0.95)"
-                    fill="rgba(247,210,55,0.22)"
-                  />
-                </AreaChart>
+                  <Bar dataKey="before" fill="rgba(255,255,255,0.24)" radius={[0, 10, 10, 0]} />
+                  <Bar dataKey="after" fill="rgba(247,210,55,0.92)" radius={[0, 10, 10, 0]} />
+                </BarChart>
               </ResponsiveContainer>
             </div>
             <div className="h-[260px] w-full">
@@ -1577,10 +1619,10 @@ export default function RevenueSnapshotResultsPage() {
   );
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#0b1d3a] text-white">
+    <main className="min-h-screen overflow-x-hidden bg-[#071b43] text-white">
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(87,118,187,0.22),transparent_32%),linear-gradient(180deg,rgba(4,16,38,0)_0%,rgba(4,16,38,0.12)_100%)]" />
-        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(rgba(255,255,255,0.8)_0.6px,transparent_0.6px)] [background-size:12px_12px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(92,124,194,0.18),transparent_28%),radial-gradient(circle_at_20%_0%,rgba(255,255,255,0.05),transparent_22%),linear-gradient(180deg,rgba(4,16,38,0)_0%,rgba(4,16,38,0.18)_100%)]" />
+        <div className="absolute inset-0 opacity-[0.06] [background-image:radial-gradient(rgba(255,255,255,0.75)_0.7px,transparent_0.7px)] [background-size:18px_18px]" />
         <div className="absolute -top-24 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-white/5 blur-3xl" />
         <div className="absolute right-[-8rem] top-[10rem] h-[22rem] w-[22rem] rounded-full bg-[#f7d237]/10 blur-3xl" />
         <div className="absolute bottom-[-6rem] left-[-6rem] h-[20rem] w-[20rem] rounded-full bg-[#3f63bd]/12 blur-3xl" />
@@ -1685,15 +1727,13 @@ export default function RevenueSnapshotResultsPage() {
         </section>
 
         <section className="mb-14">
-          <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-            <ChapterMenu active={activeChapter} onChange={setActiveChapter} />
+          <ChapterCarousel active={activeChapter} onChange={setActiveChapter} />
 
-            <div className="min-w-0">
-              {activeChapter === "economics" && renderEconomics()}
-              {activeChapter === "interpretation" && renderInterpretation()}
-              {activeChapter === "strategy" && renderStrategy()}
-              {activeChapter === "management" && renderManagement()}
-            </div>
+          <div className="min-w-0">
+            {activeChapter === "economics" && renderEconomics()}
+            {activeChapter === "interpretation" && renderInterpretation()}
+            {activeChapter === "strategy" && renderStrategy()}
+            {activeChapter === "management" && renderManagement()}
           </div>
         </section>
 
