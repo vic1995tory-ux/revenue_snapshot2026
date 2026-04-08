@@ -7,7 +7,7 @@ export default function SnapshotTestPage() {
   const [response, setResponse] = useState(null);
 
   const payload = {
-    type: "submit_snapshot_answers",
+    action: "submit_snapshot_answers",
     source: "test_page",
 
     meta: {
