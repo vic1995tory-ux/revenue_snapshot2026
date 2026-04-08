@@ -97,7 +97,7 @@ const BRAND = {
 };
 
 const SNAPSHOT_WEBHOOK_URL =
-  "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
+  "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
 
 const FINAL_BODY_DIVIDER =
   "==================== SNAPSHOT FINAL ANSWERS ====================";
@@ -3165,27 +3165,44 @@ export default function DiagnosticIntakePage() {
       setDraftError("");
 
       await postWebhook({
-        action: "save_draft",
-        source: "snapshot-action",
-        access_token: accessToken,
-        launch_attempt_id: launchAttemptId,
-        mode,
-        draft: true,
-        draft_checkbox: true,
-        draft_step: currentDraftStep,
-        draft_updated_at: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        progress: {
-          total,
-          totalQuestions,
-          sectionProgress,
-        },
-        answers: preparedAnswers,
-        answers_raw: answers,
-        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-        draft_payload: draftJsonPayload,
-      });
+  action: "save_draft",
+  source: "snapshot-action",
+  access_token: accessToken,
+  launch_attempt_id: launchAttemptId,
+  mode,
+  draft: true,
+  draft_checkbox: true,
+  draft_step: currentDraftStep,
+  draft_updated_at: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
+  progress: {
+    total,
+    totalQuestions,
+    sectionProgress,
+  },
+  answers: preparedAnswers,
+  answers_raw: answers,
+  notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+  draft_payload: draftJsonPayload,
 
+  snapshot_file: {
+    type: "snapshot_draft",
+    source: "snapshot-action",
+    access_token: accessToken,
+    launch_attempt_id: launchAttemptId,
+    mode,
+    draft_step: currentDraftStep,
+    draft_updated_at: new Date().toISOString(),
+    progress: {
+      total,
+      totalQuestions,
+      sectionProgress,
+    },
+    answers_prepared: preparedAnswers,
+    answers_raw: answers,
+    body_json: draftJsonPayload,
+  },
+});
       setLastDraftSavedAt(new Date().toISOString());
     } catch (error) {
       setDraftError(
@@ -3222,27 +3239,45 @@ export default function DiagnosticIntakePage() {
 
   useEffect(() => {
     function buildExitPayload() {
-      return {
-        action: "save_draft",
-        source: "snapshot-action",
-        access_token: accessToken,
-        launch_attempt_id: launchAttemptId,
-        mode,
-        draft: true,
-        draft_checkbox: true,
-        draft_step: currentDraftStep,
-        draft_updated_at: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        progress: {
-          total,
-          totalQuestions,
-          sectionProgress,
-        },
-        answers: preparedAnswers,
-        answers_raw: answers,
-        notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-        draft_payload: draftJsonPayload,
-      };
+return {
+  action: "save_draft",
+  source: "snapshot-action",
+  access_token: accessToken,
+  launch_attempt_id: launchAttemptId,
+  mode,
+  draft: true,
+  draft_checkbox: true,
+  draft_step: currentDraftStep,
+  draft_updated_at: new Date().toISOString(),
+  createdAt: new Date().toISOString(),
+  progress: {
+    total,
+    totalQuestions,
+    sectionProgress,
+  },
+  answers: preparedAnswers,
+  answers_raw: answers,
+  notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
+  draft_payload: draftJsonPayload,
+
+  snapshot_file: {
+    type: "snapshot_draft",
+    source: "snapshot-action",
+    access_token: accessToken,
+    launch_attempt_id: launchAttemptId,
+    mode,
+    draft_step: currentDraftStep,
+    draft_updated_at: new Date().toISOString(),
+    progress: {
+      total,
+      totalQuestions,
+      sectionProgress,
+    },
+    answers_prepared: preparedAnswers,
+    answers_raw: answers,
+    body_json: draftJsonPayload,
+  },
+};
     }
 
     function sendDraftBeacon() {
@@ -3298,27 +3333,47 @@ export default function DiagnosticIntakePage() {
       const finalAnswers = buildPreparedAnswers(answers);
       const finalBodyText = buildFinalBodyText(finalAnswers);
 
-      await postWebhook({
-        action: "submit_snapshot_answers",
-        source: "snapshot-action",
-        access_token: accessToken,
-        launch_attempt_id: launchAttemptId,
-        mode,
-        draft: false,
-        draft_checkbox: false,
-        draft_step: null,
-        draft_updated_at: null,
-        createdAt: new Date().toISOString(),
-        progress: {
-          total,
-          totalQuestions,
-          sectionProgress,
-        },
-        answers: finalAnswers,
-        answers_raw: answers,
-        notion_body_text: finalBodyText,
-        final_body_divider: FINAL_BODY_DIVIDER,
-      });
+   await postWebhook({
+  action: "submit_snapshot_answers",
+  source: "snapshot-action",
+  access_token: accessToken,
+  launch_attempt_id: launchAttemptId,
+  mode,
+  draft: false,
+  draft_checkbox: false,
+  draft_step: null,
+  draft_updated_at: null,
+  createdAt: new Date().toISOString(),
+  progress: {
+    total,
+    totalQuestions,
+    sectionProgress,
+  },
+
+  // можно оставить для удобства
+  answers: finalAnswers,
+  answers_raw: answers,
+  notion_body_text: finalBodyText,
+  final_body_divider: FINAL_BODY_DIVIDER,
+
+  // главное единое поле
+  snapshot_file: {
+    type: "snapshot_final",
+    source: "snapshot-action",
+    access_token: accessToken,
+    launch_attempt_id: launchAttemptId,
+    mode,
+    created_at: new Date().toISOString(),
+    progress: {
+      total,
+      totalQuestions,
+      sectionProgress,
+    },
+    answers_prepared: finalAnswers,
+    answers_raw: answers,
+    body_text: finalBodyText,
+  },
+});
 
       try {
         await postWebhook({
