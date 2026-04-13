@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const MAKE_RESULTS_WEBHOOK_URL =
   process.env.MAKE_RESULTS_WEBHOOK_URL ||
   "https://hook.us2.make.com/0uyhpfhytn08yvtlwwl61jv345h7ckp9";
@@ -12,10 +14,7 @@ export async function GET(
     const { token } = await params;
 
     if (!token) {
-      return NextResponse.json(
-        { error: "Missing token" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Missing token" }, { status: 400 });
     }
 
     const response = await fetch(MAKE_RESULTS_WEBHOOK_URL, {
@@ -40,8 +39,6 @@ export async function GET(
 
     const raw = await response.json();
 
-    // На случай если Make вернет либо payload напрямую,
-    // либо завернет его в results_payload_json
     const payload =
       raw?.results_payload_json && typeof raw.results_payload_json === "object"
         ? raw.results_payload_json
