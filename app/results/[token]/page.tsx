@@ -75,7 +75,7 @@ type InputNormalization = {
 type MetricRow = {
   metric: string;
   formula: string;
-  value: number | string;
+  value: number | string | null;
   unit: string;
   confidence_level: ConfidenceLevel;
   interpretation: string;
@@ -1171,9 +1171,7 @@ const THEME_CARDS: ThemeCard[] = [
     title: "Positioning",
     subtitle: "Market fit, segment, value framing",
   },
-  {
-    id: "clients_flow",
-{
+ {
   id: "clients_flow",
   blockNumber: "BLOCK 4",
   title: "Clients & Flow",
@@ -1241,17 +1239,24 @@ function formatPercent(value: number, digits = 0) {
 }
 
 function formatByUnit(
-  value: number | string,
+  value: number | string | null,
   unit?: string,
   currency?: string
 ): string {
+  if (value === null || value === undefined) return "—";
   if (typeof value === "string") return value;
   if (currency) return formatCurrency(value, currency);
   if (unit === "percent") return formatPercent(value, value % 1 === 0 ? 0 : 2);
+  if (unit === "share") return formatPercent(value * 100, 1);
   if (unit === "USD") return formatCurrency(value, "USD");
   if (unit === "x") return `${formatNumber(value, 2)}x`;
   if (unit === "п.п.") return `${formatNumber(value, 0)} п.п.`;
-  if (unit === "обращений" || unit === "дней" || unit === "лида") {
+  if (
+    unit === "обращений" ||
+    unit === "дней" ||
+    unit === "лида" ||
+    unit === "лидов"
+  ) {
     return `${formatNumber(value)} ${unit}`;
   }
   if (unit === "часа") return `${formatNumber(value, 2)} часа`;
@@ -2561,7 +2566,7 @@ const isClientsFlowOpen = activeBlock === "clients_flow";
           </button>
         </div>
 
-  <section className="grid gap-6 xl:grid-cols-2">
+<section className="grid gap-6 xl:grid-cols-2">
   {THEME_CARDS.map((card) => {
     if (card.id === "positioning") {
       return (
@@ -2597,19 +2602,6 @@ const isClientsFlowOpen = activeBlock === "clients_flow";
     );
   })}
 </section>
-
-            return (
-              <ThemeResultsCard
-                key={card.id}
-                card={card}
-                economics={ECONOMICS_MOCK}
-                onOpen={(id) => {
-                  if (id === "economics") setActiveBlock(id);
-                }}
-              />
-            );
-          })}
-        </section>
       </main>
 
       <div
