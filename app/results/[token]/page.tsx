@@ -31,7 +31,7 @@ type ConfidenceUiSystem = {
 };
 
 type NormalizedField = {
-  value: number | string;
+  value: number | string | null;
   unit?: string;
   currency?: string;
   confidence_level?: ConfidenceLevel;
@@ -125,45 +125,45 @@ type EconomicsPayload = {
 
 type PositioningRisk = {
   risk: string;
-  confidence: "high" | "medium" | "preliminary";
+  confidence: ConfidenceLevel;
 };
 
 type PositioningPayload = {
   business_model: {
     type: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
     reason: string;
   };
   business_stage: {
     stage: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
     reason: string;
   };
   core_offer: {
     value: string;
     client_pays_for: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
     reason: string;
   };
   target_client: {
     segment: string;
     logic: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
   };
   positioning_type: {
     type: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
     reason: string;
   };
   market_scope: {
     scope: string;
     note: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
   };
   delivery_model: {
     type: string;
     founder_dependency: string;
-    confidence: "high" | "medium" | "preliminary";
+    confidence: ConfidenceLevel;
     reason: string;
   };
   risks: PositioningRisk[];
@@ -748,7 +748,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
       },
     },
   },
-
   input_normalization: {
     target_segment: {
       value: "Стартапы уровня seed в SaaS, B2B и B2C; продажи в ЕС и СНГ",
@@ -818,7 +817,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
     data_quality_note:
       "Данные по входящему потоку и каналам заданы явно, но статистическая база очень мала: за прошлый месяц указан 1 клиент, бизнесу около полугода, числовых спадов сезонности нет, период сопоставимости продаж и лидов не полностью подтвержден.",
   },
-
   visual_blocks: {
     seasonality_revenue_percent_chart: {
       chart_type: "bar_line_combo",
@@ -829,7 +827,18 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
         confidence_level: "high",
       },
       anchor_month_status: "unknown",
-      x_axis: ["Мар", "Апр", "Сен", "Окт", "M+1", "M+2", "M+3", "M+4", "M+5", "M+6"],
+      x_axis: [
+        "Мар",
+        "Апр",
+        "Сен",
+        "Окт",
+        "M+1",
+        "M+2",
+        "M+3",
+        "M+4",
+        "M+5",
+        "M+6",
+      ],
       historical_bars_series: {
         name: "Revenue_historical",
         unit: "USD",
@@ -858,7 +867,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
       note:
         "График Revenue — это не история, а сценарная модель от одного известного cash-in 1900 USD. Базовый месяц не привязан надежно к пику, спаду или нейтральному периоду, поэтому прогноз ориентировочный.",
     },
-
     mini_journey_map: {
       title: "Mini Journey Map до оплаты",
       stages: [
@@ -900,7 +908,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
       ],
     },
   },
-
   forecast_model: {
     horizon_months: 6,
     baseline_value: 1900,
@@ -957,7 +964,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
     note:
       "Это ориентир по направлению, а не прогноз-факт. Базовый месяц неизвестно относится ли к пику, спаду или нейтральному спросу; исторический ряд выручки по месяцам отсутствует.",
   },
-
   exact_metrics_table: {
     columns: [
       "metric",
@@ -1042,7 +1048,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
       },
     ],
   },
-
   inferred_metrics_table: {
     columns: [
       "metric",
@@ -1110,7 +1115,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
       },
     ],
   },
-
   contradictions: {
     contradiction_flag: true,
     contradiction_items: [
@@ -1122,7 +1126,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
     impact_on_analysis:
       "Выводы по потоку надёжны в части перегруза capacity и структуры каналов, но слабее в части качества лидов, сезонной амплитуды и истинной конверсии. Поэтому выводы о масштабировании и сезонной модели нужно читать как вероятностные, а не как статистически устойчивые.",
   },
-
   flow_interpretation: {
     current_flow_state: {
       key_value: "Спрос выше capacity, но поток статистически хрупкий",
@@ -1146,7 +1149,6 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
     capacity_vs_demand_takeaway:
       "Сейчас бизнес ограничен не только генерацией спроса, а в первую очередь способностью качественно обработать уже приходящие обращения. При этом субъективное ощущение нехватки стабильного потока может частично объясняться тем, что номинальный поток не равен стабильному потоку качественных сделок.",
   },
-
   missing_for_stronger_model: [
     "Помесячная история лидов и продаж минимум за 6–12 месяцев",
     "Сопоставимая конверсия лид → клиент за один и тот же период",
@@ -1171,12 +1173,12 @@ const THEME_CARDS: ThemeCard[] = [
     title: "Positioning",
     subtitle: "Market fit, segment, value framing",
   },
- {
-  id: "clients_flow",
-  blockNumber: "BLOCK 4",
-  title: "Clients & Flow",
-  subtitle: "Demand, channels, conversion path",
-},
+  {
+    id: "clients_flow",
+    blockNumber: "BLOCK 4",
+    title: "Clients & Flow",
+    subtitle: "Demand, channels, conversion path",
+  },
   {
     id: "product_sales",
     blockNumber: "BLOCK 5",
@@ -1418,531 +1420,6 @@ function HeroMetric({
   );
 }
 
-function ThemeResultsCard({
-  card,
-  economics,
-  onOpen,
-}: {
-  card: ThemeCard;
-  economics: EconomicsPayload;
-  onOpen: (id: ThemeBlockId) => void;
-}) {
-  const isEconomics = card.id === "economics";
-  const missingPreview = economics.missing_for_stronger_model.slice(0, 3);
-
-  return (
-    <GlassCard className="min-h-[380px] p-7 md:p-8">
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
-          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
-            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-          {card.blockNumber}
-        </div>
-        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
-          {card.title}
-        </h3>
-        <p className="mt-5 text-[24px] leading-8 text-white/60">
-          {card.subtitle}
-        </p>
-      </div>
-
-      <div className="mt-8 space-y-4">
-        {isEconomics ? (
-          <>
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                missing_for_stronger_model
-              </div>
-              <div className="mt-3 space-y-2">
-                {missingPreview.map((item, index) => (
-                  <div
-                    key={item}
-                    className="flex gap-3 text-sm leading-6 text-white/74"
-                  >
-                    <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
-                      {index + 1}
-                    </span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
-                confidence_note
-              </div>
-              <p className="mt-3 text-sm leading-6 text-white/78">
-                {economics.confidence_note}
-              </p>
-            </div>
-          </>
-        ) : (
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-              {card.previewTitle}
-            </div>
-            <p className="mt-3 text-sm leading-6 text-white/68">
-              {card.previewText}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => onOpen(card.id)}
-        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
-      >
-        <span className="text-[18px] text-white/72">
-          {isEconomics ? "Открыть блок" : "Открыть позже"}
-        </span>
-        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
-          <span aria-hidden>→</span>
-        </span>
-      </button>
-    </GlassCard>
-  );
-}
-
-function PositioningResultsCard({
-  card,
-  data,
-  onOpen,
-}: {
-  card: ThemeCard;
-  data: PositioningPayload;
-  onOpen: () => void;
-}) {
-  return (
-    <GlassCard className="min-h-[380px] p-7 md:p-8">
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
-          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
-            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-          {card.blockNumber}
-        </div>
-        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
-          {card.title}
-        </h3>
-        <p className="mt-5 text-[24px] leading-8 text-white/60">
-          {card.subtitle}
-        </p>
-      </div>
-
-      <div className="mt-8">
-        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
-            confidence_summary
-          </div>
-          <p className="mt-3 text-sm leading-7 text-white/78">
-            {data.confidence_summary}
-          </p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
-      >
-        <span className="text-[18px] text-white/72">Открыть блок</span>
-        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
-          <span aria-hidden>→</span>
-        </span>
-      </button>
-    </GlassCard>
-  );
-}
-function ClientsFlowResultsCard({
-  card,
-  data,
-  onOpen,
-}: {
-  card: ThemeCard;
-  data: ClientsFlowPayload;
-  onOpen: () => void;
-}) {
-  const missingPreview = data.missing_for_stronger_model.slice(0, 3);
-
-  return (
-    <GlassCard className="min-h-[380px] p-7 md:p-8">
-      <div className="flex items-start justify-between gap-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
-          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
-            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-          {card.blockNumber}
-        </div>
-        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
-          {card.title}
-        </h3>
-        <p className="mt-5 text-[24px] leading-8 text-white/60">
-          {card.subtitle}
-        </p>
-      </div>
-
-      <div className="mt-8 space-y-4">
-        <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-            missing_for_stronger_model
-          </div>
-          <div className="mt-3 space-y-2">
-            {missingPreview.map((item, index) => (
-              <div
-                key={item}
-                className="flex gap-3 text-sm leading-6 text-white/74"
-              >
-                <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
-                  {index + 1}
-                </span>
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
-          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
-            confidence_note
-          </div>
-          <p className="mt-3 text-sm leading-6 text-white/78">
-            {data.confidence_note}
-          </p>
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={onOpen}
-        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
-      >
-        <span className="text-[18px] text-white/72">Открыть блок</span>
-        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
-          <span aria-hidden>→</span>
-        </span>
-      </button>
-    </GlassCard>
-  );
-}
-
-function PositioningDrawer({
-  data,
-  onClose,
-}: {
-  data: PositioningPayload;
-  onClose: () => void;
-}) {
-  const system = ECONOMICS_MOCK.confidence_ui_system;
-
-  return (
-    <div className="flex h-full flex-col bg-[#081932]">
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-              Block 3
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
-              Positioning
-            </div>
-            <div className="mt-2 text-sm text-white/58">
-              Полный mock-разворот блока positioning. Структура готова под будущий
-              payload.
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="positioning overview"
-            title="Confidence summary"
-            text="Краткое верхнеуровневое чтение positioning-модели и степени подтвержденности выводов."
-          />
-
-          <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
-              confidence_summary
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/80">
-              {data.confidence_summary}
-            </p>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="business model"
-            title={data.business_model.type}
-            text={data.business_model.reason}
-          />
-          <ReliabilityDots level={data.business_model.confidence} system={system} />
-        </section>
-
-        <section className="mb-8 grid gap-4 xl:grid-cols-2">
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              business_stage
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.business_stage.stage}
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/68">
-              {data.business_stage.reason}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.business_stage.confidence} system={system} />
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              positioning_type
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.positioning_type.type}
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/68">
-              {data.positioning_type.reason}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.positioning_type.confidence} system={system} />
-            </div>
-          </div>
-        </section>
-
-        <section className="mb-8 grid gap-4 xl:grid-cols-2">
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              core_offer
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.core_offer.value}
-            </div>
-            <div className="mt-4 rounded-[18px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-[#fff3b2]">
-                client_pays_for
-              </div>
-              <div className="mt-2 text-sm leading-7 text-white/80">
-                {data.core_offer.client_pays_for}
-              </div>
-            </div>
-            <p className="mt-4 text-sm leading-7 text-white/68">
-              {data.core_offer.reason}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.core_offer.confidence} system={system} />
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              target_client
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.target_client.segment}
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/68">
-              {data.target_client.logic}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.target_client.confidence} system={system} />
-            </div>
-          </div>
-        </section>
-
-        <section className="mb-8 grid gap-4 xl:grid-cols-2">
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              market_scope
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.market_scope.scope}
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/68">
-              {data.market_scope.note}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.market_scope.confidence} system={system} />
-            </div>
-          </div>
-
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              delivery_model
-            </div>
-            <div className="mt-3 text-[24px] font-semibold text-white">
-              {data.delivery_model.type}
-            </div>
-            <div className="mt-4 rounded-[18px] border border-white/8 bg-white/[0.04] p-4">
-              <div className="text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
-                founder_dependency
-              </div>
-              <div className="mt-2 text-sm leading-7 text-white/72">
-                {data.delivery_model.founder_dependency}
-              </div>
-            </div>
-            <p className="mt-4 text-sm leading-7 text-white/68">
-              {data.delivery_model.reason}
-            </p>
-            <div className="mt-4">
-              <ReliabilityDots level={data.delivery_model.confidence} system={system} />
-            </div>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="risks"
-            title="Positioning risks"
-            text="Ключевые риски текущего позиционирования."
-          />
-
-          <div className="grid gap-4">
-            {data.risks.map((item, index) => (
-              <div
-                key={`${item.risk}-${index}`}
-                className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="text-[11px] uppercase tracking-[0.22em] text-red-100/85">
-                    risk {index + 1}
-                  </div>
-                  <ReliabilityDots
-                    level={item.confidence}
-                    system={system}
-                    compact
-                  />
-                </div>
-                <p className="mt-3 text-sm leading-7 text-white/78">
-                  {item.risk}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="pb-6">
-          <SectionHead
-            eyebrow="takeaway"
-            title="Positioning takeaway"
-            text="Итоговая интерпретация блока."
-          />
-          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <p className="text-sm leading-7 text-white/72">{data.takeaway}</p>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
-function ClientsFlowDrawer({
-  data,
-  onClose,
-}: {
-  data: ClientsFlowPayload;
-  onClose: () => void;
-}) {
-  return (
-    <div className="flex h-full flex-col bg-[#081932]">
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-              Block 4
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
-              Clients & Flow
-            </div>
-            <div className="mt-2 text-sm text-white/58">
-              В этом mock drawer пока оставлен только базовый слой. Карточка уже
-              готова под реальный payload блока clients_flow.
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="clients flow overview"
-            title="Confidence layer"
-            text="Пока в раскрытии сохранен только верхний слой данных блока clients_flow. Этого достаточно, чтобы не ломать логику drawer до подключения полного payload."
-          />
-
-          <div className="grid gap-4 xl:grid-cols-2">
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                missing_for_stronger_model
-              </div>
-              <div className="mt-4 space-y-3">
-                {data.missing_for_stronger_model.map((item, index) => (
-                  <div
-                    key={`${item}-${index}`}
-                    className="flex gap-3 text-sm leading-7 text-white/72"
-                  >
-                    <span className="mt-[4px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/45">
-                      {index + 1}
-                    </span>
-                    <span>{item}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
-                confidence_note
-              </div>
-              <p className="mt-3 text-sm leading-7 text-white/78">
-                {data.confidence_note}
-              </p>
-            </div>
-          </div>
-        </section>
-      </div>
-    </div>
-  );
-}
-
 function InsightCard({
   title,
   value,
@@ -2077,567 +1554,3 @@ function MetricsTable({
           Table
         </div>
         <div className="mt-2 text-xl font-semibold text-white">{title}</div>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="min-w-[980px] w-full border-collapse">
-          <thead>
-            <tr className="border-b border-white/10 bg-white/[0.03] text-left">
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Metric
-              </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Formula
-              </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Value
-              </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Unit
-              </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Reliability
-              </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
-                Interpretation
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.rows.map((row) => (
-              <tr
-                key={`${title}-${row.metric}`}
-                className="border-b border-white/8 align-top last:border-b-0"
-              >
-                <td className="px-5 py-5 text-sm font-medium text-white">
-                  {row.metric}
-                </td>
-                <td className="px-5 py-5 text-sm text-white/62">
-                  {row.formula}
-                </td>
-                <td className="px-5 py-5 text-sm font-semibold text-white">
-                  {formatByUnit(row.value, row.unit)}
-                </td>
-                <td className="px-5 py-5 text-sm text-white/52">{row.unit}</td>
-                <td className="px-5 py-5 text-sm text-white/62">
-                  <ReliabilityDots
-                    level={row.confidence_level}
-                    system={system}
-                  />
-                </td>
-                <td className="px-5 py-5 text-sm leading-7 text-white/62">
-                  {row.interpretation}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </GlassCard>
-  );
-}
-
-function ContradictionCard({ item }: { item: ContradictionItem }) {
-  return (
-    <div className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-red-100/85">
-        contradiction
-      </div>
-      <div className="mt-3 text-lg font-semibold text-white">{item.issue}</div>
-
-      <div className="mt-4 space-y-3">
-        <div className="rounded-[18px] border border-white/8 bg-white/[0.04] p-4">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
-            what_it_may_mean
-          </div>
-          <div className="mt-2 text-sm leading-7 text-white/70">
-            {item.what_it_may_mean}
-          </div>
-        </div>
-
-        <div className="rounded-[18px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
-          <div className="text-[11px] uppercase tracking-[0.16em] text-[#fff3b2]">
-            usable_part
-          </div>
-          <div className="mt-2 text-sm leading-7 text-white/78">
-            {item.usable_part}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BulletList({
-  title,
-  items,
-}: {
-  title: string;
-  items: string[];
-}) {
-  return (
-    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-        {title}
-      </div>
-      <div className="mt-4 space-y-3">
-        {items.map((item, index) => (
-          <div
-            key={`${title}-${item}`}
-            className="flex gap-3 text-sm leading-7 text-white/72"
-          >
-            <span className="mt-[4px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/45">
-              {index + 1}
-            </span>
-            <span>{item}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function EconomicsDrawer({
-  data,
-  onClose,
-}: {
-  data: EconomicsPayload;
-  onClose: () => void;
-}) {
-  const system = data.confidence_ui_system;
-
-  return (
-    <div className="flex h-full flex-col bg-[#081932]">
-      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-              Block 2
-            </div>
-            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
-              Economics
-            </div>
-            <div className="mt-2 text-sm text-white/58">
-              Полный mock-разворот блока economics. Структура готова под будущий
-              payload.
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
-            aria-label="Закрыть"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="economics overview"
-            title="Executive signal"
-            text="Верхний слой развернутой карточки. Здесь собраны ключевые сигналы, риск масштабирования и reliability-оценка."
-          />
-
-          <div className="grid gap-4 xl:grid-cols-2">
-            <InsightCard
-              title="current_economic_state"
-              value={data.economic_interpretation.current_economic_state.key_value}
-              text={data.economic_interpretation.current_economic_state.comment}
-            />
-            <InsightCard
-              title="main_loss_pattern"
-              value={data.economic_interpretation.main_loss_pattern.key_value}
-              text={data.economic_interpretation.main_loss_pattern.comment}
-            />
-            <InsightCard
-              title="most_important_numeric_signal"
-              value={
-                data.economic_interpretation.most_important_numeric_signal
-                  .key_value
-              }
-              text={data.economic_interpretation.most_important_numeric_signal.comment}
-            />
-            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-                reliability_of_current_margin
-              </div>
-              <div className="mt-4">
-                <ReliabilityDots level="preliminary" system={system} />
-              </div>
-              <p className="mt-4 text-sm leading-7 text-white/68">
-                {data.economic_interpretation.reliability_of_current_margin}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr]">
-            <div className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-red-100/85">
-                scalability_risk
-              </div>
-              <p className="mt-3 text-sm leading-7 text-white/76">
-                {data.economic_interpretation.scalability_risk}
-              </p>
-            </div>
-
-            <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
-              <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
-                confidence_note
-              </div>
-              <p className="mt-3 text-sm leading-7 text-white/78">
-                {data.confidence_note}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-4 rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              capacity_vs_demand_takeaway
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/70">
-              {data.economic_interpretation.capacity_vs_demand_takeaway}
-            </p>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="input normalization"
-            title="Normalized inputs"
-            text="Этот блок повторяет все нормализованные входные данные из economics JSON, включая confidence-level, диаграмму каналов, продуктовую маржу, core team и целевые ориентиры."
-          />
-
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <NormalizedInputCard
-              label="Retained share after expenses"
-              field={
-                data.input_normalization.reported_retained_share_after_expenses
-              }
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Last month cash-in"
-              field={data.input_normalization.last_month_cash_in}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Total contract value"
-              field={data.input_normalization.total_contract_value}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Installment count"
-              field={data.input_normalization.installment_count}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Number of clients or sales"
-              field={data.input_normalization.number_of_clients_or_sales}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Lead volume"
-              field={data.input_normalization.lead_volume}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Processing capacity"
-              field={data.input_normalization.processing_capacity}
-              system={system}
-            />
-            <NormalizedInputCard
-              label="Core team size"
-              field={data.input_normalization.core_team_size}
-              system={system}
-            />
-          </div>
-
-          <div className="mt-4">
-            <PieCard chart={data.input_normalization.channel_mix_chart} />
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-3">
-            {data.input_normalization.product_margin_charts.map((item) => (
-              <ProductMarginCard key={item.product} item={item} />
-            ))}
-          </div>
-
-          <div className="mt-4 grid gap-4 xl:grid-cols-2">
-            <BulletList
-              title="core_team_display"
-              items={data.input_normalization.core_team_display}
-            />
-            <BulletList
-              title="declared_targets"
-              items={data.input_normalization.declared_targets}
-            />
-          </div>
-
-          <div className="mt-4 rounded-[24px] border border-cyan-300/18 bg-cyan-400/8 p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-cyan-100/90">
-              data_quality_note
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/78">
-              {data.input_normalization.data_quality_note}
-            </p>
-          </div>
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="exact metrics"
-            title="Exact metrics table"
-            text="Точные метрики в табличном виде: metric, formula, value, unit, confidence_level, interpretation."
-          />
-          <MetricsTable
-            title="Exact metrics"
-            data={data.exact_metrics_table}
-            system={system}
-          />
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="inferred metrics"
-            title="Inferred metrics table"
-            text="Выведенные метрики в табличном виде с тем же форматом и системой reliability dots."
-          />
-          <MetricsTable
-            title="Inferred metrics"
-            data={data.inferred_metrics_table}
-            system={system}
-          />
-        </section>
-
-        <section className="mb-8">
-          <SectionHead
-            eyebrow="contradictions"
-            title="Model contradictions"
-            text="Раздел для несостыковок и ограничений интерпретации."
-          />
-
-          <div className="grid gap-4">
-            {data.contradictions.contradiction_items.map((item) => (
-              <ContradictionCard key={item.issue} item={item} />
-            ))}
-          </div>
-
-          <div className="mt-4 rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
-            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-              impact_on_analysis
-            </div>
-            <p className="mt-3 text-sm leading-7 text-white/68">
-              {data.contradictions.impact_on_analysis}
-            </p>
-          </div>
-        </section>
-
-        <section className="pb-6">
-          <SectionHead
-            eyebrow="model gaps"
-            title="Missing for stronger model"
-            text="На отдельном экране это можно оставить в самом низу как required data for stronger confidence."
-          />
-
-          <BulletList
-            title="missing_for_stronger_model"
-            items={data.missing_for_stronger_model}
-          />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-export default function ResultsTokenPage() {
-  const params = useParams();
-  const token =
-    typeof params?.token === "string"
-      ? params.token
-      : Array.isArray(params?.token)
-      ? params.token[0]
-      : "mock-token";
-
-  const [activeBlock, setActiveBlock] = useState<ThemeBlockId | null>(null);
-  useBodyScrollLock(Boolean(activeBlock));
-
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") setActiveBlock(null);
-    }
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
-  const heroStats = useMemo(
-    () => [
-      {
-        label: "Текущая экономика",
-        value: ECONOMICS_MOCK.economic_interpretation.current_economic_state
-          .key_value,
-      },
-      {
-        label: "Главный numeric signal",
-        value:
-          ECONOMICS_MOCK.economic_interpretation
-            .most_important_numeric_signal.key_value,
-      },
-      {
-        label: "Main loss pattern",
-        value: ECONOMICS_MOCK.economic_interpretation.main_loss_pattern.key_value,
-      },
-      {
-        label: "Missing inputs",
-        value: `${ECONOMICS_MOCK.missing_for_stronger_model.length}`,
-      },
-    ],
-    []
-  );
-
-const isEconomicsOpen = activeBlock === "economics";
-const isPositioningOpen = activeBlock === "positioning";
-const isClientsFlowOpen = activeBlock === "clients_flow";
-
-  return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(247,210,55,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(125,211,252,0.06),transparent_20%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.04),transparent_24%)]" />
-      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:120px_120px]" />
-
-      <main className="relative mx-auto max-w-[1680px] px-4 pb-20 pt-6 md:px-6 xl:px-8">
-        <GlassCard className="mb-8 p-5 md:p-6 xl:p-8">
-          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-[980px]">
-              <div className="text-[11px] uppercase tracking-[0.30em] text-[#f7d237]">
-                Revenue Snapshot / Results
-              </div>
-              <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
-                Новая страница результатов с карточками тематик и drawer-раскрытием
-              </h1>
-              <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
-                Страница пересобрана под новый карточный layout. Для economics,
-                positioning и clients_flow уже подключены mock-данные. На превью
-                карточки блока clients_flow выводятся только первые 3 пункта
-                <span className="text-white"> missing_for_stronger_model </span>и
-                <span className="text-white"> confidence_note</span>.
-              </p>
-
-              <div className="mt-6 flex flex-wrap gap-3">
-                <span className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
-                  token: {token}
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
-                  mock mode
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
-                  drawer width: 66vw
-                </span>
-              </div>
-            </div>
-
-            <div className="grid w-full gap-4 sm:grid-cols-2 xl:max-w-[420px]">
-              {heroStats.map((item) => (
-                <HeroMetric key={item.label} label={item.label} value={item.value} />
-              ))}
-            </div>
-          </div>
-        </GlassCard>
-
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <div>
-            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
-              Thematic results layout
-            </div>
-            <div className="mt-2 text-xl font-semibold text-white md:text-2xl">
-              Blocks overview
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={() => setActiveBlock("economics")}
-            className="rounded-full border border-[#f7d237]/18 bg-[#f7d237]/10 px-5 py-3 text-sm font-medium text-[#fff3b2] transition hover:bg-[#f7d237]/15"
-          >
-            Открыть Economics
-          </button>
-        </div>
-
-<section className="grid gap-6 xl:grid-cols-2">
-  {THEME_CARDS.map((card) => {
-    if (card.id === "positioning") {
-      return (
-        <PositioningResultsCard
-          key={card.id}
-          card={card}
-          data={POSITIONING_MOCK}
-          onOpen={() => setActiveBlock("positioning")}
-        />
-      );
-    }
-
-    if (card.id === "clients_flow") {
-      return (
-        <ClientsFlowResultsCard
-          key={card.id}
-          card={card}
-          data={CLIENTS_FLOW_MOCK}
-          onOpen={() => setActiveBlock("clients_flow")}
-        />
-      );
-    }
-
-    return (
-      <ThemeResultsCard
-        key={card.id}
-        card={card}
-        economics={ECONOMICS_MOCK}
-        onOpen={(id) => {
-          if (id === "economics") setActiveBlock(id);
-        }}
-      />
-    );
-  })}
-</section>
-      </main>
-
-      <div
-        className={cn(
-          "fixed inset-0 z-40 transition-all duration-500",
-          activeBlock
-            ? "pointer-events-auto bg-black/48 backdrop-blur-[2px]"
-            : "pointer-events-none bg-black/0"
-        )}
-        onClick={() => setActiveBlock(null)}
-      />
-
-<aside
-  className={cn(
-    "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
-    activeBlock ? "translate-x-0" : "translate-x-full"
-  )}
-  onClick={(event) => event.stopPropagation()}
->
-  {isEconomicsOpen ? (
-    <EconomicsDrawer
-      data={ECONOMICS_MOCK}
-      onClose={() => setActiveBlock(null)}
-    />
-  ) : isPositioningOpen ? (
-    <PositioningDrawer
-      data={POSITIONING_MOCK}
-      onClose={() => setActiveBlock(null)}
-    />
-  ) : isClientsFlowOpen ? (
-    <ClientsFlowDrawer
-      data={CLIENTS_FLOW_MOCK}
-      onClose={() => setActiveBlock(null)}
-    />
-  ) : null}
-</aside>
-    </div>
-  );
-}
