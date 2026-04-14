@@ -320,6 +320,8 @@ const BRAND = {
   yellow: "#f7d237",
 };
 
+const PIE_COLORS = ["#f7d237", "#7dd3fc", "#8b5cf6", "#22c55e", "#f97316"];
+
 const ECONOMICS_MOCK: EconomicsPayload = {
   confidence_ui_system: {
     component: "reliability_dots",
@@ -718,7 +720,7 @@ const POSITIONING_MOCK: PositioningPayload = {
     "Высокая уверенность по модели бизнеса, стадии, географии и delivery. Средняя уверенность по целевому клиенту и глубине позиционирования в SaaS, потому что намерение сформулировано ясно, но операционно подтверждено пока ограниченно.",
 };
 
-const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
+const CLIENTS_FLOW_PAYLOAD: ClientsFlowPayload = {
   confidence_ui_system: {
     component: "reliability_dots",
     dots_total: 3,
@@ -827,18 +829,7 @@ const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
         confidence_level: "high",
       },
       anchor_month_status: "unknown",
-      x_axis: [
-        "Мар",
-        "Апр",
-        "Сен",
-        "Окт",
-        "M+1",
-        "M+2",
-        "M+3",
-        "M+4",
-        "M+5",
-        "M+6",
-      ],
+      x_axis: ["Мар", "Апр", "Сен", "Окт", "M+1", "M+2", "M+3", "M+4", "M+5", "M+6"],
       historical_bars_series: {
         name: "Revenue_historical",
         unit: "USD",
@@ -1215,8 +1206,6 @@ const THEME_CARDS: ThemeCard[] = [
   },
 ];
 
-const PIE_COLORS = ["#f7d237", "#7dd3fc", "#8b5cf6", "#22c55e", "#f97316"];
-
 function cn(...parts: Array<string | false | null | undefined>) {
   return parts.filter(Boolean).join(" ");
 }
@@ -1288,6 +1277,11 @@ function buildPieGradient(series: PieSeriesItem[]) {
   });
 
   return `conic-gradient(${stops.join(", ")})`;
+}
+
+function maxSeriesValue(...collections: Array<Array<number | null>>) {
+  const values = collections.flat().filter((v): v is number => typeof v === "number");
+  return values.length ? Math.max(...values) : 1;
 }
 
 function useBodyScrollLock(active: boolean) {
@@ -1442,6 +1436,32 @@ function InsightCard({
   );
 }
 
+function ParagraphCard({
+  title,
+  text,
+  tone = "default",
+}: {
+  title: string;
+  text: string;
+  tone?: "default" | "warning" | "accent";
+}) {
+  const toneClasses =
+    tone === "warning"
+      ? "border-red-400/18 bg-red-400/8"
+      : tone === "accent"
+      ? "border-[#f7d237]/18 bg-[#f7d237]/8"
+      : "border-white/10 bg-white/[0.03]";
+
+  return (
+    <div className={cn("rounded-[24px] border p-5", toneClasses)}>
+      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+        {title}
+      </div>
+      <p className="mt-3 text-sm leading-7 text-white/74">{text}</p>
+    </div>
+  );
+}
+
 function NormalizedInputCard({
   label,
   field,
@@ -1470,13 +1490,48 @@ function NormalizedInputCard({
   );
 }
 
-function PieCard({ chart }: { chart: PieChartData }) {
+function BulletList({
+  title,
+  items,
+}: {
+  title: string;
+  items: string[];
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+        {title}
+      </div>
+      <div className="mt-4 space-y-3">
+        {items.map((item, index) => (
+          <div
+            key={`${title}-${item}`}
+            className="flex gap-3 text-sm leading-7 text-white/72"
+          >
+            <span className="mt-[4px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/45">
+              {index + 1}
+            </span>
+            <span>{item}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PieCard({
+  chart,
+  label = "Normalized input",
+}: {
+  chart: PieChartData;
+  label?: string;
+}) {
   const total = chart.series.reduce((sum, item) => sum + item.value, 0);
 
   return (
     <GlassCard className="p-5">
       <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
-        Normalized input
+        {label}
       </div>
       <div className="mt-2 text-xl font-semibold text-white">{chart.title}</div>
 
@@ -1554,3 +1609,1399 @@ function MetricsTable({
           Table
         </div>
         <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-[980px] w-full border-collapse">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/[0.03] text-left">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Metric
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Formula
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Value
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Unit
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Reliability
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Interpretation
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((row) => (
+              <tr
+                key={`${title}-${row.metric}`}
+                className="border-b border-white/8 align-top last:border-b-0"
+              >
+                <td className="px-5 py-5 text-sm font-medium text-white">
+                  {row.metric}
+                </td>
+                <td className="px-5 py-5 text-sm text-white/62">
+                  {row.formula}
+                </td>
+                <td className="px-5 py-5 text-sm font-semibold text-white">
+                  {formatByUnit(row.value, row.unit)}
+                </td>
+                <td className="px-5 py-5 text-sm text-white/52">{row.unit}</td>
+                <td className="px-5 py-5 text-sm text-white/62">
+                  <ReliabilityDots
+                    level={row.confidence_level}
+                    system={system}
+                  />
+                </td>
+                <td className="px-5 py-5 text-sm leading-7 text-white/62">
+                  {row.interpretation}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </GlassCard>
+  );
+}
+
+function ContradictionCard({ item }: { item: ContradictionItem }) {
+  return (
+    <div className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-red-100/85">
+        contradiction
+      </div>
+      <div className="mt-3 text-lg font-semibold text-white">{item.issue}</div>
+
+      <div className="mt-4 space-y-3">
+        <div className="rounded-[18px] border border-white/8 bg-white/[0.04] p-4">
+          <div className="text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
+            what_it_may_mean
+          </div>
+          <div className="mt-2 text-sm leading-7 text-white/70">
+            {item.what_it_may_mean}
+          </div>
+        </div>
+
+        <div className="rounded-[18px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+          <div className="text-[11px] uppercase tracking-[0.16em] text-[#fff3b2]">
+            usable_part
+          </div>
+          <div className="mt-2 text-sm leading-7 text-white/78">
+            {item.usable_part}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ContradictionTextCard({ text }: { text: string }) {
+  return (
+    <div className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-red-100/85">
+        contradiction
+      </div>
+      <p className="mt-3 text-sm leading-7 text-white/78">{text}</p>
+    </div>
+  );
+}
+
+function ForecastBars({
+  chart,
+}: {
+  chart: ClientsFlowPayload["visual_blocks"]["seasonality_revenue_percent_chart"];
+}) {
+  const maxRevenue = maxSeriesValue(
+    chart.historical_bars_series.values,
+    chart.forecast_bars_series.values
+  );
+  const maxPercent = maxSeriesValue(
+    chart.historical_line_series.values,
+    chart.forecast_line_series.values
+  );
+
+  return (
+    <GlassCard className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+            visual block
+          </div>
+          <div className="mt-2 text-xl font-semibold text-white">
+            {chart.title}
+          </div>
+        </div>
+        <ReliabilityDots level={chart.confidence_level} system={CLIENTS_FLOW_PAYLOAD.confidence_ui_system} />
+      </div>
+
+      <div className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-5 xl:grid-cols-10">
+        {chart.x_axis.map((label, index) => {
+          const historicalRevenue = chart.historical_bars_series.values[index];
+          const forecastRevenue = chart.forecast_bars_series.values[index];
+          const historicalPercent = chart.historical_line_series.values[index];
+          const forecastPercent = chart.forecast_line_series.values[index];
+
+          const revenue = historicalRevenue ?? forecastRevenue;
+          const percent = historicalPercent ?? forecastPercent;
+          const isForecast = historicalRevenue == null && forecastRevenue != null;
+
+          return (
+            <div
+              key={`${label}-${index}`}
+              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-3"
+            >
+              <div className="text-center text-[11px] uppercase tracking-[0.16em] text-white/46">
+                {label}
+              </div>
+
+              <div className="mt-4 flex h-[150px] items-end justify-center gap-2">
+                <div className="flex h-full w-10 items-end rounded-full bg-white/6 p-1">
+                  <div
+                    className={cn(
+                      "w-full rounded-full",
+                      isForecast ? "bg-[#7dd3fc]" : "bg-[#f7d237]"
+                    )}
+                    style={{
+                      height: revenue ? `${Math.max((revenue / maxRevenue) * 100, 8)}%` : "0%",
+                    }}
+                  />
+                </div>
+
+                <div className="flex h-full w-6 items-end rounded-full bg-white/6 p-1">
+                  <div
+                    className="w-full rounded-full bg-[#8b5cf6]"
+                    style={{
+                      height: percent ? `${Math.max((percent / maxPercent) * 100, 8)}%` : "0%",
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-3 space-y-1 text-center">
+                <div className="text-xs text-white/76">
+                  {revenue !== null && revenue !== undefined
+                    ? formatCurrency(revenue, chart.anchor_baseline.currency)
+                    : "—"}
+                </div>
+                <div className="text-xs text-white/46">
+                  {percent !== null && percent !== undefined
+                    ? formatPercent(percent)
+                    : "—"}
+                </div>
+                <div className="text-[10px] uppercase tracking-[0.16em] text-white/34">
+                  {isForecast ? "forecast" : "historical"}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 grid gap-4 xl:grid-cols-2">
+        <ParagraphCard
+          title="data_completeness"
+          text={chart.data_completeness}
+        />
+        <ParagraphCard
+          title="note"
+          text={chart.note}
+          tone="accent"
+        />
+      </div>
+    </GlassCard>
+  );
+}
+
+function JourneyMap({
+  title,
+  stages,
+}: {
+  title: string;
+  stages: ClientsFlowStage[];
+}) {
+  return (
+    <GlassCard className="p-5">
+      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+        visual block
+      </div>
+      <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+
+      <div className="mt-6 grid gap-4 xl:grid-cols-5">
+        {stages.map((stage, index) => (
+          <div
+            key={`${stage.stage}-${index}`}
+            className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4"
+          >
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+              {stage.stage}
+            </div>
+            <div className="mt-2 text-sm font-semibold text-white/84">
+              {stage.duration}
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                  client_value
+                </div>
+                <div className="mt-1 text-sm leading-6 text-white/72">
+                  {stage.client_value}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                  company_value
+                </div>
+                <div className="mt-1 text-sm leading-6 text-white/72">
+                  {stage.company_value}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                  friction_point
+                </div>
+                <div className="mt-1 text-sm leading-6 text-white/72">
+                  {stage.friction_point}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
+
+function ForecastModelCard({
+  data,
+}: {
+  data: ClientsFlowPayload["forecast_model"];
+}) {
+  return (
+    <GlassCard className="p-5">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+            forecast model
+          </div>
+          <div className="mt-2 text-xl font-semibold text-white">
+            {data.scenario_type}
+          </div>
+        </div>
+        <ReliabilityDots
+          level={data.confidence_level}
+          system={CLIENTS_FLOW_PAYLOAD.confidence_ui_system}
+        />
+      </div>
+
+      <div className="mt-5 grid gap-4 md:grid-cols-3">
+        <InsightCard
+          title="horizon_months"
+          value={`${data.horizon_months}`}
+          text="Горизонт модели."
+        />
+        <InsightCard
+          title="baseline_value"
+          value={formatCurrency(data.baseline_value, data.baseline_currency)}
+          text="Базовый cash-in для расчёта сценария."
+        />
+        <ParagraphCard title="model_logic" text={data.model_logic} />
+      </div>
+
+      <div className="mt-5 overflow-x-auto">
+        <table className="min-w-[860px] w-full border-collapse">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/[0.03] text-left">
+              <th className="px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Month
+              </th>
+              <th className="px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Revenue
+              </th>
+              <th className="px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Seasonality
+              </th>
+              <th className="px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Assumption
+              </th>
+              <th className="px-4 py-3 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Reliability
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.forecast_points.map((point) => (
+              <tr
+                key={point.month_label}
+                className="border-b border-white/8 align-top last:border-b-0"
+              >
+                <td className="px-4 py-4 text-sm font-medium text-white">
+                  {point.month_label}
+                </td>
+                <td className="px-4 py-4 text-sm text-white/72">
+                  {point.modeled_revenue !== null
+                    ? formatCurrency(point.modeled_revenue, data.baseline_currency)
+                    : "—"}
+                </td>
+                <td className="px-4 py-4 text-sm text-white/72">
+                  {point.seasonal_percent_assumption !== null
+                    ? formatPercent(point.seasonal_percent_assumption)
+                    : "—"}
+                </td>
+                <td className="px-4 py-4 text-sm text-white/62">
+                  {point.assumption_type}
+                </td>
+                <td className="px-4 py-4 text-sm text-white/62">
+                  <ReliabilityDots
+                    level={point.confidence_level}
+                    system={CLIENTS_FLOW_PAYLOAD.confidence_ui_system}
+                  />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="mt-5">
+        <ParagraphCard title="note" text={data.note} tone="accent" />
+      </div>
+    </GlassCard>
+  );
+}
+
+function ThemeResultsCard({
+  card,
+  economics,
+  onOpen,
+}: {
+  card: ThemeCard;
+  economics: EconomicsPayload;
+  onOpen: (id: ThemeBlockId) => void;
+}) {
+  const isEconomics = card.id === "economics";
+  const missingPreview = economics.missing_for_stronger_model.slice(0, 3);
+
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        {isEconomics ? (
+          <>
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                missing_for_stronger_model
+              </div>
+              <div className="mt-3 space-y-2">
+                {missingPreview.map((item, index) => (
+                  <div
+                    key={item}
+                    className="flex gap-3 text-sm leading-6 text-white/74"
+                  >
+                    <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
+                      {index + 1}
+                    </span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+                confidence_note
+              </div>
+              <p className="mt-3 text-sm leading-6 text-white/78">
+                {economics.confidence_note}
+              </p>
+            </div>
+          </>
+        ) : (
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+              {card.previewTitle}
+            </div>
+            <p className="mt-3 text-sm leading-6 text-white/68">
+              {card.previewText}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <button
+        type="button"
+        onClick={() => onOpen(card.id)}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">
+          {isEconomics ? "Открыть блок" : "Открыть позже"}
+        </span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
+function PositioningResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: PositioningPayload;
+  onOpen: () => void;
+}) {
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8">
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_summary
+          </div>
+          <p className="mt-3 text-sm leading-7 text-white/78">
+            {data.confidence_summary}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
+function ClientsFlowResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: ClientsFlowPayload;
+  onOpen: () => void;
+}) {
+  const missingPreview = data.missing_for_stronger_model.slice(0, 3);
+
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+            missing_for_stronger_model
+          </div>
+          <div className="mt-3 space-y-2">
+            {missingPreview.map((item, index) => (
+              <div
+                key={item}
+                className="flex gap-3 text-sm leading-6 text-white/74"
+              >
+                <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_note
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">
+            {data.confidence_note}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
+function PositioningDrawer({
+  data,
+  onClose,
+}: {
+  data: PositioningPayload;
+  onClose: () => void;
+}) {
+  const system = ECONOMICS_MOCK.confidence_ui_system;
+
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 3
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Positioning
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный разворот блока positioning.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="positioning overview"
+            title="Confidence summary"
+            text="Краткое верхнеуровневое чтение positioning-модели."
+          />
+
+          <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
+              confidence_summary
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/80">
+              {data.confidence_summary}
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="business model"
+            title={data.business_model.type}
+            text={data.business_model.reason}
+          />
+          <ReliabilityDots level={data.business_model.confidence} system={system} />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <ParagraphCard title="business_stage" text={data.business_stage.stage} />
+          <ParagraphCard title="positioning_type" text={data.positioning_type.type} />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <ParagraphCard title="core_offer" text={data.core_offer.value} />
+          <ParagraphCard title="client_pays_for" text={data.core_offer.client_pays_for} tone="accent" />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <ParagraphCard title="target_client" text={data.target_client.segment} />
+          <ParagraphCard title="target_logic" text={data.target_client.logic} />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <ParagraphCard title="market_scope" text={data.market_scope.scope} />
+          <ParagraphCard title="market_note" text={data.market_scope.note} />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <ParagraphCard title="delivery_model" text={data.delivery_model.type} />
+          <ParagraphCard
+            title="founder_dependency"
+            text={data.delivery_model.founder_dependency}
+            tone="warning"
+          />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="risks" title="Positioning risks" />
+          <div className="grid gap-4">
+            {data.risks.map((item, index) => (
+              <div
+                key={`${item.risk}-${index}`}
+                className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-red-100/85">
+                    risk {index + 1}
+                  </div>
+                  <ReliabilityDots level={item.confidence} system={system} compact />
+                </div>
+                <p className="mt-3 text-sm leading-7 text-white/78">
+                  {item.risk}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="pb-6">
+          <SectionHead eyebrow="takeaway" title="Positioning takeaway" />
+          <ParagraphCard title="takeaway" text={data.takeaway} />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function EconomicsDrawer({
+  data,
+  onClose,
+}: {
+  data: EconomicsPayload;
+  onClose: () => void;
+}) {
+  const system = data.confidence_ui_system;
+
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 2
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Economics
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный разворот блока economics.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="economics overview"
+            title="Executive signal"
+            text="Верхний слой ключевых сигналов."
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <InsightCard
+              title="current_economic_state"
+              value={data.economic_interpretation.current_economic_state.key_value}
+              text={data.economic_interpretation.current_economic_state.comment}
+            />
+            <InsightCard
+              title="main_loss_pattern"
+              value={data.economic_interpretation.main_loss_pattern.key_value}
+              text={data.economic_interpretation.main_loss_pattern.comment}
+            />
+            <InsightCard
+              title="most_important_numeric_signal"
+              value={data.economic_interpretation.most_important_numeric_signal.key_value}
+              text={data.economic_interpretation.most_important_numeric_signal.comment}
+            />
+            <ParagraphCard
+              title="reliability_of_current_margin"
+              text={data.economic_interpretation.reliability_of_current_margin}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ParagraphCard
+              title="scalability_risk"
+              text={data.economic_interpretation.scalability_risk}
+              tone="warning"
+            />
+            <ParagraphCard
+              title="confidence_note"
+              text={data.confidence_note}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="capacity_vs_demand_takeaway"
+              text={data.economic_interpretation.capacity_vs_demand_takeaway}
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="input normalization"
+            title="Normalized inputs"
+          />
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <NormalizedInputCard
+              label="Retained share after expenses"
+              field={data.input_normalization.reported_retained_share_after_expenses}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Last month cash-in"
+              field={data.input_normalization.last_month_cash_in}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Total contract value"
+              field={data.input_normalization.total_contract_value}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Installment count"
+              field={data.input_normalization.installment_count}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Number of clients or sales"
+              field={data.input_normalization.number_of_clients_or_sales}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Lead volume"
+              field={data.input_normalization.lead_volume}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Processing capacity"
+              field={data.input_normalization.processing_capacity}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Core team size"
+              field={data.input_normalization.core_team_size}
+              system={system}
+            />
+          </div>
+
+          <div className="mt-4">
+            <PieCard chart={data.input_normalization.channel_mix_chart} />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            {data.input_normalization.product_margin_charts.map((item) => (
+              <ProductMarginCard key={item.product} item={item} />
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="core_team_display"
+              items={data.input_normalization.core_team_display}
+            />
+            <BulletList
+              title="declared_targets"
+              items={data.input_normalization.declared_targets}
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="data_quality_note"
+              text={data.input_normalization.data_quality_note}
+              tone="accent"
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="exact metrics" title="Exact metrics table" />
+          <MetricsTable title="Exact metrics" data={data.exact_metrics_table} system={system} />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="inferred metrics" title="Inferred metrics table" />
+          <MetricsTable title="Inferred metrics" data={data.inferred_metrics_table} system={system} />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="contradictions" title="Model contradictions" />
+          <div className="grid gap-4">
+            {data.contradictions.contradiction_items.map((item) => (
+              <ContradictionCard key={item.issue} item={item} />
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="impact_on_analysis"
+              text={data.contradictions.impact_on_analysis}
+            />
+          </div>
+        </section>
+
+        <section className="pb-6">
+          <SectionHead eyebrow="model gaps" title="Missing for stronger model" />
+          <BulletList
+            title="missing_for_stronger_model"
+            items={data.missing_for_stronger_model}
+          />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ClientsFlowDrawer({
+  data,
+  onClose,
+}: {
+  data: ClientsFlowPayload;
+  onClose: () => void;
+}) {
+  const system = data.confidence_ui_system;
+
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 4
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Clients & Flow
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный payload-разворот блока clients_flow.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="clients flow overview"
+            title="Executive signal"
+            text="Ключевая интерпретация потока, потерь и ограничений масштабирования."
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <InsightCard
+              title="current_flow_state"
+              value={data.flow_interpretation.current_flow_state.key_value}
+              text={data.flow_interpretation.current_flow_state.comment}
+            />
+            <InsightCard
+              title="main_flow_loss_pattern"
+              value={data.flow_interpretation.main_flow_loss_pattern.key_value}
+              text={data.flow_interpretation.main_flow_loss_pattern.comment}
+            />
+            <InsightCard
+              title="strongest_numeric_signal"
+              value={data.flow_interpretation.strongest_numeric_signal.key_value}
+              text={data.flow_interpretation.strongest_numeric_signal.comment}
+            />
+            <ParagraphCard
+              title="flow_reliability"
+              text={data.flow_interpretation.flow_reliability}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ParagraphCard
+              title="scalability_risk"
+              text={data.flow_interpretation.scalability_risk}
+              tone="warning"
+            />
+            <ParagraphCard
+              title="confidence_note"
+              text={data.confidence_note}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="capacity_vs_demand_takeaway"
+              text={data.flow_interpretation.capacity_vs_demand_takeaway}
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="input normalization"
+            title="Normalized inputs"
+            text="Все нормализованные входы clients_flow."
+          />
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <NormalizedInputCard
+              label="Target segment"
+              field={{
+                value: data.input_normalization.target_segment.value,
+                confidence_level: data.input_normalization.target_segment.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Most profitable segment if stated"
+              field={{
+                value: data.input_normalization.most_profitable_segment_if_stated.value,
+                confidence_level:
+                  data.input_normalization.most_profitable_segment_if_stated.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Lead volume"
+              field={{
+                value: data.input_normalization.lead_volume.value,
+                confidence_level: data.input_normalization.lead_volume.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Processing capacity"
+              field={{
+                value: data.input_normalization.processing_capacity.value,
+                confidence_level: data.input_normalization.processing_capacity.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Actual clients or sales last period"
+              field={{
+                value: data.input_normalization.actual_clients_or_sales_last_period.value,
+                confidence_level:
+                  data.input_normalization.actual_clients_or_sales_last_period.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Last month cash-in"
+              field={{
+                value: data.input_normalization.last_month_cash_in.value,
+                currency: data.input_normalization.last_month_cash_in.currency,
+                confidence_level: data.input_normalization.last_month_cash_in.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Core team size"
+              field={{
+                value: data.input_normalization.core_team_size.value,
+                confidence_level: data.input_normalization.core_team_size.confidence_level,
+              }}
+              system={system}
+            />
+            <NormalizedInputCard
+              label="Stable flow problem"
+              field={{
+                value: data.input_normalization.stable_flow_problem_statement.value,
+                confidence_level:
+                  data.input_normalization.stable_flow_problem_statement.confidence_level,
+              }}
+              system={system}
+            />
+          </div>
+
+          <div className="mt-4">
+            <PieCard
+              chart={data.input_normalization.channel_mix_chart}
+              label="Channel mix"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="declared_lead_sources"
+              items={data.input_normalization.declared_lead_sources}
+            />
+            <BulletList
+              title="core_team_display"
+              items={data.input_normalization.core_team_display}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="seasonal_peak_months"
+              items={data.input_normalization.seasonal_peak_months.map(
+                (item) => `${item.month} — ${formatPercent(item.percent)}`
+              )}
+            />
+            <BulletList
+              title="seasonal_decline_months_if_numeric"
+              items={
+                data.input_normalization.seasonal_decline_months_if_numeric.length
+                  ? data.input_normalization.seasonal_decline_months_if_numeric.map(
+                      (item) => `${item.month} — ${formatPercent(item.percent)}`
+                    )
+                  : ["Числовые спады не указаны."]
+              }
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="data_quality_note"
+              text={data.input_normalization.data_quality_note}
+              tone="accent"
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="visual blocks"
+            title="Seasonality and journey"
+            text="Графические данные из payload."
+          />
+
+          <ForecastBars chart={data.visual_blocks.seasonality_revenue_percent_chart} />
+          <div className="mt-4">
+            <JourneyMap
+              title={data.visual_blocks.mini_journey_map.title}
+              stages={data.visual_blocks.mini_journey_map.stages}
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="forecast model"
+            title="Scenario forecast"
+          />
+          <ForecastModelCard data={data.forecast_model} />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="exact metrics" title="Exact metrics table" />
+          <MetricsTable
+            title="Exact metrics"
+            data={data.exact_metrics_table}
+            system={system}
+          />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="inferred metrics" title="Inferred metrics table" />
+          <MetricsTable
+            title="Inferred metrics"
+            data={data.inferred_metrics_table}
+            system={system}
+          />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="contradictions"
+            title="Flow contradictions"
+          />
+          <div className="grid gap-4">
+            {data.contradictions.contradiction_items.map((item, index) => (
+              <ContradictionTextCard key={`${item}-${index}`} text={item} />
+            ))}
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="impact_on_analysis"
+              text={data.contradictions.impact_on_analysis}
+            />
+          </div>
+        </section>
+
+        <section className="pb-6">
+          <SectionHead
+            eyebrow="model gaps"
+            title="Missing for stronger model"
+          />
+          <BulletList
+            title="missing_for_stronger_model"
+            items={data.missing_for_stronger_model}
+          />
+        </section>
+      </div>
+    </div>
+  );
+}
+
+export default function ResultsTokenPage() {
+  const params = useParams();
+  const token =
+    typeof params?.token === "string"
+      ? params.token
+      : Array.isArray(params?.token)
+      ? params.token[0]
+      : "mock-token";
+
+  const [activeBlock, setActiveBlock] = useState<ThemeBlockId | null>(null);
+  useBodyScrollLock(Boolean(activeBlock));
+
+  useEffect(() => {
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setActiveBlock(null);
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
+  const heroStats = useMemo(
+    () => [
+      {
+        label: "Flow state",
+        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.current_flow_state.key_value,
+      },
+      {
+        label: "Strongest signal",
+        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.strongest_numeric_signal.key_value,
+      },
+      {
+        label: "Main loss pattern",
+        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.main_flow_loss_pattern.key_value,
+      },
+      {
+        label: "Missing inputs",
+        value: `${CLIENTS_FLOW_PAYLOAD.missing_for_stronger_model.length}`,
+      },
+    ],
+    []
+  );
+
+  const isEconomicsOpen = activeBlock === "economics";
+  const isPositioningOpen = activeBlock === "positioning";
+  const isClientsFlowOpen = activeBlock === "clients_flow";
+
+  return (
+    <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(247,210,55,0.08),transparent_22%),radial-gradient(circle_at_top_right,rgba(125,211,252,0.06),transparent_20%),radial-gradient(circle_at_bottom_left,rgba(255,255,255,0.04),transparent_24%)]" />
+      <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:120px_120px]" />
+
+      <main className="relative mx-auto max-w-[1680px] px-4 pb-20 pt-6 md:px-6 xl:px-8">
+        <GlassCard className="mb-8 p-5 md:p-6 xl:p-8">
+          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
+            <div className="max-w-[980px]">
+              <div className="text-[11px] uppercase tracking-[0.30em] text-[#f7d237]">
+                Revenue Snapshot / Results
+              </div>
+              <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
+                Results page with full Clients & Flow block
+              </h1>
+              <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
+                Карточки economics и positioning оставлены в текущей логике, а
+                блок Clients & Flow собран полностью под переданный JSON payload.
+                На превью карточки Clients & Flow снаружи выводятся только
+                <span className="text-white"> missing_for_stronger_model </span>и
+                <span className="text-white"> confidence_note</span>, а внутри
+                drawer — весь блок.
+              </p>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <span className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
+                  token: {token}
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
+                  clients_flow payload ready
+                </span>
+                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
+                  drawer width: 66vw
+                </span>
+              </div>
+            </div>
+
+            <div className="grid w-full gap-4 sm:grid-cols-2 xl:max-w-[420px]">
+              {heroStats.map((item) => (
+                <HeroMetric key={item.label} label={item.label} value={item.value} />
+              ))}
+            </div>
+          </div>
+        </GlassCard>
+
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Thematic results layout
+            </div>
+            <div className="mt-2 text-xl font-semibold text-white md:text-2xl">
+              Blocks overview
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setActiveBlock("clients_flow")}
+            className="rounded-full border border-[#f7d237]/18 bg-[#f7d237]/10 px-5 py-3 text-sm font-medium text-[#fff3b2] transition hover:bg-[#f7d237]/15"
+          >
+            Открыть Clients & Flow
+          </button>
+        </div>
+
+        <section className="grid gap-6 xl:grid-cols-2">
+          {THEME_CARDS.map((card) => {
+            if (card.id === "positioning") {
+              return (
+                <PositioningResultsCard
+                  key={card.id}
+                  card={card}
+                  data={POSITIONING_MOCK}
+                  onOpen={() => setActiveBlock("positioning")}
+                />
+              );
+            }
+
+            if (card.id === "clients_flow") {
+              return (
+                <ClientsFlowResultsCard
+                  key={card.id}
+                  card={card}
+                  data={CLIENTS_FLOW_PAYLOAD}
+                  onOpen={() => setActiveBlock("clients_flow")}
+                />
+              );
+            }
+
+            return (
+              <ThemeResultsCard
+                key={card.id}
+                card={card}
+                economics={ECONOMICS_MOCK}
+                onOpen={(id) => {
+                  if (id === "economics") setActiveBlock(id);
+                }}
+              />
+            );
+          })}
+        </section>
+      </main>
+
+      <div
+        className={cn(
+          "fixed inset-0 z-40 transition-all duration-500",
+          activeBlock
+            ? "pointer-events-auto bg-black/48 backdrop-blur-[2px]"
+            : "pointer-events-none bg-black/0"
+        )}
+        onClick={() => setActiveBlock(null)}
+      />
+
+      <aside
+        className={cn(
+          "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
+          activeBlock ? "translate-x-0" : "translate-x-full"
+        )}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {isEconomicsOpen ? (
+          <EconomicsDrawer
+            data={ECONOMICS_MOCK}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : isPositioningOpen ? (
+          <PositioningDrawer
+            data={POSITIONING_MOCK}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : isClientsFlowOpen ? (
+          <ClientsFlowDrawer
+            data={CLIENTS_FLOW_PAYLOAD}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : null}
+      </aside>
+    </div>
+  );
+}
