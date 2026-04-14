@@ -818,7 +818,7 @@ function HeroMetric({
 }) {
   return (
     <div className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
-      <div className="text-[11px] uppercase tracking-[0.18em] text-white/38">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
         {label}
       </div>
       <div className="mt-2 text-xl font-semibold text-white">{value}</div>
@@ -849,7 +849,7 @@ function ThemeResultsCard({
       </div>
 
       <div className="mt-10">
-        <div className="text-[11px] uppercase tracking-[0.28em] text-white/38">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
           {card.blockNumber}
         </div>
         <h3 className="mt-3 text-[42px] font-semibold leading-none text-white">
@@ -862,7 +862,7 @@ function ThemeResultsCard({
         {isEconomics ? (
           <>
             <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-              <div className="text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 missing_for_stronger_model
               </div>
               <div className="mt-3 space-y-2">
@@ -888,7 +888,7 @@ function ThemeResultsCard({
           </>
         ) : (
           <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
-            <div className="text-[11px] uppercase tracking-[0.18em] text-white/38">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
               {card.previewTitle}
             </div>
             <p className="mt-3 text-sm leading-6 text-white/68">
@@ -1050,22 +1050,22 @@ function MetricsTable({
         <table className="min-w-[980px] w-full border-collapse">
           <thead>
             <tr className="border-b border-white/10 bg-white/[0.03] text-left">
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Metric
               </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Formula
               </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Value
               </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Unit
               </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Reliability
               </th>
-              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
                 Interpretation
               </th>
             </tr>
