@@ -122,6 +122,7 @@ type EconomicsPayload = {
   missing_for_stronger_model: string[];
   confidence_note: string;
 };
+
 type PositioningRisk = {
   risk: string;
   confidence: "high" | "medium" | "preliminary";
@@ -168,6 +169,11 @@ type PositioningPayload = {
   risks: PositioningRisk[];
   takeaway: string;
   confidence_summary: string;
+};
+
+type ClientsFlowPayload = {
+  missing_for_stronger_model: string[];
+  confidence_note: string;
 };
 
 type ThemeCard = {
@@ -581,6 +587,18 @@ const POSITIONING_MOCK: PositioningPayload = {
     "Высокая уверенность по модели бизнеса, стадии, географии и delivery. Средняя уверенность по целевому клиенту и глубине позиционирования в SaaS, потому что намерение сформулировано ясно, но операционно подтверждено пока ограниченно.",
 };
 
+const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
+  missing_for_stronger_model: [
+    "Фактическая конверсия из обращения в созвон, оффер и оплату",
+    "Разбивка качества лидов по каждому каналу, а не только доля потока",
+    "Помесячная история входящего спроса минимум за 6–12 месяцев",
+    "Доля квалифицированных обращений в общем потоке",
+    "Фактическая повторяемость спроса и возвратов по месяцам",
+  ],
+  confidence_note:
+    "Картина client flow полезна как стартовая, но пока опирается на малую базу наблюдений. Самый надежный сигнал — разрыв между текущим спросом и пропускной способностью. Выводы по сезонности и устойчивости потока предварительные.",
+};
+
 const THEME_CARDS: ThemeCard[] = [
   {
     id: "economics",
@@ -593,16 +611,12 @@ const THEME_CARDS: ThemeCard[] = [
     blockNumber: "BLOCK 3",
     title: "Positioning",
     subtitle: "Market fit, segment, value framing",
-    previewTitle: "В разработке",
-    previewText: "Карточка будет подключена к payload блока positioning.",
   },
   {
     id: "clients_flow",
     blockNumber: "BLOCK 4",
     title: "Clients & Flow",
     subtitle: "Demand, channels, conversion path",
-    previewTitle: "В разработке",
-    previewText: "Карточка будет подключена к payload блока clients_flow.",
   },
   {
     id: "product_sales",
@@ -987,6 +1001,83 @@ function PositioningResultsCard({
   );
 }
 
+function ClientsFlowResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: ClientsFlowPayload;
+  onOpen: () => void;
+}) {
+  const missingPreview = data.missing_for_stronger_model.slice(0, 3);
+
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+            missing_for_stronger_model
+          </div>
+          <div className="mt-3 space-y-2">
+            {missingPreview.map((item, index) => (
+              <div
+                key={item}
+                className="flex gap-3 text-sm leading-6 text-white/74"
+              >
+                <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_note
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">
+            {data.confidence_note}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
 function PositioningDrawer({
   data,
   onClose,
@@ -1008,7 +1099,8 @@ function PositioningDrawer({
               Positioning
             </div>
             <div className="mt-2 text-sm text-white/58">
-              Полный mock-разворот блока positioning. Структура готова под будущий payload.
+              Полный mock-разворот блока positioning. Структура готова под будущий
+              payload.
             </div>
           </div>
 
@@ -1201,6 +1293,84 @@ function PositioningDrawer({
           />
           <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
             <p className="text-sm leading-7 text-white/72">{data.takeaway}</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  );
+}
+
+function ClientsFlowDrawer({
+  data,
+  onClose,
+}: {
+  data: ClientsFlowPayload;
+  onClose: () => void;
+}) {
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 4
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Clients & Flow
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              В этом mock drawer пока оставлен только базовый слой. Карточка уже
+              готова под реальный payload блока clients_flow.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="clients flow overview"
+            title="Confidence layer"
+            text="Пока в раскрытии сохранен только верхний слой данных блока clients_flow. Этого достаточно, чтобы не ломать логику drawer до подключения полного payload."
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+              <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+                missing_for_stronger_model
+              </div>
+              <div className="mt-4 space-y-3">
+                {data.missing_for_stronger_model.map((item, index) => (
+                  <div
+                    key={`${item}-${index}`}
+                    className="flex gap-3 text-sm leading-7 text-white/72"
+                  >
+                    <span className="mt-[4px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/45">
+                      {index + 1}
+                    </span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
+              <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
+                confidence_note
+              </div>
+              <p className="mt-3 text-sm leading-7 text-white/78">
+                {data.confidence_note}
+              </p>
+            </div>
           </div>
         </section>
       </div>
@@ -1765,7 +1935,8 @@ export default function ResultsTokenPage() {
   );
 
   const isEconomicsOpen = activeBlock === "economics";
-const isPositioningOpen = activeBlock === "positioning";
+  const isPositioningOpen = activeBlock === "positioning";
+  const isClientsFlowOpen = activeBlock === "clients_flow";
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
@@ -1783,9 +1954,9 @@ const isPositioningOpen = activeBlock === "positioning";
                 Новая страница результатов с карточками тематик и drawer-раскрытием
               </h1>
               <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
-                Страница пересобрана под новый карточный layout. Для economics уже
-                подключен полный mock-контент из присланного JSON. На превью
-                карточки выводятся только первые 3 пункта
+                Страница пересобрана под новый карточный layout. Для economics,
+                positioning и clients_flow уже подключены mock-данные. На превью
+                карточки блока clients_flow выводятся только первые 3 пункта
                 <span className="text-white"> missing_for_stronger_model </span>и
                 <span className="text-white"> confidence_note</span>.
               </p>
@@ -1830,32 +2001,42 @@ const isPositioningOpen = activeBlock === "positioning";
           </button>
         </div>
 
-<section className="grid gap-6 xl:grid-cols-2">
-  {THEME_CARDS.map((card) => {
-    if (card.id === "positioning") {
-      return (
-        <PositioningResultsCard
-          key={card.id}
-          card={card}
-          data={POSITIONING_MOCK}
-          onOpen={() => setActiveBlock("positioning")}
-        />
-      );
-    }
+        <section className="grid gap-6 xl:grid-cols-2">
+          {THEME_CARDS.map((card) => {
+            if (card.id === "positioning") {
+              return (
+                <PositioningResultsCard
+                  key={card.id}
+                  card={card}
+                  data={POSITIONING_MOCK}
+                  onOpen={() => setActiveBlock("positioning")}
+                />
+              );
+            }
 
-    return (
-      <ThemeResultsCard
-        key={card.id}
-        card={card}
-        economics={ECONOMICS_MOCK}
-        onOpen={(id) => {
-          if (id === "economics") setActiveBlock(id);
-        }}
-      />
-    );
-  })}
-</section>
-        
+            if (card.id === "clients_flow") {
+              return (
+                <ClientsFlowResultsCard
+                  key={card.id}
+                  card={card}
+                  data={CLIENTS_FLOW_MOCK}
+                  onOpen={() => setActiveBlock("clients_flow")}
+                />
+              );
+            }
+
+            return (
+              <ThemeResultsCard
+                key={card.id}
+                card={card}
+                economics={ECONOMICS_MOCK}
+                onOpen={(id) => {
+                  if (id === "economics") setActiveBlock(id);
+                }}
+              />
+            );
+          })}
+        </section>
       </main>
 
       <div
@@ -1868,25 +2049,30 @@ const isPositioningOpen = activeBlock === "positioning";
         onClick={() => setActiveBlock(null)}
       />
 
-<aside
-  className={cn(
-    "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
-    activeBlock ? "translate-x-0" : "translate-x-full"
-  )}
-  onClick={(event) => event.stopPropagation()}
->
-  {isEconomicsOpen ? (
-    <EconomicsDrawer
-      data={ECONOMICS_MOCK}
-      onClose={() => setActiveBlock(null)}
-    />
-  ) : isPositioningOpen ? (
-    <PositioningDrawer
-      data={POSITIONING_MOCK}
-      onClose={() => setActiveBlock(null)}
-    />
-  ) : null}
-</aside>
+      <aside
+        className={cn(
+          "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
+          activeBlock ? "translate-x-0" : "translate-x-full"
+        )}
+        onClick={(event) => event.stopPropagation()}
+      >
+        {isEconomicsOpen ? (
+          <EconomicsDrawer
+            data={ECONOMICS_MOCK}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : isPositioningOpen ? (
+          <PositioningDrawer
+            data={POSITIONING_MOCK}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : isClientsFlowOpen ? (
+          <ClientsFlowDrawer
+            data={CLIENTS_FLOW_MOCK}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : null}
+      </aside>
     </div>
   );
 }
