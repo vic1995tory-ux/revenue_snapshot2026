@@ -171,7 +171,138 @@ type PositioningPayload = {
   confidence_summary: string;
 };
 
+type ClientsFlowStage = {
+  stage: string;
+  duration: string;
+  client_value: string;
+  company_value: string;
+  friction_point: string;
+};
+
+type ClientsFlowChartSeries = {
+  name: string;
+  unit: string;
+  values: Array<number | null>;
+};
+
+type ClientsFlowForecastPoint = {
+  month_label: string;
+  modeled_revenue: number | null;
+  seasonal_percent_assumption: number | null;
+  assumption_type:
+    | "neutral_carry_forward"
+    | "factual_peak_reference"
+    | "qualitative_decline_inference";
+  confidence_level: ConfidenceLevel;
+};
+
 type ClientsFlowPayload = {
+  confidence_ui_system: ConfidenceUiSystem;
+  input_normalization: {
+    target_segment: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    most_profitable_segment_if_stated: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    lead_volume: {
+      value: number;
+      confidence_level: ConfidenceLevel;
+    };
+    processing_capacity: {
+      value: number;
+      confidence_level: ConfidenceLevel;
+    };
+    actual_clients_or_sales_last_period: {
+      value: number;
+      confidence_level: ConfidenceLevel;
+    };
+    last_month_cash_in: {
+      value: number;
+      currency: string;
+      confidence_level: ConfidenceLevel;
+    };
+    stable_flow_problem_statement: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    channel_mix_chart: PieChartData & {
+      confidence_level: ConfidenceLevel;
+    };
+    declared_lead_sources: string[];
+    seasonal_peak_months: Array<{
+      month: string;
+      percent: number;
+    }>;
+    seasonal_decline_months_if_numeric: Array<{
+      month: string;
+      percent: number;
+    }>;
+    core_team_size: {
+      value: number;
+      confidence_level: ConfidenceLevel;
+    };
+    core_team_display: string[];
+    data_quality_note: string;
+  };
+  visual_blocks: {
+    seasonality_revenue_percent_chart: {
+      chart_type: string;
+      title: string;
+      anchor_baseline: {
+        value: number;
+        currency: string;
+        confidence_level: ConfidenceLevel;
+      };
+      anchor_month_status:
+        | "known_peak"
+        | "known_decline"
+        | "known_neutral"
+        | "inferred"
+        | "unknown";
+      x_axis: string[];
+      historical_bars_series: ClientsFlowChartSeries;
+      forecast_bars_series: ClientsFlowChartSeries;
+      historical_line_series: ClientsFlowChartSeries;
+      forecast_line_series: ClientsFlowChartSeries;
+      left_axis_unit: string;
+      right_axis_unit: string;
+      data_completeness: string;
+      confidence_level: ConfidenceLevel;
+      note: string;
+    };
+    mini_journey_map: {
+      title: string;
+      stages: ClientsFlowStage[];
+    };
+  };
+  forecast_model: {
+    horizon_months: number;
+    baseline_value: number;
+    baseline_currency: string;
+    scenario_type: string;
+    forecast_points: ClientsFlowForecastPoint[];
+    model_logic: string;
+    confidence_level: ConfidenceLevel;
+    note: string;
+  };
+  exact_metrics_table: MetricTableData;
+  inferred_metrics_table: MetricTableData;
+  contradictions: {
+    contradiction_flag: boolean;
+    contradiction_items: string[];
+    impact_on_analysis: string;
+  };
+  flow_interpretation: {
+    current_flow_state: InterpretationItem;
+    main_flow_loss_pattern: InterpretationItem;
+    scalability_risk: string;
+    strongest_numeric_signal: InterpretationItem;
+    flow_reliability: string;
+    capacity_vs_demand_takeaway: string;
+  };
   missing_for_stronger_model: string[];
   confidence_note: string;
 };
@@ -588,15 +719,443 @@ const POSITIONING_MOCK: PositioningPayload = {
 };
 
 const CLIENTS_FLOW_MOCK: ClientsFlowPayload = {
+  confidence_ui_system: {
+    component: "reliability_dots",
+    dots_total: 3,
+    dot_size_px: 7,
+    gap_px: 4,
+    hover_zone: "group",
+    inactive_style: "low_opacity",
+    levels: {
+      high: {
+        display: "● ● ●",
+        active_dots: 3,
+        tooltip_title: "Устойчивый показатель",
+        tooltip_text: "Можно опираться в выводах.",
+      },
+      medium: {
+        display: "● ● ○",
+        active_dots: 2,
+        tooltip_title: "Вероятный показатель",
+        tooltip_text: "Можно использовать с оговоркой.",
+      },
+      preliminary: {
+        display: "● ○ ○",
+        active_dots: 1,
+        tooltip_title: "Предварительный показатель",
+        tooltip_text:
+          "Показывает направление, но требует подтверждения дополнительными данными.",
+      },
+    },
+  },
+
+  input_normalization: {
+    target_segment: {
+      value: "Стартапы уровня seed в SaaS, B2B и B2C; продажи в ЕС и СНГ",
+      confidence_level: "high",
+    },
+    most_profitable_segment_if_stated: {
+      value: "Не указан отдельно; стратегический фокус заявлен на SaaS",
+      confidence_level: "preliminary",
+    },
+    lead_volume: {
+      value: 13,
+      confidence_level: "high",
+    },
+    processing_capacity: {
+      value: 4,
+      confidence_level: "high",
+    },
+    actual_clients_or_sales_last_period: {
+      value: 1,
+      confidence_level: "medium",
+    },
+    last_month_cash_in: {
+      value: 1900,
+      currency: "USD",
+      confidence_level: "high",
+    },
+    stable_flow_problem_statement: {
+      value:
+        "Главная зона изменений — стабильный поток заявок; текущий поток формально мультиканальный, но не воспринимается как устойчивый",
+      confidence_level: "high",
+    },
+    channel_mix_chart: {
+      chart_type: "pie",
+      title: "Channel Mix входящего потока",
+      series: [
+        { label: "Рефералы", value: 30 },
+        { label: "Meta Ads", value: 25 },
+        { label: "Google Ads", value: 25 },
+        { label: "Холодный outreach", value: 12 },
+        { label: "Возвраты клиентов с прошлого опыта", value: 8 },
+      ],
+      confidence_level: "high",
+    },
+    declared_lead_sources: [
+      "Meta Ads",
+      "Рефералы",
+      "Холодный outreach",
+      "Google Ads",
+      "Возвраты клиентов с прошлого опыта",
+    ],
+    seasonal_peak_months: [
+      { month: "Мар", percent: 46 },
+      { month: "Апр", percent: 30 },
+      { month: "Сен", percent: 31 },
+      { month: "Окт", percent: 44 },
+    ],
+    seasonal_decline_months_if_numeric: [],
+    core_team_size: {
+      value: 2,
+      confidence_level: "high",
+    },
+    core_team_display: [
+      "2 основателя: CMO и CSO/busdev",
+      "Есть проектные подрядчики",
+      "Оба вовлечены в маркетинг, продажи и операционку",
+    ],
+    data_quality_note:
+      "Данные по входящему потоку и каналам заданы явно, но статистическая база очень мала: за прошлый месяц указан 1 клиент, бизнесу около полугода, числовых спадов сезонности нет, период сопоставимости продаж и лидов не полностью подтвержден.",
+  },
+
+  visual_blocks: {
+    seasonality_revenue_percent_chart: {
+      chart_type: "bar_line_combo",
+      title: "Сезонность спроса и preliminary-модель Revenue на 6 месяцев",
+      anchor_baseline: {
+        value: 1900,
+        currency: "USD",
+        confidence_level: "high",
+      },
+      anchor_month_status: "unknown",
+      x_axis: ["Мар", "Апр", "Сен", "Окт", "M+1", "M+2", "M+3", "M+4", "M+5", "M+6"],
+      historical_bars_series: {
+        name: "Revenue_historical",
+        unit: "USD",
+        values: [null, null, null, null, null, null, null, null, null, null],
+      },
+      forecast_bars_series: {
+        name: "Revenue_forecast",
+        unit: "USD",
+        values: [null, null, null, null, 1900, 1900, 2774, 2470, 1900, 1900],
+      },
+      historical_line_series: {
+        name: "seasonal_percent_historical",
+        unit: "percent",
+        values: [46, 30, 31, 44, null, null, null, null, null, null],
+      },
+      forecast_line_series: {
+        name: "seasonal_percent_forecast",
+        unit: "percent",
+        values: [null, null, null, null, 0, 0, 46, 30, 0, 0],
+      },
+      left_axis_unit: "USD",
+      right_axis_unit: "percent",
+      data_completeness:
+        "Фактические monthly Revenue по месяцам отсутствуют; есть один baseline cash-in и отдельные сезонные пики в процентах",
+      confidence_level: "preliminary",
+      note:
+        "График Revenue — это не история, а сценарная модель от одного известного cash-in 1900 USD. Базовый месяц не привязан надежно к пику, спаду или нейтральному периоду, поэтому прогноз ориентировочный.",
+    },
+
+    mini_journey_map: {
+      title: "Mini Journey Map до оплаты",
+      stages: [
+        {
+          stage: "Acquisition",
+          duration: "до 1 часа",
+          client_value: "Узнаёт решение своей боли через оффер",
+          company_value: "Получает первично прогретый лид",
+          friction_point: "Сложные формулировки могут отталкивать часть ЦА",
+        },
+        {
+          stage: "Activation",
+          duration: "до 1 часа",
+          client_value: "Понимает варианты решения задачи",
+          company_value: "Лид переходит к выбору формата, а не к вопросу да/нет",
+          friction_point: "Недопонятая ценность ведёт к возражению «дорого»",
+        },
+        {
+          stage: "Value Realization",
+          duration: "до 30 минут",
+          client_value: "Видит демо и окончательно считывает ценность",
+          company_value: "Получает горячего клиента с высоким намерением",
+          friction_point: "Риск завышенных ожиданий",
+        },
+        {
+          stage: "Conversion",
+          duration: "до 10 минут",
+          client_value: "Быстро оплачивает понятный инструмент",
+          company_value: "Фиксирует доверие и выручку",
+          friction_point: "Явный фрикшен не указан",
+        },
+        {
+          stage: "Retention",
+          duration: "14 дней",
+          client_value: "Получает разбор результатов и поддержку",
+          company_value: "Создаёт базу для повторной продажи и делегирования работ",
+          friction_point: "Явный фрикшен не указан",
+        },
+      ],
+    },
+  },
+
+  forecast_model: {
+    horizon_months: 6,
+    baseline_value: 1900,
+    baseline_currency: "USD",
+    scenario_type:
+      "Сценарная seasonal-baseline модель с нейтральным carry-forward вне явно названных пиков",
+    forecast_points: [
+      {
+        month_label: "M+1",
+        modeled_revenue: 1900,
+        seasonal_percent_assumption: 0,
+        assumption_type: "neutral_carry_forward",
+        confidence_level: "preliminary",
+      },
+      {
+        month_label: "M+2",
+        modeled_revenue: 1900,
+        seasonal_percent_assumption: 0,
+        assumption_type: "neutral_carry_forward",
+        confidence_level: "preliminary",
+      },
+      {
+        month_label: "M+3",
+        modeled_revenue: 2774,
+        seasonal_percent_assumption: 46,
+        assumption_type: "factual_peak_reference",
+        confidence_level: "preliminary",
+      },
+      {
+        month_label: "M+4",
+        modeled_revenue: 2470,
+        seasonal_percent_assumption: 30,
+        assumption_type: "factual_peak_reference",
+        confidence_level: "preliminary",
+      },
+      {
+        month_label: "M+5",
+        modeled_revenue: 1900,
+        seasonal_percent_assumption: 0,
+        assumption_type: "neutral_carry_forward",
+        confidence_level: "preliminary",
+      },
+      {
+        month_label: "M+6",
+        modeled_revenue: 1900,
+        seasonal_percent_assumption: 0,
+        assumption_type: "neutral_carry_forward",
+        confidence_level: "preliminary",
+      },
+    ],
+    model_logic:
+      "База = cash-in прошлого месяца 1900 USD. Для ближайших 6 месяцев применён нейтральный carry-forward, кроме месяцев, которые в сезонных сигналах описаны как пики с числовыми значениями. Числовые спады не заданы, поэтому вниз модель не калибруется.",
+    confidence_level: "preliminary",
+    note:
+      "Это ориентир по направлению, а не прогноз-факт. Базовый месяц неизвестно относится ли к пику, спаду или нейтральному спросу; исторический ряд выручки по месяцам отсутствует.",
+  },
+
+  exact_metrics_table: {
+    columns: [
+      "metric",
+      "formula",
+      "value",
+      "unit",
+      "confidence_level",
+      "interpretation",
+    ],
+    rows: [
+      {
+        metric: "Спрос / пропускная способность (Demand / Capacity)",
+        formula: "lead_volume / processing_capacity = 13 / 4",
+        value: 3.25,
+        unit: "x",
+        confidence_level: "high",
+        interpretation:
+          "Номинальный входящий спрос выше заявленной возможности обработки в 3.25 раза.",
+      },
+      {
+        metric: "Покрытие спроса capacity",
+        formula: "processing_capacity / lead_volume = 4 / 13",
+        value: 0.308,
+        unit: "share",
+        confidence_level: "high",
+        interpretation:
+          "Команда может обработать около 30.8% текущего объёма обращений.",
+      },
+      {
+        metric: "Необработанный спрос",
+        formula: "max(lead_volume - processing_capacity, 0) = max(13 - 4, 0)",
+        value: 9,
+        unit: "лидов",
+        confidence_level: "high",
+        interpretation:
+          "При равномерном качестве лидов до 9 обращений остаются вне capacity.",
+      },
+      {
+        metric: "Доля необработанного спроса",
+        formula: "unmet_demand_count / lead_volume = 9 / 13",
+        value: 0.692,
+        unit: "share",
+        confidence_level: "high",
+        interpretation:
+          "Потенциально теряется около 69.2% входящего потока на этапе обработки.",
+      },
+      {
+        metric: "Доля топ-2 каналов",
+        formula: "30% + 25%",
+        value: 55,
+        unit: "percent",
+        confidence_level: "high",
+        interpretation:
+          "Больше половины потока сосредоточено в двух каналах.",
+      },
+      {
+        metric: "Доля топ-3 каналов",
+        formula: "30% + 25% + 25%",
+        value: 80,
+        unit: "percent",
+        confidence_level: "high",
+        interpretation:
+          "80% потока завязано на трёх источниках; диверсификация есть, но распределение не полностью равномерное.",
+      },
+      {
+        metric: "Максимальный сезонный пик",
+        formula: "max(46%, 30%, 31%, 44%)",
+        value: 46,
+        unit: "percent",
+        confidence_level: "high",
+        interpretation:
+          "Самый сильный зафиксированный пик спроса заявлен на март.",
+      },
+      {
+        metric: "Максимальный сезонный спад",
+        formula: "max(abs(seasonal_decline_percentages))",
+        value: null,
+        unit: "percent",
+        confidence_level: "preliminary",
+        interpretation:
+          "Числовые значения спадов не заданы; есть только качественное описание слабого начала и конца года.",
+      },
+    ],
+  },
+
+  inferred_metrics_table: {
+    columns: [
+      "metric",
+      "formula",
+      "value",
+      "unit",
+      "confidence_level",
+      "interpretation",
+    ],
+    rows: [
+      {
+        metric: "Ограничение capacity",
+        formula: "если Demand / Capacity > 1, то поток ограничен обработкой",
+        value: "Сильное",
+        unit: "качественная оценка",
+        confidence_level: "high",
+        interpretation:
+          "При 13 обращениях и capacity 4 узкое место находится в обработке, а не только в генерации спроса.",
+      },
+      {
+        metric: "Нестабильность потока при мультиканальности",
+        formula: "declared_multi_channel + stable_flow_problem_statement",
+        value: "Есть",
+        unit: "флаг",
+        confidence_level: "medium",
+        interpretation:
+          "Несмотря на 5 источников, бизнес сам называет стабильный поток заявок главной проблемой; качество и повторяемость потока не подтверждены.",
+      },
+      {
+        metric: "Founder-dependent lead handling",
+        formula:
+          "core_team_size = 2 + founders involved in sales/marketing/operations",
+        value: "Высокая зависимость",
+        unit: "качественная оценка",
+        confidence_level: "high",
+        interpretation:
+          "Оба основателя одновременно ведут маркетинг, продажи, финансы и операционку, что повышает риск просадки обработки лидов.",
+      },
+      {
+        metric: "Слабая статистическая база",
+        formula: "1 sale last period + startup stage + ~6 months in market",
+        value: "Очень узкая выборка",
+        unit: "качественная оценка",
+        confidence_level: "high",
+        interpretation:
+          "Текущее состояние потока нельзя считать устойчиво измеренным по одной продаже и одному месяцу cash-in.",
+      },
+      {
+        metric: "Риск сезонной волатильности",
+        formula: "declared_peaks_numeric + declines_qualitative_only",
+        value: "Средний",
+        unit: "качественная оценка",
+        confidence_level: "medium",
+        interpretation:
+          "Пики описаны численно, но спады — только словами; это усиливает неопределённость при планировании загрузки и выручки.",
+      },
+      {
+        metric: "Разрыв между целями и текущей системой потока",
+        formula: "growth_goals vs current_capacity + 1 active client",
+        value: "Существенный",
+        unit: "качественная оценка",
+        confidence_level: "high",
+        interpretation:
+          "Цели по 2 новым контрактам за 6 месяцев и 3 стабильным проектам в работе за 12 месяцев опираются на поток, который пока не выглядит устойчиво масштабируемым.",
+      },
+    ],
+  },
+
+  contradictions: {
+    contradiction_flag: true,
+    contradiction_items: [
+      "Формально есть 5 каналов привлечения, но ключевой запрос бизнеса — именно стабильный поток заявок.",
+      "Номинально обращений 13 при capacity 4, но за прошлый месяц зафиксирован только 1 клиент, что не позволяет понять, сколько спроса реально качественное.",
+      "Заявлены выраженные сезонные пики, но бизнесу около полугода и исторического ряда monthly Revenue нет.",
+      "Фокус сегмента — seed SaaS, но накопленный опыт описан шире: ecom, edtech, fintech; это размывает точную картину message-to-demand fit.",
+    ],
+    impact_on_analysis:
+      "Выводы по потоку надёжны в части перегруза capacity и структуры каналов, но слабее в части качества лидов, сезонной амплитуды и истинной конверсии. Поэтому выводы о масштабировании и сезонной модели нужно читать как вероятностные, а не как статистически устойчивые.",
+  },
+
+  flow_interpretation: {
+    current_flow_state: {
+      key_value: "Спрос выше capacity, но поток статистически хрупкий",
+      comment:
+        "13 обращений при capacity 4 создают перегруз, однако база наблюдений слишком мала для устойчивых выводов по качеству и конверсии.",
+    },
+    main_flow_loss_pattern: {
+      key_value: "Потеря на обработке и упаковке ценности",
+      comment:
+        "Основной риск — часть лидов не проходит из-за нехватки ресурса и сложной коммуникации оффера до оплаты.",
+    },
+    scalability_risk:
+      "Высокий: текущая структура потока завязана на двух основателях, при этом операционка и проектное управление уже перегружены, а цели на 6–12 месяцев требуют более устойчивой и воспроизводимой обработки входящего спроса.",
+    strongest_numeric_signal: {
+      key_value: "69.2% потенциально вне capacity",
+      comment:
+        "Это самый сильный индикатор реального лимита потока: даже при наличии входящих лидов команда успевает покрыть только около 30.8% объёма.",
+    },
+    flow_reliability:
+      "Ниже средней: по структуре каналов и capacity картина ясна, но по конверсии, качеству лидов и сезонной амплитуде выборка слишком мала.",
+    capacity_vs_demand_takeaway:
+      "Сейчас бизнес ограничен не только генерацией спроса, а в первую очередь способностью качественно обработать уже приходящие обращения. При этом субъективное ощущение нехватки стабильного потока может частично объясняться тем, что номинальный поток не равен стабильному потоку качественных сделок.",
+  },
+
   missing_for_stronger_model: [
-    "Фактическая конверсия из обращения в созвон, оффер и оплату",
-    "Разбивка качества лидов по каждому каналу, а не только доля потока",
-    "Помесячная история входящего спроса минимум за 6–12 месяцев",
-    "Доля квалифицированных обращений в общем потоке",
-    "Фактическая повторяемость спроса и возвратов по месяцам",
+    "Помесячная история лидов и продаж минимум за 6–12 месяцев",
+    "Сопоставимая конверсия лид → клиент за один и тот же период",
+    "Разделение лидов на валовые и квалифицированные",
+    "Фактическое время и доля потерь на каждом этапе до оплаты",
+    "Помесячный cash-in или выручка по месяцам для проверки сезонности",
   ],
   confidence_note:
-    "Картина client flow полезна как стартовая, но пока опирается на малую базу наблюдений. Самый надежный сигнал — разрыв между текущим спросом и пропускной способностью. Выводы по сезонности и устойчивости потока предварительные.",
+    "Самые надёжные выводы касаются перегруза capacity и структуры каналов. Самые слабые зоны — истинная конверсия, качество лидов и сезонная амплитуда. Прогноз Revenue построен как preliminary-сценарий от одного cash-in baseline.",
 };
 
 const THEME_CARDS: ThemeCard[] = [
@@ -614,10 +1173,12 @@ const THEME_CARDS: ThemeCard[] = [
   },
   {
     id: "clients_flow",
-    blockNumber: "BLOCK 4",
-    title: "Clients & Flow",
-    subtitle: "Demand, channels, conversion path",
-  },
+{
+  id: "clients_flow",
+  blockNumber: "BLOCK 4",
+  title: "Clients & Flow",
+  subtitle: "Demand, channels, conversion path",
+},
   {
     id: "product_sales",
     blockNumber: "BLOCK 5",
@@ -1000,7 +1561,6 @@ function PositioningResultsCard({
     </GlassCard>
   );
 }
-
 function ClientsFlowResultsCard({
   card,
   data,
@@ -1934,9 +2494,9 @@ export default function ResultsTokenPage() {
     []
   );
 
-  const isEconomicsOpen = activeBlock === "economics";
-  const isPositioningOpen = activeBlock === "positioning";
-  const isClientsFlowOpen = activeBlock === "clients_flow";
+const isEconomicsOpen = activeBlock === "economics";
+const isPositioningOpen = activeBlock === "positioning";
+const isClientsFlowOpen = activeBlock === "clients_flow";
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
@@ -2001,29 +2561,42 @@ export default function ResultsTokenPage() {
           </button>
         </div>
 
-        <section className="grid gap-6 xl:grid-cols-2">
-          {THEME_CARDS.map((card) => {
-            if (card.id === "positioning") {
-              return (
-                <PositioningResultsCard
-                  key={card.id}
-                  card={card}
-                  data={POSITIONING_MOCK}
-                  onOpen={() => setActiveBlock("positioning")}
-                />
-              );
-            }
+  <section className="grid gap-6 xl:grid-cols-2">
+  {THEME_CARDS.map((card) => {
+    if (card.id === "positioning") {
+      return (
+        <PositioningResultsCard
+          key={card.id}
+          card={card}
+          data={POSITIONING_MOCK}
+          onOpen={() => setActiveBlock("positioning")}
+        />
+      );
+    }
 
-            if (card.id === "clients_flow") {
-              return (
-                <ClientsFlowResultsCard
-                  key={card.id}
-                  card={card}
-                  data={CLIENTS_FLOW_MOCK}
-                  onOpen={() => setActiveBlock("clients_flow")}
-                />
-              );
-            }
+    if (card.id === "clients_flow") {
+      return (
+        <ClientsFlowResultsCard
+          key={card.id}
+          card={card}
+          data={CLIENTS_FLOW_MOCK}
+          onOpen={() => setActiveBlock("clients_flow")}
+        />
+      );
+    }
+
+    return (
+      <ThemeResultsCard
+        key={card.id}
+        card={card}
+        economics={ECONOMICS_MOCK}
+        onOpen={(id) => {
+          if (id === "economics") setActiveBlock(id);
+        }}
+      />
+    );
+  })}
+</section>
 
             return (
               <ThemeResultsCard
@@ -2049,30 +2622,30 @@ export default function ResultsTokenPage() {
         onClick={() => setActiveBlock(null)}
       />
 
-      <aside
-        className={cn(
-          "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
-          activeBlock ? "translate-x-0" : "translate-x-full"
-        )}
-        onClick={(event) => event.stopPropagation()}
-      >
-        {isEconomicsOpen ? (
-          <EconomicsDrawer
-            data={ECONOMICS_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : isPositioningOpen ? (
-          <PositioningDrawer
-            data={POSITIONING_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : isClientsFlowOpen ? (
-          <ClientsFlowDrawer
-            data={CLIENTS_FLOW_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : null}
-      </aside>
+<aside
+  className={cn(
+    "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
+    activeBlock ? "translate-x-0" : "translate-x-full"
+  )}
+  onClick={(event) => event.stopPropagation()}
+>
+  {isEconomicsOpen ? (
+    <EconomicsDrawer
+      data={ECONOMICS_MOCK}
+      onClose={() => setActiveBlock(null)}
+    />
+  ) : isPositioningOpen ? (
+    <PositioningDrawer
+      data={POSITIONING_MOCK}
+      onClose={() => setActiveBlock(null)}
+    />
+  ) : isClientsFlowOpen ? (
+    <ClientsFlowDrawer
+      data={CLIENTS_FLOW_MOCK}
+      onClose={() => setActiveBlock(null)}
+    />
+  ) : null}
+</aside>
     </div>
   );
 }
