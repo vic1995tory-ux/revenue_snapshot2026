@@ -1887,3 +1887,6 @@ const isPositioningOpen = activeBlock === "positioning";
     />
   ) : null}
 </aside>
+    </div>
+  );
+}
