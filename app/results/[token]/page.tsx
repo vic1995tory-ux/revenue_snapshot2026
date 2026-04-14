@@ -307,6 +307,76 @@ type ClientsFlowPayload = {
   confidence_note: string;
 };
 
+
+type ProductSalesPayload = {
+  confidence_ui_system: ConfidenceUiSystem;
+  input_normalization: {
+    product_margin_charts: Array<{
+      chart_type: string;
+      title: string;
+      product: string;
+      value: number | null;
+      unit: string;
+      confidence_level: ConfidenceLevel;
+    }>;
+    sales_model_type: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    retention_mechanics: string[];
+    repeat_sales_signals: string[];
+    upsell_presence: {
+      value: boolean | null;
+      confidence_level: ConfidenceLevel;
+    };
+    cross_sell_presence: {
+      value: boolean | null;
+      confidence_level: ConfidenceLevel;
+    };
+    margin_comparison_chart: {
+      chart_type: string;
+      series: Array<{
+        product: string;
+        margin: number | null;
+      }>;
+    };
+    cjm_duration_chart: {
+      chart_type: string;
+      series: Array<{
+        stage: string;
+        duration_value: number | null;
+        duration_unit: string;
+      }>;
+    };
+    funnel_drop: {
+      chart_type: string;
+      stages: Array<{
+        stage: string;
+        relative_drop: number | null;
+      }>;
+    };
+    cross_block_signals: {
+      demand_vs_capacity: string;
+      team_capacity_pressure: string;
+      revenue_concentration_signal: string;
+    };
+    data_quality_note: string;
+  };
+  exact_metrics_table: MetricTableData;
+  inferred_metrics_table: MetricTableData;
+  product_sales_interpretation: {
+    product_model_type: string;
+    core_revenue_driver: InterpretationItem;
+    main_revenue_leak: InterpretationItem;
+    scalability_limit: string;
+    most_important_numeric_signal: InterpretationItem;
+    retention_layer_takeaway: string;
+    conversion_visibility: string;
+  };
+  missing_for_stronger_model: string[];
+  confidence_note: string;
+};
+
 type ThemeCard = {
   id: ThemeBlockId;
   blockNumber: string;
@@ -1151,6 +1221,304 @@ const CLIENTS_FLOW_PAYLOAD: ClientsFlowPayload = {
     "Самые надёжные выводы касаются перегруза capacity и структуры каналов. Самые слабые зоны — истинная конверсия, качество лидов и сезонная амплитуда. Прогноз Revenue построен как preliminary-сценарий от одного cash-in baseline.",
 };
 
+const PRODUCT_SALES_PAYLOAD: ProductSalesPayload = {
+  "confidence_ui_system": {
+    "component": "reliability_dots",
+    "dots_total": 3,
+    "dot_size_px": 7,
+    "gap_px": 4,
+    "hover_zone": "group",
+    "inactive_style": "low_opacity",
+    "levels": {
+      "high": {
+        "display": "● ● ●",
+        "active_dots": 3,
+        "tooltip_title": "Устойчивый показатель",
+        "tooltip_text": "Можно опираться в выводах."
+      },
+      "medium": {
+        "display": "● ● ○",
+        "active_dots": 2,
+        "tooltip_title": "Вероятный показатель",
+        "tooltip_text": "Можно использовать с оговоркой."
+      },
+      "preliminary": {
+        "display": "● ○ ○",
+        "active_dots": 1,
+        "tooltip_title": "Предварительный показатель",
+        "tooltip_text": "Показывает направление, но требует подтверждения дополнительными данными."
+      }
+    }
+  },
+  "input_normalization": {
+    "product_margin_charts": [
+      {
+        "chart_type": "single_metric",
+        "title": "Маржинальность продукта",
+        "product": "разработка MVP",
+        "value": 50,
+        "unit": "percent",
+        "confidence_level": "medium"
+      },
+      {
+        "chart_type": "single_metric",
+        "title": "Маржинальность продукта",
+        "product": "Страт Сессии",
+        "value": 80,
+        "unit": "percent",
+        "confidence_level": "medium"
+      },
+      {
+        "chart_type": "single_metric",
+        "title": "Маржинальность продукта",
+        "product": "автоматизации для бизнеса",
+        "value": 30,
+        "unit": "percent",
+        "confidence_level": "medium"
+      }
+    ],
+    "sales_model_type": {
+      "value": "hybrid",
+      "confidence_level": "medium"
+    },
+    "retention_mechanics": [
+      "Повторные продажи",
+      "Пакеты услуг",
+      "Подписка",
+      "Апсейлы",
+      "Личный менеджер",
+      "14-дневное сопровождение после первой оплаты"
+    ],
+    "repeat_sales_signals": [
+      "возвраты клиентов с прошлого опыта",
+      "повторные продажи как заявленная механика",
+      "пакеты услуг",
+      "подписка",
+      "апсейлы"
+    ],
+    "upsell_presence": {
+      "value": true,
+      "confidence_level": "high"
+    },
+    "cross_sell_presence": {
+      "value": true,
+      "confidence_level": "medium"
+    },
+    "margin_comparison_chart": {
+      "chart_type": "bar",
+      "series": [
+        {
+          "product": "разработка MVP",
+          "margin": 50
+        },
+        {
+          "product": "Страт Сессии",
+          "margin": 80
+        },
+        {
+          "product": "автоматизации для бизнеса",
+          "margin": 30
+        }
+      ]
+    },
+    "cjm_duration_chart": {
+      "chart_type": "bar",
+      "series": [
+        {
+          "stage": "Acquisition",
+          "duration_value": 1,
+          "duration_unit": "hour"
+        },
+        {
+          "stage": "Activation",
+          "duration_value": 1,
+          "duration_unit": "hour"
+        },
+        {
+          "stage": "Value Realization",
+          "duration_value": 30,
+          "duration_unit": "minute"
+        },
+        {
+          "stage": "Conversion",
+          "duration_value": 10,
+          "duration_unit": "minute"
+        },
+        {
+          "stage": "Retention",
+          "duration_value": 14,
+          "duration_unit": "day"
+        }
+      ]
+    },
+    "funnel_drop": {
+      "chart_type": "funnel",
+      "stages": [
+        {
+          "stage": "Acquisition",
+          "relative_drop": null
+        },
+        {
+          "stage": "Activation",
+          "relative_drop": null
+        },
+        {
+          "stage": "Value",
+          "relative_drop": null
+        },
+        {
+          "stage": "Conversion",
+          "relative_drop": null
+        }
+      ]
+    },
+    "cross_block_signals": {
+      "demand_vs_capacity": "Текущий входящий поток выше заявленной capacity, что указывает на потенциальное ограничение масштабирования delivery и квалификации лидов.",
+      "team_capacity_pressure": "Продуктово-продажная модель опирается на основателей и проектных подрядчиков, поэтому рост продаж может усиливать ручную нагрузку.",
+      "revenue_concentration_signal": "Текущая monetization опирается на один контракт, поэтому продуктовая модель пока зависима от единичных high-ticket сделок."
+    },
+    "data_quality_note": "Есть данные по маржинальности продуктов, CJM, каналам и capacity, но фактическая база продаж пока минимальна: 1 клиент и 1 контракт, поэтому большинство выводов о стабильности модели предварительные."
+  },
+  "exact_metrics_table": {
+    "columns": [
+      "metric",
+      "formula",
+      "value",
+      "unit",
+      "confidence_level",
+      "interpretation"
+    ],
+    "rows": [
+      {
+        "metric": "listed_product_margin_average",
+        "formula": "(50% + 80% + 30%) / 3",
+        "value": 53.3,
+        "unit": "percent",
+        "confidence_level": "medium",
+        "interpretation": "Средняя заявленная маржинальность продуктовой линейки выглядит рабочей, но не отражает фактический revenue mix."
+      },
+      {
+        "metric": "listed_product_margin_spread",
+        "formula": "80% - 30%",
+        "value": 50,
+        "unit": "percentage_points",
+        "confidence_level": "medium",
+        "interpretation": "Разброс маржи высокий: продуктовый микс может сильно менять итоговую прибыльность."
+      },
+      {
+        "metric": "average_check",
+        "formula": "6100 USD / 1 client",
+        "value": 6100,
+        "unit": "USD_per_client_contract",
+        "confidence_level": "preliminary",
+        "interpretation": "Текущая продажа выглядит high-ticket, но выборка недостаточна для устойчивого среднего чека."
+      },
+      {
+        "metric": "retention_presence_flag",
+        "formula": "retention mechanics stated",
+        "value": 1,
+        "unit": "flag",
+        "confidence_level": "medium",
+        "interpretation": "Retention-слой в модели предусмотрен и формально встроен после первой оплаты."
+      },
+      {
+        "metric": "upsell_presence_flag",
+        "formula": "upsell mechanic stated",
+        "value": 1,
+        "unit": "flag",
+        "confidence_level": "high",
+        "interpretation": "Апсейл заявлен как часть коммерческой модели."
+      },
+      {
+        "metric": "cross_sell_presence_flag",
+        "formula": "multi-product structure + packages/subscription stated",
+        "value": 1,
+        "unit": "flag",
+        "confidence_level": "medium",
+        "interpretation": "Есть признаки кросс-продаж между стратегией, реализацией и автоматизациями, но без фактической статистики."
+      }
+    ]
+  },
+  "inferred_metrics_table": {
+    "columns": [
+      "metric",
+      "formula",
+      "value",
+      "unit",
+      "confidence_level",
+      "interpretation"
+    ],
+    "rows": [
+      {
+        "metric": "product_scalability",
+        "formula": "qualitative inference from hybrid offer mix + capacity pressure + founder-led delivery",
+        "value": "medium_to_low",
+        "unit": "qualitative",
+        "confidence_level": "medium",
+        "interpretation": "Стратегические и MVP-услуги могут хорошо продаваться, но масштабирование ограничивается исполнением и ручным сопровождением."
+      },
+      {
+        "metric": "margin_stability",
+        "formula": "inference from 50 p.p. product margin spread + limited sales history",
+        "value": "volatile",
+        "unit": "qualitative",
+        "confidence_level": "preliminary",
+        "interpretation": "Итоговая маржа будет нестабильной, пока не закрепится продуктовый микс и частота повторных продаж."
+      },
+      {
+        "metric": "conversion_predictability",
+        "formula": "inference from metrics tracking stated but no numeric funnel provided",
+        "value": "partially_visible",
+        "unit": "qualitative",
+        "confidence_level": "medium",
+        "interpretation": "Воронка концептуально описана и KPI отслеживаются, но численно Conversion Rate пока не прозрачен."
+      },
+      {
+        "metric": "dependency_on_high_ticket_sales",
+        "formula": "inference from 1 client contract and current revenue concentration",
+        "value": "high",
+        "unit": "qualitative",
+        "confidence_level": "preliminary",
+        "interpretation": "На текущем этапе выручка продуктовой модели зависит от единичных крупных сделок."
+      },
+      {
+        "metric": "delivery_bottleneck_impact",
+        "formula": "inference from 13 leads vs 4 capacity + 2-person team",
+        "value": "high",
+        "unit": "qualitative",
+        "confidence_level": "medium",
+        "interpretation": "Даже при росте спроса часть продаж может не монетизироваться из-за ограничений обработки и delivery."
+      }
+    ]
+  },
+  "product_sales_interpretation": {
+    "product_model_type": "Гибридная сервисная модель: one-off high-ticket проекты с попыткой достроить subscription/retention слой через сопровождение, пакеты и апсейлы.",
+    "core_revenue_driver": {
+      "key_value": "High-ticket проектная продажа с потенциальным входом через более маржинальные страт-сессии",
+      "comment": "По текущим данным основная monetization приходит через крупный контракт, а самым маржинальным продуктом выглядят страт-сессии, которые могут работать как entry/offer для последующего расширения чека."
+    },
+    "main_revenue_leak": {
+      "key_value": "Ручная delivery-нагрузка и незафиксированная численно конверсия",
+      "comment": "При спросе выше capacity рост заявок не равен росту выручки; дополнительно в CJM есть риск потери на объяснении ценности и сложности формулировок."
+    },
+    "scalability_limit": "Главное ограничение модели — founder-led и delivery-heavy формат: продажи можно наращивать каналами, но исполнение, сопровождение и кастомизация проектов пока делают масштабирование неровным. Для целей роста без раздувания затрат модели нужен более стандартизированный продуктовый вход и повторяемый post-sale слой.",
+    "most_important_numeric_signal": {
+      "key_value": "13 leads при capacity 4",
+      "comment": "Это сигнал не столько о нехватке спроса, сколько о том, что текущая продуктово-продажная система уже чувствительна к операционному узкому месту."
+    },
+    "retention_layer_takeaway": "Retention в модели заложен не как классическое долгосрочное удержание, а как короткий пост-оплатный мост в повторные услуги, апсейлы и потенциальную подписку. Это правильно для service-бизнеса, но фактическая глубина Retention пока не подтверждена данными.",
+    "conversion_visibility": "Воронка описана по этапам и времени прохождения, а метрики команда заявляет как отслеживаемые, поэтому модель управляемая в теории. Но без численных переходов между стадиями Conversion Rate и точки основной просадки остаются вероятностными, а не доказанными."
+  },
+  "missing_for_stronger_model": [
+    "Фактическая выручка по каждому продукту за период, чтобы понять реальный product mix.",
+    "Conversion Rate между этапами CJM: visit → lead → meeting/demo → proposal → deal.",
+    "Доля repeat sales / renewals / upsells в общей выручке.",
+    "Средняя длительность сделки от лида до оплаты по фактическим кейсам, а не по ideal CJM.",
+    "Сколько delivery-часов и команды требует каждый продукт, чтобы отделить маржинальный продукт от ресурсоемкого."
+  ],
+  "confidence_note": "Продуктовая архитектура и sales-логика читаются, но устойчивость модели пока нельзя считать доказанной из-за одной фактической сделки. Наиболее надежны выводы о типе модели, маржинальности заявленных продуктов и наличии retention-механик. Выводы о high-ticket зависимости и масштабируемости предварительны, но логически сильны."
+};
+
 const THEME_CARDS: ThemeCard[] = [
   {
     id: "economics",
@@ -1175,8 +1543,6 @@ const THEME_CARDS: ThemeCard[] = [
     blockNumber: "BLOCK 5",
     title: "Product & Sales",
     subtitle: "Offer, margin mix, CJM, deal logic",
-    previewTitle: "В разработке",
-    previewText: "Карточка будет подключена к payload блока product_sales.",
   },
   {
     id: "analytics_management",
@@ -1242,6 +1608,13 @@ function formatByUnit(
   if (unit === "USD") return formatCurrency(value, "USD");
   if (unit === "x") return `${formatNumber(value, 2)}x`;
   if (unit === "п.п.") return `${formatNumber(value, 0)} п.п.`;
+  if (unit === "percentage_points") return `${formatNumber(value, 0)} p.p.`;
+  if (unit === "USD_per_client_contract") return `${formatCurrency(value, "USD")} / contract`;
+  if (unit === "flag") return value === 1 ? "Yes" : value === 0 ? "No" : String(value);
+  if (unit === "qualitative") return String(value);
+  if (unit === "minute") return `${formatNumber(value)} min`;
+  if (unit === "day") return `${formatNumber(value)} d`;
+  if (unit === "hour") return `${formatNumber(value)} h`;
   if (
     unit === "обращений" ||
     unit === "дней" ||
@@ -1977,6 +2350,134 @@ function ForecastModelCard({
   );
 }
 
+
+function MiniBarChart({
+  title,
+  series,
+  valueKey,
+  labelKey,
+  suffix = "%",
+}: {
+  title: string;
+  series: Array<Record<string, string | number | null>>;
+  valueKey: string;
+  labelKey: string;
+  suffix?: string;
+}) {
+  const max = Math.max(
+    1,
+    ...series.map((item) =>
+      typeof item[valueKey] === "number" ? Number(item[valueKey]) : 0
+    )
+  );
+
+  return (
+    <GlassCard className="p-5">
+      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+        chart
+      </div>
+      <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+
+      <div className="mt-6 space-y-4">
+        {series.map((item, index) => {
+          const label = String(item[labelKey] ?? "—");
+          const value =
+            typeof item[valueKey] === "number" ? Number(item[valueKey]) : null;
+
+          return (
+            <div key={`${title}-${label}-${index}`}>
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <span className="text-sm text-white/72">{label}</span>
+                <span className="text-sm font-semibold text-white">
+                  {value === null ? "—" : `${formatNumber(value, value % 1 === 0 ? 0 : 1)}${suffix}`}
+                </span>
+              </div>
+              <div className="h-3 rounded-full bg-white/8">
+                <div
+                  className="h-3 rounded-full bg-[#f7d237]"
+                  style={{
+                    width: value === null ? "0%" : `${Math.max((value / max) * 100, 6)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </GlassCard>
+  );
+}
+
+function ProductSalesFunnel({
+  title,
+  stages,
+}: {
+  title: string;
+  stages: Array<{ stage: string; relative_drop: number | null }>;
+}) {
+  return (
+    <GlassCard className="p-5">
+      <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+        chart
+      </div>
+      <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+
+      <div className="mt-6 space-y-3">
+        {stages.map((item, index) => (
+          <div
+            key={`${item.stage}-${index}`}
+            className="rounded-[20px] border border-white/10 bg-white/[0.03] px-4 py-4"
+          >
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm text-white/72">{item.stage}</span>
+              <span className="text-sm font-semibold text-white">
+                {item.relative_drop === null ? "n/a" : `${formatPercent(item.relative_drop)}`}
+              </span>
+            </div>
+            <div className="mt-3 h-3 rounded-full bg-white/8">
+              <div
+                className="h-3 rounded-full bg-[#7dd3fc]"
+                style={{
+                  width:
+                    item.relative_drop === null
+                      ? "10%"
+                      : `${Math.max(Math.min(item.relative_drop, 100), 8)}%`,
+                }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+  );
+}
+
+function SignalPill({
+  label,
+  value,
+  level,
+  system,
+}: {
+  label: string;
+  value: string;
+  level: ConfidenceLevel;
+  system: ConfidenceUiSystem;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+          {label}
+        </div>
+        <ReliabilityDots level={level} system={system} compact />
+      </div>
+      <div className="mt-3 text-base font-medium text-white">
+        {value}
+      </div>
+    </div>
+  );
+}
+
 function ThemeResultsCard({
   card,
   economics,
@@ -2133,6 +2634,84 @@ function ClientsFlowResultsCard({
 }: {
   card: ThemeCard;
   data: ClientsFlowPayload;
+  onOpen: () => void;
+}) {
+  const missingPreview = data.missing_for_stronger_model.slice(0, 3);
+
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+            missing_for_stronger_model
+          </div>
+          <div className="mt-3 space-y-2">
+            {missingPreview.map((item, index) => (
+              <div
+                key={item}
+                className="flex gap-3 text-sm leading-6 text-white/74"
+              >
+                <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_note
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">
+            {data.confidence_note}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
+
+function ProductSalesResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: ProductSalesPayload;
   onOpen: () => void;
 }) {
   const missingPreview = data.missing_for_stronger_model.slice(0, 3);
@@ -2819,6 +3398,255 @@ function ClientsFlowDrawer({
   );
 }
 
+
+function ProductSalesDrawer({
+  data,
+  onClose,
+}: {
+  data: ProductSalesPayload;
+  onClose: () => void;
+}) {
+  const system = data.confidence_ui_system;
+
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 5
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Product & Sales
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный payload-разворот блока product_sales.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="product sales overview"
+            title="Executive signal"
+            text="Ключевая интерпретация продуктовой модели, монетизации и ограничений масштабирования."
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <InsightCard
+              title="product_model_type"
+              value="Hybrid product-sales model"
+              text={data.product_sales_interpretation.product_model_type}
+            />
+            <InsightCard
+              title="core_revenue_driver"
+              value={data.product_sales_interpretation.core_revenue_driver.key_value}
+              text={data.product_sales_interpretation.core_revenue_driver.comment}
+            />
+            <InsightCard
+              title="main_revenue_leak"
+              value={data.product_sales_interpretation.main_revenue_leak.key_value}
+              text={data.product_sales_interpretation.main_revenue_leak.comment}
+            />
+            <InsightCard
+              title="most_important_numeric_signal"
+              value={data.product_sales_interpretation.most_important_numeric_signal.key_value}
+              text={data.product_sales_interpretation.most_important_numeric_signal.comment}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ParagraphCard
+              title="scalability_limit"
+              text={data.product_sales_interpretation.scalability_limit}
+              tone="warning"
+            />
+            <ParagraphCard
+              title="confidence_note"
+              text={data.confidence_note}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ParagraphCard
+              title="retention_layer_takeaway"
+              text={data.product_sales_interpretation.retention_layer_takeaway}
+            />
+            <ParagraphCard
+              title="conversion_visibility"
+              text={data.product_sales_interpretation.conversion_visibility}
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="input normalization"
+            title="Normalized inputs"
+            text="Все нормализованные входы product_sales."
+          />
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <SignalPill
+              label="sales_model_type"
+              value={data.input_normalization.sales_model_type.value}
+              level={data.input_normalization.sales_model_type.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="upsell_presence"
+              value={data.input_normalization.upsell_presence.value ? "Yes" : "No"}
+              level={data.input_normalization.upsell_presence.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="cross_sell_presence"
+              value={data.input_normalization.cross_sell_presence.value ? "Yes" : "No"}
+              level={data.input_normalization.cross_sell_presence.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="data_readiness"
+              value="Product payload connected"
+              level="high"
+              system={system}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            {data.input_normalization.product_margin_charts.map((item) => (
+              <div key={item.product} className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                    {item.title}
+                  </div>
+                  <ReliabilityDots level={item.confidence_level} system={system} compact />
+                </div>
+                <div className="mt-2 text-base text-white/72">{item.product}</div>
+                <div className="mt-6 h-3 rounded-full bg-white/8">
+                  <div
+                    className="h-3 rounded-full bg-[#f7d237]"
+                    style={{ width: `${item.value ?? 0}%` }}
+                  />
+                </div>
+                <div className="mt-3 text-2xl font-semibold text-white">
+                  {item.value === null ? "—" : formatPercent(item.value)}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="retention_mechanics"
+              items={data.input_normalization.retention_mechanics}
+            />
+            <BulletList
+              title="repeat_sales_signals"
+              items={data.input_normalization.repeat_sales_signals}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <ParagraphCard
+              title="demand_vs_capacity"
+              text={data.input_normalization.cross_block_signals.demand_vs_capacity}
+            />
+            <ParagraphCard
+              title="team_capacity_pressure"
+              text={data.input_normalization.cross_block_signals.team_capacity_pressure}
+            />
+            <ParagraphCard
+              title="revenue_concentration_signal"
+              text={data.input_normalization.cross_block_signals.revenue_concentration_signal}
+              tone="warning"
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="data_quality_note"
+              text={data.input_normalization.data_quality_note}
+              tone="accent"
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="visual blocks"
+            title="Margin, CJM and funnel"
+            text="Графические данные из payload блока product_sales."
+          />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <MiniBarChart
+              title="Margin comparison"
+              series={data.input_normalization.margin_comparison_chart.series}
+              valueKey="margin"
+              labelKey="product"
+              suffix="%"
+            />
+            <MiniBarChart
+              title="CJM duration"
+              series={data.input_normalization.cjm_duration_chart.series}
+              valueKey="duration_value"
+              labelKey="stage"
+              suffix=""
+            />
+          </div>
+          <div className="mt-4">
+            <ProductSalesFunnel
+              title="Funnel drop visibility"
+              stages={data.input_normalization.funnel_drop.stages}
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="exact metrics" title="Exact metrics table" />
+          <MetricsTable
+            title="Exact metrics"
+            data={data.exact_metrics_table}
+            system={system}
+          />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="inferred metrics" title="Inferred metrics table" />
+          <MetricsTable
+            title="Inferred metrics"
+            data={data.inferred_metrics_table}
+            system={system}
+          />
+        </section>
+
+        <section className="pb-6">
+          <SectionHead
+            eyebrow="model gaps"
+            title="Missing for stronger model"
+          />
+          <BulletList
+            title="missing_for_stronger_model"
+            items={data.missing_for_stronger_model}
+          />
+        </section>
+      </div>
+    </div>
+  );
+}
+
 export default function ResultsTokenPage() {
   const params = useParams();
   const token =
@@ -2843,20 +3671,20 @@ export default function ResultsTokenPage() {
   const heroStats = useMemo(
     () => [
       {
-        label: "Flow state",
-        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.current_flow_state.key_value,
+        label: "Sales model",
+        value: PRODUCT_SALES_PAYLOAD.input_normalization.sales_model_type.value,
       },
       {
-        label: "Strongest signal",
-        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.strongest_numeric_signal.key_value,
+        label: "Core driver",
+        value: PRODUCT_SALES_PAYLOAD.product_sales_interpretation.core_revenue_driver.key_value,
       },
       {
-        label: "Main loss pattern",
-        value: CLIENTS_FLOW_PAYLOAD.flow_interpretation.main_flow_loss_pattern.key_value,
+        label: "Main leak",
+        value: PRODUCT_SALES_PAYLOAD.product_sales_interpretation.main_revenue_leak.key_value,
       },
       {
         label: "Missing inputs",
-        value: `${CLIENTS_FLOW_PAYLOAD.missing_for_stronger_model.length}`,
+        value: `${PRODUCT_SALES_PAYLOAD.missing_for_stronger_model.length}`,
       },
     ],
     []
@@ -2865,6 +3693,7 @@ export default function ResultsTokenPage() {
   const isEconomicsOpen = activeBlock === "economics";
   const isPositioningOpen = activeBlock === "positioning";
   const isClientsFlowOpen = activeBlock === "clients_flow";
+  const isProductSalesOpen = activeBlock === "product_sales";
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
@@ -2879,13 +3708,13 @@ export default function ResultsTokenPage() {
                 Revenue Snapshot / Results
               </div>
               <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
-                Results page with full Clients & Flow block
+                Results page with Product & Sales block
               </h1>
               <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
-                Карточки economics и positioning оставлены в текущей логике, а
-                блок Clients & Flow собран полностью под переданный JSON payload.
-                На превью карточки Clients & Flow снаружи выводятся только
-                <span className="text-white"> missing_for_stronger_model </span>и
+                Карточки economics, positioning и clients_flow оставлены в текущей логике, а
+                блок Product & Sales собран полностью под переданный JSON payload.
+                На превью карточки Product & Sales снаружи выводятся только
+                <span className="text-white"> missing_for_stronger_model </span> и
                 <span className="text-white"> confidence_note</span>, а внутри
                 drawer — весь блок.
               </p>
@@ -2895,7 +3724,7 @@ export default function ResultsTokenPage() {
                   token: {token}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
-                  clients_flow payload ready
+                  product_sales payload ready
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
                   drawer width: 66vw
@@ -2923,10 +3752,10 @@ export default function ResultsTokenPage() {
 
           <button
             type="button"
-            onClick={() => setActiveBlock("clients_flow")}
+            onClick={() => setActiveBlock("product_sales")}
             className="rounded-full border border-[#f7d237]/18 bg-[#f7d237]/10 px-5 py-3 text-sm font-medium text-[#fff3b2] transition hover:bg-[#f7d237]/15"
           >
-            Открыть Clients & Flow
+            Открыть Product & Sales
           </button>
         </div>
 
@@ -2950,6 +3779,17 @@ export default function ResultsTokenPage() {
                   card={card}
                   data={CLIENTS_FLOW_PAYLOAD}
                   onOpen={() => setActiveBlock("clients_flow")}
+                />
+              );
+            }
+
+            if (card.id === "product_sales") {
+              return (
+                <ProductSalesResultsCard
+                  key={card.id}
+                  card={card}
+                  data={PRODUCT_SALES_PAYLOAD}
+                  onOpen={() => setActiveBlock("product_sales")}
                 />
               );
             }
@@ -2998,6 +3838,11 @@ export default function ResultsTokenPage() {
         ) : isClientsFlowOpen ? (
           <ClientsFlowDrawer
             data={CLIENTS_FLOW_PAYLOAD}
+            onClose={() => setActiveBlock(null)}
+          />
+        ) : isProductSalesOpen ? (
+          <ProductSalesDrawer
+            data={PRODUCT_SALES_PAYLOAD}
             onClose={() => setActiveBlock(null)}
           />
         ) : null}
