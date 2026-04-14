@@ -171,6 +171,71 @@ type PositioningPayload = {
   confidence_summary: string;
 };
 
+type AnalyticsManagementPayload = {
+  confidence_ui_system: ConfidenceUiSystem;
+  input_normalization: {
+    analytics_tools_used: string[];
+    metrics_tracked: string[];
+    unit_economics_presence: {
+      value: boolean | null;
+      confidence_level: ConfidenceLevel;
+    };
+    conversion_tracking: {
+      value: boolean | null;
+      confidence_level: ConfidenceLevel;
+    };
+    decision_making_model: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    recent_changes_last_6_months: string[];
+    data_usage_level: {
+      value: string;
+      confidence_level: ConfidenceLevel;
+    };
+    cross_block_signals: {
+      contradictions_present: string;
+      metric_visibility_gaps: string;
+      decision_dependency_on_founders: string;
+    };
+    data_quality_note: string;
+  };
+  exact_metrics_table: {
+    rows: Array<{
+      metric: string;
+      value: number | string | boolean | null;
+      comment: string;
+    }>;
+  };
+  inferred_metrics_table: {
+    rows: Array<{
+      metric: string;
+      value: string;
+      confidence_level: ConfidenceLevel;
+      comment: string;
+    }>;
+  };
+  analytics_management_interpretation: {
+    analytics_maturity_level: string;
+    decision_model_type: {
+      key_value: string;
+      comment: string;
+    };
+    main_management_gap: {
+      key_value: string;
+      comment: string;
+    };
+    data_usage_takeaway: string;
+    scalability_limit: string;
+    most_important_signal: {
+      key_value: string;
+      comment: string;
+    };
+  };
+  missing_for_stronger_model: string[];
+  confidence_note: string;
+};
+
 type ClientsFlowStage = {
   stage: string;
   duration: string;
@@ -1519,6 +1584,185 @@ const PRODUCT_SALES_PAYLOAD: ProductSalesPayload = {
   "confidence_note": "Продуктовая архитектура и sales-логика читаются, но устойчивость модели пока нельзя считать доказанной из-за одной фактической сделки. Наиболее надежны выводы о типе модели, маржинальности заявленных продуктов и наличии retention-механик. Выводы о high-ticket зависимости и масштабируемости предварительны, но логически сильны."
 };
 
+const ANALYTICS_MANAGEMENT_PAYLOAD: AnalyticsManagementPayload = {
+  confidence_ui_system: {
+    component: "reliability_dots",
+    dots_total: 3,
+    dot_size_px: 7,
+    gap_px: 4,
+    hover_zone: "group",
+    inactive_style: "low_opacity",
+    levels: {
+      high: {
+        display: "● ● ●",
+        active_dots: 3,
+        tooltip_title: "Устойчивый показатель",
+        tooltip_text: "Можно опираться в выводах.",
+      },
+      medium: {
+        display: "● ● ○",
+        active_dots: 2,
+        tooltip_title: "Вероятный показатель",
+        tooltip_text: "Можно использовать с оговоркой.",
+      },
+      preliminary: {
+        display: "● ○ ○",
+        active_dots: 1,
+        tooltip_title: "Предварительный показатель",
+        tooltip_text:
+          "Показывает направление, но требует подтверждения дополнительными данными.",
+      },
+    },
+  },
+  input_normalization: {
+    analytics_tools_used: [
+      "Финансовая модель",
+      "Сегментация клиентов",
+      "LTV / CAC",
+      "Конверсии и воронка продаж",
+      "TAM/SAM/SOM",
+    ],
+    metrics_tracked: [
+      "Revenue",
+      "Margin",
+      "CAC",
+      "Average Check",
+      "Conversion to Sale",
+      "Retention",
+      "Team Load",
+      "Cash Flow",
+      "Sales Cycle Speed",
+      "Project Complexity",
+    ],
+    unit_economics_presence: {
+      value: true,
+      confidence_level: "medium",
+    },
+    conversion_tracking: {
+      value: true,
+      confidence_level: "medium",
+    },
+    decision_making_model: {
+      value: "Совместное founder-led принятие решений без выделенного owner по функции",
+      confidence_level: "high",
+    },
+    recent_changes_last_6_months: [
+      "Автоматизация брифинга",
+      "Создание структурированного клиентского workspace",
+      "Общий контур прозрачности по проектным данным для клиента",
+    ],
+    data_usage_level: {
+      value: "Частично data-driven: метрики и модели заявлены, но фактическая база наблюдений пока минимальна",
+      confidence_level: "medium",
+    },
+    cross_block_signals: {
+      contradictions_present:
+        "Есть слабая консистентность базы данных: заявлены LTV/CAC, retention и сезонность, но фактическая история очень короткая и клиентская база почти отсутствует для устойчивых выводов.",
+      metric_visibility_gaps:
+        "Воронка описана качественно, но нет количественной декомпозиции по этапам; входящий поток известен, capacity известен, но conversion по этапам не показана.",
+      decision_dependency_on_founders:
+        "Критически высокая: оба основателя участвуют почти во всех функциях и совместно принимают решения.",
+    },
+    data_quality_note:
+      "Метрики и управленческий язык присутствуют, но значительная часть выводов пока опирается на раннюю стадию бизнеса и единичные наблюдения.",
+  },
+  exact_metrics_table: {
+    rows: [
+      {
+        metric: "analytics_tools_count",
+        value: 5,
+        comment: "Перечислены 5 аналитических подходов/моделей",
+      },
+      {
+        metric: "metrics_tracking_flag",
+        value: true,
+        comment: "Назван регулярный набор KPI",
+      },
+      {
+        metric: "conversion_tracking_flag",
+        value: true,
+        comment: "Конверсия и воронка продаж явно указаны",
+      },
+      {
+        metric: "unit_economics_presence_flag",
+        value: true,
+        comment: "Указаны CAC, LTV/CAC, маржа и продуктовая маржинальность",
+      },
+    ],
+  },
+  inferred_metrics_table: {
+    rows: [
+      {
+        metric: "analytics_maturity",
+        value: "medium",
+        confidence_level: "medium",
+        comment:
+          "Каркас аналитики есть, но база наблюдений еще слишком мала для устойчивой модели управления.",
+      },
+      {
+        metric: "decision_quality",
+        value: "medium",
+        confidence_level: "medium",
+        comment:
+          "Решения принимаются быстро и совместно, но без явного owner'а и с высокой загрузкой founders.",
+      },
+      {
+        metric: "reaction_speed",
+        value: "high",
+        confidence_level: "medium",
+        comment:
+          "Небольшая команда и уже внедренные изменения за 6 месяцев указывают на высокую скорость реакции.",
+      },
+      {
+        metric: "metric_dependency",
+        value: "medium",
+        confidence_level: "preliminary",
+        comment:
+          "Бизнес декларирует опору на цифры, но часть решений пока неизбежно строится на гипотезах из-за малого объема данных.",
+      },
+      {
+        metric: "management_scalability",
+        value: "low",
+        confidence_level: "high",
+        comment:
+          "Управленческий контур плохо масштабируется из-за концентрации решений и контроля на двух основателях.",
+      },
+    ],
+  },
+  analytics_management_interpretation: {
+    analytics_maturity_level:
+      "Средний, но неустойчивый уровень: бизнес видит ключевые экономические показатели, однако пока не имеет достаточной глубины данных для надежного управленческого цикла.",
+    decision_model_type: {
+      key_value: "founder-led collaborative",
+      comment:
+        "Система принятия решений существует, но она завязана на двух фаундерах, без явного распределения ownership по аналитике, операционке и коммерческому контуру.",
+    },
+    main_management_gap: {
+      key_value: "Недостаточная количественная прозрачность воронки и перегруз founders",
+      comment:
+        "Метрики названы, но нет числовой декомпозиции по этапам воронки, а управленческие решения и контроль одновременно сидят на двух людях. Это ограничивает качество приоритизации и мешает масштабируемости.",
+    },
+    data_usage_takeaway:
+      "Бизнес скорее понимает свою экономику, чем не понимает: есть язык маржи, CAC, LTV/CAC, product-level маржинальности и cash flow. Но управляемость еще не доказана, потому что фактическая выборка мала, retention и сезонность пока не подтверждены длинным горизонтом данных, а conversion visibility неполная.",
+    scalability_limit:
+      "Главный предел масштабирования — отсутствие отделения операционного и аналитического управления от founders. При росте входящего потока и числа проектов текущий контур начнет терять скорость и точность решений.",
+    most_important_signal: {
+      key_value: "Метрики есть, но feedback loop короткий и хрупкий",
+      comment:
+        "Наличие KPI, финансовой модели и недавних внедрений — сильный сигнал. Но единичная клиентская база, неполная количественная воронка и высокая зависимость от founders означают, что система управления пока формируется, а не работает как устойчивая машина.",
+    },
+  },
+  missing_for_stronger_model: [
+    "Количественная воронка по этапам: visits -> leads -> calls -> offers -> deals -> repeat",
+    "Фактический CAC по каналам и payback period",
+    "Подтвержденный retention / repeat purchase rate на реальных когортах",
+    "Юнит-экономика по каждому ключевому продукту с учетом трудозатрат команды и подрядчиков",
+    "Регламент принятия решений: кто owner по маркетингу, продажам, финансам и проектному управлению",
+  ],
+  confidence_note:
+    "Выводы по наличию аналитического каркаса достаточно надежны: метрики и модели названы явно. Выводы по качеству управления и unit-экономике ограничены ранней стадией и крайне малой выборкой клиентов. Поэтому зрелость аналитики оценена как medium, а часть управленческих выводов — preliminary.",
+};
+
 const THEME_CARDS: ThemeCard[] = [
   {
     id: "economics",
@@ -2478,6 +2722,128 @@ function SignalPill({
   );
 }
 
+function ExactAnalyticsTable({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: AnalyticsManagementPayload["exact_metrics_table"]["rows"];
+}) {
+  return (
+    <GlassCard className="overflow-hidden">
+      <div className="border-b border-white/10 px-5 py-5">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+          Table
+        </div>
+        <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-[760px] w-full border-collapse">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/[0.03] text-left">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Metric
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Value
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Comment
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={`${title}-${row.metric}`}
+                className="border-b border-white/8 align-top last:border-b-0"
+              >
+                <td className="px-5 py-5 text-sm font-medium text-white">
+                  {row.metric}
+                </td>
+                <td className="px-5 py-5 text-sm font-semibold text-white">
+                  {typeof row.value === "boolean"
+                    ? row.value
+                      ? "Yes"
+                      : "No"
+                    : String(row.value)}
+                </td>
+                <td className="px-5 py-5 text-sm leading-7 text-white/62">
+                  {row.comment}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </GlassCard>
+  );
+}
+
+function InferredAnalyticsTable({
+  title,
+  rows,
+  system,
+}: {
+  title: string;
+  rows: AnalyticsManagementPayload["inferred_metrics_table"]["rows"];
+  system: ConfidenceUiSystem;
+}) {
+  return (
+    <GlassCard className="overflow-hidden">
+      <div className="border-b border-white/10 px-5 py-5">
+        <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+          Table
+        </div>
+        <div className="mt-2 text-xl font-semibold text-white">{title}</div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-[920px] w-full border-collapse">
+          <thead>
+            <tr className="border-b border-white/10 bg-white/[0.03] text-left">
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Metric
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Value
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Reliability
+              </th>
+              <th className="px-5 py-4 text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                Comment
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr
+                key={`${title}-${row.metric}`}
+                className="border-b border-white/8 align-top last:border-b-0"
+              >
+                <td className="px-5 py-5 text-sm font-medium text-white">
+                  {row.metric}
+                </td>
+                <td className="px-5 py-5 text-sm font-semibold text-white">
+                  {row.value}
+                </td>
+                <td className="px-5 py-5 text-sm text-white/62">
+                  <ReliabilityDots level={row.confidence_level} system={system} />
+                </td>
+                <td className="px-5 py-5 text-sm leading-7 text-white/62">
+                  {row.comment}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </GlassCard>
+  );
+}
+
 function ThemeResultsCard({
   card,
   economics,
@@ -2781,6 +3147,82 @@ function ProductSalesResultsCard({
     </GlassCard>
   );
 }
+function AnalyticsManagementResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: AnalyticsManagementPayload;
+  onOpen: () => void;
+}) {
+  const missingPreview = data.missing_for_stronger_model.slice(0, 3);
+
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8 space-y-4">
+        <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+            missing_for_stronger_model
+          </div>
+          <div className="mt-3 space-y-2">
+            {missingPreview.map((item, index) => (
+              <div
+                key={item}
+                className="flex gap-3 text-sm leading-6 text-white/74"
+              >
+                <span className="mt-[2px] inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-white/10 text-[11px] text-white/42">
+                  {index + 1}
+                </span>
+                <span>{item}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_note
+          </div>
+          <p className="mt-3 text-sm leading-6 text-white/78">
+            {data.confidence_note}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
 
 function PositioningDrawer({
   data,
@@ -2904,7 +3346,199 @@ function PositioningDrawer({
     </div>
   );
 }
+function AnalyticsManagementDrawer({
+  data,
+  onClose,
+}: {
+  data: AnalyticsManagementPayload;
+  onClose: () => void;
+}) {
+  const system = data.confidence_ui_system;
 
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 6
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Analytics & Management
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный payload-разворот блока analytics_management.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="analytics management overview"
+            title="Executive signal"
+            text="Ключевая интерпретация зрелости аналитики, управленческого контура и масштабируемости решений."
+          />
+
+          <div className="grid gap-4 xl:grid-cols-2">
+            <InsightCard
+              title="analytics_maturity_level"
+              value="Analytics maturity"
+              text={data.analytics_management_interpretation.analytics_maturity_level}
+            />
+            <InsightCard
+              title="decision_model_type"
+              value={data.analytics_management_interpretation.decision_model_type.key_value}
+              text={data.analytics_management_interpretation.decision_model_type.comment}
+            />
+            <InsightCard
+              title="main_management_gap"
+              value={data.analytics_management_interpretation.main_management_gap.key_value}
+              text={data.analytics_management_interpretation.main_management_gap.comment}
+            />
+            <InsightCard
+              title="most_important_signal"
+              value={data.analytics_management_interpretation.most_important_signal.key_value}
+              text={data.analytics_management_interpretation.most_important_signal.comment}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <ParagraphCard
+              title="data_usage_takeaway"
+              text={data.analytics_management_interpretation.data_usage_takeaway}
+            />
+            <ParagraphCard
+              title="scalability_limit"
+              text={data.analytics_management_interpretation.scalability_limit}
+              tone="warning"
+            />
+          </div>
+
+          <div className="mt-4">
+            <ParagraphCard
+              title="confidence_note"
+              text={data.confidence_note}
+              tone="accent"
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="input normalization"
+            title="Normalized inputs"
+            text="Все нормализованные входы analytics_management."
+          />
+
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <SignalPill
+              label="unit_economics_presence"
+              value={data.input_normalization.unit_economics_presence.value ? "Yes" : "No"}
+              level={data.input_normalization.unit_economics_presence.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="conversion_tracking"
+              value={data.input_normalization.conversion_tracking.value ? "Yes" : "No"}
+              level={data.input_normalization.conversion_tracking.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="decision_making_model"
+              value={data.input_normalization.decision_making_model.value}
+              level={data.input_normalization.decision_making_model.confidence_level}
+              system={system}
+            />
+            <SignalPill
+              label="data_usage_level"
+              value={data.input_normalization.data_usage_level.value}
+              level={data.input_normalization.data_usage_level.confidence_level}
+              system={system}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="analytics_tools_used"
+              items={data.input_normalization.analytics_tools_used}
+            />
+            <BulletList
+              title="metrics_tracked"
+              items={data.input_normalization.metrics_tracked}
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-2">
+            <BulletList
+              title="recent_changes_last_6_months"
+              items={data.input_normalization.recent_changes_last_6_months}
+            />
+            <ParagraphCard
+              title="data_quality_note"
+              text={data.input_normalization.data_quality_note}
+              tone="accent"
+            />
+          </div>
+
+          <div className="mt-4 grid gap-4 xl:grid-cols-3">
+            <ParagraphCard
+              title="contradictions_present"
+              text={data.input_normalization.cross_block_signals.contradictions_present}
+            />
+            <ParagraphCard
+              title="metric_visibility_gaps"
+              text={data.input_normalization.cross_block_signals.metric_visibility_gaps}
+            />
+            <ParagraphCard
+              title="decision_dependency_on_founders"
+              text={data.input_normalization.cross_block_signals.decision_dependency_on_founders}
+              tone="warning"
+            />
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="exact metrics" title="Exact metrics table" />
+          <ExactAnalyticsTable
+            title="Exact metrics"
+            rows={data.exact_metrics_table.rows}
+          />
+        </section>
+
+        <section className="mb-8">
+          <SectionHead eyebrow="inferred metrics" title="Inferred metrics table" />
+          <InferredAnalyticsTable
+            title="Inferred metrics"
+            rows={data.inferred_metrics_table.rows}
+            system={system}
+          />
+        </section>
+
+        <section className="pb-6">
+          <SectionHead
+            eyebrow="model gaps"
+            title="Missing for stronger model"
+          />
+          <BulletList
+            title="missing_for_stronger_model"
+            items={data.missing_for_stronger_model}
+          />
+        </section>
+      </div>
+    </div>
+  );
+}
 function EconomicsDrawer({
   data,
   onClose,
@@ -3668,32 +4302,42 @@ export default function ResultsTokenPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  const heroStats = useMemo(
-    () => [
-      {
-        label: "Sales model",
-        value: PRODUCT_SALES_PAYLOAD.input_normalization.sales_model_type.value,
-      },
-      {
-        label: "Core driver",
-        value: PRODUCT_SALES_PAYLOAD.product_sales_interpretation.core_revenue_driver.key_value,
-      },
-      {
-        label: "Main leak",
-        value: PRODUCT_SALES_PAYLOAD.product_sales_interpretation.main_revenue_leak.key_value,
-      },
-      {
-        label: "Missing inputs",
-        value: `${PRODUCT_SALES_PAYLOAD.missing_for_stronger_model.length}`,
-      },
-    ],
-    []
-  );
+const heroStats = useMemo(
+  () => [
+    {
+      label: "Analytics maturity",
+      value:
+        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
+          (row) => row.metric === "analytics_maturity"
+        )?.value ?? "—",
+    },
+    {
+      label: "Decision quality",
+      value:
+        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
+          (row) => row.metric === "decision_quality"
+        )?.value ?? "—",
+    },
+    {
+      label: "Scalability",
+      value:
+        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
+          (row) => row.metric === "management_scalability"
+        )?.value ?? "—",
+    },
+    {
+      label: "Missing inputs",
+      value: `${ANALYTICS_MANAGEMENT_PAYLOAD.missing_for_stronger_model.length}`,
+    },
+  ],
+  []
+);
 
   const isEconomicsOpen = activeBlock === "economics";
   const isPositioningOpen = activeBlock === "positioning";
   const isClientsFlowOpen = activeBlock === "clients_flow";
   const isProductSalesOpen = activeBlock === "product_sales";
+  const isAnalyticsManagementOpen = activeBlock === "analytics_management";
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
@@ -3708,7 +4352,7 @@ export default function ResultsTokenPage() {
                 Revenue Snapshot / Results
               </div>
               <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
-                Results page with Product & Sales block
+                Results page with Analytics & Management block
               </h1>
               <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
                 Карточки economics, positioning и clients_flow оставлены в текущей логике, а
@@ -3793,6 +4437,16 @@ export default function ResultsTokenPage() {
                 />
               );
             }
+      if (card.id === "analytics_management") {
+  return (
+    <AnalyticsManagementResultsCard
+      key={card.id}
+      card={card}
+      data={ANALYTICS_MANAGEMENT_PAYLOAD}
+      onOpen={() => setActiveBlock("analytics_management")}
+    />
+  );
+}
 
             return (
               <ThemeResultsCard
@@ -3826,26 +4480,31 @@ export default function ResultsTokenPage() {
         onClick={(event) => event.stopPropagation()}
       >
         {isEconomicsOpen ? (
-          <EconomicsDrawer
-            data={ECONOMICS_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : isPositioningOpen ? (
-          <PositioningDrawer
-            data={POSITIONING_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : isClientsFlowOpen ? (
-          <ClientsFlowDrawer
-            data={CLIENTS_FLOW_PAYLOAD}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : isProductSalesOpen ? (
-          <ProductSalesDrawer
-            data={PRODUCT_SALES_PAYLOAD}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : null}
+  <EconomicsDrawer
+    data={ECONOMICS_MOCK}
+    onClose={() => setActiveBlock(null)}
+  />
+) : isPositioningOpen ? (
+  <PositioningDrawer
+    data={POSITIONING_MOCK}
+    onClose={() => setActiveBlock(null)}
+  />
+) : isClientsFlowOpen ? (
+  <ClientsFlowDrawer
+    data={CLIENTS_FLOW_PAYLOAD}
+    onClose={() => setActiveBlock(null)}
+  />
+) : isProductSalesOpen ? (
+  <ProductSalesDrawer
+    data={PRODUCT_SALES_PAYLOAD}
+    onClose={() => setActiveBlock(null)}
+  />
+) : isAnalyticsManagementOpen ? (
+  <AnalyticsManagementDrawer
+    data={ANALYTICS_MANAGEMENT_PAYLOAD}
+    onClose={() => setActiveBlock(null)}
+  />
+) : null}
       </aside>
     </div>
   );
