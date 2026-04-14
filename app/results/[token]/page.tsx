@@ -122,6 +122,53 @@ type EconomicsPayload = {
   missing_for_stronger_model: string[];
   confidence_note: string;
 };
+type PositioningRisk = {
+  risk: string;
+  confidence: "high" | "medium" | "preliminary";
+};
+
+type PositioningPayload = {
+  business_model: {
+    type: string;
+    confidence: "high" | "medium" | "preliminary";
+    reason: string;
+  };
+  business_stage: {
+    stage: string;
+    confidence: "high" | "medium" | "preliminary";
+    reason: string;
+  };
+  core_offer: {
+    value: string;
+    client_pays_for: string;
+    confidence: "high" | "medium" | "preliminary";
+    reason: string;
+  };
+  target_client: {
+    segment: string;
+    logic: string;
+    confidence: "high" | "medium" | "preliminary";
+  };
+  positioning_type: {
+    type: string;
+    confidence: "high" | "medium" | "preliminary";
+    reason: string;
+  };
+  market_scope: {
+    scope: string;
+    note: string;
+    confidence: "high" | "medium" | "preliminary";
+  };
+  delivery_model: {
+    type: string;
+    founder_dependency: string;
+    confidence: "high" | "medium" | "preliminary";
+    reason: string;
+  };
+  risks: PositioningRisk[];
+  takeaway: string;
+  confidence_summary: string;
+};
 
 type ThemeCard = {
   id: ThemeBlockId;
@@ -460,6 +507,78 @@ const ECONOMICS_MOCK: EconomicsPayload = {
   ],
   confidence_note:
     "Картина экономики полезна как стартовая, но опирается на очень малую выборку. Самый надежный вывод сейчас — разрыв между спросом и пропускной способностью. Выводы по марже и масштабированию предварительные.",
+};
+
+const POSITIONING_MOCK: PositioningPayload = {
+  business_model: {
+    type: "гибридный B2B сервис: стратегический консалтинг + реализация + продуктированные элементы",
+    confidence: "high",
+    reason:
+      "Компания описывает себя как business development/консалтинг с реализацией стратегий. При этом есть отдельные офферы с повторяемой доставкой: MVP, стратсессии, автоматизации.",
+  },
+  business_stage: {
+    stage: "ранний startup / pre-scale",
+    confidence: "high",
+    reason:
+      "Бизнесу около полугода, команда из 2 основателей, подтвержден только 1 клиент, ключевой запрос — стабильный поток заявок.",
+  },
+  core_offer: {
+    value:
+      "помощь стартапу пройти путь от гипотезы и стратегии к рабочему решению и следующим шагам роста",
+    client_pays_for:
+      "не за консультацию как таковую, а за структурированное решение: стратегия, MVP или автоматизация, которые дают понятный вектор действий и внедрение",
+    confidence: "high",
+    reason:
+      "В пути клиента ценность доводится через демо результата, а маржинальные офферы включают MVP, стратсессии и автоматизации. Значит продается не час работы, а оформленный результат.",
+  },
+  target_client: {
+    segment:
+      "seed-stage SaaS стартапы в B2B и B2C, которым нужен внешний партнер по стратегии и запуску",
+    logic:
+      "Фокус выбран не по прошлой базе, а по намерению: SaaS назван целевым рынком из-за роста и влияния на другие отрасли. Для такого клиента релевантны MVP, стратегические сессии и автоматизации как способы быстрее принять и реализовать решения.",
+    confidence: "medium",
+  },
+  positioning_type: {
+    type: "стратегический implementation-партнер с цифро-ориентированным подходом",
+    confidence: "high",
+    reason:
+      "Команда подчеркивает опору на аналитику, финансовые модели, сегментацию и воронку. Одновременно заявлена не только разработка стратегии, но и ее реализация.",
+  },
+  market_scope: {
+    scope: "ЕС и СНГ, операционная база — Тбилиси",
+    note:
+      "Широкая география расширяет доступ к спросу, но требует более четкого и универсального оффера, потому что цикл покупки и ожидания клиентов могут различаться по рынкам.",
+    confidence: "high",
+  },
+  delivery_model: {
+    type: "founder-led с проектными подрядчиками",
+    founder_dependency:
+      "высокая: оба основателя участвуют почти во всех функциях, принимают все ключевые решения и держат продажи, стратегию и операционку",
+    confidence: "high",
+    reason:
+      "В команде 2 человека, оба ЛПР, зоны сильно пересекаются, подрядчики проектные. Это указывает на ручную доставку и зависимость от основателей.",
+  },
+  risks: [
+    {
+      risk:
+        "Смешение ролей «консалтинг / strategy / MVP / автоматизации» может размывать восприятие основного результата и усложнять покупку.",
+      confidence: "high",
+    },
+    {
+      risk:
+        "Фокус на seed SaaS пока заявлен стратегически, но подтвержденной клиентской базы в этом сегменте почти нет.",
+      confidence: "medium",
+    },
+    {
+      risk:
+        "Позиционирование опирается на основателей, поэтому масштабирование восприятия и delivery без них пока слабо подтверждено.",
+      confidence: "high",
+    },
+  ],
+  takeaway:
+    "Сейчас это ранний founder-led B2B бизнес на стыке стратегии и внедрения, который хочет занять позицию внешнего growth/implementation-партнера для seed SaaS. Основная сила — умение упаковать решение через аналитику и довести до результата; основная слабость — пока не до конца зафиксированный главный оффер и слабая подтвержденность выбранного сегмента реальными кейсами.",
+  confidence_summary:
+    "Высокая уверенность по модели бизнеса, стадии, географии и delivery. Средняя уверенность по целевому клиенту и глубине позиционирования в SaaS, потому что намерение сформулировано ясно, но операционно подтверждено пока ограниченно.",
 };
 
 const THEME_CARDS: ThemeCard[] = [
@@ -809,6 +928,283 @@ function ThemeResultsCard({
         </span>
       </button>
     </GlassCard>
+  );
+}
+
+function PositioningResultsCard({
+  card,
+  data,
+  onOpen,
+}: {
+  card: ThemeCard;
+  data: PositioningPayload;
+  onOpen: () => void;
+}) {
+  return (
+    <GlassCard className="min-h-[380px] p-7 md:p-8">
+      <div className="flex items-start justify-between gap-6">
+        <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-white/10 bg-white/[0.04]">
+          <div className="relative h-7 w-7 rounded-full border border-[#f7d237]/30 bg-[#f7d237]/10">
+            <div className="absolute inset-[5px] rounded-full border-[3px] border-transparent border-t-[#f7d237]" />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+          {card.blockNumber}
+        </div>
+        <h3 className="mt-3 text-[44px] font-semibold leading-none text-white">
+          {card.title}
+        </h3>
+        <p className="mt-5 text-[24px] leading-8 text-white/60">
+          {card.subtitle}
+        </p>
+      </div>
+
+      <div className="mt-8">
+        <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">
+            confidence_summary
+          </div>
+          <p className="mt-3 text-sm leading-7 text-white/78">
+            {data.confidence_summary}
+          </p>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={onOpen}
+        className="mt-8 flex w-full items-center justify-between rounded-[24px] border border-white/10 bg-[#0b1d3a]/70 px-5 py-5 text-left transition hover:border-[#f7d237]/22 hover:bg-[#0f2446]"
+      >
+        <span className="text-[18px] text-white/72">Открыть блок</span>
+        <span className="flex items-center gap-3 text-[22px] font-semibold text-[#f7d237]">
+          <span aria-hidden>→</span>
+        </span>
+      </button>
+    </GlassCard>
+  );
+}
+
+function PositioningDrawer({
+  data,
+  onClose,
+}: {
+  data: PositioningPayload;
+  onClose: () => void;
+}) {
+  const system = ECONOMICS_MOCK.confidence_ui_system;
+
+  return (
+    <div className="flex h-full flex-col bg-[#081932]">
+      <div className="sticky top-0 z-20 border-b border-white/10 bg-[#081932]/92 px-5 py-4 backdrop-blur-xl md:px-7">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
+              Block 3
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white md:text-[30px]">
+              Positioning
+            </div>
+            <div className="mt-2 text-sm text-white/58">
+              Полный mock-разворот блока positioning. Структура готова под будущий payload.
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-xl text-white/75 transition hover:border-white/20 hover:bg-white/[0.08]"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-5 py-5 md:px-7 md:py-6">
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="positioning overview"
+            title="Confidence summary"
+            text="Краткое верхнеуровневое чтение positioning-модели и степени подтвержденности выводов."
+          />
+
+          <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#fff3b2]">
+              confidence_summary
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/80">
+              {data.confidence_summary}
+            </p>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="business model"
+            title={data.business_model.type}
+            text={data.business_model.reason}
+          />
+          <ReliabilityDots level={data.business_model.confidence} system={system} />
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              business_stage
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.business_stage.stage}
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              {data.business_stage.reason}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.business_stage.confidence} system={system} />
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              positioning_type
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.positioning_type.type}
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              {data.positioning_type.reason}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.positioning_type.confidence} system={system} />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              core_offer
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.core_offer.value}
+            </div>
+            <div className="mt-4 rounded-[18px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-4">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-[#fff3b2]">
+                client_pays_for
+              </div>
+              <div className="mt-2 text-sm leading-7 text-white/80">
+                {data.core_offer.client_pays_for}
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-7 text-white/68">
+              {data.core_offer.reason}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.core_offer.confidence} system={system} />
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              target_client
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.target_client.segment}
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              {data.target_client.logic}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.target_client.confidence} system={system} />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-8 grid gap-4 xl:grid-cols-2">
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              market_scope
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.market_scope.scope}
+            </div>
+            <p className="mt-3 text-sm leading-7 text-white/68">
+              {data.market_scope.note}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.market_scope.confidence} system={system} />
+            </div>
+          </div>
+
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <div className="text-[11px] uppercase tracking-[0.22em] text-[#f7d237]">
+              delivery_model
+            </div>
+            <div className="mt-3 text-[24px] font-semibold text-white">
+              {data.delivery_model.type}
+            </div>
+            <div className="mt-4 rounded-[18px] border border-white/8 bg-white/[0.04] p-4">
+              <div className="text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
+                founder_dependency
+              </div>
+              <div className="mt-2 text-sm leading-7 text-white/72">
+                {data.delivery_model.founder_dependency}
+              </div>
+            </div>
+            <p className="mt-4 text-sm leading-7 text-white/68">
+              {data.delivery_model.reason}
+            </p>
+            <div className="mt-4">
+              <ReliabilityDots level={data.delivery_model.confidence} system={system} />
+            </div>
+          </div>
+        </section>
+
+        <section className="mb-8">
+          <SectionHead
+            eyebrow="risks"
+            title="Positioning risks"
+            text="Ключевые риски текущего позиционирования."
+          />
+
+          <div className="grid gap-4">
+            {data.risks.map((item, index) => (
+              <div
+                key={`${item.risk}-${index}`}
+                className="rounded-[24px] border border-red-400/18 bg-red-400/8 p-5"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="text-[11px] uppercase tracking-[0.22em] text-red-100/85">
+                    risk {index + 1}
+                  </div>
+                  <ReliabilityDots
+                    level={item.confidence}
+                    system={system}
+                    compact
+                  />
+                </div>
+                <p className="mt-3 text-sm leading-7 text-white/78">
+                  {item.risk}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="pb-6">
+          <SectionHead
+            eyebrow="takeaway"
+            title="Positioning takeaway"
+            text="Итоговая интерпретация блока."
+          />
+          <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+            <p className="text-sm leading-7 text-white/72">{data.takeaway}</p>
+          </div>
+        </section>
+      </div>
+    </div>
   );
 }
 
@@ -1369,6 +1765,7 @@ export default function ResultsTokenPage() {
   );
 
   const isEconomicsOpen = activeBlock === "economics";
+const isPositioningOpen = activeBlock === "positioning";
 
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-[#07172f] text-white">
@@ -1433,18 +1830,32 @@ export default function ResultsTokenPage() {
           </button>
         </div>
 
-        <section className="grid gap-6 xl:grid-cols-2">
-          {THEME_CARDS.map((card) => (
-            <ThemeResultsCard
-              key={card.id}
-              card={card}
-              economics={ECONOMICS_MOCK}
-              onOpen={(id) => {
-                if (id === "economics") setActiveBlock(id);
-              }}
-            />
-          ))}
-        </section>
+<section className="grid gap-6 xl:grid-cols-2">
+  {THEME_CARDS.map((card) => {
+    if (card.id === "positioning") {
+      return (
+        <PositioningResultsCard
+          key={card.id}
+          card={card}
+          data={POSITIONING_MOCK}
+          onOpen={() => setActiveBlock("positioning")}
+        />
+      );
+    }
+
+    return (
+      <ThemeResultsCard
+        key={card.id}
+        card={card}
+        economics={ECONOMICS_MOCK}
+        onOpen={(id) => {
+          if (id === "economics") setActiveBlock(id);
+        }}
+      />
+    );
+  })}
+</section>
+        
       </main>
 
       <div
@@ -1457,20 +1868,22 @@ export default function ResultsTokenPage() {
         onClick={() => setActiveBlock(null)}
       />
 
-      <aside
-        className={cn(
-          "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
-          activeBlock ? "translate-x-0" : "translate-x-full"
-        )}
-        onClick={(event) => event.stopPropagation()}
-      >
-        {isEconomicsOpen ? (
-          <EconomicsDrawer
-            data={ECONOMICS_MOCK}
-            onClose={() => setActiveBlock(null)}
-          />
-        ) : null}
-      </aside>
-    </div>
-  );
-}
+<aside
+  className={cn(
+    "fixed right-0 top-0 z-50 h-screen w-full max-w-none transform transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] md:w-[min(66.666vw,1280px)]",
+    activeBlock ? "translate-x-0" : "translate-x-full"
+  )}
+  onClick={(event) => event.stopPropagation()}
+>
+  {isEconomicsOpen ? (
+    <EconomicsDrawer
+      data={ECONOMICS_MOCK}
+      onClose={() => setActiveBlock(null)}
+    />
+  ) : isPositioningOpen ? (
+    <PositioningDrawer
+      data={POSITIONING_MOCK}
+      onClose={() => setActiveBlock(null)}
+    />
+  ) : null}
+</aside>
