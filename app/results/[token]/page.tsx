@@ -12,7 +12,65 @@ type ThemeBlockId =
   | "analytics_management"
   | "structure_processes"
   | "strategy";
+type HeroRole = {
+  role: string;
+  responsibility: string;
+  decision_maker: boolean;
+};
 
+type HeroBarSeriesItem = {
+  label?: string;
+  product?: string;
+  value?: number;
+  margin?: number;
+  unit?: string;
+};
+
+type HeroBlockPayload = {
+  companyName: string;
+  summary: string;
+  sales_geography: string[];
+  description: string;
+  growth_limit: string;
+  roles: HeroRole[];
+  product_margins_chart: {
+    chart_type: string;
+    title: string;
+    series: Array<{
+      product: string;
+      margin: number;
+      unit: string;
+    }>;
+  };
+  clients_vs_leads_chart: {
+    chart_type: string;
+    title: string;
+    series: Array<{
+      label: string;
+      value: number;
+    }>;
+    confidence_level: ConfidenceLevel;
+  };
+  cash_in: {
+    value: number | null;
+    currency: string;
+    period: string;
+    confidence_level: ConfidenceLevel;
+  };
+};
+
+type UnifiedResultsPayload = {
+  confidence_ui_system: ConfidenceUiSystem;
+  hero_block: HeroBlockPayload;
+  normalized_data?: unknown;
+  charts?: unknown;
+  tables?: unknown;
+  summary?: unknown;
+  insights?: unknown;
+  risks?: unknown[];
+  missing_data?: string[];
+  confidence_note?: string;
+};
 type ConfidenceUiLevel = {
   display: string;
   active_dots: number;
@@ -1762,7 +1820,66 @@ const ANALYTICS_MANAGEMENT_PAYLOAD: AnalyticsManagementPayload = {
   confidence_note:
     "Выводы по наличию аналитического каркаса достаточно надежны: метрики и модели названы явно. Выводы по качеству управления и unit-экономике ограничены ранней стадией и крайне малой выборкой клиентов. Поэтому зрелость аналитики оценена как medium, а часть управленческих выводов — preliminary.",
 };
-
+const RESULTS_PAGE_PAYLOAD: UnifiedResultsPayload = {
+  confidence_ui_system: {
+    component: "reliability_dots",
+    dots_total: 3,
+    dot_size_px: 7,
+    gap_px: 4,
+    hover_zone: "group",
+    inactive_style: "low_opacity",
+    levels: {
+      high: { display: "● ● ●", active_dots: 3, tooltip_title: "", tooltip_text: "" },
+      medium: { display: "● ● ○", active_dots: 2, tooltip_title: "", tooltip_text: "" },
+      preliminary: { display: "● ○ ○", active_dots: 1, tooltip_title: "", tooltip_text: "" },
+    },
+  },
+  hero_block: {
+    companyName: "",
+    summary:
+      "Бизнес-девелоперская компания продает стратегию и реализацию стартапам SaaS, но рост сейчас ограничен нестабильным потоком заявок.",
+    sales_geography: ["ЕС", "СНГ"],
+    description:
+      "Компания занимается консалтингом, разработкой и реализацией стратегий. Основной фокус — SaaS стартапы на seed-стадии в B2B и B2C.",
+    growth_limit: "нестабильный поток заявок",
+    roles: [
+      {
+        role: "CMO",
+        responsibility: "маркетинг, операционка",
+        decision_maker: true,
+      },
+      {
+        role: "CSO/busdev",
+        responsibility: "продажи, финансы",
+        decision_maker: true,
+      },
+    ],
+    product_margins_chart: {
+      chart_type: "bar",
+      title: "Маржинальность продуктов",
+      series: [
+        { product: "разработка MVP", margin: 50, unit: "percent" },
+        { product: "Страт Сессии", margin: 80, unit: "percent" },
+        { product: "автоматизации для бизнеса", margin: 30, unit: "percent" },
+      ],
+    },
+    clients_vs_leads_chart: {
+      chart_type: "bar_compare",
+      title: "Клиенты vs лиды",
+      series: [
+        { label: "Клиенты", value: 1 },
+        { label: "Лиды", value: 13 },
+      ],
+      confidence_level: "preliminary",
+    },
+    cash_in: {
+      value: 1900,
+      currency: "USD",
+      period: "last_month",
+      confidence_level: "medium",
+    },
+  },
+};
 const THEME_CARDS: ThemeCard[] = [
   {
     id: "economics",
@@ -2030,7 +2147,90 @@ function HeroMetric({
     </div>
   );
 }
+function HeroBadge({ text }: { text: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
+      {text}
+    </span>
+  );
+}
 
+function HeroMiniBarChart({
+  title,
+  items,
+  valueKey,
+  labelKey,
+  suffix = "%",
+}: {
+  title: string;
+  items: Array<Record<string, string | number>>;
+  valueKey: string;
+  labelKey: string;
+  suffix?: string;
+}) {
+  const max = Math.max(
+    1,
+    ...items.map((item) =>
+      typeof item[valueKey] === "number" ? Number(item[valueKey]) : 0
+    )
+  );
+
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+        {title}
+      </div>
+
+      <div className="mt-5 space-y-4">
+        {items.map((item, index) => {
+          const label = String(item[labelKey] ?? "—");
+          const value =
+            typeof item[valueKey] === "number" ? Number(item[valueKey]) : 0;
+
+          return (
+            <div key={`${title}-${label}-${index}`}>
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <span className="text-sm text-white/72">{label}</span>
+                <span className="text-sm font-semibold text-white">
+                  {formatNumber(value)}{suffix}
+                </span>
+              </div>
+              <div className="h-2.5 rounded-full bg-white/8">
+                <div
+                  className="h-2.5 rounded-full bg-[#f7d237]"
+                  style={{ width: `${Math.max((value / max) * 100, 8)}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HeroRoleCard({ role }: { role: HeroRole }) {
+  return (
+    <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="text-base font-semibold text-white">{role.role}</div>
+        <span
+          className={cn(
+            "rounded-full px-2.5 py-1 text-[10px] uppercase tracking-[0.16em]",
+            role.decision_maker
+              ? "border border-[#f7d237]/20 bg-[#f7d237]/10 text-[#fff3b2]"
+              : "border border-white/10 bg-white/[0.04] text-white/55"
+          )}
+        >
+          {role.decision_maker ? "decision maker" : "member"}
+        </span>
+      </div>
+      <div className="mt-3 text-sm leading-6 text-white/68">
+        {role.responsibility}
+      </div>
+    </div>
+  );
+}
 function InsightCard({
   title,
   value,
@@ -4302,35 +4502,24 @@ export default function ResultsTokenPage() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-const heroStats = useMemo(
-  () => [
-    {
-      label: "Analytics maturity",
-      value:
-        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
-          (row) => row.metric === "analytics_maturity"
-        )?.value ?? "—",
-    },
-    {
-      label: "Decision quality",
-      value:
-        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
-          (row) => row.metric === "decision_quality"
-        )?.value ?? "—",
-    },
-    {
-      label: "Scalability",
-      value:
-        ANALYTICS_MANAGEMENT_PAYLOAD.inferred_metrics_table.rows.find(
-          (row) => row.metric === "management_scalability"
-        )?.value ?? "—",
-    },
-    {
-      label: "Missing inputs",
-      value: `${ANALYTICS_MANAGEMENT_PAYLOAD.missing_for_stronger_model.length}`,
-    },
-  ],
-  []
+const hero = RESULTS_PAGE_PAYLOAD.hero_block;
+
+const heroProductMargins = useMemo(
+  () =>
+    hero.product_margins_chart.series.map((item) => ({
+      product: item.product,
+      margin: item.margin,
+    })),
+  [hero]
+);
+
+const heroClientsVsLeads = useMemo(
+  () =>
+    hero.clients_vs_leads_chart.series.map((item) => ({
+      label: item.label,
+      value: item.value,
+    })),
+  [hero]
 );
 
   const isEconomicsOpen = activeBlock === "economics";
@@ -4345,36 +4534,128 @@ const heroStats = useMemo(
       <div className="pointer-events-none absolute inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.6)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.6)_1px,transparent_1px)] [background-size:120px_120px]" />
 
       <main className="relative mx-auto max-w-[1680px] px-4 pb-20 pt-6 md:px-6 xl:px-8">
-        <GlassCard className="mb-8 p-5 md:p-6 xl:p-8">
-          <div className="flex flex-col gap-8 xl:flex-row xl:items-end xl:justify-between">
-            <div className="max-w-[980px]">
-              <div className="text-[11px] uppercase tracking-[0.30em] text-[#f7d237]">
-                Revenue Snapshot / Results
-              </div>
-              <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
-                Results page with Analytics & Management block
-              </h1>
-              <p className="mt-5 max-w-[900px] text-base leading-8 text-white/60 md:text-lg">
-                Карточки economics, positioning и clients_flow оставлены в текущей логике, а
-                блок Product & Sales собран полностью под переданный JSON payload.
-                На превью карточки Product & Sales снаружи выводятся только
-                <span className="text-white"> missing_for_stronger_model </span> и
-                <span className="text-white"> confidence_note</span>, а внутри
-                drawer — весь блок.
-              </p>
+     <GlassCard className="mb-8 p-5 md:p-6 xl:p-8">
+  <div className="grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
+    <div>
+      <div className="text-[11px] uppercase tracking-[0.30em] text-[#f7d237]">
+        Revenue Snapshot / Results
+      </div>
 
-              <div className="mt-6 flex flex-wrap gap-3">
-                <span className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
-                  token: {token}
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
-                  product_sales payload ready
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-white/68">
-                  drawer width: 66vw
-                </span>
-              </div>
+      <h1 className="mt-4 max-w-[980px] text-[34px] font-semibold leading-tight text-white md:text-[52px]">
+        {hero.companyName?.trim() ? hero.companyName : "Company results"}
+      </h1>
+
+      <p className="mt-5 max-w-[900px] text-base leading-8 text-white/78 md:text-lg">
+        {hero.summary}
+      </p>
+
+      <p className="mt-4 max-w-[880px] text-sm leading-7 text-white/56 md:text-base">
+        {hero.description}
+      </p>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <span className="rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
+          token: {token}
+        </span>
+
+        {hero.sales_geography.map((geo) => (
+          <HeroBadge key={geo} text={geo} />
+        ))}
+
+        <HeroBadge text={`growth limit: ${hero.growth_limit}`} />
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <HeroMetric
+          label="Cash-in"
+          value={
+            hero.cash_in.value !== null
+              ? formatCurrency(hero.cash_in.value, hero.cash_in.currency)
+              : "—"
+          }
+        />
+
+        <div className="rounded-[22px] border border-white/10 bg-white/[0.04] p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+              Clients vs Leads
             </div>
+            <ReliabilityDots
+              level={hero.clients_vs_leads_chart.confidence_level}
+              system={RESULTS_PAGE_PAYLOAD.confidence_ui_system}
+              compact
+            />
+          </div>
+          <div className="mt-2 text-xl font-semibold text-white">
+            {hero.clients_vs_leads_chart.series[0]?.value ?? "—"} / {hero.clients_vs_leads_chart.series[1]?.value ?? "—"}
+          </div>
+        </div>
+
+        <HeroMetric
+          label="Sales geography"
+          value={hero.sales_geography.join(" / ") || "—"}
+        />
+      </div>
+
+      <div className="mt-6 grid gap-4 md:grid-cols-2">
+        {hero.roles.map((item, index) => (
+          <HeroRoleCard key={`${item.role}-${index}`} role={item} />
+        ))}
+      </div>
+    </div>
+
+    <div className="grid gap-4">
+      <HeroMiniBarChart
+        title={hero.product_margins_chart.title}
+        items={heroProductMargins}
+        valueKey="margin"
+        labelKey="product"
+        suffix="%"
+      />
+
+      <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+            {hero.clients_vs_leads_chart.title}
+          </div>
+          <ReliabilityDots
+            level={hero.clients_vs_leads_chart.confidence_level}
+            system={RESULTS_PAGE_PAYLOAD.confidence_ui_system}
+            compact
+          />
+        </div>
+
+        <div className="mt-5 space-y-4">
+          {heroClientsVsLeads.map((item, index) => {
+            const max = Math.max(
+              1,
+              ...heroClientsVsLeads.map((x) => x.value)
+            );
+
+            return (
+              <div key={`${item.label}-${index}`}>
+                <div className="mb-2 flex items-center justify-between gap-4">
+                  <span className="text-sm text-white/72">{item.label}</span>
+                  <span className="text-sm font-semibold text-white">
+                    {formatNumber(item.value)}
+                  </span>
+                </div>
+                <div className="h-2.5 rounded-full bg-white/8">
+                  <div
+                    className="h-2.5 rounded-full bg-[#7dd3fc]"
+                    style={{
+                      width: `${Math.max((item.value / max) * 100, 8)}%`,
+                    }}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  </div>
+</GlassCard>
 
             <div className="grid w-full gap-4 sm:grid-cols-2 xl:max-w-[420px]">
               {heroStats.map((item) => (
