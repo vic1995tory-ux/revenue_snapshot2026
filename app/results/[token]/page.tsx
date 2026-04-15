@@ -4657,14 +4657,6 @@ const heroClientsVsLeads = useMemo(
   </div>
 </GlassCard>
 
-            <div className="grid w-full gap-4 sm:grid-cols-2 xl:max-w-[420px]">
-              {heroStats.map((item) => (
-                <HeroMetric key={item.label} label={item.label} value={item.value} />
-              ))}
-            </div>
-          </div>
-        </GlassCard>
-
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">
