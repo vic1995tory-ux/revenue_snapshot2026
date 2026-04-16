@@ -1,19 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
+import { RESULTS_BY_TOKEN } from "@/lib/mock-results";
 
-/**
- * Здесь ты подключаешь свою БД / Notion / storage
- * Ниже — универсальный пример интерфейса
- */
+type ResultPayload = Record<string, unknown>;
+
 type ResultRecord = {
   token: string;
-  launch_attempt_id: string;
-  payload: any;
+  launch_attempt_id?: string;
+  payload: ResultPayload;
 };
 
-/**
- * 🔴 ЗАМЕНИ ЭТУ ФУНКЦИЮ НА СВОЮ ЛОГИКУ
- * (Notion / DB / Make storage)
- */
+function buildIndex(): ResultRecord[] {
+  return Object.entries(RESULTS_BY_TOKEN).map(([token, payload]) => {
+    const typedPayload = payload as ResultPayload & {
+      meta?: { launch_attempt_id?: string };
+      launch_attempt_id?: string;
+    };
+
+    return {
+      token,
+      launch_attempt_id:
+        typedPayload.launch_attempt_id ??
+        typedPayload.meta?.launch_attempt_id,
+      payload: typedPayload,
+    };
+  });
+}
+
 async function findResult({
   token,
   launchAttemptId,
@@ -21,56 +33,33 @@ async function findResult({
   token?: string;
   launchAttemptId?: string;
 }): Promise<ResultRecord | null> {
-  // 👉 MOCK (для теста)
-  const mock: ResultRecord = {
-    token: "rs_demo_001",
-    launch_attempt_id: "launch_123",
-    payload: {
-      meta: {
-        generated_at: "2026-04-17",
-        result_status: "ready",
-      },
-      hero_block: {
-        companyName: "Test Company",
-        summary: "Demo summary",
-        description: "Demo description",
-      },
-      solution: {
-        solution_summary: {
-          headline: "Main bottleneck is capacity",
-          core_logic: "Demand > processing",
-          confidence_level: "medium",
-        },
-      },
-    },
-  };
+  const records = buildIndex();
 
-  // поиск по token
-  if (token && token === mock.token) return mock;
+  if (token) {
+    const byToken = records.find((record) => record.token === token);
+    if (byToken) return byToken;
+  }
 
-  // поиск по launch_attempt_id
-  if (launchAttemptId && launchAttemptId === mock.launch_attempt_id)
-    return mock;
+  if (launchAttemptId) {
+    const byLaunchId = records.find(
+      (record) => record.launch_attempt_id === launchAttemptId
+    );
+    if (byLaunchId) return byLaunchId;
+  }
 
   return null;
 }
 
-/**
- * MAIN ROUTE
- */
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
 
-    // из URL path (если /api/results/[token])
-    const tokenFromPath = url.pathname.split("/").pop();
-
-    // из query (?launch_attempt_id=xxx)
-    const launchAttemptId = url.searchParams.get("launch_attempt_id");
+    const tokenFromPath = url.pathname.split("/").pop() ?? "";
+    const launchAttemptId = url.searchParams.get("launch_attempt_id") ?? undefined;
 
     const result = await findResult({
-      token: tokenFromPath,
-      launchAttemptId: launchAttemptId ?? undefined,
+      token: tokenFromPath || undefined,
+      launchAttemptId,
     });
 
     if (!result) {
@@ -83,11 +72,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(result.payload, {
       status: 200,
       headers: {
-        "Cache-Control": "no-store",
+        "Cache-Control": "no-store, no-cache, must-revalidate",
       },
     });
   } catch (error) {
-    console.error("GET /api/results failed:", error);
+    console.error("GET /api/results/[token] failed:", error);
 
     return NextResponse.json(
       { error: "Internal server error" },
