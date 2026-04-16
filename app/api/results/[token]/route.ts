@@ -1,56 +1,96 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export const dynamic = "force-dynamic";
+/**
+ * Здесь ты подключаешь свою БД / Notion / storage
+ * Ниже — универсальный пример интерфейса
+ */
+type ResultRecord = {
+  token: string;
+  launch_attempt_id: string;
+  payload: any;
+};
 
-const MAKE_RESULTS_WEBHOOK_URL =
-  process.env.MAKE_RESULTS_WEBHOOK_URL ||
-  "https://hook.us2.make.com/0uyhpfhytn08yvtlwwl61jv345h7ckp9";
-
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ token: string }> }
-) {
-  try {
-    const { token } = await params;
-
-    if (!token) {
-      return NextResponse.json({ error: "Missing token" }, { status: 400 });
-    }
-
-    const response = await fetch(MAKE_RESULTS_WEBHOOK_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+/**
+ * 🔴 ЗАМЕНИ ЭТУ ФУНКЦИЮ НА СВОЮ ЛОГИКУ
+ * (Notion / DB / Make storage)
+ */
+async function findResult({
+  token,
+  launchAttemptId,
+}: {
+  token?: string;
+  launchAttemptId?: string;
+}): Promise<ResultRecord | null> {
+  // 👉 MOCK (для теста)
+  const mock: ResultRecord = {
+    token: "rs_demo_001",
+    launch_attempt_id: "launch_123",
+    payload: {
+      meta: {
+        generated_at: "2026-04-17",
+        result_status: "ready",
       },
-      body: JSON.stringify({ token }),
-      cache: "no-store",
+      hero_block: {
+        companyName: "Test Company",
+        summary: "Demo summary",
+        description: "Demo description",
+      },
+      solution: {
+        solution_summary: {
+          headline: "Main bottleneck is capacity",
+          core_logic: "Demand > processing",
+          confidence_level: "medium",
+        },
+      },
+    },
+  };
+
+  // поиск по token
+  if (token && token === mock.token) return mock;
+
+  // поиск по launch_attempt_id
+  if (launchAttemptId && launchAttemptId === mock.launch_attempt_id)
+    return mock;
+
+  return null;
+}
+
+/**
+ * MAIN ROUTE
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const url = new URL(req.url);
+
+    // из URL path (если /api/results/[token])
+    const tokenFromPath = url.pathname.split("/").pop();
+
+    // из query (?launch_attempt_id=xxx)
+    const launchAttemptId = url.searchParams.get("launch_attempt_id");
+
+    const result = await findResult({
+      token: tokenFromPath,
+      launchAttemptId: launchAttemptId ?? undefined,
     });
 
-    if (!response.ok) {
-      const text = await response.text();
+    if (!result) {
       return NextResponse.json(
-        {
-          error: "Failed to fetch results from Make",
-          details: text || `HTTP ${response.status}`,
-        },
-        { status: 502 }
+        { error: "Result not found" },
+        { status: 404 }
       );
     }
 
-    const raw = await response.json();
-
-    const payload =
-      raw?.results_payload_json && typeof raw.results_payload_json === "object"
-        ? raw.results_payload_json
-        : raw;
-
-    return NextResponse.json(payload, { status: 200 });
-  } catch (error) {
-    return NextResponse.json(
-      {
-        error: "Internal server error",
-        details: error instanceof Error ? error.message : "Unknown error",
+    return NextResponse.json(result.payload, {
+      status: 200,
+      headers: {
+        "Cache-Control": "no-store",
       },
+    });
+  } catch (error) {
+    console.error("GET /api/results failed:", error);
+
+    return NextResponse.json(
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
