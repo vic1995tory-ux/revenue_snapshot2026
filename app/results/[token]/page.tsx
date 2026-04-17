@@ -727,11 +727,11 @@ function HeroTreemap({ title, items }: { title: string; items: Array<{ label: st
   const sorted = [...items].filter((item) => Number.isFinite(item.value) && item.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
   const [first, second, ...rest] = sorted;
 const colors = [
-  "#3c5a99",
-  "#35508a",
-  "#2e467b",
-  "#273c6c",
-  "#20325d"
+  "#c7a93b", // gold
+  "#8f6ed5", // muted violet
+  "#3f6db3", // deep blue
+  "#3c8f7c", // desaturated teal
+  "#a35d5d"  // muted red
 ];
   return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-[15px] tracking-[0.28em] text-white/86">{title}</div><div className="mt-4 grid min-h-[312px] gap-1.5 md:grid-cols-[1.06fr_0.94fr_0.42fr]">{first ? <div className="flex items-center justify-center rounded-[8px] px-4 py-4 text-center text-[18px] text-[#fefefe]" style={{ background: colors[0] }}><div><div>{first.label}</div><div className="mt-2 text-sm opacity-70">{formatPercent(first.value)}</div></div></div> : null}{second ? <div className="flex items-center justify-center rounded-[8px] px-4 py-4 text-center text-[18px] text-[#fefefe]" style={{ background: colors[1] }}><div><div>{second.label}</div><div className="mt-2 text-sm opacity-70">{formatPercent(second.value)}</div></div></div> : null}<div className="grid gap-1.5">{rest.map((item, index) => <div key={`${item.label}-${index}`} className="flex items-center justify-center rounded-[8px] px-3 py-3 text-center text-sm text-[#fefefe]" style={{ background: colors[index + 2] }}><div><div>{item.label}</div><div className="mt-1 text-xs opacity-70">{formatPercent(item.value)}</div></div></div>)}</div></div></div>;
 }
