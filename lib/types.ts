@@ -1,0 +1,94 @@
+export type ConfidenceLevel = 1 | 2 | 3;
+
+export type HeroData = {
+  companyName: string;
+  salesGeography: string;
+  summary: string;
+  description: string;
+  growthLimit: string;
+  cashIn: string;
+  confidenceLevel: ConfidenceLevel;
+  roles: Array<{
+    role: string;
+    responsibility: string;
+  }>;
+  productMargins: Array<{
+    name: string;
+    marginPercent: number;
+  }>;
+};
+
+export type SolutionData = {
+  title: string;
+  summary: string;
+  confidenceLevel: ConfidenceLevel;
+  cards: Array<{
+    title: string;
+    value: string;
+    note?: string;
+  }>;
+};
+
+export type RoadmapData = {
+  phases: Array<{
+    period: string;
+    title: string;
+    description: string;
+    tasks: string[];
+  }>;
+};
+
+export type ForecastMetric = {
+  current: string;
+  target: string;
+  delta: number;
+};
+
+export type ForecastsData = {
+  revenue: ForecastMetric;
+  costs: ForecastMetric;
+  profit: ForecastMetric;
+  assumptions: string[];
+};
+
+export type BusinessContextData = {
+  summary: string;
+  sections: Array<{
+    title: string;
+    rows: Array<{
+      label: string;
+      value: string;
+    }>;
+  }>;
+};
+
+export type AnalyticalBlockData = {
+  id: string;
+  title: string;
+  truthSummary: string;
+  mainDiagnosis: string;
+  confidenceLevel: ConfidenceLevel;
+  keySignals: Array<{
+    label: string;
+    value: string;
+  }>;
+  explanation: string;
+  implication: string;
+};
+
+export type OverallSummaryData = {
+  cards: Array<{
+    title: string;
+    value: string;
+  }>;
+};
+
+export type ResultsPageData = {
+  hero: HeroData;
+  solution: SolutionData;
+  roadmap: RoadmapData;
+  forecasts: ForecastsData;
+  businessContext: BusinessContextData;
+  blocks: AnalyticalBlockData[];
+  overallSummary: OverallSummaryData;
+};
