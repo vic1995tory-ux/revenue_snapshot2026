@@ -93,7 +93,7 @@ type UnifiedResultsPayload = {
 
 const BRAND = {
   bg: "#0b1d3a",
-  yellow: "#f7d237",
+  yellow: "#",
 };
 
 const DEFAULT_CONFIDENCE_UI_SYSTEM: ConfidenceUiSystem = {
@@ -238,7 +238,7 @@ export default function ResultPage() {
       <main className="min-h-screen bg-[#0b1d3a] text-white">
         <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-6 lg:px-8">
           <GlassCard className="p-8">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-[#f7d237]">Results</div>
+            <div className="text-[11px] uppercase tracking-[0.24em] text-[#]">Results</div>
             <div className="mt-4 text-2xl font-semibold text-white">Loading...</div>
           </GlassCard>
         </div>
@@ -251,7 +251,7 @@ export default function ResultPage() {
       <main className="min-h-screen bg-[#0b1d3a] text-white">
         <div className="mx-auto max-w-[1600px] px-4 py-10 md:px-6 lg:px-8">
           <GlassCard className="p-8">
-            <div className="text-[11px] uppercase tracking-[0.24em] text-[#f7d237]">Results</div>
+            <div className="text-[11px] uppercase tracking-[0.24em] text-[#]">Results</div>
             <div className="mt-4 text-2xl font-semibold text-white">Failed to load</div>
             <p className="mt-3 text-sm leading-7 text-white/64">{error ?? "Payload is empty."}</p>
           </GlassCard>
@@ -417,7 +417,7 @@ function GlassCard({ className, children }: { className?: string; children: Reac
 function SectionHead({ eyebrow, title, text }: { eyebrow: string; title: string; text?: string }) {
   return (
     <div className="mb-5">
-      <div className="text-[11px] uppercase tracking-[0.24em] text-[#f7d237]">{eyebrow}</div>
+      <div className="text-[11px] uppercase tracking-[0.24em] text-[#]">{eyebrow}</div>
       <div className="mt-2 text-2xl font-semibold text-white md:text-[34px]">{title}</div>
       {text ? <p className="mt-3 max-w-[980px] text-sm leading-7 text-white/62">{text}</p> : null}
     </div>
@@ -727,16 +727,11 @@ function HeroTreemap({ title, items }: { title: string; items: Array<{ label: st
   const sorted = [...items].filter((item) => Number.isFinite(item.value) && item.value > 0).sort((a, b) => b.value - a.value).slice(0, 5);
   const [first, second, ...rest] = sorted;
 const colors = [
-  "#f7d237",
-  "#efd03a",
-  "#e6cc3c",
-  "#ddc73f",
-  "#d4c242",
-  "#cbbd45",
-  "#c2b847",
-  "#b9b34a",
-  "#afad4d",
-  "#a6a750"
+  "#3c5a99",
+  "#35508a",
+  "#2e467b",
+  "#273c6c",
+  "#20325d"
 ];
   return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-[15px] tracking-[0.28em] text-white/86">{title}</div><div className="mt-4 grid min-h-[312px] gap-1.5 md:grid-cols-[1.06fr_0.94fr_0.42fr]">{first ? <div className="flex items-center justify-center rounded-[8px] px-4 py-4 text-center text-[18px] text-[#fefefe]" style={{ background: colors[0] }}><div><div>{first.label}</div><div className="mt-2 text-sm opacity-70">{formatPercent(first.value)}</div></div></div> : null}{second ? <div className="flex items-center justify-center rounded-[8px] px-4 py-4 text-center text-[18px] text-[#fefefe]" style={{ background: colors[1] }}><div><div>{second.label}</div><div className="mt-2 text-sm opacity-70">{formatPercent(second.value)}</div></div></div> : null}<div className="grid gap-1.5">{rest.map((item, index) => <div key={`${item.label}-${index}`} className="flex items-center justify-center rounded-[8px] px-3 py-3 text-center text-sm text-[#fefefe]" style={{ background: colors[index + 2] }}><div><div>{item.label}</div><div className="mt-1 text-xs opacity-70">{formatPercent(item.value)}</div></div></div>)}</div></div></div>;
 }
