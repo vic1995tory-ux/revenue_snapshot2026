@@ -508,7 +508,49 @@ function JsonPreviewCard({ title, value }: { title: string; value: unknown }) {
     </div>
   );
 }
+function KeyValueRows({
+  title,
+  rows,
+}: {
+  title: string;
+  rows: Array<{ label: string; value: string }>;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+        {title}
+      </div>
 
+      <div className="mt-4 space-y-3">
+        {rows.length ? (
+          rows.map((row, index) => (
+            <div
+              key={`${title}-${row.label}-${index}`}
+              className="flex items-start justify-between gap-6 border-b border-white/8 pb-3 last:border-b-0 last:pb-0"
+            >
+              <div className="max-w-[44%] text-sm text-white/48">
+                {row.label}
+              </div>
+              <div className="max-w-[56%] text-right text-sm font-medium text-white/84">
+                {row.value}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-sm text-white/46">—</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function objectToRows(value: unknown): Array<{ label: string; value: string }> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return [];
+  return Object.entries(value as Record<string, unknown>).map(([key, val]) => ({
+    label: key.replace(/_/g, " "),
+    value: stringifyValue(val),
+  }));
+}
 function StickyMiniNav() {
   return (
     <div className="sticky top-0 z-40 mb-6 hidden border-b border-white/10 bg-[#0b1d3a]/80 backdrop-blur-xl lg:block">
@@ -928,11 +970,144 @@ function OverallConclusionsBlock({ data }: { data: any }) {
   return <section className="mb-8"><SectionHead eyebrow="overall conclusions" title="Cross-block reading of the business" text="Сводный слой, который связывает все блоки в одну систему: где находится главный лимит, где теряются деньги и почему решение выглядит именно так." /><GlassCard className="p-5 md:p-6 xl:p-8"><div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]"><div><div className="flex flex-wrap items-start justify-between gap-4"><div><div className="text-[11px] uppercase tracking-[0.28em] text-[#f7d237]">central thesis</div><h3 className="mt-3 text-[28px] font-semibold leading-tight text-white md:text-[38px]">{solution.solution_summary?.headline || "—"}</h3></div><ReliabilityDots level={solution.solution_summary?.confidence_level} system={system} /></div><p className="mt-5 max-w-[900px] text-sm leading-7 text-white/72 md:text-base">{solution.solution_summary?.core_logic || "—"}</p><div className="mt-6 grid gap-4 md:grid-cols-2">{solution.primary_growth_lever ? <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5"><div className="flex items-start justify-between gap-3"><div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">growth lever</div><ReliabilityDots level={solution.primary_growth_lever.confidence_level} system={system} compact /></div><div className="mt-3 text-lg font-semibold leading-7 text-white">{solution.primary_growth_lever.lever}</div><p className="mt-3 text-sm leading-7 text-white/66">{solution.primary_growth_lever.reason}</p><SupportedBlocks items={solution.primary_growth_lever.supported_by_blocks} /></div> : null}{solution.primary_constraint ? <div className="rounded-[24px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5"><div className="flex items-start justify-between gap-3"><div className="text-[11px] uppercase tracking-[0.18em] text-[#fff3b2]">primary constraint</div><ReliabilityDots level={solution.primary_constraint.confidence_level} system={system} compact /></div><div className="mt-3 text-lg font-semibold leading-7 text-white">{solution.primary_constraint.label}</div><p className="mt-3 text-sm leading-7 text-white/78">{solution.primary_constraint.reason}</p><SupportedBlocks items={solution.primary_constraint.supported_by_blocks} /></div> : null}</div></div><div className="grid gap-4">{summary.snapshot ? <InsightCard title="snapshot" value="Business snapshot" text={summary.snapshot} /> : null}{summary.current_position ? <ParagraphCard title="current_position" text={summary.current_position} /> : null}{summary.economics ? <ParagraphCard title="economics" text={summary.economics} /> : null}{summary.primary_need ? <ParagraphCard title="primary_need" text={summary.primary_need} tone="accent" /> : null}</div></div></GlassCard>{crossBlockFindings.length > 0 ? <div className="mt-6"><SectionHead eyebrow="cross-block findings" title="What each block confirms" text="Сводные truth-summary из всех аналитических модулей. Именно здесь читается повторяющийся паттерн, а не отдельные локальные наблюдения." /><div className="grid gap-4 xl:grid-cols-2">{crossBlockFindings.map((item) => <GlassCard key={item.label} className="p-5"><div className="flex items-start justify-between gap-3"><div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">{item.label}</div><ReliabilityDots level={item.level} system={system} compact /></div><p className="mt-3 text-sm leading-7 text-white/68">{item.text}</p></GlassCard>)}</div></div> : null}</section>;
 }
 
-function GenericDeepDiveBlock({ title, data, confidenceSystem }: { title: string; data: unknown; confidenceSystem: ConfidenceUiSystem }) {
-  if (!data || typeof data !== "object") return <ParagraphCard title={title} text="No payload for this block." />;
+function GenericDeepDiveBlock({
+  title,
+  data,
+  confidenceSystem,
+}: {
+  title: string;
+  data: unknown;
+  confidenceSystem: ConfidenceUiSystem;
+}) {
+  if (!data || typeof data !== "object") {
+    return <ParagraphCard title={title} text="No payload for this block." />;
+  }
+
   const obj = data as Record<string, unknown>;
   const entries = Object.entries(obj);
-  const summaryCandidate = (obj.truth_summary as any)?.summary || (obj.confidence_note as string) || (obj.takeaway as string) || (obj.confidence_summary as string) || "Detailed payload loaded.";
-  const confidenceLevel = (obj.truth_summary as any)?.confidence_level || ((obj as any).confidence_level as ConfidenceLevel | undefined) || "preliminary";
-  return <div className="space-y-6"><GlassCard className="p-5 md:p-6"><div className="flex items-start justify-between gap-4"><div><div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">block summary</div><div className="mt-2 text-2xl font-semibold text-white">{title}</div></div><ReliabilityDots level={confidenceLevel} system={confidenceSystem} /></div><p className="mt-4 text-sm leading-7 text-white/70">{summaryCandidate}</p></GlassCard><div className="grid gap-4 xl:grid-cols-2">{entries.slice(0, 8).map(([key, value]) => { if (value && typeof value === "object" && !Array.isArray(value)) return <JsonPreviewCard key={key} title={key} value={value} />; if (Array.isArray(value)) return <BulletList key={key} title={key} items={value.map(stringifyValue)} />; return <ParagraphCard key={key} title={key} text={stringifyValue(value)} />; })}</div></div>;
+
+  const summaryCandidate =
+    (obj.truth_summary as any)?.summary ||
+    (obj.confidence_note as string) ||
+    (obj.takeaway as string) ||
+    "Detailed payload loaded.";
+
+  const confidenceLevel =
+    (obj.truth_summary as any)?.confidence_level ||
+    ((obj as any).confidence_level as ConfidenceLevel | undefined) ||
+    "preliminary";
+
+  const preferredOrder = [
+    "truth_summary",
+    "strategic_posture",
+    "primary_priority",
+    "main_goal_conflict",
+    "execution_risk",
+    "near_term_focus",
+    "strategy_feasibility_view",
+    "operating_model_type",
+    "founder_dependency_level",
+    "main_process_break",
+    "team_scalability_limit",
+    "main_management_gap",
+    "controllability_level",
+    "data_usage_takeaway",
+    "management_growth_limit_view",
+    "product_model_type",
+    "core_revenue_driver",
+    "revenue_dependency_type",
+    "main_revenue_leak",
+    "retention_layer_takeaway",
+    "product_scalability_view",
+    "current_flow_state",
+    "main_flow_loss_pattern",
+    "bottleneck_type",
+    "flow_stability",
+    "channel_concentration_risk",
+    "seasonality_impact",
+    "flow_growth_limit_view",
+    "business_model",
+    "core_offer",
+    "target_client",
+    "positioning_type",
+    "positioning_risks",
+    "market_fit_view",
+    "current_economic_state",
+    "main_loss_pattern",
+    "reliability_of_margin",
+    "economic_risk",
+    "economic_growth_limit_view",
+    "normalized_inputs",
+  ];
+
+  const sortedEntries = preferredOrder
+    .map((key) => [key, obj[key]] as [string, unknown])
+    .filter(([, value]) => value !== undefined);
+
+  const fallbackEntries = entries.filter(
+    ([key]) => !preferredOrder.includes(key) && key !== "truth_summary"
+  );
+
+  const displayEntries = [...sortedEntries, ...fallbackEntries];
+
+  return (
+    <div className="space-y-6">
+      <GlassCard className="p-5 md:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+              block summary
+            </div>
+            <div className="mt-2 text-2xl font-semibold text-white">
+              {title}
+            </div>
+          </div>
+
+          <ReliabilityDots level={confidenceLevel} system={confidenceSystem} />
+        </div>
+
+        <p className="mt-4 text-sm leading-7 text-white/70">
+          {summaryCandidate}
+        </p>
+      </GlassCard>
+
+      <div className="grid gap-4 xl:grid-cols-2">
+        {displayEntries
+          .filter(([key]) => key !== "truth_summary").filter(([key]) => key !== "truth_summary" && key !== "normalized_inputs")
+          .map(([key, value]) => {
+            if (Array.isArray(value)) {
+              return (
+                <BulletList
+                  key={key}
+                  title={key}
+                  items={value.map(stringifyValue)}
+                />
+              );
+            }
+
+            if (
+              value &&
+              typeof value === "object" &&
+              !Array.isArray(value)
+            ) {
+              const rows = objectToRows(value);
+
+              if (rows.length > 0) {
+                return <KeyValueRows key={key} title={key} rows={rows} />;
+              }
+
+              return <ParagraphCard key={key} title={key} text="—" />;
+            }
+
+            return (
+              <ParagraphCard
+                key={key}
+                title={key}
+                text={stringifyValue(value)}
+              />
+            );
+          })}
+      </div>
+    </div>
+  );
 }
