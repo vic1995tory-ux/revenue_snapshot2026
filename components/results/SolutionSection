@@ -1,0 +1,439 @@
+"use client";
+
+import { type ReactNode } from "react";
+
+export type ConfidenceLevel = "high" | "medium" | "preliminary";
+
+export type ConfidenceUiLevel = {
+  display: string;
+  active_dots: number;
+  tooltip_title?: string;
+  tooltip_text?: string;
+};
+
+export type ConfidenceUiSystem = {
+  component: "reliability_dots";
+  dots_total: number;
+  dot_size_px: number;
+  gap_px: number;
+  hover_zone: string;
+  inactive_style: string;
+  levels: Record<ConfidenceLevel, ConfidenceUiLevel>;
+};
+
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ");
+}
+
+function safeArray<T>(value: T[] | undefined | null): T[] {
+  return Array.isArray(value) ? value : [];
+}
+
+function safeStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.map((item) => String(item));
+}
+
+function GlassCard({
+  className,
+  children,
+}: {
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div
+      className={cn(
+        "rounded-[28px] border border-white/10 bg-white/[0.03] shadow-[0_20px_60px_rgba(0,0,0,0.18)]",
+        className
+      )}
+    >
+      {children}
+    </div>
+  );
+}
+
+function SectionHead({
+  eyebrow,
+  title,
+  text,
+}: {
+  eyebrow: string;
+  title: string;
+  text?: string;
+}) {
+  return (
+    <div className="mb-5">
+      <div className="text-[11px] uppercase tracking-[0.24em] text-[#f7d237]">
+        {eyebrow}
+      </div>
+      <div className="mt-2 text-2xl font-semibold text-white md:text-[34px]">
+        {title}
+      </div>
+      {text ? (
+        <p className="mt-3 max-w-[980px] text-sm leading-7 text-white/62">
+          {text}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
+function ReliabilityDots({
+  level,
+  system,
+  compact = false,
+}: {
+  level?: ConfidenceLevel;
+  system: ConfidenceUiSystem;
+  compact?: boolean;
+}) {
+  const resolvedLevel = level ?? "preliminary";
+  const meta = system.levels[resolvedLevel] ?? system.levels.preliminary;
+
+  return (
+    <div className="group relative inline-flex items-center gap-1.5">
+      {Array.from({ length: system.dots_total }).map((_, index) => {
+        const active = index < meta.active_dots;
+
+        return (
+          <span
+            key={index}
+            className={cn("rounded-full", active ? "bg-[#f7d237]" : "bg-white/20")}
+            style={{
+              width: compact ? Math.max(system.dot_size_px - 1, 5) : system.dot_size_px,
+              height: compact ? Math.max(system.dot_size_px - 1, 5) : system.dot_size_px,
+            }}
+          />
+        );
+      })}
+
+      <div className="pointer-events-none absolute right-0 top-full z-20 mt-3 hidden min-w-[220px] rounded-[18px] border border-white/10 bg-[#081932] p-3 shadow-2xl group-hover:block">
+        <div className="text-xs font-semibold text-white">
+          {meta.tooltip_title ?? "Надежность"}
+        </div>
+        <div className="mt-1 text-xs leading-5 text-white/65">
+          {meta.tooltip_text ?? "Показатель зависит от полноты входных данных."}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ParagraphCard({
+  title,
+  text,
+  tone = "default",
+}: {
+  title: string;
+  text: string;
+  tone?: "default" | "accent" | "warning";
+}) {
+  const toneClasses =
+    tone === "accent"
+      ? "border-[#f7d237]/18 bg-[#f7d237]/8"
+      : tone === "warning"
+      ? "border-red-400/18 bg-red-400/8"
+      : "border-white/10 bg-white/[0.03]";
+
+  return (
+    <div className={cn("rounded-[24px] border p-5", toneClasses)}>
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+        {title}
+      </div>
+      <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-white/74">
+        {text || "—"}
+      </p>
+    </div>
+  );
+}
+
+function InsightCard({
+  title,
+  value,
+  text,
+}: {
+  title: string;
+  value: string;
+  text: string;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+        {title}
+      </div>
+      <div className="mt-3 text-lg font-semibold leading-7 text-white">
+        {value}
+      </div>
+      <p className="mt-3 text-sm leading-7 text-white/66">{text}</p>
+    </div>
+  );
+}
+
+function BulletList({ title, items }: { title: string; items: string[] }) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+        {title}
+      </div>
+      <div className="mt-4 space-y-3">
+        {items.length ? (
+          items.map((item, index) => (
+            <div
+              key={`${title}-${index}`}
+              className="flex gap-3 text-sm leading-7 text-white/72"
+            >
+              <span className="mt-[10px] h-1.5 w-1.5 rounded-full bg-[#f7d237]" />
+              <span>{item}</span>
+            </div>
+          ))
+        ) : (
+          <div className="text-sm text-white/46">—</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BlockTag({ text }: { text: string }) {
+  return (
+    <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-white/62">
+      {text}
+    </span>
+  );
+}
+
+export default function SolutionSection({
+  data,
+}: {
+  data: { confidence_ui_system: ConfidenceUiSystem; solution: any };
+}) {
+  const system = data.confidence_ui_system;
+  const solution = data.solution ?? {};
+  const summary = solution.solution_summary ?? {};
+
+  return (
+    <section className="mb-8">
+      <GlassCard className="p-5 md:p-6 xl:p-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="max-w-[980px]">
+            <div className="text-[11px] uppercase tracking-[0.30em] text-[#f7d237]">
+              Main decision layer
+            </div>
+            <h2 className="mt-4 text-[30px] font-semibold leading-tight text-white md:text-[44px]">
+              Solution
+            </h2>
+            <p className="mt-4 max-w-[920px] text-sm leading-7 text-white/60 md:text-base">
+              Центральный вывод по текущей модели бизнеса: что именно нужно менять,
+              почему это является главным рычагом роста и при каких условиях это даст результат.
+            </p>
+          </div>
+
+          <ReliabilityDots level={summary.confidence_level} system={system} />
+        </div>
+
+        <div className="mt-6 rounded-[28px] border border-[#f7d237]/18 bg-[#f7d237]/8 p-5 md:p-6">
+          <div className="text-[11px] uppercase tracking-[0.20em] text-[#fff3b2]">
+            solution_summary
+          </div>
+          <div className="mt-3 text-[24px] font-semibold leading-tight text-white md:text-[32px]">
+            {summary.headline || "—"}
+          </div>
+          <p className="mt-4 max-w-[980px] text-sm leading-7 text-white/80 md:text-base">
+            {summary.core_logic || "—"}
+          </p>
+        </div>
+
+        <div className="mt-6 grid gap-4 xl:grid-cols-3">
+          {[solution.primary_growth_lever, solution.primary_constraint, solution.revenue_loss_source].map(
+            (item, index) => {
+              if (!item) return null;
+
+              const title =
+                index === 0
+                  ? "primary_growth_lever"
+                  : index === 1
+                  ? "primary_constraint"
+                  : "revenue_loss_source";
+
+              return (
+                <div
+                  key={title}
+                  className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                      {title}
+                    </div>
+                    <ReliabilityDots
+                      level={item.confidence_level}
+                      system={system}
+                      compact
+                    />
+                  </div>
+
+                  <div className="mt-3 text-lg font-semibold leading-7 text-white">
+                    {item.lever || item.label || "—"}
+                  </div>
+
+                  {item.constraint_type ? (
+                    <div className="mt-2 text-xs uppercase tracking-[0.16em] text-white/40">
+                      {item.constraint_type}
+                    </div>
+                  ) : null}
+
+                  {item.loss_type ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <BlockTag text={String(item.loss_type)} />
+                      {item.visible_or_hidden ? (
+                        <BlockTag text={String(item.visible_or_hidden)} />
+                      ) : null}
+                    </div>
+                  ) : null}
+
+                  <p className="mt-3 text-sm leading-7 text-white/66">
+                    {item.reason || item.explanation || "—"}
+                  </p>
+
+                  {safeStringArray(item.supported_by_blocks).length > 0 ? (
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {safeStringArray(item.supported_by_blocks).map((x, index2) => (
+                        <BlockTag key={`${x}-${index2}`} text={x} />
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+              );
+            }
+          )}
+        </div>
+
+        {solution.model_change_recommendation ? (
+          <>
+            <div className="mt-6 grid gap-4 xl:grid-cols-2">
+              <ParagraphCard
+                title="current_model_problem"
+                text={solution.model_change_recommendation.current_model_problem || "—"}
+                tone="warning"
+              />
+              <ParagraphCard
+                title="proposed_model_shift"
+                text={solution.model_change_recommendation.proposed_model_shift || "—"}
+                tone="accent"
+              />
+            </div>
+
+            <div className="mt-4 grid gap-4 xl:grid-cols-2">
+              <ParagraphCard
+                title="why_this_shift"
+                text={solution.model_change_recommendation.why_this_shift || "—"}
+              />
+              <ParagraphCard
+                title="expected_unlock"
+                text={solution.model_change_recommendation.expected_unlock || "—"}
+              />
+            </div>
+          </>
+        ) : null}
+
+        {safeArray(solution.strategic_priorities).length > 0 ? (
+          <div className="mt-8">
+            <SectionHead
+              eyebrow="priorities"
+              title="Strategic priorities"
+              text="Последовательность шагов внутри solution. Это еще не roadmap, а логика приоритизации."
+            />
+
+            <div className="grid gap-4 xl:grid-cols-3">
+              {safeArray(solution.strategic_priorities).map((item: any) => (
+                <div
+                  key={String(item.priority_rank)}
+                  className="rounded-[24px] border border-white/10 bg-white/[0.03] p-5"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+                      priority {item.priority_rank}
+                    </div>
+                    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-sm font-semibold text-white/78">
+                      {item.priority_rank}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 text-base font-semibold leading-7 text-white">
+                    {item.action}
+                  </div>
+
+                  <div className="mt-4 space-y-4">
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                        why_now
+                      </div>
+                      <p className="mt-1 text-sm leading-7 text-white/66">
+                        {item.why_now}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                        dependency
+                      </div>
+                      <p className="mt-1 text-sm leading-7 text-white/66">
+                        {item.dependency}
+                      </p>
+                    </div>
+
+                    <div>
+                      <div className="text-[11px] uppercase tracking-[0.14em] text-white/38">
+                        expected_result
+                      </div>
+                      <p className="mt-1 text-sm leading-7 text-white/66">
+                        {item.expected_result}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {solution.business_impact ? (
+          <div className="mt-8">
+            <SectionHead
+              eyebrow="business impact"
+              title="Expected business impact"
+            />
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {Object.entries(solution.business_impact).map(([key, value]) => (
+                <InsightCard
+                  key={key}
+                  title={key}
+                  value={key.replace(/_/g, " ")}
+                  text={String(value)}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
+
+        {solution.implementation_conditions ? (
+          <div className="mt-8">
+            <SectionHead
+              eyebrow="implementation conditions"
+              title="What must be true for this to work"
+            />
+            <div className="grid gap-4 xl:grid-cols-2">
+              {Object.entries(solution.implementation_conditions).map(([key, value]) => (
+                <BulletList
+                  key={key}
+                  title={key}
+                  items={Array.isArray(value) ? value.map(String) : [String(value)]}
+                />
+              ))}
+            </div>
+          </div>
+        ) : null}
+      </GlassCard>
+    </section>
+  );
+}
