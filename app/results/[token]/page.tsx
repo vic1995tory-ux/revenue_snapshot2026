@@ -616,13 +616,69 @@ function HeroInfoTile({ label, value, subvalue, fullWidth = false }: { label: st
   return <div className={cn("rounded-[22px] border border-white/10 bg-[#284b9b]/90 px-5 py-5", fullWidth && "md:col-span-2")}><div className="text-[11px] uppercase tracking-[0.18em] text-white/65">{label}</div><div className="mt-3 text-[18px] font-semibold leading-snug text-white md:text-[20px]">{value}</div>{subvalue ? <div className="mt-2 text-sm leading-6 text-white/72">{subvalue}</div> : null}</div>;
 }
 
-function HeroTag({ children, wide = false }: { children: ReactNode; wide?: boolean }) {
-  return <div className={cn("inline-flex min-h-[52px] items-center justify-center rounded-[10px] border border-black/10 bg-[#9e8928]/90 px-5 text-center text-sm font-medium text-[#0b1020]", wide ? "min-w-[240px]" : "min-w-[128px]")}>{children}</div>;
+function HeroTag({
+  children,
+  wide = false,
+}: {
+  children: ReactNode;
+  wide?: boolean;
+}) {
+  return (
+    <div
+      className={cn(
+        "inline-flex min-h-[44px] items-center justify-center rounded-full border border-[#f7d237]/20 bg-[#f7d237]/12 px-4 text-center text-[13px] font-medium text-[#f3d86a]",
+        wide ? "min-w-[220px]" : "min-w-[120px]"
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 function HeroGauge({ title, value }: { title: string; value: number }) {
   const safeValue = clamp(Number.isFinite(value) ? value : 0, 0, 100);
-  return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-center text-[15px] tracking-[0.28em] text-white/86">{title}</div><div className="mt-4 flex justify-center"><div className="relative h-[118px] w-[200px]"><svg viewBox="0 0 120 70" className="h-full w-full"><path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="16" pathLength="100" /><path d="M10 60 A50 50 0 0 1 110 60" fill="none" stroke={BRAND.yellow} strokeWidth="16" pathLength="100" strokeDasharray={`${safeValue} 100`} /></svg><div className="absolute inset-x-0 bottom-[8px] text-center text-[32px] font-medium leading-none text-white">{formatPercent(safeValue)}</div></div></div></div>;
+
+  return (
+    <div className="rounded-[22px] border border-white/10 bg-gradient-to-b from-white/[0.05] to-white/[0.02] p-5">
+      <div className="text-center text-[14px] tracking-[0.14em] text-white/82">
+        {title}
+      </div>
+
+      <div className="mt-5 flex justify-center">
+        <div className="relative h-[132px] w-[132px]">
+          <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+            <circle
+              cx="60"
+              cy="60"
+              r="44"
+              fill="none"
+              stroke="rgba(255,255,255,0.12)"
+              strokeWidth="12"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="44"
+              fill="none"
+              stroke={BRAND.yellow}
+              strokeWidth="12"
+              strokeLinecap="round"
+              strokeDasharray={`${2 * Math.PI * 44}`}
+              strokeDashoffset={`${
+                2 * Math.PI * 44 * (1 - safeValue / 100)
+              }`}
+            />
+          </svg>
+
+          <div className="absolute inset-0 flex items-center justify-center">
+            <span className="text-[30px] font-semibold text-white">
+              {formatPercent(safeValue)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function HeroTreemap({ title, items }: { title: string; items: Array<{ label: string; value: number }> }) {
@@ -634,18 +690,82 @@ function HeroTreemap({ title, items }: { title: string; items: Array<{ label: st
 
 function HeroLeadsClientsDonut({ leads, clients, conversionRatePercent }: { leads: number; clients: number; conversionRatePercent: number }) {
   const safePercent = clamp(Number.isFinite(conversionRatePercent) ? conversionRatePercent : 0, 0, 100);
-  return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-[15px] tracking-[0.28em] text-white/86">Leads/Clients</div><div className="mt-6 flex items-center justify-center"><div className="relative h-[178px] w-[178px] rounded-full" style={{ background: `conic-gradient(#d68c6c 0 ${100 - safePercent}%, ${BRAND.yellow} ${100 - safePercent}% 100%)` }}><div className="absolute inset-[28%] rounded-full bg-[#122345]" /><div className="absolute inset-0 flex items-center justify-center text-[26px] font-medium text-[#0b1020]"><span className="text-white">{formatPercent(safePercent, 1)}</span></div></div></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3 text-center"><div className="text-[11px] uppercase tracking-[0.16em] text-white/48">Leads</div><div className="mt-2 text-lg font-semibold text-white">{formatNumber(leads)}</div></div><div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3 text-center"><div className="text-[11px] uppercase tracking-[0.16em] text-white/48">Clients</div><div className="mt-2 text-lg font-semibold text-white">{formatNumber(clients)}</div></div></div></div>;
+  return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-[15px] tracking-[0.18em] text-white/86">Lead → Client Conversion</div><div className="mt-6 flex items-center justify-center"><div className="relative h-[178px] w-[178px] rounded-full" style={{ background: `conic-gradient(#d68c6c 0 ${100 - safePercent}%, ${BRAND.yellow} ${100 - safePercent}% 100%)` }}><div className="absolute inset-[28%] rounded-full bg-[#122345]" /><div className="absolute inset-0 flex items-center justify-center text-[26px] font-medium text-[#0b1020]"><span className="text-white">{formatPercent(safePercent, 1)}</span></div></div></div><div className="mt-4 grid grid-cols-2 gap-3"><div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3 text-center"><div className="text-[11px] uppercase tracking-[0.16em] text-white/48">Leads</div><div className="mt-2 text-lg font-semibold text-white">{formatNumber(leads)}</div></div><div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3 text-center"><div className="text-[11px] uppercase tracking-[0.16em] text-white/48">Clients</div><div className="mt-2 text-lg font-semibold text-white">{formatNumber(clients)}</div></div></div></div>;
 }
 
-function HeroDemandCapacity({ demand, capacity }: { demand: number; capacity: number }) {
-  const safeDemand = Math.max(demand, 1);
-  const safeCapacity = Math.max(capacity, 1);
-  const demandSize = 178;
-  const capacitySize = clamp(Math.round((safeCapacity / safeDemand) * 178), 72, 132);
-  return <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"><div className="text-[15px] tracking-[0.28em] text-white/86">Demand/Capacity</div><div className="mt-6 flex min-h-[236px] items-end justify-center gap-6"><div className="flex items-center justify-center rounded-full bg-[#08c76a] text-center text-[18px] font-medium text-[#0b1020]" style={{ width: demandSize, height: demandSize }}><div><div>Demand</div><div className="mt-1 text-sm opacity-75">{formatNumber(demand)}</div></div></div><div className="mb-[6px] flex items-center justify-center rounded-full bg-[#ff7a1a] text-center text-[18px] font-medium text-[#0b1020]" style={{ width: capacitySize, height: capacitySize }}><div><div>Capacity</div><div className="mt-1 text-sm opacity-75">{formatNumber(capacity)}</div></div></div></div></div>;
+function HeroDemandCapacity({
+  demand,
+  capacity,
+}: {
+  demand: number;
+  capacity: number;
+}) {
+  const maxValue = Math.max(demand, capacity, 1);
+  const demandWidth = `${(demand / maxValue) * 100}%`;
+  const capacityWidth = `${(capacity / maxValue) * 100}%`;
+
+  return (
+    <div className="rounded-[22px] border border-white/10 bg-white/[0.03] p-5">
+      <div className="text-[15px] tracking-[0.18em] text-white/86">
+        Demand / Capacity
+      </div>
+
+      <div className="mt-6 space-y-5">
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <span className="text-sm text-white/68">Leads</span>
+            <span className="text-base font-semibold text-white">
+              {formatNumber(demand)}
+            </span>
+          </div>
+          <div className="h-3 rounded-full bg-white/10">
+            <div
+              className="h-3 rounded-full bg-emerald-400"
+              style={{ width: demandWidth }}
+            />
+          </div>
+        </div>
+
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-4">
+            <span className="text-sm text-white/68">Capacity</span>
+            <span className="text-base font-semibold text-white">
+              {formatNumber(capacity)}
+            </span>
+          </div>
+          <div className="h-3 rounded-full bg-white/10">
+            <div
+              className="h-3 rounded-full bg-orange-400"
+              style={{ width: capacityWidth }}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
+              Gap
+            </div>
+            <div className="mt-2 text-lg font-semibold text-white">
+              {formatNumber(Math.max(demand - capacity, 0))}
+            </div>
+          </div>
+
+          <div className="rounded-[16px] border border-white/8 bg-white/[0.04] px-4 py-3">
+            <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
+              Ratio
+            </div>
+            <div className="mt-2 text-lg font-semibold text-white">
+              {capacity > 0 ? `${(demand / capacity).toFixed(2)}x` : "—"}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
-function HeroSection({ results, proposedModelShift, generatedAt, resultStatus = "ready" }: HeroSectionProps) {
+function HeroSection({ results, generatedAt, resultStatus = "ready" }: HeroSectionProps) {
   const hero = results.hero_block ?? {};
   const normalized = (results.normalized_data ?? {}) as any;
   const company = normalized.company ?? {};
@@ -653,18 +773,45 @@ function HeroSection({ results, proposedModelShift, generatedAt, resultStatus = 
   const financials = normalized.financials ?? {};
   const sales = normalized.sales ?? {};
   const acquisition = normalized.acquisition ?? {};
-  const companyName = hero.companyName?.trim() || company.name || "Название компании";
-  const summary = hero.summary?.trim() || results.summary?.snapshot || "Snapshot overview";
-  const description = hero.description?.trim() || company.description || "Краткое описание бизнеса";
-  const modelShift = proposedModelShift?.trim() || "Model shift not specified";
-  const nicheLabel = offer.most_profitable_segment || (Array.isArray(offer.target_customers) ? offer.target_customers[0] : null) || offer.business_type || "niche";
-  const geoLabel = [company.physical_location, ...(hero.sales_geography?.length ? hero.sales_geography : company.sales_geography ?? [])].filter(Boolean).join(" / ");
-  const bottleneckType = sales.demand_to_capacity && sales.demand_to_capacity > 1 ? "capacity bottleneck" : hero.growth_limit || "bottleneck";
-  const revenueValue = financials.contract_value ?? hero.cash_in?.value ?? null;
-  const revenueCurrency = financials.last_month_currency ?? hero.cash_in?.currency ?? "USD";
-  const revenueSubvalue = financials.contract_value ? "signed contract value" : hero.cash_in?.period === "last_month" ? "last month cash-in" : "revenue basis";
-  const paymentModel = financials.contract_payment_structure || "модель оплаты не указана";
-  const growthLimit = hero.growth_limit || "growth limit not specified";
+const companyName = hero.companyName?.trim() || company.name || "—";
+
+const summary =
+  hero.summary?.trim() ||
+  results.summary?.snapshot ||
+  "—";
+
+const description =
+  hero.description?.trim() ||
+  company.description ||
+  "—";
+
+const businessModel = results.positioning?.business_model ?? {};
+const modelShift =
+  [businessModel.type, businessModel.explanation]
+    .filter(Boolean)
+    .join(" — ") || "—";
+
+const geoLabel =
+  safeStringArray(
+    hero.sales_geography?.length
+      ? hero.sales_geography
+      : company.sales_geography
+  ).join(" / ") || "—";
+
+const stageLabel = company.stage || "—";
+
+const revenueValue = financials.last_month_cash_in ?? hero.cash_in?.value ?? null;
+const revenueCurrency = financials.last_month_currency ?? hero.cash_in?.currency ?? "USD";
+const revenueTag =
+  revenueValue !== null ? formatCurrency(Number(revenueValue), revenueCurrency) : "—";
+
+const revenueSubvalue =
+  hero.cash_in?.period === "last_month" || financials.last_month_cash_in
+    ? "last month cash-in"
+    : "revenue basis";
+
+const paymentModel = financials.contract_payment_structure || "модель оплаты не указана";
+const growthLimit = hero.growth_limit || "—";
   const decisionMakers = (Array.isArray(normalized.team?.roles) && normalized.team.roles.length ? normalized.team.roles : hero.roles) ?? [];
   const productMargins = hero.product_margins_chart?.series?.map((item) => ({ title: item.product, value: Number(item.margin ?? 0) })) ?? [];
   const channelDistribution = Array.isArray(acquisition.channels) ? acquisition.channels.map((item: any) => ({ label: item.channel, value: Number(item.share_percent ?? 0) })) : [];
@@ -674,7 +821,34 @@ function HeroSection({ results, proposedModelShift, generatedAt, resultStatus = 
   const demand = Number(sales.lead_volume ?? 0);
   const capacity = Number(sales.processing_capacity ?? 0);
 
-  return <GlassCard className="mb-8 overflow-hidden p-0"><div className="grid xl:grid-cols-[0.98fr_1.02fr]"><div className="border-b border-white/10 p-6 md:p-8 xl:border-b-0 xl:border-r xl:p-10"><div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] uppercase tracking-[0.30em] text-[#f7d237]"><span>Snapshot ready</span><span>/</span><span>{generatedAt || "дата"}</span><span>/</span><span>{resultStatus}</span></div><h1 className="mt-8 text-[34px] font-medium leading-[1.05] text-white md:text-[56px]">{companyName}</h1><p className="mt-8 max-w-[720px] text-[24px] leading-[1.45] tracking-[0.06em] text-white/92">{summary}</p><p className="mt-8 max-w-[740px] text-[24px] leading-[1.45] tracking-[0.06em] text-white/92">{description}</p><p className="mt-8 max-w-[740px] break-words text-[24px] leading-[1.45] tracking-[0.06em] text-white/92">{modelShift}</p><div className="mt-12 flex flex-wrap gap-4"><HeroTag>{nicheLabel}</HeroTag><HeroTag>{geoLabel || "geo"}</HeroTag><HeroTag wide>{bottleneckType}</HeroTag></div><div className="mt-8 grid gap-6 md:grid-cols-2"><HeroInfoTile label="revenue" value={revenueValue !== null ? formatCurrency(Number(revenueValue), revenueCurrency) : "—"} subvalue={revenueSubvalue} /><HeroInfoTile label="модель оплаты" value={paymentModel} /><HeroInfoTile label="growth limit" value={growthLimit} fullWidth /></div>{decisionMakers.length > 0 && <div className="mt-8 grid gap-6 md:grid-cols-2">{decisionMakers.slice(0, 2).map((item: any, index: number) => <div key={`${item.role}-${index}`} className="rounded-[22px] border border-white/10 bg-[#284b9b]/90 px-5 py-5"><div className="text-[15px] leading-8 text-white"><div>{item.role}</div><div className="mt-3 text-white/88">{item.responsibility}</div>{item.decision_maker ? <div className="mt-4 text-sm uppercase tracking-[0.18em] text-[#fff3b2]">decision maker</div> : null}</div></div>)}</div>}</div><div className="p-6 md:p-8 xl:p-10"><div><div className="text-[18px] tracking-[0.18em] text-white/92">Маржинальность core продуктов</div><div className="mt-6 grid gap-4 md:grid-cols-3">{productMargins.slice(0, 3).map((item, index) => <HeroGauge key={`${item.title}-${index}`} title={item.title} value={item.value} />)}</div></div>{channelDistribution.length > 0 && <div className="mt-8"><HeroTreemap title="Дистрибуция по каналам" items={channelDistribution} /></div>}<div className="mt-8 grid gap-6 md:grid-cols-2"><HeroLeadsClientsDonut leads={leads} clients={clients} conversionRatePercent={conversionRatePercent} /><HeroDemandCapacity demand={demand} capacity={capacity} /></div></div></div></GlassCard>;
+  return <GlassCard className="mb-8 overflow-hidden p-0"><div className="grid xl:grid-cols-[0.98fr_1.02fr]"><div className="border-b border-white/10 p-6 md:p-8 xl:border-b-0 xl:border-r xl:p-10"><div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-[13px] uppercase tracking-[0.30em] text-[#f7d237]"><span>Snapshot ready</span><span>/</span><span>{generatedAt || "дата"}</span><span>/</span><span>{resultStatus}</span></div>{companyName !== "—" ? (
+  <h1 className="mt-8 text-[28px] font-medium leading-[1.08] text-white md:text-[42px]">
+    {companyName}
+  </h1>
+) : null}
+
+<div className="mt-8 max-w-[760px] space-y-6">
+  <p className="text-[16px] leading-8 text-white/84 md:text-[18px]">
+    {summary}
+  </p>
+
+  <p className="text-[16px] leading-8 text-white/72 md:text-[18px]">
+    {description}
+  </p>
+
+  <div className="rounded-[18px] border border-white/10 bg-white/[0.03] px-5 py-4">
+    <div className="text-[11px] uppercase tracking-[0.18em] text-[#f7d237]">
+      Business model
+    </div>
+    <p className="mt-2 text-[15px] leading-7 text-white/78 md:text-[16px]">
+      {modelShift}
+    </p>
+  </div>
+</div><div className="mt-10 flex flex-wrap gap-3">
+  <HeroTag>Geo: {geoLabel}</HeroTag>
+  <HeroTag>Stage: {stageLabel}</HeroTag>
+  <HeroTag wide>Revenue: {revenueTag}</HeroTag>
+</div><div className="mt-8 grid gap-6 md:grid-cols-2"><HeroInfoTile label="revenue" value={revenueValue !== null ? formatCurrency(Number(revenueValue), revenueCurrency) : "—"} subvalue={revenueSubvalue} /><HeroInfoTile label="модель оплаты" value={paymentModel} /><HeroInfoTile label="growth limit" value={growthLimit} fullWidth /></div>{decisionMakers.length > 0 && <div className="mt-8 grid gap-6 md:grid-cols-2">{decisionMakers.slice(0, 2).map((item: any, index: number) => <div key={`${item.role}-${index}`} className="rounded-[22px] border border-white/10 bg-[#284b9b]/90 px-5 py-5"><div className="text-[15px] leading-8 text-white"><div>{item.role}</div><div className="mt-3 text-white/88">{item.responsibility}</div>{item.decision_maker ? <div className="mt-4 text-sm uppercase tracking-[0.18em] text-[#fff3b2]">decision maker</div> : null}</div></div>)}</div>}</div><div className="p-6 md:p-8 xl:p-10"><div><div className="text-[18px] tracking-[0.18em] text-white/92">Маржинальность core продуктов</div><div className="mt-6 grid gap-4 md:grid-cols-3">{productMargins.slice(0, 3).map((item, index) => <HeroGauge key={`${item.title}-${index}`} title={item.title} value={item.value} />)}</div></div>{channelDistribution.length > 0 && <div className="mt-8"><HeroTreemap title="Дистрибуция по каналам" items={channelDistribution} /></div>}<div className="mt-8 grid gap-6 md:grid-cols-2"><HeroLeadsClientsDonut leads={leads} clients={clients} conversionRatePercent={conversionRatePercent} /><HeroDemandCapacity demand={demand} capacity={capacity} /></div></div></div></GlassCard>;
 }
 
 function BlockTag({ text }: { text: string }) { return <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-white/62">{text}</span>; }
