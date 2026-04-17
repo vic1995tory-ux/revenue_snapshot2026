@@ -93,7 +93,7 @@ type UnifiedResultsPayload = {
 
 const BRAND = {
   bg: "#0b1d3a",
-  yellow: "#",
+  yellow: "#f7d237",
 };
 
 const DEFAULT_CONFIDENCE_UI_SYSTEM: ConfidenceUiSystem = {
