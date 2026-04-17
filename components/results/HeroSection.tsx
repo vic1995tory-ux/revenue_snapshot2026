@@ -245,7 +245,64 @@ function HeroProductMarginRadials({
     </div>
   );
 }
+type HeroTreemapContentProps = {
+  x?: number;
+  y?: number;
+  width?: number;
+  height?: number;
+  name?: string;
+  size?: number;
+  fill?: string;
+};
 
+function HeroTreemapContent(props: HeroTreemapContentProps) {
+  const {
+    x = 0,
+    y = 0,
+    width = 0,
+    height = 0,
+    name = "",
+    size = 0,
+    fill = "#c7a93b",
+  } = props;
+
+  if (width < 60 || height < 42) {
+    return <g />;
+  }
+
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={width}
+        height={height}
+        rx={10}
+        ry={10}
+        fill={fill}
+      />
+      <text
+        x={x + width / 2}
+        y={y + height / 2 - 6}
+        textAnchor="middle"
+        fill="#fefefe"
+        fontSize={width > 120 ? 16 : 13}
+        fontWeight={600}
+      >
+        {name}
+      </text>
+      <text
+        x={x + width / 2}
+        y={y + height / 2 + 16}
+        textAnchor="middle"
+        fill="rgba(255,255,255,0.75)"
+        fontSize={12}
+      >
+        {formatPercent(size)}
+      </text>
+    </g>
+  );
+}
 function HeroChannelTreemap({
   title,
   items,
@@ -273,50 +330,12 @@ function HeroChannelTreemap({
 
       <div className="mt-5 h-[320px] w-full overflow-hidden rounded-[18px] border border-white/8 bg-[#0f223f]">
         <ResponsiveContainer width="100%" height="100%">
-          <Treemap
-            data={data}
-            dataKey="size"
-            stroke="rgba(255,255,255,0.10)"
-            content={({ x, y, width, height, name, size, fill }: any) => {
-              if (width < 60 || height < 42) return null;
-
-              return (
-                <g>
-                  <rect
-                    x={x}
-                    y={y}
-                    width={width}
-                    height={height}
-                    rx={10}
-                    ry={10}
-                    fill={fill}
-                  />
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2 - 6}
-                    textAnchor="middle"
-                    fill="#fefefe"
-                    fontSize={width > 120 ? 16 : 13}
-                    fontWeight={600}
-                  >
-                    {name}
-                  </text>
-                  <text
-                    x={x + width / 2}
-                    y={y + height / 2 + 16}
-                    textAnchor="middle"
-                    fill="rgba(255,255,255,0.75)"
-                    fontSize={12}
-                  >
-                    {formatPercent(size)}
-                  </text>
-                </g>
-              );
-            }}
-          />
-        </ResponsiveContainer>
-      </div>
-    </div>
+        <Treemap
+  data={data}
+  dataKey="size"
+  stroke="rgba(255,255,255,0.10)"
+  content={<HeroTreemapContent />}
+/>
   );
 }
 
