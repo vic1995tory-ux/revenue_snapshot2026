@@ -848,7 +848,21 @@ const growthLimit = hero.growth_limit || "—";
   <HeroTag>Geo: {geoLabel}</HeroTag>
   <HeroTag>Stage: {stageLabel}</HeroTag>
   <HeroTag wide>Revenue: {revenueTag}</HeroTag>
-</div><div className="mt-8 grid gap-6 md:grid-cols-2"><HeroInfoTile label="revenue" value={revenueValue !== null ? formatCurrency(Number(revenueValue), revenueCurrency) : "—"} subvalue={revenueSubvalue} /><HeroInfoTile label="модель оплаты" value={paymentModel} /><HeroInfoTile label="growth limit" value={growthLimit} fullWidth /></div>{decisionMakers.length > 0 && <div className="mt-8 grid gap-6 md:grid-cols-2">{decisionMakers.slice(0, 2).map((item: any, index: number) => <div key={`${item.role}-${index}`} className="rounded-[22px] border border-white/10 bg-[#284b9b]/90 px-5 py-5"><div className="text-[15px] leading-8 text-white"><div>{item.role}</div><div className="mt-3 text-white/88">{item.responsibility}</div>{item.decision_maker ? <div className="mt-4 text-sm uppercase tracking-[0.18em] text-[#fff3b2]">decision maker</div> : null}</div></div>)}</div>}</div><div className="p-6 md:p-8 xl:p-10"><div><div className="text-[18px] tracking-[0.18em] text-white/92">Маржинальность core продуктов</div><div className="mt-6 grid gap-4 md:grid-cols-3">{productMargins.slice(0, 3).map((item, index) => <HeroGauge key={`${item.title}-${index}`} title={item.title} value={item.value} />)}</div></div>{channelDistribution.length > 0 && <div className="mt-8"><HeroTreemap title="Дистрибуция по каналам" items={channelDistribution} /></div>}<div className="mt-8 grid gap-6 md:grid-cols-2"><HeroLeadsClientsDonut leads={leads} clients={clients} conversionRatePercent={conversionRatePercent} /><HeroDemandCapacity demand={demand} capacity={capacity} /></div></div></div></GlassCard>;
+</div>
+    <div className="mt-8 grid gap-6 md:grid-cols-2">
+      <HeroInfoTile label="revenue" value={revenueValue !== null ? formatCurrency(Number(revenueValue), revenueCurrency) : "—"} subvalue={revenueSubvalue} />
+      <HeroInfoTile label="модель оплаты" value={paymentModel} />
+      <HeroInfoTile label="growth limit" value={growthLimit} fullWidth /></div>
+    {decisionMakers.length > 0 && <div className="mt-8 grid gap-6 md:grid-cols-2"
+                                    >{decisionMakers.slice(0, 2).map((item: any, index: number) => 
+                                      <div key={`${item.role}-${index}`} className="rounded-[22px] border border-white/10 bg-[#284b9b]/90 px-5 py-5">
+                                        <div className="text-[15px] leading-8 text-white"><div>{item.role}</div>
+                                          <div className="mt-3 text-white/88">{item.responsibility}</div>
+                                          {item.decision_maker ? <div className="mt-4 text-sm uppercase tracking-[0.18em] text-[#fff3b2]">decision maker</div> : null}</div></div>)}</div>}</div>
+    <div className="p-6 md:p-8 xl:p-10"><div>
+      <div className="text-[18px] tracking-[0.18em] text-white/92">Маржинальность core продуктов</div>
+      <div className="mt-6 grid gap-4 md:grid-cols-3">{productMargins.slice(0, 3).map((item, index) => <HeroGauge key={`${item.title}-${index}`} title={item.title} value={item.value} />)}</div></div>
+      {channelDistribution.length > 0 && <div className="mt-8"><HeroTreemap title="Дистрибуция по каналам" items={channelDistribution} /></div>}<div className="mt-8 grid gap-6 md:grid-cols-2"><HeroLeadsClientsDonut leads={leads} clients={clients} conversionRatePercent={conversionRatePercent} /><HeroDemandCapacity demand={demand} capacity={capacity} /></div></div></div></GlassCard>;
 }
 
 function BlockTag({ text }: { text: string }) { return <span className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-white/62">{text}</span>; }
