@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useParams } from "next/navigation";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 
+import HeroSection from "@/components/results/HeroSection";
+import SolutionSection from "@/components/results/SolutionSection";
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
     style: "currency",
