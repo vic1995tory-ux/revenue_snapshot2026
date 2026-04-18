@@ -1567,14 +1567,26 @@ export const resultsMockData: ResultsPageData = {
     ],
   },
 
-  roadmap: {
-    phases: resultsPayloadMock.roadmap.phases.map((phase) => ({
+roadmap: {
+  phases: resultsPayloadMock.roadmap.phases.map((phase) => {
+    let description = "";
+
+    if ("linked_constraint" in phase) {
+      description = phase.linked_constraint;
+    } else if ("linked_lever" in phase) {
+      description = phase.linked_lever;
+    } else if ("linked_system" in phase) {
+      description = phase.linked_system;
+    }
+
+    return {
       period: phase.phase,
       title: phase.goal,
-      description: phase.linked_constraint ?? phase.linked_lever ?? phase.linked_system,
+      description,
       tasks: phase.key_actions.map((action) => action.action),
-    })),
-  },
+    };
+  }),
+},
 
   forecasts: {
     revenue: {
