@@ -1271,7 +1271,7 @@ function TagField({
     }
     onChange({
       selected: single ? [] : selected,
-      custom: single ? [next] : [...allCustom, next],
+      custom: [...allCustom, next],
     });
     setCustomValue("");
   }
@@ -1292,8 +1292,8 @@ function TagField({
 
   function toggleCustom(tag: string) {
     onChange({
-      selected: single ? [] : selected,
-      custom: single ? [] : allCustom.filter((t) => t !== tag),
+      selected,
+      custom: allCustom.filter((t) => t !== tag),
     });
   }
 
@@ -1961,16 +1961,8 @@ function SeasonalityChart({
   return (
     <div className="space-y-5">
       <div className="rounded-[24px] border border-white/8 bg-white/[0.03] p-4">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <div className="rounded-2xl border border-teal-500/22 bg-teal-500/10 px-4 py-2 text-sm text-teal-100">
-            Пики
-          </div>
-          <div className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2]">
-            Спады
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
-            На данной шкале укажите пики и спады продаж, двигая точки по вертикали
-          </div>
+        <div className="mb-4 rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-white/55">
+          На данной шкале укажите пики и спады продаж, двигая точки по вертикали
         </div>
 
         <div className="w-full">
