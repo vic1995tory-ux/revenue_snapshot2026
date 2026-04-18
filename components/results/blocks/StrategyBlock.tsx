@@ -11,7 +11,7 @@ export function StrategyBlock({ block }: { block: AnalyticalBlockData }) {
           <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
             {block.title}
           </div>
-          <h3 className="mt-2 text-[28px] font-semibold leading-[0.98] tracking-[-0.04em]">
+          <h3 className="mt-2 text-[28px] font-semibold leading-[0.98] tracking-[-0.04em] text-white">
             {block.truthSummary}
           </h3>
         </div>
@@ -29,7 +29,7 @@ export function StrategyBlock({ block }: { block: AnalyticalBlockData }) {
             className="rounded-[20px] border border-white/10 bg-white/5 p-4"
           >
             <div className="text-sm text-white/50">{item.label}</div>
-            <div className="mt-2 text-[18px] font-medium">{item.value}</div>
+            <div className="mt-2 text-[18px] font-medium text-white">{item.value}</div>
           </div>
         ))}
       </div>
