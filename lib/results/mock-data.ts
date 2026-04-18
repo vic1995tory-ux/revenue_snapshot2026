@@ -9,9 +9,11 @@ export const resultsPayloadMock = {
     description:
       "Компания помогает seed-stage и growing SaaS проектам с GTM, стратегией, MVP и автоматизациями.",
     growth_limit: "Founder-led capacity bottleneck",
+
     cash_in: {
       value: 1900,
     },
+
     roles: [
       {
         role: "CMO",
@@ -22,21 +24,33 @@ export const resultsPayloadMock = {
         responsibility: "Sales / Finance",
       },
     ],
+
     product_margins_chart: {
       series: [
-        { product: "MVP", margin: 50 },
-        { product: "Strategy Sessions", margin: 80 },
-        { product: "Automations", margin: 30 },
+        {
+          product: "MVP",
+          margin: 50,
+          description: "Быстрый запуск MVP для ранних SaaS-проектов.",
+        },
+        {
+          product: "Strategy Sessions",
+          margin: 80,
+          description: "Стратегические сессии по росту, GTM и revenue model.",
+        },
+        {
+          product: "Automations",
+          margin: 30,
+          description: "Автоматизации процессов продаж, маркетинга и ops.",
+        },
       ],
     },
-clientsVsLeads: {
-  clients: resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
-    (item) => item.label === "Клиенты"
-  )?.value ?? 0,
-  leads: resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
-    (item) => item.label === "Лиды"
-  )?.value ?? 0,
-},
+
+    clients_vs_leads_chart: {
+      series: [
+        { label: "Клиенты", value: 1 },
+        { label: "Лиды", value: 13 },
+      ],
+    },
   },
 
   normalized_data: {
@@ -173,6 +187,7 @@ export const resultsMockData: ResultsPageData = {
       resultsPayloadMock.hero_block.product_margins_chart.series.map((item) => ({
         name: item.product,
         marginPercent: item.margin,
+        description: item.description,
       })),
 
     clientsVsLeads: {
@@ -180,15 +195,11 @@ export const resultsMockData: ResultsPageData = {
         resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
           (item) => item.label === "Клиенты",
         )?.value ?? 0,
+
       leads:
         resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
           (item) => item.label === "Лиды",
         )?.value ?? 0,
-    },
-
-    demandVsCapacity: {
-      demand: resultsPayloadMock.normalized_data.sales.lead_volume,
-      capacity: resultsPayloadMock.normalized_data.sales.processing_capacity,
     },
 
     channelMix:
@@ -198,21 +209,27 @@ export const resultsMockData: ResultsPageData = {
       })),
 
     stage: resultsPayloadMock.normalized_data.company.stage,
+
     businessAgeMonths:
       resultsPayloadMock.normalized_data.company.business_age_months,
+
     physicalLocation:
       resultsPayloadMock.normalized_data.company.physical_location,
-    teamSizeCore: resultsPayloadMock.normalized_data.company.team_size_core,
+
+    teamSizeCore:
+      resultsPayloadMock.normalized_data.company.team_size_core,
 
     snapshot: resultsPayloadMock.summary.snapshot,
-    currentPosition: resultsPayloadMock.summary.current_position,
-    confidenceNote: resultsPayloadMock.confidence_note,
+
+    currentPosition:
+      resultsPayloadMock.summary.current_position,
   },
 
   solution: {
     title: resultsPayloadMock.solution.solution_summary.headline,
     summary: resultsPayloadMock.solution.solution_summary.core_logic,
     confidenceLevel: 2,
+
     cards: [
       {
         title: "Growth Lever",
@@ -244,13 +261,13 @@ export const resultsMockData: ResultsPageData = {
   roadmap: {
     phases: resultsPayloadMock.roadmap.phases.map((phase) => {
       const description =
-        ("linked_constraint" in phase && phase.linked_constraint
+        "linked_constraint" in phase
           ? phase.linked_constraint
-          : "linked_lever" in phase && phase.linked_lever
+          : "linked_lever" in phase
             ? phase.linked_lever
-            : "linked_system" in phase && phase.linked_system
+            : "linked_system" in phase
               ? phase.linked_system
-              : "");
+              : "";
 
       return {
         period: phase.phase,
@@ -288,6 +305,7 @@ export const resultsMockData: ResultsPageData = {
   businessContext: {
     summary:
       "Unified business context assembled from payload: company, sales, economics, channels and constraints.",
+
     sections: [
       {
         title: "Company",
@@ -338,16 +356,20 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "clients_flow",
       title: "Clients & Flow",
-      truthSummary: "Lead flow exists but conversion system is overloaded.",
-      mainDiagnosis: "13 leads vs 4 capacity creates lost opportunities.",
+      truthSummary:
+        "Lead flow exists but conversion system is overloaded.",
+      mainDiagnosis:
+        "13 leads vs 1 client indicates weak conversion under capacity pressure.",
       confidenceLevel: 2,
       keySignals: [
         { label: "Leads", value: "13" },
-        { label: "Capacity", value: "4" },
         { label: "Clients", value: "1" },
+        { label: "Conversion", value: "7.7%" },
       ],
-      explanation: "Lead intake outpaces processing.",
-      implication: "Need triage + better pipeline before scaling demand.",
+      explanation:
+        "Demand exists, but conversion into paying clients remains low.",
+      implication:
+        "Need stronger qualification + sales process + delivery throughput.",
     },
   ],
 
