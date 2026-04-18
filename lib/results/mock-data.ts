@@ -29,12 +29,14 @@ export const resultsPayloadMock = {
         { product: "Automations", margin: 30 },
       ],
     },
-    clients_vs_leads_chart: {
-      series: [
-        { label: "Клиенты", value: 1 },
-        { label: "Лиды", value: 13 },
-      ],
-    },
+clientsVsLeads: {
+  clients: resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
+    (item) => item.label === "Клиенты"
+  )?.value ?? 0,
+  leads: resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
+    (item) => item.label === "Лиды"
+  )?.value ?? 0,
+},
   },
 
   normalized_data: {
