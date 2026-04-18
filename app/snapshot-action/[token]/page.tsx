@@ -213,7 +213,7 @@ const chapters: Chapter[] = [
       {
         id: "positionText",
         label:
-          "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+          "Расскажите о вашем бизнесе подробно: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
         type: "text",
       },
       {
@@ -243,7 +243,7 @@ const chapters: Chapter[] = [
       },
       {
         id: "salesCount",
-        label: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+        label: "Сколько новых клиентов и продаж у вас было за прошлый месяц?",
         type: "text",
       },
       {
@@ -274,7 +274,7 @@ const chapters: Chapter[] = [
       {
         id: "demandCapacity",
         label:
-          "Сколько обращений вы получаете и сколько реально можете обработать?",
+          "Сколько заявок к вам приходит и какое количество клиентов вы можете реализовать единовременно без потери качества?",
         type: "dualRange",
       },
       {
@@ -298,7 +298,7 @@ const chapters: Chapter[] = [
     questions: [
       {
         id: "topProducts",
-        label: "Какие 1–3 продукта или услуги самые маржинальные?",
+        label: "Какие 1–3 продукта или услуги у вас самые маржинальные?",
         type: "tripleMargin",
       },
       {
@@ -371,7 +371,7 @@ const chapters: Chapter[] = [
       {
         id: "stress",
         label:
-          "Где вы как руководитель сильнее всего ощущаете напряжение?",
+          "Где вы как руководитель сильней всего ощущаете в компании напряжение? Дайте оценку каждой зоне, как руководитель.",
         type: "stressRange",
       },
       {
@@ -504,7 +504,7 @@ const initialAnswers: Answers = {
   },
   decisions: "",
   stress: {
-    values: { Маркетинг: 0, Продажи: 0, Операционка: 0, Управление: 0 },
+    values: { Маркетинг: 1, Продажи: 1, Операционка: 1, Управление: 1 },
     touched: {
       Маркетинг: false,
       Продажи: false,
@@ -852,7 +852,7 @@ function buildPreparedAnswers(answers: any) {
         .join("\n"),
     },
     {
-      question: "Сколько клиентов или продаж у вас было за прошлый месяц?",
+      question: "Сколько новых клиентов и продаж у вас было за прошлый месяц?",
       answer: String(answers.salesCount ?? "").trim(),
     },
     {
@@ -871,7 +871,7 @@ function buildPreparedAnswers(answers: any) {
     },
     {
       question:
-        "Сколько обращений вы получаете и сколько реально можете обработать?",
+        "Сколько заявок к вам приходит и какое количество клиентов вы можете реализовать единовременно без потери качества?",
       answer: [
         `Обращения: ${answers.demandCapacity?.demand ?? 0}`,
         `Capacity: ${answers.demandCapacity?.capacity ?? 0}`,
@@ -892,7 +892,7 @@ function buildPreparedAnswers(answers: any) {
         .join("\n"),
     },
     {
-      question: "Какие 1–3 продукта или услуги самые маржинальные?",
+      question: "Какие 1–3 продукта или услуги у вас самые маржинальные?",
       answer: (answers.topProducts ?? [])
         .filter((item: any) => String(item?.name ?? "").trim())
         .map(
@@ -951,7 +951,7 @@ function buildPreparedAnswers(answers: any) {
     },
     {
       question:
-        "Расскажите о вашем бизнесе: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
+        "Расскажите о вашем бизнесе подробно: чем занимаетесь, как давно работаете и как вас воспринимают клиенты.",
       answer: [
         [
           ...(answers.positionText?.stages ?? []),
@@ -1029,7 +1029,7 @@ function buildPreparedAnswers(answers: any) {
     },
     {
       question:
-        "Где вы как руководитель сильнее всего ощущаете напряжение?",
+        "Где вы как руководитель сильней всего ощущаете в компании напряжение? Дайте оценку каждой зоне, как руководитель.",
       answer: Object.entries(answers.stress?.values ?? {})
         .map(([key, value]) => `${key}: ${value}`)
         .join("\n"),
@@ -1248,14 +1248,15 @@ function TagField({
   baseTags,
   onChange,
   single = false,
+  addPlaceholder = "Добавить свой вариант",
 }: {
   label?: string;
   value: { selected: string[]; custom: string[] };
   baseTags: string[];
   onChange: (next: { selected: string[]; custom: string[] }) => void;
   single?: boolean;
+  addPlaceholder?: string;
 }) {
-  const [isAdding, setIsAdding] = useState(false);
   const [customValue, setCustomValue] = useState("");
 
   const allCustom = value.custom ?? [];
@@ -1266,7 +1267,6 @@ function TagField({
     if (!next) return;
     if (selected.includes(next) || allCustom.includes(next)) {
       setCustomValue("");
-      setIsAdding(false);
       return;
     }
     onChange({
@@ -1274,7 +1274,6 @@ function TagField({
       custom: single ? [next] : [...allCustom, next],
     });
     setCustomValue("");
-    setIsAdding(false);
   }
 
   function toggleBase(tag: string) {
@@ -1332,38 +1331,30 @@ function TagField({
           </button>
         ))}
 
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <input
+          className={compactInputClass}
+          placeholder={addPlaceholder}
+          value={customValue}
+          onChange={(e) => setCustomValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addCustomTag();
+            }
+          }}
+        />
         <button
           type="button"
-          onClick={() => setIsAdding((prev) => !prev)}
-          className="rounded-full border border-white/10 bg-white/[0.03] px-3.5 py-2 text-sm text-white/75 transition hover:border-[#f7d237]/25 hover:bg-[#f7d237]/10 hover:text-[#fff3b2]"
+          onClick={addCustomTag}
+          className="flex h-[42px] min-w-[42px] items-center justify-center rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 text-lg leading-none text-[#fff3b2] transition hover:bg-[#f7d237]/16"
+          aria-label="Добавить вариант"
         >
           +
         </button>
       </div>
-
-      {isAdding && (
-        <div className="flex flex-wrap gap-2">
-          <input
-            className={compactInputClass}
-            placeholder="Добавить свой вариант"
-            value={customValue}
-            onChange={(e) => setCustomValue(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                addCustomTag();
-              }
-            }}
-          />
-          <button
-            type="button"
-            onClick={addCustomTag}
-            className="rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 py-2 text-sm text-[#fff3b2] transition hover:bg-[#f7d237]/16"
-          >
-            Сохранить
-          </button>
-        </div>
-      )}
     </div>
   );
 }
@@ -1438,13 +1429,16 @@ function LossZoneTagEditor({
   zones,
   value,
   onChange,
+  onAddZone,
 }: {
   zones: string[];
   value: { selected: string[]; notes: Record<string, string> };
   onChange: (next: { selected: string[]; notes: Record<string, string> }) => void;
+  onAddZone?: (zone: string) => void;
 }) {
   const selected = value.selected ?? [];
   const notes = value.notes ?? {};
+  const [draft, setDraft] = useState("");
 
   function toggleZone(zone: string) {
     const active = selected.includes(zone);
@@ -1454,6 +1448,21 @@ function LossZoneTagEditor({
         : [...selected, zone],
       notes,
     });
+  }
+
+  function addZone() {
+    const next = draft.trim();
+    if (!next) return;
+    if (zones.some((item) => item.toLowerCase() === next.toLowerCase())) {
+      setDraft("");
+      return;
+    }
+    onAddZone?.(next);
+    onChange({
+      selected: [...selected, next],
+      notes: { ...notes, [next]: notes[next] ?? "" },
+    });
+    setDraft("");
   }
 
   return (
@@ -1476,6 +1485,29 @@ function LossZoneTagEditor({
             </button>
           );
         })}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        <input
+          className={compactInputClass}
+          placeholder="Добавить свою зону"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addZone();
+            }
+          }}
+        />
+        <button
+          type="button"
+          onClick={addZone}
+          className="flex h-[42px] min-w-[42px] items-center justify-center rounded-2xl border border-[#f7d237]/25 bg-[#f7d237]/10 px-4 text-lg leading-none text-[#fff3b2] transition hover:bg-[#f7d237]/16"
+          aria-label="Добавить зону"
+        >
+          +
+        </button>
       </div>
 
       <div className="space-y-3">
@@ -1937,7 +1969,7 @@ function SeasonalityChart({
             Спады
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/55">
-            Двигайте точки по вертикали
+            На данной шкале укажите пики и спады продаж, двигая точки по вертикали
           </div>
         </div>
 
@@ -2133,6 +2165,10 @@ function renderInput(
             }
             className="w-full accent-[#f7d237]"
           />
+
+          <div className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-3 text-sm leading-6 text-white/60">
+            Комментарии также учитываются при анализе. Заполнение комментариев дает более точную аналитику.
+          </div>
 
           <AutoTextarea
             placeholder='Комментарий или контекст…'
@@ -2351,6 +2387,7 @@ function renderInput(
         <TagField
           value={state}
           baseTags={source}
+          addPlaceholder="Введите свой вариант"
           onChange={(next) => {
             setAnswer(question.id, next);
 
@@ -2390,7 +2427,7 @@ function renderInput(
       return (
         <div className="grid gap-5 md:grid-cols-2">
           <RangeBlock
-            title="Обращения / заявки"
+            title="Сколько заявок приходит"
             value={current.demand}
             min={0}
             max={500}
@@ -2404,7 +2441,7 @@ function renderInput(
           />
 
           <RangeBlock
-            title="Реальная capacity"
+            title="Сколько клиентов можно реализовать единовременно без потери качества"
             value={current.capacity}
             min={0}
             max={500}
@@ -2545,7 +2582,7 @@ function renderInput(
               >
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <input
-                    placeholder={`Продукт ${i + 1} или "-"`}
+                    placeholder="Опишите продукт развернуто и укажите его маржинальность"
                     className={compactInputClass}
                     value={item.name}
                     onChange={(e) => {
@@ -2770,6 +2807,23 @@ function renderInput(
             zones={zones}
             value={current}
             onChange={(next) => setAnswer(question.id, next)}
+            onAddZone={(zone) =>
+              setAnswer("stress", {
+                ...(answers.stress ?? initialAnswers.stress),
+                customZones: [
+                  ...((answers.stress?.customZones ?? []) as string[]),
+                  zone,
+                ],
+                values: {
+                  ...((answers.stress?.values ?? {}) as Record<string, number>),
+                  [zone]: (answers.stress?.values?.[zone] ?? 1) as number,
+                },
+                touched: {
+                  ...((answers.stress?.touched ?? {}) as Record<string, boolean>),
+                  [zone]: answers.stress?.touched?.[zone] ?? false,
+                },
+              })
+            }
           />
         );
       }
@@ -2790,7 +2844,7 @@ function renderInput(
                   {zone}
                 </div>
                 <div className="mb-3 flex items-center justify-between text-xs text-white/45">
-                  <span>-10</span>
+                  <span>1</span>
                   <span className="text-[#fff3b2]">
                     {current.values[zone] ?? 0}
                   </span>
@@ -2798,7 +2852,7 @@ function renderInput(
                 </div>
                 <input
                   type="range"
-                  min={-10}
+                  min={1}
                   max={10}
                   value={current.values[zone] ?? 0}
                   onChange={(e) =>
@@ -2862,6 +2916,7 @@ function renderInput(
               custom: current.custom ?? [],
             }}
             baseTags={ANALYTICS_TAGS}
+            addPlaceholder="Введите свой вариант аналитики"
             onChange={(next) =>
               setAnswer(question.id, {
                 ...current,
