@@ -1,5 +1,5 @@
-import { ResultsPage } from "@/components/results/ResultsPage";
-import { resultsMockData } from "@/lib/results/mock-data";
+import { ResultsHeroSection } from "@/components/results/ResultsHeroSection";
+import { ResultsSolutionSection } from "@/components/results/ResultsSolutionSection";
 
 export default function Page() {
   return <ResultsPage data={resultsMockData} />;
