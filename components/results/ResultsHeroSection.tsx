@@ -2,7 +2,7 @@
 
 import type { HeroData } from "@/lib/results/types";
 import { motion } from "framer-motion";
-import { BarChart3, BriefcaseBusiness, MapPin, TrendingUp, Wallet } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, MapPin, TrendingUp, Users, Wallet } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -33,6 +33,15 @@ function cn(...classes: Array<string | false | null | undefined>) {
 function formatNumber(value: number) {
   if (!Number.isFinite(value)) return "—";
   return new Intl.NumberFormat("en-US").format(value);
+}
+
+function formatMonths(value?: number) {
+  if (!value || !Number.isFinite(value)) return "—";
+  if (value < 12) return `${value} мес.`;
+  const years = Math.floor(value / 12);
+  const months = value % 12;
+  if (!months) return `${years} г.`;
+  return `${years} г. ${months} мес.`;
 }
 
 function GoldTooltip({
@@ -67,8 +76,7 @@ function GoldTooltip({
         {suffix}
       </div>
       <p className="mt-2 text-xs leading-5 text-white/68">
-        Краткая сводка: этот показатель используется как один из опорных сигналов в Hero и
-        помогает быстро считать текущее состояние бизнеса.
+        Краткая сводка по этому сигналу из payload.
       </p>
     </div>
   );
@@ -101,7 +109,7 @@ function HeroCard({
         <div className="text-[12px] uppercase tracking-[0.18em]">{label}</div>
       </div>
 
-      <div className="mt-4 text-[26px] font-semibold leading-none tracking-[-0.04em] text-white md:text-[32px]">
+      <div className="mt-4 text-[24px] font-semibold leading-[1.02] tracking-[-0.04em] text-white md:text-[30px]">
         {value}
       </div>
 
@@ -121,19 +129,26 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 export function ResultsHeroSection({ hero }: { hero: HeroData }) {
-  const marginData = hero.productMargins.map((item) => ({
+  const productMarginsData = hero.productMargins.map((item) => ({
     name: item.name,
     value: item.marginPercent,
   }));
 
-  const demandCapacityData = hero.demandVsCapacity
+  const clientsVsLeadsData = hero.clientsVsLeads
     ? [
-        { name: "Demand", value: hero.demandVsCapacity.demand },
-        { name: "Capacity", value: hero.demandVsCapacity.capacity },
+        { name: "Clients", value: hero.clientsVsLeads.clients },
+        { name: "Leads", value: hero.clientsVsLeads.leads },
       ]
     : [];
 
   const channelMixData = hero.channelMix ?? [];
+
+  const businessMeta = [
+    hero.stage ? `Stage: ${hero.stage}` : null,
+    hero.businessAgeMonths ? `Age: ${formatMonths(hero.businessAgeMonths)}` : null,
+    hero.physicalLocation ? `Location: ${hero.physicalLocation}` : null,
+    hero.teamSizeCore ? `Core team: ${hero.teamSizeCore}` : null,
+  ].filter(Boolean);
 
   return (
     <section className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
@@ -167,27 +182,37 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
               {hero.description}
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              {hero.roles.map((role) => (
-                <InfoPill key={`${role.role}-${role.responsibility}`}>
-                  {role.role}: {role.responsibility}
-                </InfoPill>
-              ))}
-            </div>
+            {businessMeta.length ? (
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                {businessMeta.map((item) => (
+                  <InfoPill key={item}>{item}</InfoPill>
+                ))}
+              </div>
+            ) : null}
+
+            {!!hero.roles.length && (
+              <div className="mt-6 flex flex-wrap gap-2.5">
+                {hero.roles.map((role) => (
+                  <InfoPill key={`${role.role}-${role.responsibility}`}>
+                    {role.role}: {role.responsibility}
+                  </InfoPill>
+                ))}
+              </div>
+            )}
 
             <div className="mt-7 grid gap-4 md:grid-cols-2">
               <HeroCard
                 icon={<TrendingUp size={16} />}
                 label="Growth limit"
                 value={hero.growthLimit}
-                subvalue="Главное ограничение роста, которое система вынесла в верхний уровень страницы."
+                subvalue={hero.currentPosition || "Главное ограничение роста, вынесенное в верхний уровень страницы."}
               />
 
               <HeroCard
                 icon={<Wallet size={16} />}
                 label="Cash-in"
                 value={hero.cashIn}
-                subvalue="Фактически полученный платеж, а не теоретическая выручка."
+                subvalue={hero.snapshot || "Фактически полученный платеж за последний период."}
               />
             </div>
           </div>
@@ -214,7 +239,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
 
               <div className="h-[240px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={marginData} barCategoryGap={18}>
+                  <BarChart data={productMarginsData} barCategoryGap={18}>
                     <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
                     <XAxis
                       dataKey="name"
@@ -227,9 +252,12 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                       axisLine={false}
                       tickLine={false}
                     />
-                    <Tooltip content={<GoldTooltip suffix="%" />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                    <Tooltip
+                      content={<GoldTooltip suffix="%" />}
+                      cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                    />
                     <Bar dataKey="value" radius={[10, 10, 4, 4]}>
-                      {marginData.map((entry, index) => (
+                      {productMarginsData.map((entry, index) => (
                         <Cell key={entry.name} fill={colors[index % colors.length]} />
                       ))}
                     </Bar>
@@ -249,19 +277,19 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                   <div>
                     <SectionLabel>Flow</SectionLabel>
                     <div className="mt-2 text-lg font-semibold text-white">
-                      Demand vs capacity
+                      Clients vs leads
                     </div>
                   </div>
 
                   <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-                    <TrendingUp size={18} />
+                    <Users size={18} />
                   </div>
                 </div>
 
                 <div className="h-[210px]">
-                  {demandCapacityData.length ? (
+                  {clientsVsLeadsData.length ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={demandCapacityData} barCategoryGap={28}>
+                      <BarChart data={clientsVsLeadsData} barCategoryGap={28}>
                         <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
                         <XAxis
                           dataKey="name"
@@ -274,9 +302,12 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                           axisLine={false}
                           tickLine={false}
                         />
-                        <Tooltip content={<GoldTooltip />} cursor={{ fill: "rgba(255,255,255,0.03)" }} />
+                        <Tooltip
+                          content={<GoldTooltip />}
+                          cursor={{ fill: "rgba(255,255,255,0.03)" }}
+                        />
                         <Bar dataKey="value" radius={[10, 10, 4, 4]}>
-                          {demandCapacityData.map((entry, index) => (
+                          {clientsVsLeadsData.map((entry, index) => (
                             <Cell key={entry.name} fill={colors[index % colors.length]} />
                           ))}
                         </Bar>
@@ -343,30 +374,32 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
           <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
             <div className="flex items-center gap-2 text-white/50">
               <BriefcaseBusiness size={15} className="text-[#c7a93b]" />
-              <span className="text-[11px] uppercase tracking-[0.18em]">Operating model</span>
+              <span className="text-[11px] uppercase tracking-[0.18em]">Snapshot</span>
             </div>
             <div className="mt-3 text-sm leading-6 text-white/76">
-              Founder-led сервисная модель с высокой зависимостью от ручного участия.
+              {hero.snapshot || "Нет данных"}
             </div>
           </div>
 
           <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
             <div className="flex items-center gap-2 text-white/50">
               <TrendingUp size={15} className="text-[#c7a93b]" />
-              <span className="text-[11px] uppercase tracking-[0.18em]">Interpretation</span>
+              <span className="text-[11px] uppercase tracking-[0.18em]">Current position</span>
             </div>
             <div className="mt-3 text-sm leading-6 text-white/76">
-              Hero должен давать узнавание бизнеса, а не только показывать KPI.
+              {hero.currentPosition || "Нет данных"}
             </div>
           </div>
 
           <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
             <div className="flex items-center gap-2 text-white/50">
-              <Wallet size={15} className="text-[#c7a93b]" />
-              <span className="text-[11px] uppercase tracking-[0.18em]">Read direction</span>
+              <Users size={15} className="text-[#c7a93b]" />
+              <span className="text-[11px] uppercase tracking-[0.18em]">Business facts</span>
             </div>
             <div className="mt-3 text-sm leading-6 text-white/76">
-              Сначала recognition, затем constraint, затем визуальные сигналы по экономике и потоку.
+              {[hero.stage, hero.physicalLocation, hero.teamSizeCore ? `${hero.teamSizeCore} core team` : null]
+                .filter(Boolean)
+                .join(" · ") || "Нет данных"}
             </div>
           </div>
         </div>
