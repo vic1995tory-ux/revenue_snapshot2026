@@ -325,64 +325,80 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
             </motion.div>
 
             <div className="grid gap-5 lg:grid-cols-2">
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.55, delay: 0.08 }}
-                className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
-              >
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <SectionLabel>Flow</SectionLabel>
-                    <div className="mt-2 text-lg font-semibold text-white">
-                      Lead → client conversion
-                    </div>
-                  </div>
+            <motion.div
+  initial={{ opacity: 0, y: 18 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.55, delay: 0.08 }}
+  className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+>
+  <div className="mb-4 flex items-center justify-between gap-3">
+    <div>
+      <SectionLabel>Flow</SectionLabel>
+      <div className="mt-2 text-lg font-semibold text-white">
+        Lead → client conversion
+      </div>
+    </div>
 
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-                    <Percent size={18} />
-                  </div>
-                </div>
+    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+      <Percent size={18} />
+    </div>
+  </div>
 
-                <div className="mb-3 text-sm text-white/52">
-                  {clients} clients / {leads} leads
-                </div>
+  <div className="mb-4 text-sm text-white/52">
+    {clients} clients / {leads} leads
+  </div>
 
-                <div className="h-[210px]">
-                  {conversionData.length ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={conversionData} barCategoryGap={40}>
-                        <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fill: "rgba(255,255,255,0.68)", fontSize: 12 }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          domain={[0, 100]}
-                          tick={{ fill: "rgba(255,255,255,0.42)", fontSize: 12 }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip
-                          content={<MinimalTooltip suffix="%" />}
-                          cursor={{ fill: "rgba(255,255,255,0.03)" }}
-                        />
-                        <Bar dataKey="value" radius={[12, 12, 4, 4]} maxBarSize={90}>
-                          {conversionData.map((entry, index) => (
-                            <Cell key={entry.name} fill={colors[index % colors.length]} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-white/40">
-                      No data
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+  <div className="h-[260px]">
+    {conversionData.length ? (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={[
+              { name: "Conversion", value: conversionRate },
+              { name: "Remaining", value: Math.max(0, 100 - conversionRate) },
+            ]}
+            dataKey="value"
+            nameKey="name"
+            innerRadius={72}
+            outerRadius={96}
+            startAngle={90}
+            endAngle={-270}
+            paddingAngle={2}
+          >
+            <Cell fill={colors[0]} />
+            <Cell fill="rgba(255,255,255,0.08)" />
+          </Pie>
+
+          <Tooltip content={<MinimalTooltip suffix="%" />} />
+
+          <text
+            x="50%"
+            y="48%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-white text-[28px] font-semibold"
+          >
+            {conversionRate}%
+          </text>
+
+          <text
+            x="50%"
+            y="60%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            className="fill-[rgba(255,255,255,0.52)] text-[12px]"
+          >
+            lead → client
+          </text>
+        </PieChart>
+      </ResponsiveContainer>
+    ) : (
+      <div className="flex h-full items-center justify-center text-sm text-white/40">
+        No data
+      </div>
+    )}
+  </div>
+</motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 18 }}
