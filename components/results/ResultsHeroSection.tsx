@@ -2,7 +2,7 @@
 
 import type { HeroData } from "@/lib/results/types";
 import { motion } from "framer-motion";
-import { BarChart3, BriefcaseBusiness, MapPin, TrendingUp, Users, Wallet } from "lucide-react";
+import { BarChart3, BriefcaseBusiness, MapPin, Percent, TrendingUp, Users, Wallet } from "lucide-react";
 import {
   Bar,
   BarChart,
@@ -44,14 +44,22 @@ function formatMonths(value?: number) {
   return `${years} г. ${months} мес.`;
 }
 
-function GoldTooltip({
+function normalizeChannelLabel(label?: string) {
+  if (!label) return "—";
+  if (label === "Рефералы") return "Referrals";
+  if (label === "Холодный outreach") return "Cold outreach";
+  if (label === "возвраты клиентов с прошлого опыта") return "Returning clients";
+  return label;
+}
+
+function MinimalTooltip({
   active,
   payload,
   label,
   suffix = "",
 }: {
   active?: boolean;
-  payload?: Array<{ value?: number; name?: string; payload?: Record<string, unknown> }>;
+  payload?: Array<{ value?: number; name?: string }>;
   label?: string;
   suffix?: string;
 }) {
@@ -64,10 +72,10 @@ function GoldTooltip({
       ? point.name
       : typeof label === "string"
         ? label
-        : "Показатель";
+        : "—";
 
   return (
-    <div className="max-w-[280px] rounded-[18px] border border-[#c7a93b]/20 bg-[#081427]/95 p-3 shadow-2xl backdrop-blur-xl">
+    <div className="min-w-[180px] rounded-[18px] border border-[#c7a93b]/20 bg-[#081427]/95 p-3 shadow-2xl backdrop-blur-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
         Data point
       </div>
@@ -75,9 +83,48 @@ function GoldTooltip({
         {pointName}: {formatNumber(value)}
         {suffix}
       </div>
-      <p className="mt-2 text-xs leading-5 text-white/68">
-        Краткая сводка по этому сигналу из payload.
-      </p>
+    </div>
+  );
+}
+
+function ProductTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: Array<{ value?: number; name?: string; payload?: Record<string, unknown> }>;
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+
+  const point = payload[0];
+  const raw = point?.payload ?? {};
+  const productName =
+    typeof raw.name === "string"
+      ? raw.name
+      : typeof point?.name === "string"
+        ? point.name
+        : typeof label === "string"
+          ? label
+          : "—";
+
+  const description =
+    typeof raw.description === "string" && raw.description.trim().length > 0
+      ? raw.description
+      : productName;
+
+  const value = typeof point?.value === "number" ? point.value : 0;
+
+  return (
+    <div className="max-w-[320px] rounded-[18px] border border-[#c7a93b]/20 bg-[#081427]/95 p-4 shadow-2xl backdrop-blur-xl">
+      <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
+        Data point
+      </div>
+      <div className="mt-2 text-sm font-semibold text-white">
+        {productName}: {formatNumber(value)}%
+      </div>
+      <div className="mt-3 text-sm leading-6 text-white/72">{description}</div>
     </div>
   );
 }
@@ -132,16 +179,27 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
   const productMarginsData = hero.productMargins.map((item) => ({
     name: item.name,
     value: item.marginPercent,
+    description: "description" in item ? item.description : undefined,
   }));
 
-  const clientsVsLeadsData = hero.clientsVsLeads
-    ? [
-        { name: "Clients", value: hero.clientsVsLeads.clients },
-        { name: "Leads", value: hero.clientsVsLeads.leads },
-      ]
-    : [];
+  const clients = Number(hero.clientsVsLeads?.clients ?? 0);
+  const leads = Number(hero.clientsVsLeads?.leads ?? 0);
+  const conversionRate = leads > 0 ? Number(((clients / leads) * 100).toFixed(2)) : 0;
 
-  const channelMixData = hero.channelMix ?? [];
+  const conversionData =
+    leads > 0
+      ? [
+          {
+            name: "Lead → client",
+            value: conversionRate,
+          },
+        ]
+      : [];
+
+  const channelMixData = (hero.channelMix ?? []).map((item) => ({
+    name: normalizeChannelLabel(item.name),
+    value: item.value,
+  }));
 
   const businessMeta = [
     hero.stage ? `Stage: ${hero.stage}` : null,
@@ -253,7 +311,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                       tickLine={false}
                     />
                     <Tooltip
-                      content={<GoldTooltip suffix="%" />}
+                      content={<ProductTooltip />}
                       cursor={{ fill: "rgba(255,255,255,0.03)" }}
                     />
                     <Bar dataKey="value" radius={[10, 10, 4, 4]}>
@@ -277,19 +335,23 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                   <div>
                     <SectionLabel>Flow</SectionLabel>
                     <div className="mt-2 text-lg font-semibold text-white">
-                      Clients vs leads
+                      Lead → client conversion
                     </div>
                   </div>
 
                   <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-                    <Users size={18} />
+                    <Percent size={18} />
                   </div>
                 </div>
 
+                <div className="mb-3 text-sm text-white/52">
+                  {clients} clients / {leads} leads
+                </div>
+
                 <div className="h-[210px]">
-                  {clientsVsLeadsData.length ? (
+                  {conversionData.length ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={clientsVsLeadsData} barCategoryGap={28}>
+                      <BarChart data={conversionData} barCategoryGap={40}>
                         <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
                         <XAxis
                           dataKey="name"
@@ -298,16 +360,17 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                           tickLine={false}
                         />
                         <YAxis
+                          domain={[0, 100]}
                           tick={{ fill: "rgba(255,255,255,0.42)", fontSize: 12 }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <Tooltip
-                          content={<GoldTooltip />}
+                          content={<MinimalTooltip suffix="%" />}
                           cursor={{ fill: "rgba(255,255,255,0.03)" }}
                         />
-                        <Bar dataKey="value" radius={[10, 10, 4, 4]}>
-                          {clientsVsLeadsData.map((entry, index) => (
+                        <Bar dataKey="value" radius={[12, 12, 4, 4]} maxBarSize={90}>
+                          {conversionData.map((entry, index) => (
                             <Cell key={entry.name} fill={colors[index % colors.length]} />
                           ))}
                         </Bar>
@@ -356,7 +419,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
                             <Cell key={entry.name} fill={colors[index % colors.length]} />
                           ))}
                         </Pie>
-                        <Tooltip content={<GoldTooltip suffix="%" />} />
+                        <Tooltip content={<MinimalTooltip suffix="%" />} />
                       </PieChart>
                     </ResponsiveContainer>
                   ) : (
