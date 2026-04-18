@@ -16,6 +16,14 @@ export type HeroData = {
     name: string;
     marginPercent: number;
   }>;
+  demandVsCapacity?: {
+    demand: number;
+    capacity: number;
+  };
+  channelMix?: Array<{
+    name: string;
+    value: number;
+  }>;
 };
 
 export type SolutionData = {
