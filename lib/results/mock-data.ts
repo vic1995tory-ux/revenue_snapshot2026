@@ -1,392 +1,404 @@
-import type { ResultsPageData } from "./types";
+"use client";
 
-export const resultsPayloadMock = {
-  hero_block: {
-    companyName: "Growth Avenue",
-    sales_geography: ["ЕС", "СНГ"],
-    summary:
-      "Бизнес-девелоперская и консалтинговая компания для SaaS, ограничение роста сейчас находится в capacity и founder-led модели.",
-    description:
-      "Компания помогает seed-stage и growing SaaS проектам с GTM, стратегией, MVP и автоматизациями.",
-    growth_limit: "Founder-led capacity bottleneck",
+import type { RoadmapData, SolutionData } from "@/lib/results/types";
+import { ConfidenceDots } from "./ConfidenceDots";
+import {
+  ArrowRight,
+  CircleAlert,
+  Gauge,
+  Layers3,
+  MoveRight,
+  TrendingUp,
+} from "lucide-react";
 
-    cash_in: {
-      value: 1900,
-    },
+type PriorityTone = "high" | "medium" | "low";
 
-    roles: [
-      {
-        role: "CMO",
-        responsibility: "Marketing / Ops",
-      },
-      {
-        role: "CSO",
-        responsibility: "Sales / Finance",
-      },
-    ],
+function getPhaseTone(index: number): PriorityTone {
+  if (index === 0) return "high";
+  if (index === 1) return "medium";
+  return "low";
+}
 
-    product_margins_chart: {
-      series: [
-        {
-          product: "MVP",
-          margin: 50,
-          description: "Быстрый запуск MVP для ранних SaaS-проектов.",
-        },
-        {
-          product: "Strategy Sessions",
-          margin: 80,
-          description: "Стратегические сессии по росту, GTM и revenue model.",
-        },
-        {
-          product: "Automations",
-          margin: 30,
-          description: "Автоматизации процессов продаж, маркетинга и ops.",
-        },
-      ],
-    },
+function getPhaseToneClasses(tone: PriorityTone) {
+  if (tone === "high") {
+    return {
+      badge:
+        "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
+      bar: "from-[#f7d237] to-[#d4b11d]",
+      dot: "bg-[#f7d237]",
+      label: "Immediate priority",
+    };
+  }
 
-    clients_vs_leads_chart: {
-      series: [
-        { label: "Клиенты", value: 1 },
-        { label: "Лиды", value: 13 },
-      ],
-    },
-  },
+  if (tone === "medium") {
+    return {
+      badge:
+        "border-white/15 bg-white/[0.08] text-white/80",
+      bar: "from-[#8fa8ff] to-[#5f79d9]",
+      dot: "bg-[#8fa8ff]",
+      label: "Second priority",
+    };
+  }
 
-  normalized_data: {
-    company: {
-      stage: "Startup",
-      business_age_months: 6,
-      physical_location: "Тбилиси",
-      team_size_core: 2,
-    },
+  return {
+    badge:
+      "border-white/10 bg-white/[0.05] text-white/65",
+    bar: "from-[#5f6b85] to-[#3e4960]",
+    dot: "bg-white/35",
+    label: "Later phase",
+  };
+}
 
-    sales: {
-      lead_volume: 13,
-      processing_capacity: 4,
-    },
+function getPhaseProgress(index: number) {
+  if (index === 0) return "w-full";
+  if (index === 1) return "w-2/3";
+  return "w-1/3";
+}
 
-    acquisition: {
-      channels: [
-        { channel: "Meta Ads", share_percent: 25 },
-        { channel: "Referrals", share_percent: 30 },
-        { channel: "Cold Outreach", share_percent: 12 },
-        { channel: "Google Ads", share_percent: 25 },
-        { channel: "Returning", share_percent: 8 },
-      ],
-    },
+function SolutionSignalCard({
+  eyebrow,
+  title,
+  note,
+  icon,
+}: {
+  eyebrow: string;
+  title: string;
+  note?: string;
+  icon: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-[24px] border border-white/10 bg-[#0b2148] p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="text-sm text-white/52">{eyebrow}</div>
+        <div className="mt-0.5 text-white/40">{icon}</div>
+      </div>
 
-    financials: {
-      last_month_cash_in: 1900,
-      profit_last_month_estimated: 1045,
-    },
-  },
+      <div className="mt-3 text-[18px] font-medium leading-[1.35] text-white">
+        {title}
+      </div>
 
-  summary: {
-    snapshot:
-      "Early-stage company with demand already above current processing capacity.",
-    current_position:
-      "Leads exist, but system cannot fully convert and deliver them efficiently.",
-    primary_need: "Stabilize revenue flow without increasing chaos.",
-  },
+      {note ? (
+        <div className="mt-3 text-sm leading-[1.58] text-white/60">{note}</div>
+      ) : null}
+    </div>
+  );
+}
 
-  confidence_note:
-    "Preliminary confidence. Dataset is small and based on early-stage operating history.",
+function SolutionFlow({
+  roadmap,
+}: {
+  roadmap: RoadmapData;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+            Priority flow
+          </div>
+          <h3 className="mt-2 text-[24px] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
+            Task order and execution sequence
+          </h3>
+        </div>
 
-  insights: {
-    growth_limit: {
-      text: "Growth is limited by processing capacity, not market demand.",
-    },
-  },
+        <div className="text-sm leading-[1.6] text-white/52 md:max-w-[420px] md:text-right">
+          Solution should behave as an operating sequence: first remove overload,
+          then improve conversion, then scale the system.
+        </div>
+      </div>
 
-  solution: {
-    solution_summary: {
-      headline: "Fix structure before scaling demand",
-      core_logic:
-        "More leads now would increase overload. First step is rebuilding processing and delivery system.",
-    },
+      <div className="mt-6 hidden items-center gap-3 lg:flex">
+        {roadmap.phases.map((phase, index) => {
+          const tone = getPhaseTone(index);
+          const styles = getPhaseToneClasses(tone);
 
-    primary_growth_lever: {
-      lever: "Operational capacity + clearer offer",
-      reason:
-        "Demand already exists. Unlocking conversion and fulfillment gives faster ROI than more acquisition.",
-    },
+          return (
+            <div key={`${phase.period}-${phase.title}`} className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="min-w-0 flex-1 rounded-[20px] border border-white/10 bg-[#0a1b38] p-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="text-xs uppercase tracking-[0.14em] text-white/45">
+                    Phase {index + 1}
+                  </div>
+                  <span
+                    className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
+                  >
+                    {styles.label}
+                  </span>
+                </div>
 
-    primary_constraint: {
-      label: "Founder dependency",
-      reason:
-        "Too many functions concentrated on 2 people slows decisions and delivery.",
-    },
+                <div className="mt-3 text-[18px] font-medium leading-[1.3] text-white">
+                  {phase.title}
+                </div>
 
-    revenue_loss_source: {
-      label: "Unprocessed demand",
-      explanation:
-        "Leads are entering the system faster than they can be processed.",
-    },
+                <div className="mt-2 text-sm leading-[1.55] text-white/58">
+                  {phase.description}
+                </div>
 
-    model_change_recommendation: {
-      proposed_model_shift:
-        "Move from founder-led custom service to narrower standardized service model.",
-      expected_unlock:
-        "Higher throughput, cleaner sales process, less chaos, repeatable revenue.",
-    },
-  },
+                <div className="mt-4">
+                  <div className="mb-2 text-[11px] uppercase tracking-[0.12em] text-white/38">
+                    Execution weight
+                  </div>
+                  <div className="h-2 rounded-full bg-white/8">
+                    <div
+                      className={`h-2 rounded-full bg-gradient-to-r ${styles.bar} ${getPhaseProgress(index)}`}
+                    />
+                  </div>
+                </div>
+              </div>
 
-  roadmap: {
-    phases: [
-      {
-        phase: "unlock",
-        goal: "Remove immediate bottlenecks in processing",
-        linked_constraint: "Founder overload",
-        key_actions: [
-          { action: "Split ownership between founders" },
-          { action: "Create unified lead pipeline" },
-          { action: "Standardize handoff to delivery" },
-        ],
-      },
-      {
-        phase: "leverage",
-        goal: "Improve conversion from existing demand",
-        linked_lever: "Sharper offer and simpler sales process",
-        key_actions: [
-          { action: "Narrow main offer" },
-          { action: "Simplify first-call sales flow" },
-          { action: "Re-engage warm leads" },
-        ],
-      },
-      {
-        phase: "scale",
-        goal: "Create repeatable operating system",
-        linked_system: "Management cadence + delegation",
-        key_actions: [
-          { action: "Weekly KPI review" },
-          { action: "Controlled contractor expansion" },
-          { action: "Track unit economics by offer" },
-        ],
-      },
-    ],
-  },
-} as const;
+              {index < roadmap.phases.length - 1 ? (
+                <div className="shrink-0 text-white/24">
+                  <MoveRight size={18} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
 
-export const resultsMockData: ResultsPageData = {
-  hero: {
-    companyName: resultsPayloadMock.hero_block.companyName,
-    salesGeography: resultsPayloadMock.hero_block.sales_geography.join(" + "),
-    summary: resultsPayloadMock.hero_block.summary,
-    description: resultsPayloadMock.hero_block.description,
-    growthLimit: resultsPayloadMock.hero_block.growth_limit,
-    cashIn: `$${resultsPayloadMock.hero_block.cash_in.value}`,
-    confidenceLevel: 2,
+      <div className="mt-6 grid gap-4 lg:hidden">
+        {roadmap.phases.map((phase, index) => {
+          const tone = getPhaseTone(index);
+          const styles = getPhaseToneClasses(tone);
 
-    roles: resultsPayloadMock.hero_block.roles.map((item) => ({
-      role: item.role,
-      responsibility: item.responsibility,
-    })),
+          return (
+            <div
+              key={`${phase.period}-${phase.title}-mobile`}
+              className="rounded-[22px] border border-white/10 bg-[#0a1b38] p-4"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+                  <div className="text-xs uppercase tracking-[0.14em] text-white/45">
+                    Phase {index + 1}
+                  </div>
+                </div>
 
-    productMargins:
-      resultsPayloadMock.hero_block.product_margins_chart.series.map((item) => ({
-        name: item.product,
-        marginPercent: item.margin,
-        description: item.description,
-      })),
+                <span
+                  className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
+                >
+                  {styles.label}
+                </span>
+              </div>
 
-    clientsVsLeads: {
-      clients:
-        resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
-          (item) => item.label === "Клиенты",
-        )?.value ?? 0,
+              <div className="mt-3 text-[17px] font-medium leading-[1.35] text-white">
+                {phase.title}
+              </div>
 
-      leads:
-        resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
-          (item) => item.label === "Лиды",
-        )?.value ?? 0,
-    },
+              <div className="mt-2 text-sm leading-[1.55] text-white/58">
+                {phase.description}
+              </div>
 
-    channelMix:
-      resultsPayloadMock.normalized_data.acquisition.channels.map((item) => ({
-        name: item.channel,
-        value: item.share_percent,
-      })),
+              <div className="mt-4 h-2 rounded-full bg-white/8">
+                <div
+                  className={`h-2 rounded-full bg-gradient-to-r ${styles.bar} ${getPhaseProgress(index)}`}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-    stage: resultsPayloadMock.normalized_data.company.stage,
+function SolutionRoadmapTasks({
+  roadmap,
+}: {
+  roadmap: RoadmapData;
+}) {
+  return (
+    <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
+      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+        <div>
+          <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+            Execution map
+          </div>
+          <h3 className="mt-2 text-[24px] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
+            What happens inside each phase
+          </h3>
+        </div>
 
-    businessAgeMonths:
-      resultsPayloadMock.normalized_data.company.business_age_months,
+        <div className="text-sm leading-[1.6] text-white/52 md:max-w-[430px] md:text-right">
+          Each phase has its own job: unlock, leverage, then scale.
+        </div>
+      </div>
 
-    physicalLocation:
-      resultsPayloadMock.normalized_data.company.physical_location,
+      <div className="mt-6 grid gap-4 xl:grid-cols-3">
+        {roadmap.phases.map((phase, index) => {
+          const tone = getPhaseTone(index);
+          const styles = getPhaseToneClasses(tone);
 
-    teamSizeCore:
-      resultsPayloadMock.normalized_data.company.team_size_core,
+          return (
+            <div
+              key={`${phase.period}-${phase.title}-tasks`}
+              className="rounded-[24px] border border-white/10 bg-[#0a1b38] p-5"
+            >
+              <div className="flex items-center justify-between gap-4">
+                <div className="text-xs uppercase tracking-[0.14em] text-white/42">
+                  Phase {index + 1}
+                </div>
+                <span
+                  className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
+                >
+                  {phase.period}
+                </span>
+              </div>
 
-    snapshot: resultsPayloadMock.summary.snapshot,
+              <div className="mt-3 text-[19px] font-medium leading-[1.3] text-white">
+                {phase.title}
+              </div>
 
-    currentPosition:
-      resultsPayloadMock.summary.current_position,
-  },
+              <div className="mt-2 text-sm leading-[1.55] text-white/56">
+                {phase.description}
+              </div>
 
-  solution: {
-    title: resultsPayloadMock.solution.solution_summary.headline,
-    summary: resultsPayloadMock.solution.solution_summary.core_logic,
-    confidenceLevel: 2,
+              <div className="mt-5 space-y-3">
+                {phase.tasks.map((task, taskIndex) => (
+                  <div
+                    key={`${phase.period}-${task}-${taskIndex}`}
+                    className="flex items-start gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-3.5 py-3"
+                  >
+                    <div className="mt-1 shrink-0 text-[#f7d237]">
+                      <ArrowRight size={14} />
+                    </div>
+                    <div className="text-sm leading-[1.55] text-white/78">{task}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
-    cards: [
-      {
-        title: "Growth Lever",
-        value: resultsPayloadMock.solution.primary_growth_lever.lever,
-        note: resultsPayloadMock.solution.primary_growth_lever.reason,
-      },
-      {
-        title: "Constraint",
-        value: resultsPayloadMock.solution.primary_constraint.label,
-        note: resultsPayloadMock.solution.primary_constraint.reason,
-      },
-      {
-        title: "Revenue Loss",
-        value: resultsPayloadMock.solution.revenue_loss_source.label,
-        note: resultsPayloadMock.solution.revenue_loss_source.explanation,
-      },
-      {
-        title: "Model Shift",
-        value:
-          resultsPayloadMock.solution.model_change_recommendation
-            .proposed_model_shift,
-        note:
-          resultsPayloadMock.solution.model_change_recommendation
-            .expected_unlock,
-      },
-    ],
-  },
+export function ResultsSolutionSection({
+  solution,
+  roadmap,
+}: {
+  solution: SolutionData;
+  roadmap: RoadmapData;
+}) {
+  const [leverCard, constraintCard, lossCard, modelShiftCard] = solution.cards;
 
-  roadmap: {
-    phases: resultsPayloadMock.roadmap.phases.map((phase) => {
-      const description =
-        "linked_constraint" in phase
-          ? phase.linked_constraint
-          : "linked_lever" in phase
-            ? phase.linked_lever
-            : "linked_system" in phase
-              ? phase.linked_system
-              : "";
+  return (
+    <section className="rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:p-8">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-start justify-between gap-4">
+          <div className="max-w-[980px]">
+            <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
+              Solution
+            </div>
 
-      return {
-        period: phase.phase,
-        title: phase.goal,
-        description,
-        tasks: phase.key_actions.map((item) => item.action),
-      };
-    }),
-  },
+            <h2 className="mt-3 text-[32px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[52px]">
+              {solution.title}
+            </h2>
 
-  forecasts: {
-    revenue: {
-      current: "$1900",
-      target: "$3800",
-      delta: 100,
-    },
-    costs: {
-      current: "$855",
-      target: "$1140",
-      delta: 33,
-    },
-    profit: {
-      current: "$1045",
-      target: "$2090",
-      delta: 100,
-    },
-    assumptions: [
-      "Existing demand is converted better",
-      "Processing bottleneck is reduced",
-      "Delivery becomes more repeatable",
-      "Offer is narrower and easier to sell",
-    ],
-  },
+            <p className="mt-5 max-w-[980px] text-[17px] leading-[1.7] text-white/72 md:text-[18px]">
+              {solution.summary}
+            </p>
+          </div>
 
-  businessContext: {
-    summary:
-      "Unified business context assembled from payload: company, sales, economics, channels and constraints.",
+          <div className="shrink-0 pt-1">
+            <ConfidenceDots level={solution.confidenceLevel} />
+          </div>
+        </div>
 
-    sections: [
-      {
-        title: "Company",
-        rows: [
-          { label: "Stage", value: "Startup" },
-          { label: "Location", value: "Тбилиси" },
-          { label: "Core Team", value: "2" },
-        ],
-      },
-      {
-        title: "Sales",
-        rows: [
-          { label: "Leads", value: "13" },
-          { label: "Capacity", value: "4" },
-          { label: "Clients", value: "1" },
-        ],
-      },
-      {
-        title: "Financials",
-        rows: [
-          { label: "Cash-in", value: "$1900" },
-          { label: "Profit", value: "$1045" },
-        ],
-      },
-    ],
-  },
+        <div className="grid gap-4 xl:grid-cols-12">
+          <div className="xl:col-span-8">
+            <div className="grid gap-4 md:grid-cols-2">
+              {leverCard ? (
+                <SolutionSignalCard
+                  eyebrow={leverCard.title}
+                  title={leverCard.value}
+                  note={leverCard.note}
+                  icon={<TrendingUp size={18} />}
+                />
+              ) : null}
 
-  blocks: [
-    {
-      id: "economics",
-      title: "Economics",
-      truthSummary:
-        "Economics constrained more by throughput than by lack of demand.",
-      mainDiagnosis:
-        "Current profit exists, but system leaks revenue through low capacity.",
-      confidenceLevel: 2,
-      keySignals: [
-        { label: "Cash-in", value: "$1900" },
-        { label: "Profit", value: "$1045" },
-        { label: "Demand/Capacity", value: "3.25x" },
-      ],
-      explanation:
-        "Demand exceeds operational ability to convert and fulfill it.",
-      implication:
-        "Scaling ads now would likely increase waste rather than profit.",
-    },
+              {constraintCard ? (
+                <SolutionSignalCard
+                  eyebrow={constraintCard.title}
+                  title={constraintCard.value}
+                  note={constraintCard.note}
+                  icon={<CircleAlert size={18} />}
+                />
+              ) : null}
 
-    {
-      id: "clients_flow",
-      title: "Clients & Flow",
-      truthSummary:
-        "Lead flow exists but conversion system is overloaded.",
-      mainDiagnosis:
-        "13 leads vs 1 client indicates weak conversion under capacity pressure.",
-      confidenceLevel: 2,
-      keySignals: [
-        { label: "Leads", value: "13" },
-        { label: "Clients", value: "1" },
-        { label: "Conversion", value: "7.7%" },
-      ],
-      explanation:
-        "Demand exists, but conversion into paying clients remains low.",
-      implication:
-        "Need stronger qualification + sales process + delivery throughput.",
-    },
-  ],
+              {lossCard ? (
+                <SolutionSignalCard
+                  eyebrow={lossCard.title}
+                  title={lossCard.value}
+                  note={lossCard.note}
+                  icon={<Gauge size={18} />}
+                />
+              ) : null}
 
-  overallSummary: {
-    cards: [
-      {
-        title: "Snapshot",
-        value: resultsPayloadMock.summary.snapshot,
-      },
-      {
-        title: "Primary Need",
-        value: resultsPayloadMock.summary.primary_need,
-      },
-      {
-        title: "Growth Limit",
-        value: resultsPayloadMock.insights.growth_limit.text,
-      },
-    ],
-  },
-};
+              {modelShiftCard ? (
+                <SolutionSignalCard
+                  eyebrow={modelShiftCard.title}
+                  title={modelShiftCard.value}
+                  note={modelShiftCard.note}
+                  icon={<Layers3 size={18} />}
+                />
+              ) : null}
+            </div>
+          </div>
+
+          <div className="xl:col-span-4">
+            <div className="h-full rounded-[28px] border border-white/10 bg-[#0a1b38] p-5">
+              <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+                Decision rule
+              </div>
+
+              <div className="mt-3 text-[22px] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
+                Do not add demand before system repair
+              </div>
+
+              <div className="mt-4 text-sm leading-[1.65] text-white/60">
+                The solution logic here is sequential: remove founder overload,
+                increase processing quality, then convert existing demand better,
+                and only after that build repeatable scale.
+              </div>
+
+              <div className="mt-6 space-y-3">
+                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                    First
+                  </div>
+                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                    Stabilize processing and ownership
+                  </div>
+                </div>
+
+                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                    Then
+                  </div>
+                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                    Improve conversion from current flow
+                  </div>
+                </div>
+
+                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                    Then
+                  </div>
+                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                    Build scalable cadence and delegation
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <SolutionFlow roadmap={roadmap} />
+
+        <SolutionRoadmapTasks roadmap={roadmap} />
+      </div>
+    </section>
+  );
+}
