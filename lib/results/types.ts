@@ -32,36 +32,6 @@ export type HeroData = {
   snapshot?: string;
   currentPosition?: string;
 };
-
-  productMargins: Array<{
-    name: string;
-    marginPercent: number;
-  }>;
-
-  clientsVsLeads?: {
-    clients: number;
-    leads: number;
-  };
-
-  demandVsCapacity?: {
-    demand: number;
-    capacity: number;
-  };
-
-  channelMix?: Array<{
-    name: string;
-    value: number;
-  }>;
-
-  stage?: string;
-  businessAgeMonths?: number;
-  physicalLocation?: string;
-  teamSizeCore?: number;
-  snapshot?: string;
-  currentPosition?: string;
-  confidenceNote?: string;
-};
-
 export type SolutionData = {
   title: string;
   summary: string;
