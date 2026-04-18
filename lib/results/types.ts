@@ -45,9 +45,9 @@ export type HeroData = {
   }>;
 
   stage?: string;
-  location?: string;
-  teamSize?: number;
   businessAgeMonths?: number;
+  physicalLocation?: string;
+  teamSizeCore?: number;
   snapshot?: string;
   currentPosition?: string;
   confidenceNote?: string;
