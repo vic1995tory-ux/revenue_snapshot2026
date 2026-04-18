@@ -7,12 +7,31 @@ export type HeroData = {
   description: string;
   growthLimit: string;
   cashIn: string;
-  confidenceLevel: ConfidenceLevel;
-
+  confidenceLevel: 1 | 2 | 3;
   roles: Array<{
     role: string;
     responsibility: string;
   }>;
+  productMargins: Array<{
+    name: string;
+    marginPercent: number;
+    description?: string;
+  }>;
+  clientsVsLeads?: {
+    clients: number;
+    leads: number;
+  };
+  channelMix?: Array<{
+    name: string;
+    value: number;
+  }>;
+  stage?: string;
+  businessAgeMonths?: number;
+  physicalLocation?: string;
+  teamSizeCore?: number;
+  snapshot?: string;
+  currentPosition?: string;
+};
 
   productMargins: Array<{
     name: string;
