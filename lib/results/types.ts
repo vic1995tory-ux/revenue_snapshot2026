@@ -7,35 +7,43 @@ export type HeroData = {
   description: string;
   growthLimit: string;
   cashIn: string;
-  confidenceLevel: 1 | 2 | 3;
+  confidenceLevel: ConfidenceLevel;
+
   roles: Array<{
     role: string;
     responsibility: string;
   }>;
+
   productMargins: Array<{
     name: string;
     marginPercent: number;
     description?: string;
   }>;
+
   clientsVsLeads?: {
     clients: number;
     leads: number;
   };
+
   channelMix?: Array<{
     name: string;
     value: number;
   }>;
+
   stage?: string;
   businessAgeMonths?: number;
   physicalLocation?: string;
   teamSizeCore?: number;
+
   snapshot?: string;
   currentPosition?: string;
 };
+
 export type SolutionData = {
   title: string;
   summary: string;
   confidenceLevel: ConfidenceLevel;
+
   cards: Array<{
     title: string;
     value: string;
@@ -67,8 +75,10 @@ export type ForecastsData = {
 
 export type BusinessContextData = {
   summary: string;
+
   sections: Array<{
     title: string;
+
     rows: Array<{
       label: string;
       value: string;
@@ -82,10 +92,12 @@ export type AnalyticalBlockData = {
   truthSummary: string;
   mainDiagnosis: string;
   confidenceLevel: ConfidenceLevel;
+
   keySignals: Array<{
     label: string;
     value: string;
   }>;
+
   explanation: string;
   implication: string;
 };
