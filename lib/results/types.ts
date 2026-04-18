@@ -39,18 +39,46 @@ export type HeroData = {
   currentPosition?: string;
 };
 
+export type SolutionCard = {
+  title: string;
+  value: string;
+  note?: string;
+};
+
+export type SolutionPriorityItem = {
+  step: number;
+  label: string;
+  description: string;
+  priority: "high" | "medium" | "low";
+};
+
+export type SolutionKPI = {
+  label: string;
+  current?: string;
+  target?: string;
+  change?: string;
+};
+
 export type SolutionData = {
   title: string;
   summary: string;
   confidenceLevel: ConfidenceLevel;
 
-  cards: Array<{
-    title: string;
-    value: string;
-    note?: string;
-  }>;
-};
+  cards: SolutionCard[];
 
+  decisionRule?: string;
+  whyNow?: string;
+  whyNotNow?: string;
+
+  priorities?: SolutionPriorityItem[];
+
+  expectedOutcomes?: Array<{
+    label: string;
+    description: string;
+  }>;
+
+  kpis?: SolutionKPI[];
+};
 export type RoadmapData = {
   phases: Array<{
     period: string;
