@@ -150,7 +150,7 @@ export const resultsPayloadMock = {
       },
     ],
   },
-};
+} as const;
 
 export const resultsMockData: ResultsPageData = {
   hero: {
@@ -174,13 +174,19 @@ export const resultsMockData: ResultsPageData = {
       })),
 
     clientsVsLeads: {
-      clients: 1,
-      leads: 13,
+      clients:
+        resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
+          (item) => item.label === "Клиенты",
+        )?.value ?? 0,
+      leads:
+        resultsPayloadMock.hero_block.clients_vs_leads_chart.series.find(
+          (item) => item.label === "Лиды",
+        )?.value ?? 0,
     },
 
     demandVsCapacity: {
-      demand: 13,
-      capacity: 4,
+      demand: resultsPayloadMock.normalized_data.sales.lead_volume,
+      capacity: resultsPayloadMock.normalized_data.sales.processing_capacity,
     },
 
     channelMix:
@@ -235,15 +241,14 @@ export const resultsMockData: ResultsPageData = {
 
   roadmap: {
     phases: resultsPayloadMock.roadmap.phases.map((phase) => {
-      let description = "";
-
-      if ("linked_constraint" in phase) {
-        description = phase.linked_constraint;
-      } else if ("linked_lever" in phase) {
-        description = phase.linked_lever;
-      } else if ("linked_system" in phase) {
-        description = phase.linked_system;
-      }
+      const description =
+        ("linked_constraint" in phase && phase.linked_constraint
+          ? phase.linked_constraint
+          : "linked_lever" in phase && phase.linked_lever
+            ? phase.linked_lever
+            : "linked_system" in phase && phase.linked_system
+              ? phase.linked_system
+              : "");
 
       return {
         period: phase.phase,
@@ -272,8 +277,8 @@ export const resultsMockData: ResultsPageData = {
     },
     assumptions: [
       "Existing demand is converted better",
-      "Processing bottleneck reduced",
-      "Delivery becomes repeatable",
+      "Processing bottleneck is reduced",
+      "Delivery becomes more repeatable",
       "Offer is narrower and easier to sell",
     ],
   },
@@ -331,20 +336,16 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "clients_flow",
       title: "Clients & Flow",
-      truthSummary:
-        "Lead flow exists but conversion system is overloaded.",
-      mainDiagnosis:
-        "13 leads vs 4 capacity creates lost opportunities.",
+      truthSummary: "Lead flow exists but conversion system is overloaded.",
+      mainDiagnosis: "13 leads vs 4 capacity creates lost opportunities.",
       confidenceLevel: 2,
       keySignals: [
         { label: "Leads", value: "13" },
         { label: "Capacity", value: "4" },
         { label: "Clients", value: "1" },
       ],
-      explanation:
-        "Lead intake outpaces processing.",
-      implication:
-        "Need triage + better pipeline before scaling demand.",
+      explanation: "Lead intake outpaces processing.",
+      implication: "Need triage + better pipeline before scaling demand.",
     },
   ],
 
