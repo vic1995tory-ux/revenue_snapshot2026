@@ -212,13 +212,6 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
     <section className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(199,169,59,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(199,169,59,0.08),transparent_24%)]" />
 
-      <div className="relative">
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.45 }}
-          className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"
-        >
 <motion.div
   initial={{ opacity: 0, y: 18 }}
   animate={{ opacity: 1, y: 0 }}
