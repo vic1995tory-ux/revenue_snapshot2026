@@ -94,6 +94,13 @@ export type RoadmapData = {
     description: string;
     tasks: RoadmapTask[];
   }>;
+
+  controlPoints?: Array<{
+    metric: string;
+    signal: string;
+    whyItMatters: string;
+    confidenceLevel?: ConfidenceLevel;
+  }>;
 };
 
 export type ForecastMetric = {
