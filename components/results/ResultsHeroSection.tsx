@@ -219,248 +219,270 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
           transition={{ duration: 0.45 }}
           className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"
         >
-          </div>
-<div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
-  <div className="pointer-events-none absolute inset-y-0 left-0 w-full opacity-[0.14]">
-  <Image
-    src="/hero.svg"
-    alt=""
-    fill
-    priority
-    className="object-cover object-left"
-  />
-</div>
-
-<div className="relative z-10">
-            <div className="mb-4 flex flex-wrap items-center gap-3">
-              <InfoPill>{hero.companyName || "Revenue Snapshot"}</InfoPill>
-              <InfoPill>{hero.salesGeography}</InfoPill>
-              <ConfidenceDots level={hero.confidenceLevel} />
-            </div>
-
-            <SectionLabel>Business snapshot</SectionLabel>
-
-            <h1 className="mt-3 max-w-[760px] text-[38px] font-semibold leading-[0.92] tracking-[-0.05em] text-white md:text-[56px]">
-              Revenue Snapshot
-            </h1>
-
-            <p className="mt-5 max-w-[780px] text-[19px] leading-[1.28] text-white/88 md:text-[21px]">
-              {hero.summary}
-            </p>
-
-            <p className="mt-4 max-w-[760px] text-[15px] leading-[1.7] text-white/62">
-              {hero.description}
-            </p>
-
-            {businessMeta.length ? (
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                {businessMeta.map((item) => (
-                  <InfoPill key={item}>{item}</InfoPill>
-                ))}
-              </div>
-            ) : null}
-
-            {!!hero.roles.length && (
-              <div className="mt-6 flex flex-wrap gap-2.5">
-                {hero.roles.map((role) => (
-                  <InfoPill key={`${role.role}-${role.responsibility}`}>
-                    {role.role}: {role.responsibility}
-                  </InfoPill>
-                ))}
-              </div>
-            )}
-
-            <div className="mt-7 grid gap-4 md:grid-cols-2">
-              <HeroCard
-                icon={<TrendingUp size={16} />}
-                label="Growth limit"
-                value={hero.growthLimit}
-                subvalue={hero.currentPosition || "Главное ограничение роста, вынесенное в верхний уровень страницы."}
-              />
-
-              <HeroCard
-                icon={<Wallet size={16} />}
-                label="Cash-in"
-                value={hero.cashIn}
-                subvalue={hero.snapshot || "Фактически полученный платеж за последний период."}
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-5">
-            <motion.div
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.05 }}
-              className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
-            >
-              <div className="mb-4 flex items-center justify-between gap-3">
-                <div>
-                  <SectionLabel>Products</SectionLabel>
-                  <div className="mt-2 text-lg font-semibold text-white">
-                    Product margins
-                  </div>
-                </div>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-                  <BarChart3 size={18} />
-                </div>
-              </div>
-
-              <div className="h-[240px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={productMarginsData} barCategoryGap={18}>
-                    <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false} />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "rgba(255,255,255,0.68)", fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fill: "rgba(255,255,255,0.42)", fontSize: 12 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={<ProductTooltip />}
-                      cursor={{ fill: "rgba(255,255,255,0.03)" }}
-                    />
-                    <Bar dataKey="value" radius={[10, 10, 4, 4]}>
-                      {productMarginsData.map((entry, index) => (
-                        <Cell key={entry.name} fill={colors[index % colors.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </motion.div>
-
-            <div className="grid gap-5 lg:grid-cols-2">
-            <motion.div
+<motion.div
   initial={{ opacity: 0, y: 18 }}
   animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.55, delay: 0.08 }}
-  className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+  transition={{ duration: 0.45 }}
+  className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"
 >
-  <div className="mb-4 flex items-center justify-between gap-3">
-    <div>
-      <SectionLabel>Flow</SectionLabel>
-      <div className="mt-2 text-lg font-semibold text-white">
-        Lead → client conversion
-      </div>
+  <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
+    <div className="pointer-events-none absolute inset-y-0 left-0 w-full opacity-[0.14]">
+      <Image
+        src="/hero.svg"
+        alt=""
+        fill
+        priority
+        className="object-cover object-left"
+      />
     </div>
 
-    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-      <Percent size={18} />
+    <div className="relative z-10">
+      <div className="mb-4 flex flex-wrap items-center gap-3">
+        <InfoPill>{hero.companyName || "Revenue Snapshot"}</InfoPill>
+        <InfoPill>{hero.salesGeography}</InfoPill>
+        <ConfidenceDots level={hero.confidenceLevel} />
+      </div>
+
+      <SectionLabel>Business snapshot</SectionLabel>
+
+      <h1 className="mt-3 max-w-[760px] text-[38px] font-semibold leading-[0.92] tracking-[-0.05em] text-white md:text-[56px]">
+        Revenue Snapshot
+      </h1>
+
+      <p className="mt-5 max-w-[780px] text-[19px] leading-[1.28] text-white/88 md:text-[21px]">
+        {hero.summary}
+      </p>
+
+      <p className="mt-4 max-w-[760px] text-[15px] leading-[1.7] text-white/62">
+        {hero.description}
+      </p>
+
+      {businessMeta.length ? (
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          {businessMeta.map((item) => (
+            <InfoPill key={item}>{item}</InfoPill>
+          ))}
+        </div>
+      ) : null}
+
+      {!!hero.roles.length && (
+        <div className="mt-6 flex flex-wrap gap-2.5">
+          {hero.roles.map((role) => (
+            <InfoPill key={`${role.role}-${role.responsibility}`}>
+              {role.role}: {role.responsibility}
+            </InfoPill>
+          ))}
+        </div>
+      )}
+
+      <div className="mt-7 grid gap-4 md:grid-cols-2">
+        <HeroCard
+          icon={<TrendingUp size={16} />}
+          label="Growth limit"
+          value={hero.growthLimit}
+          subvalue={
+            hero.currentPosition ||
+            "Главное ограничение роста, вынесенное в верхний уровень страницы."
+          }
+        />
+
+        <HeroCard
+          icon={<Wallet size={16} />}
+          label="Cash-in"
+          value={hero.cashIn}
+          subvalue={
+            hero.snapshot || "Фактически полученный платеж за последний период."
+          }
+        />
+      </div>
     </div>
   </div>
 
-  <div className="mb-4 text-sm text-white/52">
-    {clients} clients / {leads} leads
-  </div>
+  <div className="grid gap-5">
+    <motion.div
+      initial={{ opacity: 0, y: 18 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.05 }}
+      className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <SectionLabel>Products</SectionLabel>
+          <div className="mt-2 text-lg font-semibold text-white">
+            Product margins
+          </div>
+        </div>
 
-  <div className="h-[260px]">
-    {conversionData.length ? (
-      <ResponsiveContainer width="100%" height="100%">
-        <PieChart>
-          <Pie
-            data={[
-              { name: "Conversion", value: conversionRate },
-              { name: "Remaining", value: Math.max(0, 100 - conversionRate) },
-            ]}
-            dataKey="value"
-            nameKey="name"
-            innerRadius={72}
-            outerRadius={96}
-            startAngle={90}
-            endAngle={-270}
-            paddingAngle={2}
-          >
-            <Cell fill={colors[0]} />
-            <Cell fill="rgba(255,255,255,0.08)" />
-          </Pie>
-
-          <Tooltip content={<MinimalTooltip suffix="%" />} />
-
-          <text
-            x="50%"
-            y="48%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-white text-[28px] font-semibold"
-          >
-            {conversionRate}%
-          </text>
-
-          <text
-            x="50%"
-            y="60%"
-            textAnchor="middle"
-            dominantBaseline="middle"
-            className="fill-[rgba(255,255,255,0.52)] text-[12px]"
-          >
-            lead → client
-          </text>
-        </PieChart>
-      </ResponsiveContainer>
-    ) : (
-      <div className="flex h-full items-center justify-center text-sm text-white/40">
-        No data
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+          <BarChart3 size={18} />
+        </div>
       </div>
-    )}
-  </div>
-</motion.div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 18 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.12 }}
-                className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
-              >
-                <div className="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <SectionLabel>Acquisition</SectionLabel>
-                    <div className="mt-2 text-lg font-semibold text-white">
-                      Channel mix
-                    </div>
-                  </div>
+      <div className="h-[240px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={productMarginsData} barCategoryGap={18}>
+            <CartesianGrid
+              stroke="rgba(255,255,255,0.06)"
+              vertical={false}
+            />
+            <XAxis
+              dataKey="name"
+              tick={{ fill: "rgba(255,255,255,0.68)", fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              tick={{ fill: "rgba(255,255,255,0.42)", fontSize: 12 }}
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              content={<ProductTooltip />}
+              cursor={{ fill: "rgba(255,255,255,0.03)" }}
+            />
+            <Bar dataKey="value" radius={[10, 10, 4, 4]}>
+              {productMarginsData.map((entry, index) => (
+                <Cell
+                  key={entry.name}
+                  fill={colors[index % colors.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </motion.div>
 
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
-                    <MapPin size={18} />
-                  </div>
-                </div>
-
-                <div className="h-[210px]">
-                  {channelMixData.length ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={channelMixData}
-                          dataKey="value"
-                          nameKey="name"
-                          innerRadius={48}
-                          outerRadius={82}
-                          paddingAngle={3}
-                        >
-                          {channelMixData.map((entry, index) => (
-                            <Cell key={entry.name} fill={colors[index % colors.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip content={<MinimalTooltip suffix="%" />} />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-sm text-white/40">
-                      No data
-                    </div>
-                  )}
-                </div>
-              </motion.div>
+    <div className="grid gap-5 lg:grid-cols-2">
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, delay: 0.08 }}
+        className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <SectionLabel>Flow</SectionLabel>
+            <div className="mt-2 text-lg font-semibold text-white">
+              Lead → client conversion
             </div>
           </div>
-        </motion.div>
 
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+            <Percent size={18} />
+          </div>
+        </div>
+
+        <div className="mb-4 text-sm text-white/52">
+          {clients} clients / {leads} leads
+        </div>
+
+        <div className="h-[260px]">
+          {conversionData.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={[
+                    { name: "Conversion", value: conversionRate },
+                    {
+                      name: "Remaining",
+                      value: Math.max(0, 100 - conversionRate),
+                    },
+                  ]}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={72}
+                  outerRadius={96}
+                  startAngle={90}
+                  endAngle={-270}
+                  paddingAngle={2}
+                >
+                  <Cell fill={colors[0]} />
+                  <Cell fill="rgba(255,255,255,0.08)" />
+                </Pie>
+
+                <Tooltip content={<MinimalTooltip suffix="%" />} />
+
+                <text
+                  x="50%"
+                  y="48%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-white text-[28px] font-semibold"
+                >
+                  {conversionRate}%
+                </text>
+
+                <text
+                  x="50%"
+                  y="60%"
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-[rgba(255,255,255,0.52)] text-[12px]"
+                >
+                  lead → client
+                </text>
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-white/40">
+              No data
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.12 }}
+        className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+      >
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div>
+            <SectionLabel>Acquisition</SectionLabel>
+            <div className="mt-2 text-lg font-semibold text-white">
+              Channel mix
+            </div>
+          </div>
+
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+            <MapPin size={18} />
+          </div>
+        </div>
+
+        <div className="h-[210px]">
+          {channelMixData.length ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={channelMixData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={48}
+                  outerRadius={82}
+                  paddingAngle={3}
+                >
+                  {channelMixData.map((entry, index) => (
+                    <Cell
+                      key={entry.name}
+                      fill={colors[index % colors.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip content={<MinimalTooltip suffix="%" />} />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="flex h-full items-center justify-center text-sm text-white/40">
+              No data
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </div>
+  </div>
+</motion.div>
         <div className="mt-5 grid gap-4 md:grid-cols-3">
           <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
             <div className="flex items-center gap-2 text-white/50">
