@@ -1,5 +1,13 @@
 import type { ResultsPageData } from "./types";
 
+function mapConfidenceLevel(
+  value?: "high" | "medium" | "preliminary",
+): 1 | 2 | 3 {
+  if (value === "high") return 3;
+  if (value === "medium") return 2;
+  return 1;
+}
+
 export const resultsPayloadMock = {
   confidence_ui_system: {
     component: "reliability_dots",
@@ -27,10 +35,10 @@ export const resultsPayloadMock = {
   hero_block: {
     companyName: "",
     summary:
-      "Бизнес-девелоперская и консалтинговая компания для seed-stage SaaS, сейчас рост ограничен нестабильным потоком заявок и маленькой командой.",
+      "Бизнес-девелоперская компания для seed-stage SaaS в B2B и B2C, сейчас рост сдерживает нестабильный поток заявок и перегрузка команды.",
     sales_geography: ["ЕС", "СНГ"],
     description:
-      "Компания помогает клиентам с разработкой и реализацией стратегий, а также с запуском MVP и бизнес-автоматизаций. Сейчас бизнес на ранней стадии, работает около полугода с двумя основателями и проектными подрядчиками.",
+      "Компания помогает с разработкой стратегий, консалтингом и реализацией решений. Основные услуги — разработка MVP, стратегические сессии и бизнес-автоматизации.",
     growth_limit: "нестабильный поток заявок",
     roles: [
       {
@@ -46,7 +54,7 @@ export const resultsPayloadMock = {
     ],
     product_margins_chart: {
       chart_type: "bar",
-      title: "Маржинальность продуктов",
+      title: "Маржинальность по продуктам",
       series: [
         {
           product: "разработка MVP",
@@ -59,7 +67,7 @@ export const resultsPayloadMock = {
           unit: "percent",
         },
         {
-          product: "автоматизации для бизнеса",
+          product: "нами разработанные автоматизации для бизнеса",
           margin: 30,
           unit: "percent",
         },
@@ -670,8 +678,7 @@ export const resultsPayloadMock = {
     },
     {
       field: "net_profit_definition",
-      reason:
-        "указана маржа 55%, но не раскрыт точный состав расходов",
+      reason: "указана маржа 55%, но не раскрыт точный состав расходов",
     },
     {
       field: "monthly recurring revenue",
@@ -1328,6 +1335,7 @@ export const resultsPayloadMock = {
     },
   },
 
+  //RoadMap_начало
   roadmap: {
     strategic_objective:
       "Перевести бизнес из founder-led ручной модели в управляемый сервисный контур, который способен стабильно обрабатывать текущий спрос, продавать один понятный входной оффер и исполнять проекты без постоянного операционного участия обоих основателей.",
@@ -1699,6 +1707,7 @@ export const resultsPayloadMock = {
         "Бизнес переходит к более стабильной сервисной модели: выручка меньше зависит от единичных кастомных сделок, загрузка становится управляемой, а рост опирается на процесс и оффер, а не на ручное усилие founders.",
     },
   },
+  //RoadMap_конец
 } as const;
 
 export const resultsMockData: ResultsPageData = {
@@ -1782,7 +1791,6 @@ export const resultsMockData: ResultsPageData = {
       },
     ],
 
-    // эти поля заработают только если ты добавишь их в types.ts
     decisionRule:
       "Не масштабировать входящий поток до стабилизации processing, ownership и delivery.",
 
@@ -1828,6 +1836,7 @@ export const resultsMockData: ResultsPageData = {
     ],
   } as ResultsPageData["solution"],
 
+  //RoadMap_начало
   roadmap: {
     phases: resultsPayloadMock.roadmap.phases.map((phase) => {
       const description =
@@ -1843,10 +1852,16 @@ export const resultsMockData: ResultsPageData = {
         period: phase.phase,
         title: phase.goal,
         description,
-        tasks: phase.key_actions.map((item) => item.action),
+        tasks: phase.key_actions.map((item, index) => ({
+          label: `Step ${index + 1}`,
+          action: item.action,
+          whyThisPhase: item.why_this_phase,
+          confidenceLevel: mapConfidenceLevel(item.confidence_level),
+        })),
       };
     }),
   },
+  //RoadMap_конец
 
   forecasts: {
     revenue: {
@@ -2225,8 +2240,7 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "economics",
       title: "Economics",
-      truthSummary:
-        resultsPayloadMock.economics.truth_summary.summary,
+      truthSummary: resultsPayloadMock.economics.truth_summary.summary,
       mainDiagnosis:
         "55% маржи и 1045 USD прибыли основаны на одном клиенте и не отражают масштабируемую модель.",
       confidenceLevel: 1,
@@ -2244,8 +2258,7 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "positioning",
       title: "Positioning",
-      truthSummary:
-        resultsPayloadMock.positioning.truth_summary.summary,
+      truthSummary: resultsPayloadMock.positioning.truth_summary.summary,
       mainDiagnosis:
         "Позиционирование размыто между консалтингом, стратегией, MVP-разработкой и автоматизациями.",
       confidenceLevel: 1,
@@ -2266,8 +2279,7 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "clients_flow",
       title: "Clients & Flow",
-      truthSummary:
-        resultsPayloadMock.clients_flow.truth_summary.summary,
+      truthSummary: resultsPayloadMock.clients_flow.truth_summary.summary,
       mainDiagnosis:
         "При 13 лидах, capacity 4 и unmet demand 9 бизнес уже теряет поток в processing.",
       confidenceLevel: 1,
@@ -2285,8 +2297,7 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "product_sales",
       title: "Product & Sales",
-      truthSummary:
-        resultsPayloadMock.product_sales.truth_summary.summary,
+      truthSummary: resultsPayloadMock.product_sales.truth_summary.summary,
       mainDiagnosis:
         "Продуктовая модель пока гибридная и неустойчивая по марже, а рост ограничен delivery-нагрузкой на двух основателей.",
       confidenceLevel: 1,
@@ -2342,8 +2353,7 @@ export const resultsMockData: ResultsPageData = {
     {
       id: "strategy",
       title: "Strategy",
-      truthSummary:
-        resultsPayloadMock.strategy.truth_summary.summary,
+      truthSummary: resultsPayloadMock.strategy.truth_summary.summary,
       mainDiagnosis:
         "Нельзя начинать с масштабирования потока или запуска нового продукта при текущем capacity bottleneck.",
       confidenceLevel: 1,
