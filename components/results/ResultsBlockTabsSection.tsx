@@ -60,9 +60,15 @@ export function ResultsBlockTabsSection({
         {activeBlock?.id === "product_sales" && (
           <ProductSalesBlock block={activeBlock} />
         )}
-        {activeBlock?.id === "clients_flow" && <ClientsFlowBlock block={activeBlock} />}
-        {activeBlock?.id === "positioning" && <PositioningBlock block={activeBlock} />}
-        {activeBlock?.id === "economics" && <EconomicsBlock block={activeBlock} />}
+        {activeBlock?.id === "clients_flow" && (
+          <ClientsFlowBlock block={activeBlock} />
+        )}
+        {activeBlock?.id === "positioning" && (
+          <PositioningBlock block={activeBlock} />
+        )}
+        {activeBlock?.id === "economics" && (
+          <EconomicsBlock block={activeBlock} />
+        )}
       </div>
     </section>
   );
