@@ -26,12 +26,12 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_0_1px_rgba(247,210,55,0.08)]",
       title: "text-[#f7d237]",
       dot: "bg-[#f7d237]",
-      line: "bg-[#f7d237]/38",
-      lineSoft: "bg-[#f7d237]/14",
-      nodeBorder: "border-[#f7d237]/28",
-      nodeBg: "bg-[#f7d237]/10",
-      nodeText: "text-[#fff8d6]",
-      nodeGlow: "shadow-[0_0_34px_rgba(247,210,55,0.22)]",
+      line: "bg-[#f7d237]/34",
+      lineSoft: "bg-[#f7d237]/18",
+      cardBorder: "border-[#f7d237]/24",
+      cardBg: "bg-[rgba(247,210,55,0.08)]",
+      cardGlow: "shadow-[0_0_34px_rgba(247,210,55,0.16)]",
+      cardText: "text-[#fff6cf]",
       drawerAccent: "text-[#f7d237]",
     };
   }
@@ -42,12 +42,12 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_0_1px_rgba(142,168,255,0.07)]",
       title: "text-[#b9c8ff]",
       dot: "bg-[#8ea8ff]",
-      line: "bg-[#8ea8ff]/34",
+      line: "bg-[#8ea8ff]/30",
       lineSoft: "bg-[#8ea8ff]/14",
-      nodeBorder: "border-[#8ea8ff]/24",
-      nodeBg: "bg-[#8ea8ff]/10",
-      nodeText: "text-[#dfe6ff]",
-      nodeGlow: "shadow-[0_0_34px_rgba(142,168,255,0.18)]",
+      cardBorder: "border-[#8ea8ff]/24",
+      cardBg: "bg-[rgba(142,168,255,0.08)]",
+      cardGlow: "shadow-[0_0_34px_rgba(142,168,255,0.14)]",
+      cardText: "text-[#e2e8ff]",
       drawerAccent: "text-[#b9c8ff]",
     };
   }
@@ -59,10 +59,10 @@ function getPhaseAccent(index: number) {
     dot: "bg-white/38",
     line: "bg-white/18",
     lineSoft: "bg-white/10",
-    nodeBorder: "border-white/14",
-    nodeBg: "bg-white/[0.05]",
-    nodeText: "text-white/84",
-    nodeGlow: "shadow-[0_0_26px_rgba(255,255,255,0.08)]",
+    cardBorder: "border-white/12",
+    cardBg: "bg-white/[0.04]",
+    cardGlow: "shadow-[0_0_24px_rgba(255,255,255,0.07)]",
+    cardText: "text-white/84",
     drawerAccent: "text-white/76",
   };
 }
@@ -86,23 +86,20 @@ function confidenceText(level?: ConfidenceLevel) {
 
 function dockScale(distance: number | null) {
   if (distance === null) return 1;
-  if (distance === 0) return 1.28;
-  if (distance === 1) return 1.16;
-  if (distance === 2) return 1.08;
+  if (distance === 0) return 1.08;
+  if (distance === 1) return 1.04;
   return 1;
 }
 
-function dockOffset(distance: number | null, isTop: boolean) {
-  if (distance === null) return 0;
-  const base = distance === 0 ? 10 : distance === 1 ? 6 : distance === 2 ? 2 : 0;
-  return isTop ? -base : base;
+function shortenAction(text: string, maxLength = 56) {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}…`;
 }
 
 type DrawerCardProps = {
   item: FlatTimelineTask;
   stackPosition: number;
   stackLength: number;
-  maxStack: number;
   onCloseAll: () => void;
   onPopToHere: () => void;
   onNext: () => void;
@@ -115,7 +112,6 @@ function DrawerCard({
   item,
   stackPosition,
   stackLength,
-  maxStack,
   onCloseAll,
   onPopToHere,
   onNext,
@@ -124,18 +120,17 @@ function DrawerCard({
   hasPrev,
 }: DrawerCardProps) {
   const accent = getPhaseAccent(item.phaseIndex);
-  const offset = (stackLength - 1 - stackPosition) * 58;
-  const widthReduction = (stackLength - 1 - stackPosition) * 26;
-  const zIndex = 60 + stackPosition;
+  const widthPercent = stackLength === 1 ? 100 : stackLength === 2 ? 50 : 33.3333;
+  const leftPercent = stackPosition * widthPercent;
   const isRightmost = stackPosition === stackLength - 1;
 
   return (
     <motion.aside
-      className="fixed inset-y-0 right-0 border-l border-white/10 bg-[#081427] shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+      className="fixed inset-y-0 border-l border-white/10 bg-[#081427] shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
       style={{
-        width: `min(560px, calc(100vw - 24px - ${widthReduction}px))`,
-        right: `${offset}px`,
-        zIndex,
+        left: `${leftPercent}%`,
+        width: `${widthPercent}%`,
+        zIndex: 60 + stackPosition,
       }}
       initial={{ x: "100%", opacity: 0.98 }}
       animate={{ x: 0, opacity: 1 }}
@@ -144,7 +139,7 @@ function DrawerCard({
     >
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5">
-          <div>
+          <div className="min-w-0">
             <div className={`text-[11px] uppercase tracking-[0.16em] ${accent.drawerAccent}`}>
               {prettyPhase(item.phasePeriod, item.phaseIndex)}
             </div>
@@ -231,7 +226,7 @@ function DrawerCard({
             <button
               type="button"
               onClick={onPrev}
-              disabled={!hasPrev || stackLength >= maxStack && !isRightmost}
+              disabled={!hasPrev}
               className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2.5 text-sm text-white/82 transition hover:bg-white/[0.08] disabled:cursor-not-allowed disabled:opacity-35"
             >
               <ChevronLeft size={16} />
@@ -241,7 +236,7 @@ function DrawerCard({
             <button
               type="button"
               onClick={onNext}
-              disabled={!hasNext || stackLength >= maxStack && !isRightmost}
+              disabled={!hasNext}
               className="inline-flex items-center gap-2 rounded-full border border-[#f7d237]/20 bg-[#f7d237]/10 px-4 py-2.5 text-sm text-[#fff2a9] transition hover:bg-[#f7d237]/14 disabled:cursor-not-allowed disabled:opacity-35"
             >
               Следующий шаг
@@ -286,7 +281,6 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
   }, [phases]);
 
   const totalSteps = flatTasks.length;
-  const maxStack = 3;
 
   const phaseSegments = useMemo(() => {
     let cursor = 0;
@@ -300,10 +294,9 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
       return {
         phaseIndex: phase.index,
         period: phase.period,
-        count,
+        accent: phase.accent,
         startIndex,
         endIndex,
-        accent: phase.accent,
       };
     });
   }, [phases]);
@@ -312,22 +305,14 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
     setOpenStack([index]);
   };
 
-  const appendStep = (index: number) => {
-    setOpenStack((prev) => {
-      if (prev[prev.length - 1] === index) return prev;
-      if (prev.includes(index)) return prev.slice(0, prev.indexOf(index) + 1);
-      const next = [...prev, index];
-      return next.length > maxStack ? next.slice(next.length - maxStack) : next;
-    });
-  };
-
   const appendNext = () => {
     setOpenStack((prev) => {
       if (!prev.length) return prev;
       const last = prev[prev.length - 1];
       if (last >= flatTasks.length - 1) return prev;
+
       const next = [...prev, last + 1];
-      return next.length > maxStack ? next.slice(next.length - maxStack) : next;
+      return next.length > 3 ? next.slice(next.length - 3) : next;
     });
   };
 
@@ -336,12 +321,9 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
       if (!prev.length) return prev;
       const last = prev[prev.length - 1];
       if (last <= 0) return prev;
-      const nextIndex = last - 1;
-      if (prev.includes(nextIndex)) {
-        return prev.slice(0, prev.indexOf(nextIndex) + 1);
-      }
-      const next = [...prev, nextIndex];
-      return next.length > maxStack ? next.slice(next.length - maxStack) : next;
+
+      const next = [...prev, last - 1];
+      return next.length > 3 ? next.slice(next.length - 3) : next;
     });
   };
 
@@ -359,8 +341,8 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             </h2>
 
             <p className="mt-4 max-w-[920px] text-[16px] leading-[1.7] text-white/66">
-              Это одна общая дорожка внедрения. Каждый шаг занимает свое место
-              в последовательности, а не существует как отдельная параллельная задача.
+              Одна общая дорожка внедрения: шаги чередуются над и под линией,
+              чтобы сразу читалась последовательность, а не список параллельных задач.
             </p>
           </div>
 
@@ -404,34 +386,10 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           onMouseLeave={() => setHoveredStep(null)}
         >
           <div
-            className="relative min-w-[1280px] px-8 pb-12 pt-12"
-            style={{
-              height: totalSteps > 10 ? 360 : 320,
-            }}
+            className="relative min-w-[1280px] px-4 pb-10 pt-10"
+            style={{ height: totalSteps > 10 ? 520 : 460 }}
           >
-            <div className="mb-8 grid grid-cols-3 gap-6 px-2">
-              {phaseSegments.map((segment) => (
-                <div
-                  key={`${segment.period}-legend`}
-                  className="flex items-center justify-between gap-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className={`h-3 w-3 rounded-full ${segment.accent.dot}`} />
-                    <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
-                      Phase {segment.phaseIndex + 1}
-                    </div>
-                  </div>
-
-                  <div
-                    className={`text-[11px] uppercase tracking-[0.16em] ${segment.accent.title}`}
-                  >
-                    {phaseLabel(segment.period)}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="absolute left-8 right-8 top-[180px] h-px bg-white/10" />
+            <div className="absolute left-4 right-4 top-1/2 h-px -translate-y-1/2 bg-white/12" />
 
             {phaseSegments.map((segment) => {
               const startPercent =
@@ -443,22 +401,22 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
               return (
                 <div
                   key={`${segment.period}-${segment.startIndex}`}
-                  className={`absolute top-[179px] h-[3px] rounded-full ${segment.accent.line}`}
+                  className={`absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full ${segment.accent.line}`}
                   style={{
-                    left: `calc(32px + (${startPercent}% * (100% - 64px) / 100))`,
+                    left: `calc(16px + (${startPercent}% * (100% - 32px) / 100))`,
                     width:
                       totalSteps === 1
-                        ? "calc(100% - 64px)"
-                        : `calc(${widthPercent}% * (100% - 64px) / 100)`,
+                        ? "calc(100% - 32px)"
+                        : `calc(${widthPercent}% * (100% - 32px) / 100)`,
                   }}
                 />
               );
             })}
 
             <div
-              className="relative grid gap-0"
+              className="relative grid"
               style={{
-                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(72px, 1fr))`,
+                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(110px, 1fr))`,
               }}
             >
               {flatTasks.map((item, index) => {
@@ -467,8 +425,6 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                 const distance =
                   hoveredStep === null ? null : Math.abs(hoveredStep - index);
                 const scale = dockScale(distance);
-                const translateY = dockOffset(distance, isTop);
-                const isOpened = openStack.includes(index);
 
                 return (
                   <div
@@ -476,35 +432,50 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                     className="relative flex justify-center"
                     onMouseEnter={() => setHoveredStep(index)}
                   >
-                    <div
-                      className={`absolute left-1/2 top-[180px] w-px -translate-x-1/2 ${
-                        isTop ? "h-[58px] -translate-y-[58px]" : "h-[58px]"
-                      } ${accent.lineSoft}`}
-                    />
-
-                    <motion.button
-                      type="button"
-                      onClick={() => openStep(index)}
-                      animate={{
-                        scale,
-                        y: translateY,
-                      }}
+                    <motion.div
+                      animate={{ scale }}
                       transition={{
                         type: "spring",
                         stiffness: 380,
                         damping: 24,
                         mass: 0.8,
                       }}
-                      className={`absolute left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border text-[28px] font-semibold transition ${
-                        accent.nodeBorder
-                      } ${accent.nodeBg} ${accent.nodeText} ${
-                        accent.nodeGlow
-                      } ${isOpened ? "ring-1 ring-white/14" : ""} ${
-                        isTop ? "top-[104px]" : "top-[224px]"
+                      className={`absolute left-1/2 flex w-[160px] -translate-x-1/2 flex-col ${
+                        isTop ? "top-[24px]" : "top-[260px]"
                       }`}
                     >
-                      {item.globalStep}
-                    </motion.button>
+                      <button
+                        type="button"
+                        onClick={() => openStep(index)}
+                        className={`rounded-[18px] border px-4 py-4 text-left transition hover:translate-y-[-2px] ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
+                      >
+                        <div className={`text-[12px] font-medium tracking-[0.1em] ${accent.title}`}>
+                          {String(item.globalStep).padStart(2, "0")}
+                        </div>
+
+                        <div className={`mt-4 text-[17px] font-semibold leading-[1.2] ${accent.cardText}`}>
+                          Step {item.globalStep}
+                        </div>
+
+                        <div className="mt-2 text-sm leading-[1.45] text-white/78">
+                          {shortenAction(item.task.action)}
+                        </div>
+                      </button>
+
+                      <div className="relative flex justify-center">
+                        <div
+                          className={`w-px ${accent.lineSoft} ${
+                            isTop ? "h-[74px]" : "h-[74px]"
+                          }`}
+                        />
+                      </div>
+
+                      <div
+                        className={`absolute left-1/2 h-4 w-4 -translate-x-1/2 rounded-full border border-white/10 ${accent.dot} ${
+                          isTop ? "bottom-[-8px]" : "top-[-8px]"
+                        }`}
+                      />
+                    </motion.div>
                   </div>
                 );
               })}
@@ -530,11 +501,10 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
 
               return (
                 <DrawerCard
-                  key={`drawer-${taskIndex}`}
+                  key={`drawer-${taskIndex}-${stackPosition}`}
                   item={item}
                   stackPosition={stackPosition}
                   stackLength={openStack.length}
-                  maxStack={maxStack}
                   onCloseAll={() => setOpenStack([])}
                   onPopToHere={() =>
                     setOpenStack((prev) => prev.slice(0, stackPosition + 1))
