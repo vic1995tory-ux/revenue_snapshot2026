@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { AnalyticalBlockData, OverallSummaryData } from "@/lib/results/types";
+import type { AnalyticalBlockData } from "@/lib/results/types";
 import { BlockTabButton } from "./BlockTabButton";
 import { StrategyBlock } from "./blocks/StrategyBlock";
 import { StructureProcessesBlock } from "./blocks/StructureProcessesBlock";
@@ -25,7 +25,6 @@ export function ResultsBlockTabsSection({
   blocks,
 }: {
   blocks: AnalyticalBlockData[];
-  overallSummary: OverallSummaryData;
 }) {
   const orderedBlocks = useMemo(() => {
     return BLOCK_ORDER.map((id) => blocks.find((block) => block.id === id)).filter(
