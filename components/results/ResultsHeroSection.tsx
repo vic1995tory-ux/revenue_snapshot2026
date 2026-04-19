@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import type { HeroData } from "@/lib/results/types";
 import { motion } from "framer-motion";
 import { BarChart3, BriefcaseBusiness, MapPin, Percent, TrendingUp, Users, Wallet } from "lucide-react";
@@ -211,7 +211,15 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
   return (
     <section className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(199,169,59,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(199,169,59,0.08),transparent_24%)]" />
-
+<div className="pointer-events-none absolute inset-0 opacity-[0.28]">
+  <Image
+    src="/hero.svg"
+    alt=""
+    fill
+    priority
+    className="object-cover object-center"
+  />
+</div>
       <div className="relative">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
