@@ -1836,32 +1836,39 @@ export const resultsMockData: ResultsPageData = {
     ],
   } as ResultsPageData["solution"],
 
-  //RoadMap_начало
-  roadmap: {
-    phases: resultsPayloadMock.roadmap.phases.map((phase) => {
-      const description =
-        "linked_constraint" in phase
-          ? phase.linked_constraint
-          : "linked_lever" in phase
-            ? phase.linked_lever
-            : "linked_system" in phase
-              ? phase.linked_system
-              : "";
+//RoadMap_начало
+roadmap: {
+  phases: resultsPayloadMock.roadmap.phases.map((phase) => {
+    const description =
+      "linked_constraint" in phase
+        ? phase.linked_constraint
+        : "linked_lever" in phase
+          ? phase.linked_lever
+          : "linked_system" in phase
+            ? phase.linked_system
+            : "";
 
-      return {
-        period: phase.phase,
-        title: phase.goal,
-        description,
-        tasks: phase.key_actions.map((item, index) => ({
-          label: `Step ${index + 1}`,
-          action: item.action,
-          whyThisPhase: item.why_this_phase,
-          confidenceLevel: mapConfidenceLevel(item.confidence_level),
-        })),
-      };
-    }),
-  },
-  //RoadMap_конец
+    return {
+      period: phase.phase,
+      title: phase.goal,
+      description,
+      tasks: phase.key_actions.map((item, index) => ({
+        label: `Step ${index + 1}`,
+        action: item.action,
+        whyThisPhase: item.why_this_phase,
+        confidenceLevel: mapConfidenceLevel(item.confidence_level),
+      })),
+    };
+  }),
+
+  controlPoints: resultsPayloadMock.roadmap.control_points.map((item) => ({
+    metric: item.metric,
+    signal: item.signal,
+    whyItMatters: item.why_it_matters,
+    confidenceLevel: mapConfidenceLevel(item.confidence_level),
+  })),
+},
+//RoadMap_конец
   
 //forecasts_начало
   forecasts: {
