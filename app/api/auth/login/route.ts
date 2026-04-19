@@ -124,14 +124,17 @@ export async function POST(req: NextRequest) {
       ""
     );
 
-    const cookieStore = await cookies();
-const session = await getIronSession(cookieStore as any, sessionOptions);
+const cookieStore = await cookies();
+const session = (await getIronSession(
+  cookieStore as any,
+  sessionOptions
+)) as any;
 
-    session.isLoggedIn = true;
-    session.accessToken = accessToken;
-    session.login = login;
-    session.fullName = fullName;
-    session.companyName = companyName;
+session.isLoggedIn = true;
+session.accessToken = accessToken;
+session.login = login;
+session.fullName = fullName;
+session.companyName = companyName;
 
     await session.save();
 
