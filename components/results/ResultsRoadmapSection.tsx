@@ -19,6 +19,13 @@ type FlatTimelineTask = {
   task: RoadmapTask;
 };
 
+type ControlPointItem = {
+  metric: string;
+  signal: string;
+  whyItMatters: string;
+  confidenceLevel?: ConfidenceLevel;
+};
+
 function getPhaseAccent(index: number) {
   if (index === 0) {
     return {
@@ -26,11 +33,11 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_26px_rgba(247,210,55,0.10)]",
       title: "text-[#f7d237]",
       dot: "bg-[#f7d237]",
-      line: "bg-[#f7d237]/38",
-      lineSoft: "bg-[#f7d237]/26",
-      cardBorder: "border-[#f7d237]/26",
-      cardBg: "bg-[#1c2532]",
-      cardGlow: "shadow-[0_0_24px_rgba(247,210,55,0.10)]",
+      line: "bg-[#f7d237]/40",
+      lineSoft: "bg-[#f7d237]/24",
+      cardBorder: "border-[#f7d237]/28",
+      cardBg: "bg-[#182231]",
+      cardGlow: "shadow-[0_0_22px_rgba(247,210,55,0.10)]",
       cardText: "text-[#fff6cf]",
       drawerAccent: "text-[#f7d237]",
       tagFill: "bg-[#f7d237]",
@@ -41,15 +48,15 @@ function getPhaseAccent(index: number) {
 
   if (index === 1) {
     return {
-      border: "border-[#8ea8ff]/24",
+      border: "border-[#8ea8ff]/26",
       glow: "shadow-[0_0_26px_rgba(142,168,255,0.08)]",
       title: "text-[#b9c8ff]",
       dot: "bg-[#8ea8ff]",
-      line: "bg-[#8ea8ff]/34",
-      lineSoft: "bg-[#8ea8ff]/24",
-      cardBorder: "border-[#8ea8ff]/26",
-      cardBg: "bg-[#1e2c52]",
-      cardGlow: "shadow-[0_0_24px_rgba(142,168,255,0.10)]",
+      line: "bg-[#8ea8ff]/36",
+      lineSoft: "bg-[#8ea8ff]/22",
+      cardBorder: "border-[#8ea8ff]/28",
+      cardBg: "bg-[#1d2b52]",
+      cardGlow: "shadow-[0_0_22px_rgba(142,168,255,0.10)]",
       cardText: "text-[#e2e8ff]",
       drawerAccent: "text-[#b9c8ff]",
       tagFill: "bg-[#8ea8ff]",
@@ -59,7 +66,7 @@ function getPhaseAccent(index: number) {
   }
 
   return {
-    border: "border-white/12",
+    border: "border-white/14",
     glow: "shadow-[0_0_18px_rgba(255,255,255,0.04)]",
     title: "text-white/72",
     dot: "bg-[#8e96a5]",
@@ -67,7 +74,7 @@ function getPhaseAccent(index: number) {
     lineSoft: "bg-white/12",
     cardBorder: "border-white/16",
     cardBg: "bg-[#20293b]",
-    cardGlow: "shadow-[0_0_20px_rgba(255,255,255,0.05)]",
+    cardGlow: "shadow-[0_0_18px_rgba(255,255,255,0.05)]",
     cardText: "text-white/88",
     drawerAccent: "text-white/76",
     tagFill: "bg-[#8e96a5]",
@@ -113,13 +120,52 @@ function splitControlPointsByPhase<T>(items: T[], phaseCount: number) {
   return buckets;
 }
 
-function lineClampStyle(lines: number) {
+function firstThreeWordsWithEllipsis(text: string) {
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const sliced = words.slice(0, 3).join(" ");
+  return words.length > 3 ? `${sliced}…` : `${sliced}…`;
+}
+
+type TimelineLevel = "topFar" | "topNear" | "bottomNear" | "bottomFar";
+
+function getTimelineLevel(index: number): TimelineLevel {
+  const pattern: TimelineLevel[] = ["topFar", "topNear", "bottomNear", "bottomFar"];
+  return pattern[index % 4];
+}
+
+function getTimelinePlacement(level: TimelineLevel) {
+  if (level === "topFar") {
+    return {
+      cardTop: 8,
+      stemTop: 118,
+      stemHeight: 86,
+      dotTop: 198,
+    };
+  }
+
+  if (level === "topNear") {
+    return {
+      cardTop: 92,
+      stemTop: 170,
+      stemHeight: 34,
+      dotTop: 198,
+    };
+  }
+
+  if (level === "bottomNear") {
+    return {
+      cardTop: 248,
+      stemTop: 204,
+      stemHeight: 34,
+      dotTop: 198,
+    };
+  }
+
   return {
-    display: "-webkit-box",
-    WebkitLineClamp: lines,
-    WebkitBoxOrient: "vertical" as const,
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    cardTop: 332,
+    stemTop: 204,
+    stemHeight: 86,
+    dotTop: 284,
   };
 }
 
@@ -321,7 +367,10 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
   }, [phases]);
 
   const controlPointColumns = useMemo(() => {
-    return splitControlPointsByPhase(roadmap.controlPoints ?? [], phases.length);
+    return splitControlPointsByPhase<ControlPointItem>(
+      roadmap.controlPoints ?? [],
+      phases.length,
+    );
   }, [roadmap.controlPoints, phases.length]);
 
   const openStep = (index: number) => {
@@ -364,8 +413,8 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             </h2>
 
             <p className="mt-4 max-w-[920px] text-[16px] leading-[1.7] text-white/66">
-              Одна общая дорожка внедрения: шаги чередуются над и под линией,
-              чтобы сразу читалась последовательность, а не список параллельных задач.
+              Одна общая дорожка внедрения: шаги расположены в несколько уровней,
+              чтобы читалась последовательность без избыточного растягивания шкалы.
             </p>
           </div>
 
@@ -439,10 +488,10 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
 
         <div className="mt-10 overflow-x-auto">
           <div
-            className="relative min-w-[1340px] px-6 pb-10 pt-12"
-            style={{ height: totalSteps > 10 ? 560 : 500 }}
+            className="relative min-w-[1120px] px-10 pb-10 pt-8"
+            style={{ height: 620 }}
           >
-            <div className="absolute left-6 right-6 top-1/2 h-[3px] -translate-y-1/2 bg-white/14" />
+            <div className="absolute left-10 right-10 top-[310px] h-[4px] bg-white/14" />
 
             {phaseSegments.map((segment) => {
               const startPercent =
@@ -454,13 +503,13 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
               return (
                 <div
                   key={`${segment.period}-${segment.startIndex}`}
-                  className={`absolute top-1/2 h-[4px] -translate-y-1/2 rounded-full ${segment.accent.line}`}
+                  className={`absolute top-[310px] h-[4px] ${segment.accent.line}`}
                   style={{
-                    left: `calc(24px + (${startPercent}% * (100% - 48px) / 100))`,
+                    left: `calc(40px + (${startPercent}% * (100% - 80px) / 100))`,
                     width:
                       totalSteps === 1
-                        ? "calc(100% - 48px)"
-                        : `calc(${widthPercent}% * (100% - 48px) / 100)`,
+                        ? "calc(100% - 80px)"
+                        : `calc(${widthPercent}% * (100% - 80px) / 100)`,
                   }}
                 />
               );
@@ -469,11 +518,12 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             <div
               className="relative grid"
               style={{
-                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(116px, 1fr))`,
+                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(86px, 1fr))`,
               }}
             >
               {flatTasks.map((item, index) => {
-                const isTop = index % 2 === 0;
+                const level = getTimelineLevel(index);
+                const placement = getTimelinePlacement(level);
                 const accent = phases[item.phaseIndex].accent;
 
                 return (
@@ -482,48 +532,43 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                     className="relative flex justify-center"
                   >
                     <motion.div
-                      whileHover={{ scale: 1.035, y: isTop ? -4 : 4 }}
-                      transition={{ duration: 0.18 }}
-                      className={`absolute left-1/2 flex w-[194px] -translate-x-1/2 flex-col ${
-                        isTop ? "top-[8px]" : "top-[292px]"
-                      }`}
+                      whileHover={{ scale: 1.03 }}
+                      transition={{ duration: 0.16 }}
+                      className="absolute left-1/2 -translate-x-1/2"
+                      style={{ top: placement.cardTop, width: 154 }}
                     >
                       <button
                         type="button"
                         onClick={() => openStep(index)}
-                        className={`rounded-[22px] border px-5 py-5 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
+                        className={`w-full rounded-full border px-4 py-3 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
                       >
                         <div
-                          className={`text-[13px] font-medium tracking-[0.12em] ${accent.title}`}
+                          className={`text-[12px] font-medium tracking-[0.12em] ${accent.title}`}
                         >
                           {String(item.globalStep).padStart(2, "0")}
                         </div>
 
                         <div
-                          className={`mt-4 text-[12px] font-semibold leading-[1.2] ${accent.cardText}`}
+                          className="mt-2 text-[12px] font-medium leading-[1.25] text-white/90"
                           style={lineClampStyle(1)}
                         >
-                          Step {item.globalStep}
-                        </div>
-
-                        <div
-                          className="mt-3 text-[11px] leading-[1.35] text-white/80"
-                          style={lineClampStyle(3)}
-                        >
-                          {item.task.action}
+                          {firstThreeWordsWithEllipsis(item.task.action)}
                         </div>
                       </button>
-
-                      <div className="relative flex justify-center">
-                        <div className={`w-[2px] h-[84px] ${accent.lineSoft}`} />
-                      </div>
-
-                      <div
-                        className={`absolute left-1/2 h-5 w-5 -translate-x-1/2 rounded-full ${accent.dot} ${
-                          isTop ? "bottom-[-10px]" : "top-[-10px]"
-                        }`}
-                      />
                     </motion.div>
+
+                    <div
+                      className={`absolute left-1/2 w-[3px] -translate-x-1/2 ${accent.lineSoft}`}
+                      style={{
+                        top: placement.stemTop,
+                        height: placement.stemHeight,
+                      }}
+                    />
+
+                    <div
+                      className={`absolute left-1/2 h-5 w-5 -translate-x-1/2 rounded-full ${accent.dot}`}
+                      style={{ top: placement.dotTop }}
+                    />
                   </div>
                 );
               })}
