@@ -1,4 +1,4 @@
-import { IronSessionOptions } from "iron-session";
+import type { SessionOptions } from "iron-session";
 
 export type AppSessionData = {
   isLoggedIn?: boolean;
@@ -8,28 +8,13 @@ export type AppSessionData = {
   companyName?: string;
 };
 
-const password = process.env.SESSION_SECRET;
-
-if (!password) {
-  throw new Error("SESSION_SECRET is not set");
-}
-
-if (password.length < 32) {
-  throw new Error("SESSION_SECRET must be at least 32 characters long");
-}
-
-export const sessionOptions: IronSessionOptions = {
-  cookieName: "rs_session",
-  password,
-  ttl: 60 * 60 * 24 * 30, // 30 days
+export const sessionOptions: SessionOptions = {
+  password: process.env.SESSION_PASSWORD as string,
+  cookieName: "revenue_snapshot_session",
   cookieOptions: {
-    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
     sameSite: "lax",
     path: "/",
   },
 };
-
-declare module "iron-session" {
-  interface IronSessionData extends AppSessionData {}
-}
