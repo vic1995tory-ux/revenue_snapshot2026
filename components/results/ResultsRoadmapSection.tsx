@@ -22,57 +22,57 @@ type FlatTimelineTask = {
 function getPhaseAccent(index: number) {
   if (index === 0) {
     return {
-      border: "border-[#f7d237]/24",
-      glow: "shadow-[0_0_0_1px_rgba(247,210,55,0.08)]",
+      border: "border-[#f7d237]/28",
+      glow: "shadow-[0_0_26px_rgba(247,210,55,0.10)]",
       title: "text-[#f7d237]",
       dot: "bg-[#f7d237]",
-      line: "bg-[#f7d237]/34",
-      lineSoft: "bg-[#f7d237]/18",
-      cardBorder: "border-[#f7d237]/24",
-      cardBg: "bg-[rgba(247,210,55,0.08)]",
-      cardGlow: "shadow-[0_0_34px_rgba(247,210,55,0.16)]",
+      line: "bg-[#f7d237]/38",
+      lineSoft: "bg-[#f7d237]/26",
+      cardBorder: "border-[#f7d237]/26",
+      cardBg: "bg-[#1c2532]",
+      cardGlow: "shadow-[0_0_24px_rgba(247,210,55,0.10)]",
       cardText: "text-[#fff6cf]",
       drawerAccent: "text-[#f7d237]",
-      tagFill: "bg-[#f7d237]/12",
-      tagText: "text-[#fff4bf]",
-      tagBorder: "border-[#f7d237]/24",
+      tagFill: "bg-[#f7d237]",
+      tagText: "text-[#111827]",
+      tagBorder: "border-[#f7d237]",
     };
   }
 
   if (index === 1) {
     return {
-      border: "border-[#8ea8ff]/20",
-      glow: "shadow-[0_0_0_1px_rgba(142,168,255,0.07)]",
+      border: "border-[#8ea8ff]/24",
+      glow: "shadow-[0_0_26px_rgba(142,168,255,0.08)]",
       title: "text-[#b9c8ff]",
       dot: "bg-[#8ea8ff]",
-      line: "bg-[#8ea8ff]/30",
-      lineSoft: "bg-[#8ea8ff]/14",
-      cardBorder: "border-[#8ea8ff]/24",
-      cardBg: "bg-[rgba(142,168,255,0.08)]",
-      cardGlow: "shadow-[0_0_34px_rgba(142,168,255,0.14)]",
+      line: "bg-[#8ea8ff]/34",
+      lineSoft: "bg-[#8ea8ff]/24",
+      cardBorder: "border-[#8ea8ff]/26",
+      cardBg: "bg-[#1e2c52]",
+      cardGlow: "shadow-[0_0_24px_rgba(142,168,255,0.10)]",
       cardText: "text-[#e2e8ff]",
       drawerAccent: "text-[#b9c8ff]",
-      tagFill: "bg-[#8ea8ff]/12",
-      tagText: "text-[#dfe6ff]",
-      tagBorder: "border-[#8ea8ff]/24",
+      tagFill: "bg-[#8ea8ff]",
+      tagText: "text-[#111827]",
+      tagBorder: "border-[#8ea8ff]",
     };
   }
 
   return {
-    border: "border-white/10",
-    glow: "shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
+    border: "border-white/12",
+    glow: "shadow-[0_0_18px_rgba(255,255,255,0.04)]",
     title: "text-white/72",
-    dot: "bg-white/38",
+    dot: "bg-[#8e96a5]",
     line: "bg-white/18",
-    lineSoft: "bg-white/10",
-    cardBorder: "border-white/12",
-    cardBg: "bg-white/[0.04]",
-    cardGlow: "shadow-[0_0_24px_rgba(255,255,255,0.07)]",
-    cardText: "text-white/84",
+    lineSoft: "bg-white/12",
+    cardBorder: "border-white/16",
+    cardBg: "bg-[#20293b]",
+    cardGlow: "shadow-[0_0_20px_rgba(255,255,255,0.05)]",
+    cardText: "text-white/88",
     drawerAccent: "text-white/76",
-    tagFill: "bg-white/[0.06]",
-    tagText: "text-white/84",
-    tagBorder: "border-white/12",
+    tagFill: "bg-[#8e96a5]",
+    tagText: "text-[#0f172a]",
+    tagBorder: "border-[#8e96a5]",
   };
 }
 
@@ -93,21 +93,6 @@ function confidenceText(level?: ConfidenceLevel) {
   return "Предварительный сигнал";
 }
 
-function dockScale(distance: number | null) {
-  if (distance === null) return 1;
-  if (distance === 0) return 1.08;
-  if (distance === 1) return 1.04;
-  return 1;
-}
-
-function firstWords(text: string, count = 3) {
-  return text
-    .trim()
-    .split(/\s+/)
-    .slice(0, count)
-    .join(" ");
-}
-
 function splitControlPointsByPhase<T>(items: T[], phaseCount: number) {
   if (!items.length || phaseCount <= 0) {
     return Array.from({ length: phaseCount }, () => [] as T[]);
@@ -126,6 +111,16 @@ function splitControlPointsByPhase<T>(items: T[], phaseCount: number) {
   }
 
   return buckets;
+}
+
+function lineClampStyle(lines: number) {
+  return {
+    display: "-webkit-box",
+    WebkitLineClamp: lines,
+    WebkitBoxOrient: "vertical" as const,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
 }
 
 type DrawerCardProps = {
@@ -153,7 +148,8 @@ function DrawerCard({
 }: DrawerCardProps) {
   const accent = getPhaseAccent(item.phaseIndex);
   const widthPercent = 33.3333;
-  const leftPercent = 100 - widthPercent * stackLength + stackPosition * widthPercent;
+  const leftPercent =
+    100 - widthPercent * stackLength + stackPosition * widthPercent;
   const isRightmost = stackPosition === stackLength - 1;
 
   return (
@@ -275,7 +271,6 @@ function DrawerCard({
 
 export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
   const [openStack, setOpenStack] = useState<number[]>([]);
-  const [hoveredStep, setHoveredStep] = useState<number | null>(null);
 
   const phases = useMemo(() => {
     return roadmap.phases.map((phase, index) => ({
@@ -442,15 +437,12 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           ))}
         </div>
 
-        <div
-          className="mt-10 overflow-x-auto"
-          onMouseLeave={() => setHoveredStep(null)}
-        >
+        <div className="mt-10 overflow-x-auto">
           <div
-            className="relative min-w-[1280px] px-4 pb-10 pt-10"
-            style={{ height: totalSteps > 10 ? 520 : 460 }}
+            className="relative min-w-[1340px] px-6 pb-10 pt-12"
+            style={{ height: totalSteps > 10 ? 560 : 500 }}
           >
-            <div className="absolute left-4 right-4 top-1/2 h-px -translate-y-1/2 bg-white/12" />
+            <div className="absolute left-6 right-6 top-1/2 h-[3px] -translate-y-1/2 bg-white/14" />
 
             {phaseSegments.map((segment) => {
               const startPercent =
@@ -462,13 +454,13 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
               return (
                 <div
                   key={`${segment.period}-${segment.startIndex}`}
-                  className={`absolute top-1/2 h-[3px] -translate-y-1/2 rounded-full ${segment.accent.line}`}
+                  className={`absolute top-1/2 h-[4px] -translate-y-1/2 rounded-full ${segment.accent.line}`}
                   style={{
-                    left: `calc(16px + (${startPercent}% * (100% - 32px) / 100))`,
+                    left: `calc(24px + (${startPercent}% * (100% - 48px) / 100))`,
                     width:
                       totalSteps === 1
-                        ? "calc(100% - 32px)"
-                        : `calc(${widthPercent}% * (100% - 32px) / 100)`,
+                        ? "calc(100% - 48px)"
+                        : `calc(${widthPercent}% * (100% - 48px) / 100)`,
                   }}
                 />
               );
@@ -477,63 +469,58 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             <div
               className="relative grid"
               style={{
-                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(110px, 1fr))`,
+                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(116px, 1fr))`,
               }}
             >
               {flatTasks.map((item, index) => {
                 const isTop = index % 2 === 0;
                 const accent = phases[item.phaseIndex].accent;
-                const distance =
-                  hoveredStep === null ? null : Math.abs(hoveredStep - index);
-                const scale = dockScale(distance);
 
                 return (
                   <div
                     key={`${item.phasePeriod}-${item.globalStep}`}
                     className="relative flex justify-center"
-                    onMouseEnter={() => setHoveredStep(index)}
                   >
                     <motion.div
-                      animate={{ scale }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 380,
-                        damping: 24,
-                        mass: 0.8,
-                      }}
-                      className={`absolute left-1/2 flex w-[160px] -translate-x-1/2 flex-col ${
-                        isTop ? "top-[24px]" : "top-[260px]"
+                      whileHover={{ scale: 1.035, y: isTop ? -4 : 4 }}
+                      transition={{ duration: 0.18 }}
+                      className={`absolute left-1/2 flex w-[194px] -translate-x-1/2 flex-col ${
+                        isTop ? "top-[8px]" : "top-[292px]"
                       }`}
                     >
                       <button
                         type="button"
                         onClick={() => openStep(index)}
-                        className={`rounded-[18px] border px-4 py-4 text-left transition hover:translate-y-[-2px] ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
+                        className={`rounded-[22px] border px-5 py-5 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
                       >
                         <div
-                          className={`text-[12px] font-medium tracking-[0.1em] ${accent.title}`}
+                          className={`text-[13px] font-medium tracking-[0.12em] ${accent.title}`}
                         >
                           {String(item.globalStep).padStart(2, "0")}
                         </div>
 
                         <div
-                          className={`mt-4 text-[17px] font-semibold leading-[1.2] ${accent.cardText}`}
+                          className={`mt-4 text-[12px] font-semibold leading-[1.2] ${accent.cardText}`}
+                          style={lineClampStyle(1)}
                         >
                           Step {item.globalStep}
                         </div>
 
-                        <div className="mt-2 text-sm leading-[1.45] text-white/78">
-                          {firstWords(item.task.action)}
+                        <div
+                          className="mt-3 text-[11px] leading-[1.35] text-white/80"
+                          style={lineClampStyle(3)}
+                        >
+                          {item.task.action}
                         </div>
                       </button>
 
                       <div className="relative flex justify-center">
-                        <div className={`w-px h-[74px] ${accent.lineSoft}`} />
+                        <div className={`w-[2px] h-[84px] ${accent.lineSoft}`} />
                       </div>
 
                       <div
-                        className={`absolute left-1/2 h-4 w-4 -translate-x-1/2 rounded-full border border-white/10 ${accent.dot} ${
-                          isTop ? "bottom-[-8px]" : "top-[-8px]"
+                        className={`absolute left-1/2 h-5 w-5 -translate-x-1/2 rounded-full ${accent.dot} ${
+                          isTop ? "bottom-[-10px]" : "top-[-10px]"
                         }`}
                       />
                     </motion.div>
