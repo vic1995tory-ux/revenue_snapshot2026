@@ -33,6 +33,9 @@ function getPhaseAccent(index: number) {
       cardGlow: "shadow-[0_0_34px_rgba(247,210,55,0.16)]",
       cardText: "text-[#fff6cf]",
       drawerAccent: "text-[#f7d237]",
+      tagFill: "bg-[#f7d237]/12",
+      tagText: "text-[#fff4bf]",
+      tagBorder: "border-[#f7d237]/24",
     };
   }
 
@@ -49,6 +52,9 @@ function getPhaseAccent(index: number) {
       cardGlow: "shadow-[0_0_34px_rgba(142,168,255,0.14)]",
       cardText: "text-[#e2e8ff]",
       drawerAccent: "text-[#b9c8ff]",
+      tagFill: "bg-[#8ea8ff]/12",
+      tagText: "text-[#dfe6ff]",
+      tagBorder: "border-[#8ea8ff]/24",
     };
   }
 
@@ -64,6 +70,9 @@ function getPhaseAccent(index: number) {
     cardGlow: "shadow-[0_0_24px_rgba(255,255,255,0.07)]",
     cardText: "text-white/84",
     drawerAccent: "text-white/76",
+    tagFill: "bg-white/[0.06]",
+    tagText: "text-white/84",
+    tagBorder: "border-white/12",
   };
 }
 
@@ -91,9 +100,32 @@ function dockScale(distance: number | null) {
   return 1;
 }
 
-function shortenAction(text: string, maxLength = 56) {
-  if (text.length <= maxLength) return text;
-  return `${text.slice(0, maxLength).trim()}…`;
+function firstWords(text: string, count = 3) {
+  return text
+    .trim()
+    .split(/\s+/)
+    .slice(0, count)
+    .join(" ");
+}
+
+function splitControlPointsByPhase<T>(items: T[], phaseCount: number) {
+  if (!items.length || phaseCount <= 0) {
+    return Array.from({ length: phaseCount }, () => [] as T[]);
+  }
+
+  const buckets: T[][] = Array.from({ length: phaseCount }, () => []);
+  const base = Math.floor(items.length / phaseCount);
+  const remainder = items.length % phaseCount;
+
+  let cursor = 0;
+
+  for (let i = 0; i < phaseCount; i += 1) {
+    const size = base + (i < remainder ? 1 : 0);
+    buckets[i] = items.slice(cursor, cursor + size);
+    cursor += size;
+  }
+
+  return buckets;
 }
 
 type DrawerCardProps = {
@@ -120,8 +152,8 @@ function DrawerCard({
   hasPrev,
 }: DrawerCardProps) {
   const accent = getPhaseAccent(item.phaseIndex);
-  const widthPercent = stackLength === 1 ? 100 : stackLength === 2 ? 50 : 33.3333;
-  const leftPercent = stackPosition * widthPercent;
+  const widthPercent = 33.3333;
+  const leftPercent = 100 - widthPercent * stackLength + stackPosition * widthPercent;
   const isRightmost = stackPosition === stackLength - 1;
 
   return (
@@ -140,7 +172,9 @@ function DrawerCard({
       <div className="flex h-full flex-col">
         <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5">
           <div className="min-w-0">
-            <div className={`text-[11px] uppercase tracking-[0.16em] ${accent.drawerAccent}`}>
+            <div
+              className={`text-[11px] uppercase tracking-[0.16em] ${accent.drawerAccent}`}
+            >
               {prettyPhase(item.phasePeriod, item.phaseIndex)}
             </div>
 
@@ -206,16 +240,6 @@ function DrawerCard({
                 </div>
 
                 <ConfidenceDots level={item.task.confidenceLevel ?? 1} />
-              </div>
-            </div>
-
-            <div className="rounded-[22px] border border-white/10 bg-[#0d1c36] p-4">
-              <div className="text-[11px] uppercase tracking-[0.14em] text-[#f7d237]">
-                Sequence note
-              </div>
-              <div className="mt-2 text-sm leading-[1.75] text-white/76">
-                Этот шаг закреплен в общей последовательности и должен запускаться
-                на своем месте, а не параллельно со всеми остальными инициативами.
               </div>
             </div>
           </div>
@@ -301,6 +325,10 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
     });
   }, [phases]);
 
+  const controlPointColumns = useMemo(() => {
+    return splitControlPointsByPhase(roadmap.controlPoints ?? [], phases.length);
+  }, [roadmap.controlPoints, phases.length]);
+
   const openStep = (index: number) => {
     setOpenStack([index]);
   };
@@ -381,6 +409,39 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           ))}
         </div>
 
+        <div className="mt-6 grid gap-6 xl:grid-cols-3">
+          {phases.map((phase, phaseIndex) => (
+            <div
+              key={`${phase.period}-control-points`}
+              className={`rounded-[24px] border bg-[#0d1c36] p-5 ${phase.accent.border} ${phase.accent.glow}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div
+                  className={`text-[11px] uppercase tracking-[0.16em] ${phase.accent.title}`}
+                >
+                  Control points
+                </div>
+
+                <div className="text-[11px] uppercase tracking-[0.14em] text-white/40">
+                  {phaseLabel(phase.period)}
+                </div>
+              </div>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                {controlPointColumns[phaseIndex]?.map((item, itemIndex) => (
+                  <div
+                    key={`${phase.period}-${item.metric}-${itemIndex}`}
+                    className={`rounded-full border px-3 py-2 text-[12px] leading-[1.35] ${phase.accent.tagFill} ${phase.accent.tagText} ${phase.accent.tagBorder}`}
+                    title={`${item.metric}\n\n${item.signal}\n\n${item.whyItMatters}`}
+                  >
+                    {item.metric}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
         <div
           className="mt-10 overflow-x-auto"
           onMouseLeave={() => setHoveredStep(null)}
@@ -449,25 +510,25 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                         onClick={() => openStep(index)}
                         className={`rounded-[18px] border px-4 py-4 text-left transition hover:translate-y-[-2px] ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
                       >
-                        <div className={`text-[12px] font-medium tracking-[0.1em] ${accent.title}`}>
+                        <div
+                          className={`text-[12px] font-medium tracking-[0.1em] ${accent.title}`}
+                        >
                           {String(item.globalStep).padStart(2, "0")}
                         </div>
 
-                        <div className={`mt-4 text-[17px] font-semibold leading-[1.2] ${accent.cardText}`}>
+                        <div
+                          className={`mt-4 text-[17px] font-semibold leading-[1.2] ${accent.cardText}`}
+                        >
                           Step {item.globalStep}
                         </div>
 
                         <div className="mt-2 text-sm leading-[1.45] text-white/78">
-                          {shortenAction(item.task.action)}
+                          {firstWords(item.task.action)}
                         </div>
                       </button>
 
                       <div className="relative flex justify-center">
-                        <div
-                          className={`w-px ${accent.lineSoft} ${
-                            isTop ? "h-[74px]" : "h-[74px]"
-                          }`}
-                        />
+                        <div className={`w-px h-[74px] ${accent.lineSoft}`} />
                       </div>
 
                       <div
