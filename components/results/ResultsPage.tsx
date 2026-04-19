@@ -24,10 +24,7 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
         <ResultsForecastsSection forecasts={data.forecasts} />
         <ResultsBusinessContextSection context={data.businessContext} />
 
-        <ResultsBlockTabsSection
-          blocks={data.blocks}
-          overallSummary={data.overallSummary}
-        />
+        <ResultsBlockTabsSection blocks={data.blocks} />
 
         <ResultsOverallSummarySection summary={data.overallSummary} />
       </div>
