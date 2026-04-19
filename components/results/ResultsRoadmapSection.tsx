@@ -2,8 +2,12 @@
 
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronRight, X } from "lucide-react";
-import type { ConfidenceLevel, RoadmapData, RoadmapTask } from "@/lib/results/types";
+import { X } from "lucide-react";
+import type {
+  ConfidenceLevel,
+  RoadmapData,
+  RoadmapTask,
+} from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
 
 type DrawerState =
@@ -13,8 +17,18 @@ type DrawerState =
       phaseTitle: string;
       phaseDescription: string;
       task: RoadmapTask;
+      globalStep: number;
     }
   | null;
+
+type FlatTimelineTask = {
+  globalStep: number;
+  phaseIndex: number;
+  phasePeriod: string;
+  phaseTitle: string;
+  phaseDescription: string;
+  task: RoadmapTask;
+};
 
 function getPhaseAccent(index: number) {
   if (index === 0) {
@@ -23,21 +37,27 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_0_1px_rgba(247,210,55,0.08)]",
       title: "text-[#f7d237]",
       dot: "bg-[#f7d237]",
-      line: "bg-[#f7d237]/30",
-      node:
-        "border-[#f7d237]/18 bg-[#f7d237]/10 hover:bg-[#f7d237]/14 text-[#fff8d6]",
+      line: "bg-[#f7d237]/40",
+      lineSoft: "bg-[#f7d237]/16",
+      nodeBorder: "border-[#f7d237]/28",
+      nodeBg: "bg-[#f7d237]/10",
+      nodeText: "text-[#fff8d6]",
+      nodeGlow: "shadow-[0_0_24px_rgba(247,210,55,0.22)]",
     };
   }
 
   if (index === 1) {
     return {
-      border: "border-[#8ea8ff]/18",
-      glow: "shadow-[0_0_0_1px_rgba(142,168,255,0.06)]",
+      border: "border-[#8ea8ff]/20",
+      glow: "shadow-[0_0_0_1px_rgba(142,168,255,0.07)]",
       title: "text-[#b9c8ff]",
       dot: "bg-[#8ea8ff]",
-      line: "bg-[#8ea8ff]/22",
-      node:
-        "border-[#8ea8ff]/16 bg-[#8ea8ff]/10 hover:bg-[#8ea8ff]/14 text-white/88",
+      line: "bg-[#8ea8ff]/34",
+      lineSoft: "bg-[#8ea8ff]/14",
+      nodeBorder: "border-[#8ea8ff]/24",
+      nodeBg: "bg-[#8ea8ff]/10",
+      nodeText: "text-[#dfe6ff]",
+      nodeGlow: "shadow-[0_0_24px_rgba(142,168,255,0.18)]",
     };
   }
 
@@ -45,18 +65,14 @@ function getPhaseAccent(index: number) {
     border: "border-white/10",
     glow: "shadow-[0_0_0_1px_rgba(255,255,255,0.04)]",
     title: "text-white/72",
-    dot: "bg-white/40",
-    line: "bg-white/14",
-    node:
-      "border-white/10 bg-white/[0.05] hover:bg-white/[0.08] text-white/84",
+    dot: "bg-white/38",
+    line: "bg-white/20",
+    lineSoft: "bg-white/10",
+    nodeBorder: "border-white/14",
+    nodeBg: "bg-white/[0.05]",
+    nodeText: "text-white/84",
+    nodeGlow: "shadow-[0_0_22px_rgba(255,255,255,0.08)]",
   };
-}
-
-function prettyPhase(period: string, index: number) {
-  if (period === "unlock") return `Phase ${index + 1}`;
-  if (period === "leverage") return `Phase ${index + 1}`;
-  if (period === "scale") return `Phase ${index + 1}`;
-  return `Phase ${index + 1}`;
 }
 
 function phaseLabel(period: string) {
@@ -64,6 +80,10 @@ function phaseLabel(period: string) {
   if (period === "leverage") return "Leverage";
   if (period === "scale") return "Scale";
   return period;
+}
+
+function prettyPhase(period: string, index: number) {
+  return `Phase ${index + 1} · ${phaseLabel(period)}`;
 }
 
 function confidenceText(level?: ConfidenceLevel) {
@@ -83,6 +103,48 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
     }));
   }, [roadmap.phases]);
 
+  const flatTasks = useMemo<FlatTimelineTask[]>(() => {
+    let step = 1;
+
+    return phases.flatMap((phase) =>
+      phase.tasks.map((task) => {
+        const item = {
+          globalStep: step,
+          phaseIndex: phase.index,
+          phasePeriod: phase.period,
+          phaseTitle: phase.title,
+          phaseDescription: phase.description,
+          task,
+        };
+        step += 1;
+        return item;
+      }),
+    );
+  }, [phases]);
+
+  const totalSteps = flatTasks.length;
+
+  const phaseSegments = useMemo(() => {
+    let cursor = 0;
+
+    return phases.map((phase) => {
+      const count = phase.tasks.length;
+      const startIndex = cursor;
+      const endIndex = cursor + count - 1;
+      cursor += count;
+
+      return {
+        phaseIndex: phase.index,
+        period: phase.period,
+        title: phase.title,
+        count,
+        startIndex,
+        endIndex,
+        accent: phase.accent,
+      };
+    });
+  }, [phases]);
+
   return (
     <>
       <section className="rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:p-8">
@@ -97,85 +159,157 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             </h2>
 
             <p className="mt-4 max-w-[920px] text-[16px] leading-[1.7] text-white/66">
-              Здесь важна не календарная сетка, а логика последовательности:
-              у каждого действия есть свое место внутри стадии, и это не набор задач,
-              которые нужно делать одновременно.
+              Это одна общая дорожка внедрения. Каждый шаг занимает свое место
+              в последовательности, а не существует как отдельная параллельная задача.
             </p>
           </div>
 
           <div className="text-sm text-white/46">
-            Click any step
+            {totalSteps} steps total
           </div>
         </div>
 
-        <div className="mt-8 overflow-x-auto">
-          <div className="min-w-[1180px]">
-            <div className="grid grid-cols-3 gap-6">
-              {phases.map((phase) => (
-                <div key={`${phase.period}-${phase.title}`} className="relative">
-                  <div className="mb-4 flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-3 w-3 rounded-full ${phase.accent.dot}`} />
-                      <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
-                        {prettyPhase(phase.period, phase.index)}
-                      </div>
-                    </div>
+        <div className="mt-8 grid gap-6 xl:grid-cols-3">
+          {phases.map((phase) => (
+            <div
+              key={`${phase.period}-${phase.title}`}
+              className={`rounded-[24px] border bg-[#0d1c36] p-5 ${phase.accent.border} ${phase.accent.glow}`}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className={`h-3 w-3 rounded-full ${phase.accent.dot}`} />
+                  <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
+                    {prettyPhase(phase.period, phase.index)}
+                  </div>
+                </div>
 
-                    <div className={`text-[11px] uppercase tracking-[0.16em] ${phase.accent.title}`}>
-                      {phaseLabel(phase.period)}
+                <div
+                  className={`text-[11px] uppercase tracking-[0.16em] ${phase.accent.title}`}
+                >
+                  {phaseLabel(phase.period)}
+                </div>
+              </div>
+
+              <div
+                className={`mt-4 text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-white`}
+              >
+                {phase.title}
+              </div>
+
+              <div className="mt-4 text-sm leading-[1.65] text-white/62">
+                {phase.description}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-10 overflow-x-auto">
+          <div
+            className="relative min-w-[1280px] px-8 pb-10 pt-14"
+            style={{
+              height: totalSteps > 10 ? 360 : 320,
+            }}
+          >
+            <div className="absolute left-8 right-8 top-[154px] h-px bg-white/10" />
+
+            {phaseSegments.map((segment) => {
+              const startPercent = (segment.startIndex / Math.max(totalSteps - 1, 1)) * 100;
+              const endPercent = (segment.endIndex / Math.max(totalSteps - 1, 1)) * 100;
+              const widthPercent = endPercent - startPercent;
+
+              return (
+                <div
+                  key={`${segment.period}-${segment.startIndex}`}
+                  className={`absolute top-[153px] h-[3px] rounded-full ${segment.accent.line}`}
+                  style={{
+                    left: `calc(32px + (${startPercent}% * (100% - 64px) / 100))`,
+                    width:
+                      totalSteps === 1
+                        ? "calc(100% - 64px)"
+                        : `calc(${widthPercent}% * (100% - 64px) / 100)`,
+                  }}
+                />
+              );
+            })}
+
+            <div className="mb-10 grid grid-cols-3 gap-6 px-2">
+              {phaseSegments.map((segment) => (
+                <div
+                  key={`${segment.period}-legend`}
+                  className="flex items-center justify-between gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`h-3 w-3 rounded-full ${segment.accent.dot}`} />
+                    <div className="text-[11px] uppercase tracking-[0.16em] text-white/42">
+                      Phase {segment.phaseIndex + 1}
                     </div>
                   </div>
 
                   <div
-                    className={`rounded-[24px] border bg-[#0d1c36] p-5 ${phase.accent.border} ${phase.accent.glow}`}
+                    className={`text-[11px] uppercase tracking-[0.16em] ${segment.accent.title}`}
                   >
-                    <div className={`text-[11px] uppercase tracking-[0.14em] ${phase.accent.title}`}>
-                      Stage objective
-                    </div>
-
-                    <div className="mt-3 text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-white">
-                      {phase.title}
-                    </div>
-
-                    <div className="mt-4 text-sm leading-[1.65] text-white/62">
-                      {phase.description}
-                    </div>
-                  </div>
-
-                  <div className="relative mt-6 px-4">
-                    <div className={`absolute left-[26px] right-[26px] top-[24px] h-[2px] ${phase.accent.line}`} />
-
-                    <div className="relative flex items-start justify-between gap-2">
-                      {phase.tasks.map((task, taskIndex) => (
-                        <div
-                          key={`${phase.period}-${task.label}-${taskIndex}`}
-                          className="flex min-w-0 flex-1 flex-col items-center"
-                        >
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setDrawer({
-                                phaseIndex: phase.index,
-                                phasePeriod: phase.period,
-                                phaseTitle: phase.title,
-                                phaseDescription: phase.description,
-                                task,
-                              })
-                            }
-                            className={`group flex h-12 min-w-[96px] items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:translate-y-[-1px] ${phase.accent.node}`}
-                          >
-                            <span>{task.label}</span>
-                          </button>
-
-                          <div className="mt-3 max-w-[160px] text-center text-[12px] leading-[1.45] text-white/46">
-                            {task.action}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                    {phaseLabel(segment.period)}
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div
+              className="relative grid gap-0"
+              style={{
+                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(72px, 1fr))`,
+              }}
+            >
+              {flatTasks.map((item, index) => {
+                const isTop = index % 2 === 0;
+                const accent = phases[item.phaseIndex].accent;
+
+                return (
+                  <div
+                    key={`${item.phasePeriod}-${item.globalStep}`}
+                    className="relative flex justify-center"
+                  >
+                    <div
+                      className={`absolute left-1/2 top-[154px] w-px -translate-x-1/2 ${
+                        isTop ? "h-[68px] -translate-y-[68px]" : "h-[68px]"
+                      } ${accent.lineSoft}`}
+                    />
+
+                    <motion.button
+                      type="button"
+                      onClick={() =>
+                        setDrawer({
+                          phaseIndex: item.phaseIndex,
+                          phasePeriod: item.phasePeriod,
+                          phaseTitle: item.phaseTitle,
+                          phaseDescription: item.phaseDescription,
+                          task: item.task,
+                          globalStep: item.globalStep,
+                        })
+                      }
+                      whileHover={{ y: isTop ? -2 : 2, scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`absolute left-1/2 flex h-16 w-16 -translate-x-1/2 items-center justify-center rounded-full border text-base font-semibold transition ${accent.nodeBorder} ${accent.nodeBg} ${accent.nodeText} ${accent.nodeGlow} ${
+                        isTop ? "top-[54px]" : "top-[190px]"
+                      }`}
+                    >
+                      {item.globalStep}
+                    </motion.button>
+
+                    <div
+                      className={`absolute left-1/2 -translate-x-1/2 text-center ${
+                        isTop ? "top-[22px]" : "top-[266px]"
+                      }`}
+                    >
+                      <div
+                        className={`text-[11px] uppercase tracking-[0.14em] ${accent.title}`}
+                      >
+                        Step {item.globalStep}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -203,11 +337,11 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                 <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-5">
                   <div>
                     <div className="text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
-                      {prettyPhase(drawer.phasePeriod, drawer.phaseIndex)} · {phaseLabel(drawer.phasePeriod)}
+                      {prettyPhase(drawer.phasePeriod, drawer.phaseIndex)}
                     </div>
 
                     <h3 className="mt-2 text-[28px] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
-                      {drawer.task.label}
+                      Step {drawer.globalStep}
                     </h3>
 
                     <div className="mt-3 text-sm text-white/46">
@@ -266,8 +400,8 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
                         Sequence note
                       </div>
                       <div className="mt-2 text-sm leading-[1.75] text-white/76">
-                        Этот шаг закреплен внутри своей стадии, чтобы визуально показать:
-                        сначала выполняются действия текущего этапа, затем переход к следующему.
+                        Этот шаг стоит в общей последовательности внедрения и
+                        должен запускаться в своем месте, а не параллельно со всем остальным.
                       </div>
                     </div>
                   </div>
