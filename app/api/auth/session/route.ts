@@ -5,8 +5,11 @@ import { sessionOptions } from "@/lib/session";
 
 export async function GET() {
   try {
-const cookieStore = await cookies();
-const session = await getIronSession(cookieStore as any, sessionOptions);
+    const cookieStore = await cookies();
+    const session = (await getIronSession(
+      cookieStore as any,
+      sessionOptions
+    )) as any;
 
     if (!session.isLoggedIn || !session.accessToken) {
       return NextResponse.json(
