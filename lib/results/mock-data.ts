@@ -31,7 +31,7 @@ export const resultsPayloadMock = {
       },
     },
   },
-
+//Hero_начало
   hero_block: {
     companyName: "",
     summary:
@@ -1196,7 +1196,7 @@ export const resultsPayloadMock = {
       confidence_level: "preliminary",
     },
   },
-
+//solution_начало
   solution: {
     solution_summary: {
       headline: "Рост блокирует founder-led capacity, а не спрос",
@@ -1862,7 +1862,8 @@ export const resultsMockData: ResultsPageData = {
     }),
   },
   //RoadMap_конец
-
+  
+//forecasts_начало
   forecasts: {
     revenue: {
       current: "1900 USD",
@@ -1887,7 +1888,7 @@ export const resultsMockData: ResultsPageData = {
       "Delivery становится более стандартизированным и меньше зависит от постоянного участия основателей.",
     ],
   },
-
+//UnifiedBusinessFrame_начало
   businessContext: {
     summary:
       "Unified business context assembled from current payload: company, offer, financials, sales, acquisition, products, retention, customer journey, team, management, analytics, seasonality, recent changes, goals, charts, tables, insights, risks and missing data.",
@@ -2235,7 +2236,7 @@ export const resultsMockData: ResultsPageData = {
       },
     ],
   },
-
+//blocks_начало
   blocks: [
     {
       id: "economics",
@@ -2369,7 +2370,7 @@ export const resultsMockData: ResultsPageData = {
         "Реальный первый шаг — выстроить обработку текущего спроса, иначе цели на 6–12 месяцев будут срываться.",
     },
   ],
-
+//OverAllSummary_начало
   overallSummary: {
     cards: [
       {
