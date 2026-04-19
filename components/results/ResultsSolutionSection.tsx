@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import type { RoadmapData, SolutionData } from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
 import {
@@ -22,8 +23,7 @@ function getPhaseTone(index: number): PriorityTone {
 function getPhaseToneClasses(tone: PriorityTone) {
   if (tone === "high") {
     return {
-      badge:
-        "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
+      badge: "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
       bar: "from-[#f7d237] to-[#d4b11d]",
       dot: "bg-[#f7d237]",
       label: "Immediate priority",
@@ -32,8 +32,7 @@ function getPhaseToneClasses(tone: PriorityTone) {
 
   if (tone === "medium") {
     return {
-      badge:
-        "border-white/15 bg-white/[0.08] text-white/80",
+      badge: "border-white/15 bg-white/[0.08] text-white/80",
       bar: "from-[#8fa8ff] to-[#5f79d9]",
       dot: "bg-[#8fa8ff]",
       label: "Second priority",
@@ -41,8 +40,7 @@ function getPhaseToneClasses(tone: PriorityTone) {
   }
 
   return {
-    badge:
-      "border-white/10 bg-white/[0.05] text-white/65",
+    badge: "border-white/10 bg-white/[0.05] text-white/65",
     bar: "from-[#5f6b85] to-[#3e4960]",
     dot: "bg-white/35",
     label: "Later phase",
@@ -55,6 +53,30 @@ function getPhaseProgress(index: number) {
   return "w-1/3";
 }
 
+function getPriorityToneClasses(tone: PriorityTone) {
+  if (tone === "high") {
+    return {
+      badge: "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
+      dot: "bg-[#f7d237]",
+      label: "High priority",
+    };
+  }
+
+  if (tone === "medium") {
+    return {
+      badge: "border-white/15 bg-white/[0.08] text-white/80",
+      dot: "bg-[#8fa8ff]",
+      label: "Medium priority",
+    };
+  }
+
+  return {
+    badge: "border-white/10 bg-white/[0.05] text-white/65",
+    dot: "bg-white/35",
+    label: "Lower priority",
+  };
+}
+
 function SolutionSignalCard({
   eyebrow,
   title,
@@ -64,7 +86,7 @@ function SolutionSignalCard({
   eyebrow: string;
   title: string;
   note?: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 }) {
   return (
     <div className="rounded-[24px] border border-white/10 bg-[#0b2148] p-5">
@@ -113,7 +135,10 @@ function SolutionFlow({
           const styles = getPhaseToneClasses(tone);
 
           return (
-            <div key={`${phase.period}-${phase.title}`} className="flex min-w-0 flex-1 items-center gap-3">
+            <div
+              key={`${phase.period}-${phase.title}`}
+              className="flex min-w-0 flex-1 items-center gap-3"
+            >
               <div className="min-w-0 flex-1 rounded-[20px] border border-white/10 bg-[#0a1b38] p-4">
                 <div className="flex items-center justify-between gap-4">
                   <div className="text-xs uppercase tracking-[0.14em] text-white/45">
@@ -202,11 +227,14 @@ function SolutionFlow({
   );
 }
 
-function SolutionRoadmapTasks({
-  roadmap,
+function SolutionExecutionMap({
+  solution,
 }: {
-  roadmap: RoadmapData;
+  solution: SolutionData;
 }) {
+  const priorities = solution.priorities ?? [];
+  const outcomes = solution.expectedOutcomes ?? [];
+
   return (
     <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
@@ -215,61 +243,86 @@ function SolutionRoadmapTasks({
             Execution map
           </div>
           <h3 className="mt-2 text-[24px] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
-            What happens inside each phase
+            What needs to be executed inside the solution
           </h3>
         </div>
 
         <div className="text-sm leading-[1.6] text-white/52 md:max-w-[430px] md:text-right">
-          Each phase has its own job: unlock, leverage, then scale.
+          This layer should show concrete execution priorities, not repeat the roadmap.
         </div>
       </div>
 
+      {solution.decisionRule ? (
+        <div className="mt-6 rounded-[22px] border border-white/10 bg-[#0a1b38] p-4">
+          <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+            Decision rule
+          </div>
+          <div className="mt-2 text-[17px] font-medium leading-[1.45] text-white">
+            {solution.decisionRule}
+          </div>
+        </div>
+      ) : null}
+
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
-        {roadmap.phases.map((phase, index) => {
-          const tone = getPhaseTone(index);
-          const styles = getPhaseToneClasses(tone);
+        {priorities.map((item, index) => {
+          const tone = item.priority ?? (index === 0 ? "high" : index === 1 ? "medium" : "low");
+          const styles = getPriorityToneClasses(tone);
 
           return (
             <div
-              key={`${phase.period}-${phase.title}-tasks`}
+              key={`${item.step}-${item.label}`}
               className="rounded-[24px] border border-white/10 bg-[#0a1b38] p-5"
             >
               <div className="flex items-center justify-between gap-4">
-                <div className="text-xs uppercase tracking-[0.14em] text-white/42">
-                  Phase {index + 1}
+                <div className="flex items-center gap-3">
+                  <div className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+                  <div className="text-xs uppercase tracking-[0.14em] text-white/42">
+                    Step {item.step}
+                  </div>
                 </div>
+
                 <span
                   className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
                 >
-                  {phase.period}
+                  {styles.label}
                 </span>
               </div>
 
               <div className="mt-3 text-[19px] font-medium leading-[1.3] text-white">
-                {phase.title}
+                {item.label}
               </div>
 
-              <div className="mt-2 text-sm leading-[1.55] text-white/56">
-                {phase.description}
-              </div>
-
-              <div className="mt-5 space-y-3">
-                {phase.tasks.map((task, taskIndex) => (
-                  <div
-                    key={`${phase.period}-${task}-${taskIndex}`}
-                    className="flex items-start gap-3 rounded-[18px] border border-white/8 bg-white/[0.03] px-3.5 py-3"
-                  >
-                    <div className="mt-1 shrink-0 text-[#f7d237]">
-                      <ArrowRight size={14} />
-                    </div>
-                    <div className="text-sm leading-[1.55] text-white/78">{task}</div>
-                  </div>
-                ))}
+              <div className="mt-3 text-sm leading-[1.6] text-white/60">
+                {item.description}
               </div>
             </div>
           );
         })}
       </div>
+
+      {outcomes.length ? (
+        <div className="mt-6">
+          <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+            Expected outcomes
+          </div>
+
+          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {outcomes.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-[20px] border border-white/10 bg-[#0a1b38] p-4"
+              >
+                <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                  {item.label}
+                </div>
+                <div className="mt-2 text-sm leading-[1.6] text-white/76">
+                  {item.description}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -282,6 +335,7 @@ export function ResultsSolutionSection({
   roadmap: RoadmapData;
 }) {
   const [leverCard, constraintCard, lossCard, modelShiftCard] = solution.cards;
+  const priorityLabels = (solution.priorities ?? []).slice(0, 3);
 
   return (
     <section className="rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:p-8">
@@ -354,7 +408,7 @@ export function ResultsSolutionSection({
               </div>
 
               <div className="mt-3 text-[22px] font-semibold leading-[1.08] tracking-[-0.03em] text-white">
-                Do not add demand before system repair
+                {solution.decisionRule || "Do not add demand before system repair"}
               </div>
 
               <div className="mt-4 text-sm leading-[1.65] text-white/60">
@@ -364,32 +418,38 @@ export function ResultsSolutionSection({
               </div>
 
               <div className="mt-6 space-y-3">
-                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-                    First
+                {priorityLabels[0] ? (
+                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                      First
+                    </div>
+                    <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                      {priorityLabels[0].label}
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
-                    Stabilize processing and ownership
-                  </div>
-                </div>
+                ) : null}
 
-                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-                    Then
+                {priorityLabels[1] ? (
+                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                      Then
+                    </div>
+                    <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                      {priorityLabels[1].label}
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
-                    Improve conversion from current flow
-                  </div>
-                </div>
+                ) : null}
 
-                <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
-                  <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-                    Then
+                {priorityLabels[2] ? (
+                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                      Then
+                    </div>
+                    <div className="mt-1 text-sm leading-[1.55] text-white/84">
+                      {priorityLabels[2].label}
+                    </div>
                   </div>
-                  <div className="mt-1 text-sm leading-[1.55] text-white/84">
-                    Build scalable cadence and delegation
-                  </div>
-                </div>
+                ) : null}
               </div>
             </div>
           </div>
@@ -397,7 +457,7 @@ export function ResultsSolutionSection({
 
         <SolutionFlow roadmap={roadmap} />
 
-        <SolutionRoadmapTasks roadmap={roadmap} />
+        <SolutionExecutionMap solution={solution} />
       </div>
     </section>
   );
