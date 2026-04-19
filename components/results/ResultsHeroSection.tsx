@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import type { HeroData } from "@/lib/results/types";
 import { motion } from "framer-motion";
 import { BarChart3, BriefcaseBusiness, MapPin, Percent, TrendingUp, Users, Wallet } from "lucide-react";
@@ -219,7 +219,19 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
           transition={{ duration: 0.45 }}
           className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"
         >
-          <div className="rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
+          </div>
+<div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
+  <div className="pointer-events-none absolute inset-y-0 left-0 w-full opacity-[0.14]">
+  <Image
+    src="/hero.svg"
+    alt=""
+    fill
+    priority
+    className="object-cover object-left"
+  />
+</div>
+
+<div className="relative z-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <InfoPill>{hero.companyName || "Revenue Snapshot"}</InfoPill>
               <InfoPill>{hero.salesGeography}</InfoPill>
