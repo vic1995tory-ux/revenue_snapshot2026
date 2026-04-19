@@ -120,6 +120,16 @@ function splitControlPointsByPhase<T>(items: T[], phaseCount: number) {
   return buckets;
 }
 
+function lineClampStyle(lines: number) {
+  return {
+    display: "-webkit-box",
+    WebkitLineClamp: lines,
+    WebkitBoxOrient: "vertical" as const,
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
+}
+
 function firstThreeWordsWithEllipsis(text: string) {
   const words = text.trim().split(/\s+/).filter(Boolean);
   const sliced = words.slice(0, 3).join(" ");
