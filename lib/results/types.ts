@@ -79,12 +79,20 @@ export type SolutionData = {
 
   kpis?: SolutionKPI[];
 };
+
+export type RoadmapTask = {
+  label: string;
+  action: string;
+  whyThisPhase?: string;
+  confidenceLevel?: ConfidenceLevel;
+};
+
 export type RoadmapData = {
   phases: Array<{
     period: string;
     title: string;
     description: string;
-    tasks: string[];
+    tasks: RoadmapTask[];
   }>;
 };
 
