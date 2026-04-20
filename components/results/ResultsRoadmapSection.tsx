@@ -496,95 +496,114 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           ))}
         </div>
 
-        <div className="mt-10 overflow-x-auto">
+<div className="mt-10 overflow-x-auto">
+  <div
+    className="relative min-w-[1320px] px-8 py-8"
+    style={{ height: 620 }}
+  >
+    {/* центральная линия */}
+    <div className="absolute left-8 right-8 top-[308px] h-[4px] bg-white/14" />
+
+    {/* цветные сегменты */}
+    {phaseSegments.map((segment) => {
+      const startPercent =
+        (segment.startIndex / Math.max(totalSteps - 1, 1)) * 100;
+
+      const endPercent =
+        (segment.endIndex / Math.max(totalSteps - 1, 1)) * 100;
+
+      const widthPercent = endPercent - startPercent;
+
+      return (
+        <div
+          key={`${segment.period}-${segment.startIndex}`}
+          className={`absolute top-[308px] h-[4px] ${segment.accent.line}`}
+          style={{
+            left: `calc(32px + (${startPercent}% * (100% - 64px) / 100))`,
+            width:
+              totalSteps === 1
+                ? "calc(100% - 64px)"
+                : `calc(${widthPercent}% * (100% - 64px) / 100)`,
+          }}
+        />
+      );
+    })}
+
+    <div
+      className="relative grid"
+      style={{
+        gridTemplateColumns: `repeat(${Math.max(
+          totalSteps,
+          1
+        )}, minmax(110px, 1fr))`,
+      }}
+    >
+      {flatTasks.map((item, index) => {
+        const accent = phases[item.phaseIndex].accent;
+
+        const row = index % 4;
+
+        const layout = [
+          { cardTop: 8, stemTop: 96, stemHeight: 170 },   // верх дальний
+          { cardTop: 126, stemTop: 222, stemHeight: 86 }, // верх ближний
+          { cardTop: 360, stemTop: 308, stemHeight: 86 }, // низ ближний
+          { cardTop: 478, stemTop: 308, stemHeight: 170 },// низ дальний
+        ][row];
+
+        return (
           <div
-            className="relative min-w-[1120px] px-10 pb-10 pt-8"
-            style={{ height: 620 }}
+            key={`${item.phasePeriod}-${item.globalStep}`}
+            className="relative flex justify-center"
           >
-            <div className="absolute left-10 right-10 top-[310px] h-[4px] bg-white/14" />
-
-            {phaseSegments.map((segment) => {
-              const startPercent =
-                (segment.startIndex / Math.max(totalSteps - 1, 1)) * 100;
-              const endPercent =
-                (segment.endIndex / Math.max(totalSteps - 1, 1)) * 100;
-              const widthPercent = endPercent - startPercent;
-
-              return (
-                <div
-                  key={`${segment.period}-${segment.startIndex}`}
-                  className={`absolute top-[310px] h-[4px] ${segment.accent.line}`}
-                  style={{
-                    left: `calc(40px + (${startPercent}% * (100% - 80px) / 100))`,
-                    width:
-                      totalSteps === 1
-                        ? "calc(100% - 80px)"
-                        : `calc(${widthPercent}% * (100% - 80px) / 100)`,
-                  }}
-                />
-              );
-            })}
-
+            {/* вертикаль */}
             <div
-              className="relative grid"
+              className={`absolute left-1/2 w-[4px] -translate-x-1/2 ${accent.lineSoft}`}
               style={{
-                gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(86px, 1fr))`,
+                top: layout.stemTop,
+                height: layout.stemHeight,
+              }}
+            />
+
+            {/* точка */}
+            <div
+              className={`absolute left-1/2 top-[298px] h-7 w-7 -translate-x-1/2 rounded-full ${accent.dot}`}
+            />
+
+            {/* карточка */}
+            <motion.div
+              whileHover={{ scale: 1.04 }}
+              transition={{ duration: 0.16 }}
+              className="absolute left-1/2 -translate-x-1/2"
+              style={{
+                top: layout.cardTop,
+                width: 320,
               }}
             >
-              {flatTasks.map((item, index) => {
-                const level = getTimelineLevel(index);
-                const placement = getTimelinePlacement(level);
-                const accent = phases[item.phaseIndex].accent;
+              <button
+                type="button"
+                onClick={() => openStep(index)}
+                className={`flex w-full items-center gap-3 rounded-full border px-3 py-3 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
+              >
+                {/* номер */}
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#081427] text-xl font-semibold text-white">
+                  {item.globalStep}
+                </div>
 
-                return (
-                  <div
-                    key={`${item.phasePeriod}-${item.globalStep}`}
-                    className="relative flex justify-center"
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.03 }}
-                      transition={{ duration: 0.16 }}
-                      className="absolute left-1/2 -translate-x-1/2"
-                      style={{ top: placement.cardTop, width: 154 }}
-                    >
-                      <button
-                        type="button"
-                        onClick={() => openStep(index)}
-                        className={`w-full rounded-full border px-4 py-3 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
-                      >
-                        <div
-                          className={`text-[12px] font-medium tracking-[0.12em] ${accent.title}`}
-                        >
-                          {String(item.globalStep).padStart(2, "0")}
-                        </div>
-
-                        <div
-                          className="mt-2 text-[12px] font-medium leading-[1.25] text-white/90"
-                          style={lineClampStyle(1)}
-                        >
-                          {firstThreeWordsWithEllipsis(item.task.action)}
-                        </div>
-                      </button>
-                    </motion.div>
-
-                    <div
-                      className={`absolute left-1/2 w-[3px] -translate-x-1/2 ${accent.lineSoft}`}
-                      style={{
-                        top: placement.stemTop,
-                        height: placement.stemHeight,
-                      }}
-                    />
-
-                    <div
-                      className={`absolute left-1/2 h-5 w-5 -translate-x-1/2 rounded-full ${accent.dot}`}
-                      style={{ top: placement.dotTop }}
-                    />
-                  </div>
-                );
-              })}
-            </div>
+                {/* текст */}
+                <div
+                  className="min-w-0 text-[19px] font-semibold leading-none text-white"
+                  style={lineClampStyle(1)}
+                >
+                  {firstThreeWordsWithEllipsis(item.task.action)}
+                </div>
+              </button>
+            </motion.div>
           </div>
-        </div>
+        );
+      })}
+    </div>
+  </div>
+</div>
       </section>
 
       <AnimatePresence>
