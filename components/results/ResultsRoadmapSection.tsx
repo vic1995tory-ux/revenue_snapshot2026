@@ -26,6 +26,13 @@ type ControlPointItem = {
   confidenceLevel?: ConfidenceLevel;
 };
 
+type BoardStepPlacement = {
+  top: number;
+  left: number;
+  width: number;
+  anchorLeft: number;
+};
+
 function getPhaseAccent(index: number) {
   if (index === 0) {
     return {
@@ -33,12 +40,12 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_26px_rgba(247,210,55,0.10)]",
       title: "text-[#f7d237]",
       dot: "bg-[#f7d237]",
-      line: "bg-[#f7d237]/40",
+      line: "bg-[#f7d237]/48",
       lineSoft: "bg-[#f7d237]/24",
-      cardBorder: "border-[#f7d237]/28",
-      cardBg: "bg-[#182231]",
-      cardGlow: "shadow-[0_0_22px_rgba(247,210,55,0.10)]",
-      cardText: "text-[#fff6cf]",
+      cardBorder: "border-[#f7d237]",
+      cardBg: "bg-[#f7d237]",
+      cardGlow: "shadow-[0_0_22px_rgba(247,210,55,0.16)]",
+      cardText: "text-[#071225]",
       drawerAccent: "text-[#f7d237]",
       tagFill: "bg-[#f7d237]",
       tagText: "text-[#111827]",
@@ -52,9 +59,9 @@ function getPhaseAccent(index: number) {
       glow: "shadow-[0_0_26px_rgba(142,168,255,0.08)]",
       title: "text-[#b9c8ff]",
       dot: "bg-[#8ea8ff]",
-      line: "bg-[#8ea8ff]/36",
+      line: "bg-[#8ea8ff]/42",
       lineSoft: "bg-[#8ea8ff]/22",
-      cardBorder: "border-[#8ea8ff]/28",
+      cardBorder: "border-[#8ea8ff]/46",
       cardBg: "bg-[#1d2b52]",
       cardGlow: "shadow-[0_0_22px_rgba(142,168,255,0.10)]",
       cardText: "text-[#e2e8ff]",
@@ -69,17 +76,17 @@ function getPhaseAccent(index: number) {
     border: "border-white/14",
     glow: "shadow-[0_0_18px_rgba(255,255,255,0.04)]",
     title: "text-white/72",
-    dot: "bg-[#8e96a5]",
-    line: "bg-white/18",
+    dot: "bg-[#9aa4b2]",
+    line: "bg-white/24",
     lineSoft: "bg-white/12",
-    cardBorder: "border-white/16",
+    cardBorder: "border-white/18",
     cardBg: "bg-[#20293b]",
     cardGlow: "shadow-[0_0_18px_rgba(255,255,255,0.05)]",
     cardText: "text-white/88",
     drawerAccent: "text-white/76",
-    tagFill: "bg-[#8e96a5]",
+    tagFill: "bg-[#9aa4b2]",
     tagText: "text-[#0f172a]",
-    tagBorder: "border-[#8e96a5]",
+    tagBorder: "border-[#9aa4b2]",
   };
 }
 
@@ -130,52 +137,30 @@ function lineClampStyle(lines: number) {
   };
 }
 
-function firstThreeWordsWithEllipsis(text: string) {
+function firstWordsWithEllipsis(text: string, limit = 4) {
   const words = text.trim().split(/\s+/).filter(Boolean);
-  const sliced = words.slice(0, 3).join(" ");
-  return words.length > 3 ? `${sliced}…` : `${sliced}…`;
+  const sliced = words.slice(0, limit).join(" ");
+
+  if (!sliced) return "";
+  return words.length > limit ? `${sliced}...` : sliced;
 }
 
-type TimelineLevel = "topFar" | "topNear" | "bottomNear" | "bottomFar";
+function getBoardStepPlacement(index: number): BoardStepPlacement {
+  const pattern: BoardStepPlacement[] = [
+    { top: 0, left: 0, width: 88, anchorLeft: 74 },
+    { top: 96, left: 12, width: 84, anchorLeft: 24 },
+    { top: 192, left: 0, width: 88, anchorLeft: 74 },
+    { top: 288, left: 12, width: 84, anchorLeft: 24 },
+    { top: 384, left: 4, width: 92, anchorLeft: 50 },
+  ];
 
-function getTimelineLevel(index: number): TimelineLevel {
-  const pattern: TimelineLevel[] = ["topFar", "topNear", "bottomNear", "bottomFar"];
-  return pattern[index % 4];
-}
-
-function getTimelinePlacement(level: TimelineLevel) {
-  if (level === "topFar") {
-    return {
-      cardTop: 8,
-      stemTop: 118,
-      stemHeight: 86,
-      dotTop: 198,
-    };
-  }
-
-  if (level === "topNear") {
-    return {
-      cardTop: 92,
-      stemTop: 170,
-      stemHeight: 34,
-      dotTop: 198,
-    };
-  }
-
-  if (level === "bottomNear") {
-    return {
-      cardTop: 248,
-      stemTop: 204,
-      stemHeight: 34,
-      dotTop: 198,
-    };
-  }
+  const row = index % pattern.length;
+  const cycle = Math.floor(index / pattern.length);
+  const placement = pattern[row];
 
   return {
-    cardTop: 332,
-    stemTop: 204,
-    stemHeight: 86,
-    dotTop: 284,
+    ...placement,
+    top: placement.top + cycle * 480,
   };
 }
 
@@ -252,6 +237,7 @@ function DrawerCard({
               type="button"
               onClick={onCloseAll}
               className="rounded-full border border-white/10 bg-white/[0.04] p-2 text-white/70 transition hover:bg-white/[0.08]"
+              aria-label="Close roadmap details"
             >
               <X size={18} />
             </button>
@@ -349,32 +335,26 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           phaseDescription: phase.description,
           task,
         };
+
         step += 1;
         return item;
       }),
     );
   }, [phases]);
 
-  const totalSteps = flatTasks.length;
+  const tasksByPhase = useMemo(() => {
+    const buckets = phases.map(() => [] as FlatTimelineTask[]);
 
-  const phaseSegments = useMemo(() => {
-    let cursor = 0;
-
-    return phases.map((phase) => {
-      const count = phase.tasks.length;
-      const startIndex = cursor;
-      const endIndex = cursor + count - 1;
-      cursor += count;
-
-      return {
-        phaseIndex: phase.index,
-        period: phase.period,
-        accent: phase.accent,
-        startIndex,
-        endIndex,
-      };
+    flatTasks.forEach((task) => {
+      if (buckets[task.phaseIndex]) {
+        buckets[task.phaseIndex].push(task);
+      }
     });
-  }, [phases]);
+
+    return buckets;
+  }, [flatTasks, phases]);
+
+  const totalSteps = flatTasks.length;
 
   const controlPointColumns = useMemo(() => {
     return splitControlPointsByPhase<ControlPointItem>(
@@ -390,6 +370,7 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
   const appendNext = () => {
     setOpenStack((prev) => {
       if (!prev.length) return prev;
+
       const last = prev[prev.length - 1];
       if (last >= flatTasks.length - 1) return prev;
 
@@ -401,6 +382,7 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
   const appendPrev = () => {
     setOpenStack((prev) => {
       if (!prev.length) return prev;
+
       const last = prev[prev.length - 1];
       if (last <= 0) return prev;
 
@@ -423,8 +405,9 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             </h2>
 
             <p className="mt-4 max-w-[920px] text-[16px] leading-[1.7] text-white/66">
-              Одна общая дорожка внедрения: шаги расположены в несколько уровней,
-              чтобы читалась последовательность без избыточного растягивания шкалы.
+              Одна общая дорожка внедрения: шаги сгруппированы по фазам и
+              собраны в компактную карту, чтобы все действия читались на одном
+              экране без горизонтальной прокрутки.
             </p>
           </div>
 
@@ -496,83 +479,117 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
           ))}
         </div>
 
-<div className="mt-10 overflow-x-auto">
-  <div
-    className="relative min-w-0 px-2 py-6"
-    style={{ height: 470 }}
-  >
-    <div
-      className="relative grid"
-      style={{
-        gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(72px, 1fr))`,
-      }}
-    >
-      {flatTasks.map((item, index) => {
-        const accent = phases[item.phaseIndex].accent;
-        const row = index % 4;
+        <div
+          className="mt-10 rounded-[28px] border border-white/10 bg-[#0d1c36] p-4 md:p-5"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.10) 1px, transparent 0)",
+            backgroundSize: "26px 26px",
+          }}
+        >
+          <div className="grid gap-4 xl:grid-cols-3">
+            {phases.map((phase, phaseIndex) => {
+              const phaseTasks = tasksByPhase[phaseIndex] ?? [];
+              const boardHeight = Math.max(456, phaseTasks.length * 96 - 24);
 
-        const layout = [
-          { cardTop: 0, stemTop: 74, stemHeight: 78, dotTop: 146 },   // верх дальний
-          { cardTop: 86, stemTop: 144, stemHeight: 38, dotTop: 176 }, // верх ближний
-          { cardTop: 232, stemTop: 182, stemHeight: 38, dotTop: 220 }, // низ ближний
-          { cardTop: 318, stemTop: 182, stemHeight: 78, dotTop: 254 }, // низ дальний
-        ][row];
-
-        return (
-          <div
-            key={`${item.phasePeriod}-${item.globalStep}`}
-            className="relative flex justify-center"
-          >
-            {/* ветка */}
-            <div
-              className={`absolute left-1/2 w-[3px] -translate-x-1/2 ${accent.lineSoft}`}
-              style={{
-                top: layout.stemTop,
-                height: layout.stemHeight,
-              }}
-            />
-
-            {/* точка на конце ветки */}
-            <div
-              className={`absolute left-1/2 h-4 w-4 -translate-x-1/2 rounded-full ${accent.dot}`}
-              style={{ top: layout.dotTop }}
-            />
-
-            {/* карточка */}
-            <motion.div
-              whileHover={{ scale: 1.025 }}
-              transition={{ duration: 0.14 }}
-              className="absolute left-1/2 -translate-x-1/2"
-              style={{
-                top: layout.cardTop,
-                width: 180,
-              }}
-            >
-              <button
-                type="button"
-                onClick={() => openStep(index)}
-                className={`flex w-full items-center gap-2 rounded-full border px-2.5 py-2 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
-              >
-                {/* номер */}
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#081427] text-[18px] font-semibold text-white">
-                  {item.globalStep}
-                </div>
-
-                {/* текст */}
+              return (
                 <div
-                  className="min-w-0 text-[13px] font-semibold leading-none text-white"
-                  style={lineClampStyle(1)}
+                  key={`${phase.period}-roadmap-board`}
+                  className={`relative overflow-hidden rounded-[24px] border bg-[#081427]/88 p-4 ${phase.accent.border}`}
+                  style={{ minHeight: boardHeight + 88 }}
                 >
-                  {firstThreeWordsWithEllipsis(item.task.action)}
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <div
+                        className={`text-[11px] uppercase tracking-[0.16em] ${phase.accent.title}`}
+                      >
+                        {prettyPhase(phase.period, phase.index)}
+                      </div>
+                      <div className="mt-1 text-sm text-white/52">
+                        {phase.tasks.length} steps
+                      </div>
+                    </div>
+
+                    <div className={`h-3 w-3 rounded-full ${phase.accent.dot}`} />
+                  </div>
+
+                  <div
+                    className="relative mt-5"
+                    style={{ height: boardHeight }}
+                  >
+                    {phaseTasks.map((item, itemIndex) => {
+                      const placement = getBoardStepPlacement(itemIndex);
+                      const nextPlacement = getBoardStepPlacement(itemIndex + 1);
+                      const hasConnector = itemIndex < phaseTasks.length - 1;
+                      const connectorTop = placement.top + 70;
+                      const connectorHeight = Math.max(
+                        nextPlacement.top - placement.top - 34,
+                        34,
+                      );
+
+                      return (
+                        <div
+                          key={`${item.phasePeriod}-${item.globalStep}`}
+                          className="absolute inset-x-0"
+                          style={{ top: 0 }}
+                        >
+                          {hasConnector ? (
+                            <>
+                              <div
+                                className={`absolute w-[3px] rounded-full ${phase.accent.line}`}
+                                style={{
+                                  left: `${placement.anchorLeft}%`,
+                                  top: connectorTop,
+                                  height: connectorHeight,
+                                }}
+                              />
+
+                              <div
+                                className={`absolute h-8 w-8 -translate-x-1/2 rounded-full ${phase.accent.dot}`}
+                                style={{
+                                  left: `${placement.anchorLeft}%`,
+                                  top: connectorTop + connectorHeight - 14,
+                                }}
+                              />
+                            </>
+                          ) : null}
+
+                          <motion.div
+                            whileHover={{ scale: 1.018 }}
+                            transition={{ duration: 0.14 }}
+                            className="absolute z-10"
+                            style={{
+                              top: placement.top,
+                              left: `${placement.left}%`,
+                              width: `${placement.width}%`,
+                            }}
+                          >
+                            <button
+                              type="button"
+                              onClick={() => openStep(item.globalStep - 1)}
+                              className={`flex h-20 w-full items-center gap-3 rounded-full border px-3 text-left transition hover:-translate-y-0.5 ${phase.accent.cardBorder} ${phase.accent.cardBg} ${phase.accent.cardGlow}`}
+                            >
+                              <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#061226] text-[22px] font-semibold text-white">
+                                {item.globalStep}
+                              </div>
+
+                              <div
+                                className={`min-w-0 text-[15px] font-semibold leading-[1.15] tracking-[-0.01em] ${phase.accent.cardText}`}
+                                style={lineClampStyle(2)}
+                              >
+                                {firstWordsWithEllipsis(item.task.action, 5)}
+                              </div>
+                            </button>
+                          </motion.div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </button>
-            </motion.div>
+              );
+            })}
           </div>
-        );
-      })}
-    </div>
-  </div>
-</div>
+        </div>
       </section>
 
       <AnimatePresence>
