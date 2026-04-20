@@ -498,56 +498,24 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
 
 <div className="mt-10 overflow-x-auto">
   <div
-    className="relative min-w-[1320px] px-8 py-8"
-    style={{ height: 620 }}
+    className="relative min-w-0 px-2 py-6"
+    style={{ height: 470 }}
   >
-    {/* центральная линия */}
-    <div className="absolute left-8 right-8 top-[308px] h-[4px] bg-white/14" />
-
-    {/* цветные сегменты */}
-    {phaseSegments.map((segment) => {
-      const startPercent =
-        (segment.startIndex / Math.max(totalSteps - 1, 1)) * 100;
-
-      const endPercent =
-        (segment.endIndex / Math.max(totalSteps - 1, 1)) * 100;
-
-      const widthPercent = endPercent - startPercent;
-
-      return (
-        <div
-          key={`${segment.period}-${segment.startIndex}`}
-          className={`absolute top-[308px] h-[4px] ${segment.accent.line}`}
-          style={{
-            left: `calc(32px + (${startPercent}% * (100% - 64px) / 100))`,
-            width:
-              totalSteps === 1
-                ? "calc(100% - 64px)"
-                : `calc(${widthPercent}% * (100% - 64px) / 100)`,
-          }}
-        />
-      );
-    })}
-
     <div
       className="relative grid"
       style={{
-        gridTemplateColumns: `repeat(${Math.max(
-          totalSteps,
-          1
-        )}, minmax(110px, 1fr))`,
+        gridTemplateColumns: `repeat(${Math.max(totalSteps, 1)}, minmax(72px, 1fr))`,
       }}
     >
       {flatTasks.map((item, index) => {
         const accent = phases[item.phaseIndex].accent;
-
         const row = index % 4;
 
         const layout = [
-          { cardTop: 8, stemTop: 96, stemHeight: 170 },   // верх дальний
-          { cardTop: 126, stemTop: 222, stemHeight: 86 }, // верх ближний
-          { cardTop: 360, stemTop: 308, stemHeight: 86 }, // низ ближний
-          { cardTop: 478, stemTop: 308, stemHeight: 170 },// низ дальний
+          { cardTop: 0, stemTop: 74, stemHeight: 78, dotTop: 146 },   // верх дальний
+          { cardTop: 86, stemTop: 144, stemHeight: 38, dotTop: 176 }, // верх ближний
+          { cardTop: 232, stemTop: 182, stemHeight: 38, dotTop: 220 }, // низ ближний
+          { cardTop: 318, stemTop: 182, stemHeight: 78, dotTop: 254 }, // низ дальний
         ][row];
 
         return (
@@ -555,43 +523,44 @@ export function ResultsRoadmapSection({ roadmap }: { roadmap: RoadmapData }) {
             key={`${item.phasePeriod}-${item.globalStep}`}
             className="relative flex justify-center"
           >
-            {/* вертикаль */}
+            {/* ветка */}
             <div
-              className={`absolute left-1/2 w-[4px] -translate-x-1/2 ${accent.lineSoft}`}
+              className={`absolute left-1/2 w-[3px] -translate-x-1/2 ${accent.lineSoft}`}
               style={{
                 top: layout.stemTop,
                 height: layout.stemHeight,
               }}
             />
 
-            {/* точка */}
+            {/* точка на конце ветки */}
             <div
-              className={`absolute left-1/2 top-[298px] h-7 w-7 -translate-x-1/2 rounded-full ${accent.dot}`}
+              className={`absolute left-1/2 h-4 w-4 -translate-x-1/2 rounded-full ${accent.dot}`}
+              style={{ top: layout.dotTop }}
             />
 
             {/* карточка */}
             <motion.div
-              whileHover={{ scale: 1.04 }}
-              transition={{ duration: 0.16 }}
+              whileHover={{ scale: 1.025 }}
+              transition={{ duration: 0.14 }}
               className="absolute left-1/2 -translate-x-1/2"
               style={{
                 top: layout.cardTop,
-                width: 320,
+                width: 180,
               }}
             >
               <button
                 type="button"
                 onClick={() => openStep(index)}
-                className={`flex w-full items-center gap-3 rounded-full border px-3 py-3 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
+                className={`flex w-full items-center gap-2 rounded-full border px-2.5 py-2 text-left ${accent.cardBorder} ${accent.cardBg} ${accent.cardGlow}`}
               >
                 {/* номер */}
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[#081427] text-xl font-semibold text-white">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#081427] text-[18px] font-semibold text-white">
                   {item.globalStep}
                 </div>
 
                 {/* текст */}
                 <div
-                  className="min-w-0 text-[19px] font-semibold leading-none text-white"
+                  className="min-w-0 text-[13px] font-semibold leading-none text-white"
                   style={lineClampStyle(1)}
                 >
                   {firstThreeWordsWithEllipsis(item.task.action)}
