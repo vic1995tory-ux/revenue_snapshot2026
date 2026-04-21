@@ -30,20 +30,17 @@ export default function CabinetLoginPage() {
         throw new Error("Введите пароль.");
       }
 
-      const res = await fetch(
-        "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "login",
-            login: cleanLogin,
-            password: cleanPassword,
-          }),
-        }
-      );
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          login: cleanLogin,
+          password: cleanPassword,
+        }),
+        cache: "no-store",
+      });
 
       const contentType = res.headers.get("content-type") || "";
       const data = contentType.includes("application/json")
@@ -66,7 +63,7 @@ export default function CabinetLoginPage() {
       const redirectUrl =
         typeof data?.redirectUrl === "string" && data.redirectUrl.trim()
           ? data.redirectUrl.trim()
-          : "/account";
+          : "/";
 
       router.push(redirectUrl);
     } catch (err) {

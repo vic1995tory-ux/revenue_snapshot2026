@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
-import { sessionOptions } from "@/lib/session";
+import { sessionOptions, type AppSessionData } from "@/lib/session";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
-    const session = (await getIronSession(
-      cookieStore as any,
+    const session = await getIronSession<AppSessionData>(
+      cookieStore,
       sessionOptions
-    )) as any;
+    );
 
     if (!session.isLoggedIn || !session.accessToken) {
       return NextResponse.json(

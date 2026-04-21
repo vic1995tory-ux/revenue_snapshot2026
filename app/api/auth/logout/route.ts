@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
-import { sessionOptions } from "@/lib/session";
+import { sessionOptions, type AppSessionData } from "@/lib/session";
 
 export async function POST() {
   try {
-const cookieStore = await cookies();
-const session = (await getIronSession(
-  cookieStore as any,
-  sessionOptions
-)) as any;
+    const cookieStore = await cookies();
+    const session = await getIronSession<AppSessionData>(
+      cookieStore,
+      sessionOptions
+    );
 
-session.destroy();
+    session.destroy();
 
     return NextResponse.json({
       ok: true,

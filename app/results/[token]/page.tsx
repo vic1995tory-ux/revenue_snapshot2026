@@ -1,6 +1,42 @@
 import { ResultsPage } from "@/components/results/ResultsPage";
 import { resultsMockData } from "@/lib/results/mock-data";
 
-export default function Page() {
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ token: string }>;
+}) {
+  const { token } = await params;
+
+  if (token !== "mock-token") {
+    return (
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "#07152d",
+          color: "#fff",
+          display: "grid",
+          placeItems: "center",
+          padding: "24px",
+          textAlign: "center",
+        }}
+      >
+        <section style={{ maxWidth: "560px" }}>
+          <p style={{ color: "#f7d237", marginBottom: "12px" }}>
+            Revenue Snapshot
+          </p>
+          <h1 style={{ fontSize: "32px", marginBottom: "14px" }}>
+            Результат пока не найден
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.72)", lineHeight: 1.6 }}>
+            Мы больше не показываем тестовый отчёт для любого токена. Когда
+            backend начнёт отдавать реальные результаты, эта страница сможет
+            рендерить персональный snapshot.
+          </p>
+        </section>
+      </main>
+    );
+  }
+
   return <ResultsPage data={resultsMockData} />;
 }

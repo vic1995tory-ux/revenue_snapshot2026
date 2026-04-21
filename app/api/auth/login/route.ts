@@ -1,15 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
-import { sessionOptions } from "@/lib/session";
+import { sessionOptions, type AppSessionData } from "@/lib/session";
 
 const MAKE_LOGIN_WEBHOOK_URL =
   process.env.MAKE_LOGIN_WEBHOOK_URL ||
   "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb";
 
-function tryParseJson(raw: string) {
+type MakeLoginResponse = {
+  ok?: boolean;
+  error?: string;
+  access_token?: unknown;
+  accessToken?: unknown;
+  full_name?: unknown;
+  fullName?: unknown;
+  company_name?: unknown;
+  companyName?: unknown;
+  data?: MakeLoginResponse;
+};
+
+function tryParseJson(raw: string): MakeLoginResponse | null {
   try {
-    return JSON.parse(raw);
+    return JSON.parse(raw) as MakeLoginResponse;
   } catch {
     return null;
   }
@@ -55,11 +67,11 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = makeRes.headers.get("content-type") || "";
-    let makeData: any = {};
+    let makeData: MakeLoginResponse | null = {};
     let rawText = "";
 
     if (contentType.includes("application/json")) {
-      makeData = await makeRes.json();
+      makeData = (await makeRes.json()) as MakeLoginResponse;
     } else {
       rawText = await makeRes.text();
       makeData = tryParseJson(rawText);
@@ -124,23 +136,24 @@ export async function POST(req: NextRequest) {
       ""
     );
 
-const cookieStore = await cookies();
-const session = (await getIronSession(
-  cookieStore as any,
-  sessionOptions
-)) as any;
+    const cookieStore = await cookies();
+    const session = await getIronSession<AppSessionData>(
+      cookieStore,
+      sessionOptions
+    );
 
-session.isLoggedIn = true;
-session.accessToken = accessToken;
-session.login = login;
-session.fullName = fullName;
-session.companyName = companyName;
+    session.isLoggedIn = true;
+    session.accessToken = accessToken;
+    session.login = login;
+    session.fullName = fullName;
+    session.companyName = companyName;
 
     await session.save();
 
     return NextResponse.json({
       ok: true,
-      redirectUrl: "/account",
+      accessToken,
+      redirectUrl: `/account/${encodeURIComponent(accessToken)}`,
     });
   } catch (error) {
     console.error("auth/login error:", error);

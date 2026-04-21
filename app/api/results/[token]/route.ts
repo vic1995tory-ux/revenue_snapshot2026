@@ -43,9 +43,7 @@ async function findResult({
     return record;
   }
 
-  // Пока у тебя один mock-result, можно возвращать его даже без точного match.
-  // Если хочешь строгую проверку — замени на `return null;`
-  return record;
+  return null;
 }
 
 export async function GET(req: NextRequest) {

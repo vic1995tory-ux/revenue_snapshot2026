@@ -8,8 +8,15 @@ export type AppSessionData = {
   companyName?: string;
 };
 
+const sessionPassword =
+  process.env.SESSION_PASSWORD ?? process.env.SESSION_SECRET;
+
+if (!sessionPassword) {
+  throw new Error("SESSION_PASSWORD is required for encrypted sessions.");
+}
+
 export const sessionOptions: SessionOptions = {
-  password: process.env.SESSION_PASSWORD as string,
+  password: sessionPassword,
   cookieName: "revenue_snapshot_session",
   cookieOptions: {
     secure: process.env.NODE_ENV === "production",
