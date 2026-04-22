@@ -8,20 +8,22 @@ export type AppSessionData = {
   companyName?: string;
 };
 
-const sessionPassword =
-  process.env.SESSION_PASSWORD ?? process.env.SESSION_SECRET;
+export function getSessionOptions(): SessionOptions {
+  const sessionPassword =
+    process.env.SESSION_PASSWORD ?? process.env.SESSION_SECRET;
 
-if (!sessionPassword) {
-  throw new Error("SESSION_PASSWORD is required for encrypted sessions.");
+  if (!sessionPassword) {
+    throw new Error("SESSION_PASSWORD is required for encrypted sessions.");
+  }
+
+  return {
+    password: sessionPassword,
+    cookieName: "revenue_snapshot_session",
+    cookieOptions: {
+      secure: process.env.NODE_ENV === "production",
+      httpOnly: true,
+      sameSite: "lax",
+      path: "/",
+    },
+  };
 }
-
-export const sessionOptions: SessionOptions = {
-  password: sessionPassword,
-  cookieName: "revenue_snapshot_session",
-  cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
-    httpOnly: true,
-    sameSite: "lax",
-    path: "/",
-  },
-};

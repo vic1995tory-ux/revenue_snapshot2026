@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
-import { sessionOptions, type AppSessionData } from "@/lib/session";
+import { getSessionOptions, type AppSessionData } from "@/lib/session";
 
 const MAKE_LOGIN_WEBHOOK_URL =
   process.env.MAKE_LOGIN_WEBHOOK_URL ||
@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
     const cookieStore = await cookies();
     const session = await getIronSession<AppSessionData>(
       cookieStore,
-      sessionOptions
+      getSessionOptions()
     );
 
     session.isLoggedIn = true;
