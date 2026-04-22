@@ -35,7 +35,7 @@ const BLOCK_TITLES: Record<string, string> = {
   economics: "Экономика",
 };
 
-const colors = ["#f7d237", "#8fa8ff", "#57d6a3", "#f59eaf", "#a78bfa"];
+const colors = ["#f7d237", "#57d6a3", "#d4a373", "#e9c46a", "#b8c0aa"];
 
 function extractNumber(value: string) {
   const match = value.replace(",", ".").match(/-?\d+(\.\d+)?/);
@@ -68,7 +68,7 @@ function SignalTooltip({
   const item = payload[0]?.payload;
 
   return (
-    <div className="rounded-[16px] bg-[#081427]/95 p-3 shadow-2xl">
+    <div className="rounded-[16px] bg-[#111820]/95 p-3 shadow-2xl">
       <div className="text-xs uppercase tracking-[0.16em] text-[#f7d237]">
         Показатель
       </div>
@@ -86,7 +86,7 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
   return (
     <article className="rounded-[32px] bg-white/[0.045] p-5 md:p-7">
       <div className="grid gap-6 xl:grid-cols-[1.05fr_0.95fr]">
-        <div className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[#081932] p-6 md:p-7">
+        <div className="relative min-h-[360px] overflow-hidden rounded-[28px] bg-[#171f2a] p-6 md:p-7">
           <div className="pointer-events-none absolute inset-0 opacity-[0.13]">
             <Image
               src="/hero.svg"
@@ -125,7 +125,7 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
         </div>
 
         <div className="grid content-start gap-5">
-          <div className="rounded-[24px] bg-[#0a1b38] p-5">
+          <div className="rounded-[24px] bg-transparent p-0">
             <div className="flex items-end justify-between gap-4">
               <div>
                 <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
@@ -142,7 +142,7 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
               ) : null}
             </div>
 
-            <div className="mt-5 overflow-hidden rounded-[18px] bg-white/[0.035]">
+            <div className="mt-5 overflow-hidden">
               <table className="w-full text-left text-sm">
                 <tbody>
                   {block.keySignals.map((signal) => (
@@ -161,7 +161,7 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
           </div>
 
           {chartData.length >= 2 ? (
-            <div className="rounded-[24px] bg-[#0a1b38] p-5">
+            <div>
               <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
                 Сравнение
               </div>
@@ -202,7 +202,7 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
             </div>
           ) : null}
 
-          <div className="rounded-[24px] bg-[#0a1b38] p-5">
+          <div>
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
               Связь
             </div>

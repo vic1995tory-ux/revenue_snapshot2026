@@ -78,7 +78,7 @@ function MinimalTooltip({
         : "—";
 
   return (
-    <div className="min-w-[180px] rounded-[18px] bg-[#081427]/95 p-3 shadow-2xl backdrop-blur-xl">
+    <div className="min-w-[180px] rounded-[18px] bg-[#111820]/95 p-3 shadow-2xl backdrop-blur-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
         Data point
       </div>
@@ -120,7 +120,7 @@ function ProductTooltip({
   const value = typeof point?.value === "number" ? point.value : 0;
 
   return (
-    <div className="max-w-[320px] rounded-[18px] bg-[#081427]/95 p-4 shadow-2xl backdrop-blur-xl">
+    <div className="max-w-[320px] rounded-[18px] bg-[#111820]/95 p-4 shadow-2xl backdrop-blur-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
         Data point
       </div>
@@ -208,7 +208,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
   ].filter(Boolean);
 
   return (
-    <section className="relative overflow-hidden rounded-[36px] bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
+    <section className="relative overflow-hidden rounded-[36px] bg-[#121923] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(199,169,59,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(199,169,59,0.08),transparent_24%)]" />
 
       <motion.div

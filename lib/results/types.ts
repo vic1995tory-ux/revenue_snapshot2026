@@ -152,11 +152,81 @@ export type OverallSummaryData = {
   }>;
 };
 
+export type KpiChangeData = {
+  metric: string;
+  current: string;
+  expected: string;
+  delta: string;
+  driver: string;
+  confidenceLevel?: ConfidenceLevel;
+};
+
+export type TransitionData = {
+  currentState: Record<string, string>;
+  targetState: Record<string, string>;
+  gapSummary: string;
+  confidenceLevel?: ConfidenceLevel;
+  kpiChanges: KpiChangeData[];
+};
+
+export type ScenarioData = {
+  name: string;
+  description: string;
+  expectedOutcome: string;
+  note?: string;
+};
+
+export type ScenariosData = {
+  items: ScenarioData[];
+  assumptions: string[];
+  sensitivityPoints: string[];
+};
+
+export type ChartSeriesItem = {
+  label: string;
+  value: number;
+  unit?: string;
+};
+
+export type EvidenceChartData = {
+  id: string;
+  title: string;
+  chartType: string;
+  confidenceLevel?: ConfidenceLevel;
+  series: ChartSeriesItem[];
+};
+
+export type EvidenceTableData = {
+  id: string;
+  title: string;
+  columns: string[];
+  rows: Array<Record<string, string | number | boolean>>;
+};
+
+export type EvidenceData = {
+  charts: EvidenceChartData[];
+  tables: EvidenceTableData[];
+};
+
+export type ReliabilityData = {
+  risks: Array<{
+    risk: string;
+    whyItMatters: string;
+    confidenceLevel?: ConfidenceLevel;
+  }>;
+  missingData: string[];
+  confidenceNote: string;
+};
+
 export type ResultsPageData = {
   hero: HeroData;
   solution: SolutionData;
   roadmap: RoadmapData;
   forecasts: ForecastsData;
+  transition: TransitionData;
+  scenarios: ScenariosData;
+  evidence: EvidenceData;
+  reliability: ReliabilityData;
   businessContext: BusinessContextData;
   blocks: AnalyticalBlockData[];
   overallSummary: OverallSummaryData;

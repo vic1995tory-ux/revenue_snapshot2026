@@ -40,7 +40,7 @@ export function ResultsBusinessContextSection({
           {context.sections.map((section) => (
             <div
               key={section.title}
-              className="rounded-[24px] bg-[#0d1c36] p-5"
+              className="rounded-[24px] bg-transparent p-0"
             >
               <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
                 {section.title}

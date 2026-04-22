@@ -1804,6 +1804,50 @@ export const resultsPayloadMock = {
   //RoadMap_конец
 } as const;
 
+function mapChart(
+  id: keyof typeof resultsPayloadMock.charts,
+): ResultsPageData["evidence"]["charts"][number] {
+  const chart = resultsPayloadMock.charts[id];
+
+  return {
+    id,
+    title: chart.title,
+    chartType: chart.chart_type,
+    confidenceLevel: mapConfidenceLevel(chart.confidence_level),
+    series: chart.series.map((item) => ({
+      label: item.label,
+      value: item.value,
+      unit: "unit" in item ? item.unit : undefined,
+    })),
+  };
+}
+
+function mapTable(
+  id: keyof typeof resultsPayloadMock.tables,
+): ResultsPageData["evidence"]["tables"][number] {
+  const table = resultsPayloadMock.tables[id];
+  const rows = table.rows as readonly unknown[];
+
+  return {
+    id,
+    title: table.title,
+    columns: [...table.columns],
+    rows: rows.map((row) => {
+      if (Array.isArray(row)) {
+        return table.columns.reduce<Record<string, string | number | boolean>>(
+          (acc, column, index) => {
+            acc[column] = row[index] ?? "";
+            return acc;
+          },
+          {},
+        );
+      }
+
+      return row as Record<string, string | number | boolean>;
+    }),
+  };
+}
+
 export const resultsMockData: ResultsPageData = {
   hero: {
     companyName: resultsPayloadMock.hero_block.companyName,
@@ -2015,6 +2059,70 @@ roadmap: {
       "Handoff между продажей и исполнением формализуется.",
       "Delivery становится более стандартизированным и меньше зависит от постоянного участия основателей.",
     ],
+  },
+  transition: {
+    currentState: resultsPayloadMock.current_vs_target.current_state,
+    targetState: resultsPayloadMock.current_vs_target.target_state,
+    gapSummary: resultsPayloadMock.current_vs_target.gap_summary,
+    confidenceLevel: mapConfidenceLevel(
+      resultsPayloadMock.current_vs_target.confidence_level,
+    ),
+    kpiChanges: resultsPayloadMock.expected_kpi_changes.map((item) => ({
+      metric: item.metric,
+      current: item.current,
+      expected: item.expected,
+      delta: item.delta,
+      driver: item.driver,
+      confidenceLevel: mapConfidenceLevel(item.confidence_level),
+    })),
+  },
+  scenarios: {
+    items: [
+      {
+        name: "Baseline",
+        description: resultsPayloadMock.scenarios.baseline.description,
+        expectedOutcome: resultsPayloadMock.scenarios.baseline.expected_outcome,
+        note: resultsPayloadMock.scenarios.baseline.risk,
+      },
+      {
+        name: "Improved",
+        description: resultsPayloadMock.scenarios.improved_execution.description,
+        expectedOutcome:
+          resultsPayloadMock.scenarios.improved_execution.expected_outcome,
+        note: resultsPayloadMock.scenarios.improved_execution.upside,
+      },
+      {
+        name: "Failure",
+        description: resultsPayloadMock.scenarios.failure_case.description,
+        expectedOutcome: resultsPayloadMock.scenarios.failure_case.expected_outcome,
+        note: resultsPayloadMock.scenarios.failure_case.downside,
+      },
+    ],
+    assumptions: [...resultsPayloadMock.scenario_assumptions],
+    sensitivityPoints: [...resultsPayloadMock.sensitivity_points],
+  },
+  evidence: {
+    charts: [
+      mapChart("product_margins"),
+      mapChart("lead_capacity"),
+      mapChart("channel_mix"),
+      mapChart("seasonality_peaks"),
+      mapChart("stress_map"),
+    ],
+    tables: [
+      mapTable("core_metrics"),
+      mapTable("team_roles"),
+      mapTable("customer_journey"),
+    ],
+  },
+  reliability: {
+    risks: resultsPayloadMock.risks.map((item) => ({
+      risk: item.risk,
+      whyItMatters: item.impact,
+      confidenceLevel: mapConfidenceLevel(item.confidence_level),
+    })),
+    missingData: resultsPayloadMock.missing_data.map((item) => item.reason),
+    confidenceNote: resultsPayloadMock.confidence_note,
   },
 //UnifiedBusinessFrame_начало
   businessContext: {

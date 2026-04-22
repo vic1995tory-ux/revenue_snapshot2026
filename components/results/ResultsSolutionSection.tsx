@@ -41,8 +41,8 @@ function getPhaseToneClasses(tone: PriorityTone) {
   if (tone === "medium") {
     return {
       badge: "bg-white/[0.08] text-white/80",
-      bar: "from-[#8fa8ff] to-[#5f79d9]",
-      dot: "bg-[#8fa8ff]",
+      bar: "from-[#d4a373] to-[#a8784e]",
+      dot: "bg-[#d4a373]",
       label: "Second priority",
     };
   }
@@ -73,7 +73,7 @@ function SolutionSignalCard({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] bg-[#0b2148] p-5">
+    <div className="rounded-[24px] bg-[#171f2a] p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="text-sm text-white/52">{eyebrow}</div>
         <div className="mt-0.5 text-white/40">{icon}</div>
@@ -183,7 +183,7 @@ function SolutionStageSystem({
       </div>
 
       {solution.decisionRule ? (
-        <div className="mt-6 rounded-[22px] bg-[#0a1b38] p-4">
+        <div className="mt-6 rounded-[22px] bg-[#171f2a] p-4">
           <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
             Decision rule
           </div>
@@ -210,7 +210,7 @@ function SolutionStageSystem({
           return (
             <div
               key={`${phase.period}-${phase.title}`}
-              className="rounded-[26px] bg-[#0a1b38] p-5 md:p-6"
+              className="rounded-[26px] bg-[#171f2a] p-5 md:p-6"
             >
               <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                 <div>
@@ -271,7 +271,7 @@ function SolutionStageSystem({
                     {stageKpis.map((item) => (
                       <div
                         key={`${phase.period}-${item.label}`}
-                        className="rounded-[18px] bg-[#091934] p-4"
+                        className="rounded-[18px] bg-[#111820] p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
@@ -388,7 +388,7 @@ export function ResultsSolutionSection({
   return (
     <section className="rounded-[32px] bg-white/5 p-6 backdrop-blur-xl md:p-8">
       <div className="flex flex-col gap-6">
-        <div className="relative overflow-hidden rounded-[30px] bg-[#081932] p-6 md:p-7">
+        <div className="relative overflow-hidden rounded-[30px] bg-[#171f2a] p-6 md:p-7">
           <div className="pointer-events-none absolute inset-0 opacity-[0.13]">
             <Image
               src="/hero.svg"
@@ -461,7 +461,7 @@ export function ResultsSolutionSection({
           </div>
 
           <div className="xl:col-span-4">
-            <div className="h-full rounded-[28px] bg-[#0a1b38] p-5">
+            <div className="h-full rounded-[28px] bg-[#171f2a] p-5">
               <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
                 Decision rule
               </div>

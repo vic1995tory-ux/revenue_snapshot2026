@@ -21,7 +21,7 @@ export function ResultsOverallSummarySection({
         {summary.cards.map((card) => (
           <div
             key={card.title}
-            className="rounded-[24px] bg-[#0d1c36] p-5"
+            className="rounded-[24px] bg-[#171f2a] p-5"
           >
             <div className="text-sm text-white/52">{card.title}</div>
             <div className="mt-3 text-[18px] font-medium leading-[1.4]">
