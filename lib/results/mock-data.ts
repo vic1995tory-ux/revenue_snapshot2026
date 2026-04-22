@@ -548,7 +548,7 @@ export const resultsPayloadMock = {
         ["Необработанный спрос", "9", "13 - 4"],
         ["Средняя маржинальность продуктов", "53.33%", "по 3 основным продуктам"],
         ["Разброс маржинальности", "50 п.п.", "от 30% до 80%"],
-        ["CJM time", "20320 минут", "включая retention 14 дней"],
+        ["CJM time", "14.1 дня", "включая retention 14 дней"],
       ],
     },
 
@@ -567,16 +567,16 @@ export const resultsPayloadMock = {
       rows: [
         [
           "Acquisition",
-          "до 1 часа",
+          "0.04 дня",
           "сложные формулировки и перегруженное знакомство",
         ],
         [
           "Activation",
-          "до 1 часа",
+          "0.04 дня",
           "недопонятая ценность и реакция 'дорого'",
         ],
-        ["Value Realization", "до 30 минут", "завышенные ожидания"],
-        ["Conversion", "до 10 минут", ""],
+        ["Value Realization", "0.02 дня", "завышенные ожидания"],
+        ["Conversion", "0.01 дня", ""],
         ["Retention", "14 дней", ""],
       ],
     },
@@ -2334,7 +2334,7 @@ roadmap: {
         rows: [
           {
             label: "Total CJM time",
-            value: `${resultsPayloadMock.normalized_data.customer_journey.cjm_time_minutes} minutes`,
+            value: `${(resultsPayloadMock.normalized_data.customer_journey.cjm_time_minutes / 1440).toFixed(1)} days`,
           },
           {
             label: "Acquisition problems",

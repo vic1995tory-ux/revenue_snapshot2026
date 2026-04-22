@@ -300,13 +300,10 @@ function SolutionStageSystem({
                     key={`${phase.period}-${task.action}`}
                     className="min-h-[210px] border-b border-white/10 p-5 md:p-6 xl:border-r xl:[&:nth-child(3n)]:border-r-0"
                   >
-                    <div className="text-[54px] font-semibold leading-none tracking-[-0.05em] text-white/22">
+                    <div className="text-[54px] font-semibold leading-none tracking-[-0.05em] text-[#f7d237]/70">
                       {String(taskIndex + 1).padStart(2, "0")}
                     </div>
-                    <div className="mt-7 text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
-                      {task.label}
-                    </div>
-                    <div className="mt-3 text-[17px] font-medium leading-[1.5] text-white/84">
+                    <div className="mt-8 text-[17px] font-medium leading-[1.5] text-white/84">
                       {task.action}
                     </div>
                   </div>

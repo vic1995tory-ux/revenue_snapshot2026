@@ -3,7 +3,6 @@
 import type { EvidenceChartData, EvidenceData } from "@/lib/results/types";
 import {
   Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   ComposedChart,
@@ -40,18 +39,23 @@ function EvidenceTooltip({
   label,
 }: {
   active?: boolean;
-  payload?: Array<{ value?: number; name?: string }>;
+  payload?: Array<{ value?: number; name?: string; dataKey?: string }>;
   label?: string;
 }) {
   if (!active || !payload?.length) return null;
-  const point = payload[0];
 
   return (
     <div className="rounded-[14px] bg-[#111820]/95 p-3 shadow-2xl">
       <div className="text-xs uppercase tracking-[0.14em] text-[#f7d237]">
-        {point.name ?? label}
+        {label}
       </div>
-      <div className="mt-2 text-sm font-medium text-white">{point.value}</div>
+      <div className="mt-2 grid gap-1">
+        {payload.map((point) => (
+          <div key={point.dataKey ?? point.name} className="text-sm font-medium text-white">
+            {point.name}: {point.value}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -86,7 +90,7 @@ function EvidenceChart({ chart }: { chart: EvidenceChartData }) {
               <Tooltip content={<EvidenceTooltip />} />
             </PieChart>
           ) : (
-            <BarChart data={chart.series} barCategoryGap={16}>
+            <ComposedChart data={chart.series} barCategoryGap={16}>
               <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
               <XAxis
                 dataKey="label"
@@ -108,7 +112,7 @@ function EvidenceChart({ chart }: { chart: EvidenceChartData }) {
                   />
                 ))}
               </Bar>
-            </BarChart>
+            </ComposedChart>
           )}
         </ResponsiveContainer>
       </div>
@@ -137,7 +141,9 @@ function SeasonalityChart({
     return {
       ...item,
       revenue: Math.round(revenue),
+      trendPosition: item.value,
       revenueLabel: `${formatMoney(revenue)} / ${item.value > 0 ? "+" : ""}${item.value}%`,
+      percentLabel: `${item.value > 0 ? "+" : ""}${item.value}%`,
     };
   });
 
@@ -147,7 +153,7 @@ function SeasonalityChart({
         {chart.title}
       </div>
       <div className="mt-2 max-w-[980px] text-sm leading-[1.6] text-white/54">
-        Столбцы показывают сезонный рост/спад в процентах, линия поверх - расчетный revenue по каждой точке относительно введенного cash-in.
+        Опорная точка: revenue {formatMoney(currentRevenue)}. Столбцы показывают расчетный revenue, линия поверх отмечает сезонный рост/спад в процентах.
       </div>
       <div className="mt-4 h-[360px]">
         <ResponsiveContainer width="100%" height="100%">
@@ -160,14 +166,15 @@ function SeasonalityChart({
               tickLine={false}
             />
             <YAxis
-              yAxisId="percent"
+              yAxisId="revenue"
               tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }}
               axisLine={false}
               tickLine={false}
+              tickFormatter={(value) => formatMoney(Number(value))}
             />
-            <YAxis yAxisId="revenue" orientation="right" hide domain={["dataMin", "dataMax"]} />
+            <YAxis yAxisId="percent" orientation="right" hide domain={["dataMin - 10", "dataMax + 10"]} />
             <Tooltip content={<EvidenceTooltip />} />
-            <Bar yAxisId="percent" dataKey="value" name="Сезонность" radius={[10, 10, 2, 2]}>
+            <Bar yAxisId="revenue" dataKey="revenue" name="Revenue" radius={[10, 10, 2, 2]}>
               {data.map((item, index) => (
                 <Cell
                   key={`${chart.id}-${item.label}`}
@@ -175,27 +182,23 @@ function SeasonalityChart({
                 />
               ))}
               <LabelList
-                dataKey="value"
+                dataKey="revenueLabel"
                 position="top"
-                formatter={(value) => {
-                  const number = Number(value);
-                  return `${number > 0 ? "+" : ""}${number}%`;
-                }}
                 fill="rgba(255,255,255,0.78)"
                 fontSize={12}
               />
             </Bar>
             <Line
-              yAxisId="revenue"
+              yAxisId="percent"
               type="monotone"
-              dataKey="revenue"
-              name="Revenue"
+              dataKey="trendPosition"
+              name="Сезонность"
               stroke="#ffffff"
               strokeWidth={3}
               dot={{ r: 5, fill: "#111820", stroke: "#ffffff", strokeWidth: 2 }}
             >
               <LabelList
-                dataKey="revenueLabel"
+                dataKey="percentLabel"
                 position="top"
                 fill="#ffffff"
                 fontSize={12}

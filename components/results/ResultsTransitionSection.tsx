@@ -30,6 +30,13 @@ function moneyFromText(value?: string) {
   return numberFromText(value);
 }
 
+function formatMoney(value: number) {
+  if (Math.abs(value) >= 1000) {
+    return `$${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}k`;
+  }
+  return `$${Math.round(value)}`;
+}
+
 function TransitionTooltip({
   active,
   payload,
@@ -70,6 +77,12 @@ export function ResultsTransitionSection({
   );
   const capacity = transition.kpiChanges.find((item) =>
     item.metric.toLowerCase().includes("capacity"),
+  );
+  const profit = transition.kpiChanges.find((item) =>
+    item.metric.toLowerCase().includes("profit"),
+  );
+  const unmetDemand = transition.kpiChanges.find((item) =>
+    item.metric.toLowerCase().includes("unmet"),
   );
 
   const currentConversion = numberFromText(conversion?.current);
@@ -123,9 +136,9 @@ export function ResultsTransitionSection({
         {transition.gapSummary}
       </p>
 
-      <div className="mt-8 grid gap-8 xl:grid-cols-[0.85fr_1.15fr]">
-        <div className="grid gap-5">
-          <div>
+      <div className="mt-8 grid gap-10">
+        <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
+          <div className="grid gap-5">
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
               Conversion
             </div>
@@ -168,22 +181,29 @@ export function ResultsTransitionSection({
               </ResponsiveContainer>
             </div>
           </div>
-
-          <div className="grid gap-4">
-            {transition.kpiChanges.map((item) => (
+          {conversion ? (
+            <div>
               <GrowthKpiCard
-                key={item.metric}
-                title={item.metric}
-                current={item.current}
-                target={item.expected}
-                delta={item.delta}
-                driver={item.driver}
+                title={conversion.metric}
+                current={conversion.current}
+                target={conversion.expected}
+                delta={conversion.delta}
+                driver={conversion.driver}
               />
-            ))}
-          </div>
+            </div>
+          ) : null}
         </div>
 
-        <div className="grid gap-7">
+        <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
+          {revenue ? (
+            <GrowthKpiCard
+              title={revenue.metric}
+              current={revenue.current}
+              target={revenue.expected}
+              delta={revenue.delta}
+              driver={revenue.driver}
+            />
+          ) : null}
           <div>
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
               Revenue
@@ -207,48 +227,79 @@ export function ResultsTransitionSection({
               </ResponsiveContainer>
             </div>
           </div>
+        </div>
 
-          <div className="grid gap-7 lg:grid-cols-2">
-            <div>
-              <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-                Capacity
-              </div>
-              <div className="mt-4 h-[230px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={capacityTimeline}>
-                    <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} />
-                    <Tooltip content={<TransitionTooltip />} />
-                    <Line
-                      type="monotone"
-                      dataKey="load"
-                      name="Capacity load"
-                      stroke="#57d6a3"
-                      strokeWidth={3}
-                      dot={{ r: 4, fill: "#57d6a3" }}
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+        <div className="grid items-center gap-7 xl:grid-cols-[1.08fr_0.92fr]">
+          <div>
+            <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+              Capacity
             </div>
+            <div className="mt-4 h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={capacityTimeline}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} />
+                  <Tooltip content={<TransitionTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="load"
+                    name="Capacity load"
+                    stroke="#57d6a3"
+                    strokeWidth={3}
+                    dot={{ r: 4, fill: "#57d6a3" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          <div className="grid gap-4">
+            {capacity ? (
+              <GrowthKpiCard
+                title={capacity.metric}
+                current={capacity.current}
+                target={capacity.expected}
+                delta={capacity.delta}
+                driver={capacity.driver}
+              />
+            ) : null}
+            {unmetDemand ? (
+              <GrowthKpiCard
+                title={unmetDemand.metric}
+                current={unmetDemand.current}
+                target={unmetDemand.expected}
+                delta={unmetDemand.delta}
+                driver={unmetDemand.driver}
+              />
+            ) : null}
+          </div>
+        </div>
 
-            <div>
-              <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-                Доход / прибыль
-              </div>
-              <div className="mt-4 h-[230px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={financeTimeline}>
-                    <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
-                    <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
-                    <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} />
-                    <Tooltip content={<TransitionTooltip />} />
-                    <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#f7d237" strokeWidth={3} />
-                    <Line type="monotone" dataKey="profit" name="Profit" stroke="#57d6a3" strokeWidth={3} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
+        <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
+          {profit ? (
+            <GrowthKpiCard
+              title={profit.metric}
+              current={profit.current}
+              target={profit.expected}
+              delta={profit.delta}
+              driver={profit.driver}
+            />
+          ) : null}
+          <div>
+            <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+              Доход / прибыль
+            </div>
+            <div className="mt-4 h-[260px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={financeTimeline}>
+                  <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
+                  <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} tickFormatter={(value) => formatMoney(Number(value))} />
+                  <Tooltip content={<TransitionTooltip />} />
+                  <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#f7d237" strokeWidth={3} />
+                  <Line type="monotone" dataKey="profit" name="Profit" stroke="#57d6a3" strokeWidth={3} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>

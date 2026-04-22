@@ -14,10 +14,51 @@
 /* ----------------------------- */
 
 body {
-  background: #050f28;
+  position: relative;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(112,134,255,0.12), transparent 26%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.05), transparent 22%),
+    radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
+    linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
   color: #fefefe;
   font-family: var(--font-geist-sans), system-ui, sans-serif;
   overflow-x: hidden;
+}
+
+.rs-page-shell {
+  position: relative;
+  overflow: clip;
+  background: transparent;
+}
+
+.rs-page-background {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(112,134,255,0.12), transparent 26%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.05), transparent 22%),
+    radial-gradient(circle at 62% 70%, rgba(135,97,255,0.08), transparent 22%),
+    linear-gradient(130deg, #0a1526 0%, #0c1830 34%, #0a1526 68%, #121f39 100%);
+}
+
+.rs-aurora {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(110px);
+  opacity: .26;
+}
+
+.rs-aurora-1 { width: 380px; height: 380px; left: -80px; top: 40px; background: rgba(80, 127, 255, 0.22); }
+.rs-aurora-2 { width: 300px; height: 300px; right: 5%; top: 80px; background: rgba(247, 210, 55, 0.12); }
+.rs-aurora-3 { width: 360px; height: 360px; left: 26%; top: 36%; background: rgba(88, 114, 255, 0.16); }
+.rs-aurora-4 { width: 300px; height: 300px; right: 10%; bottom: 12%; background: rgba(255,255,255,0.08); }
+
+.rs-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, transparent 42%, rgba(10,21,38,0.24) 72%, rgba(10,21,38,0.74) 100%);
 }
 
 /* ----------------------------- */

@@ -14,9 +14,16 @@ import type { ResultsPageData } from "@/lib/results/types";
 
 export function ResultsPage({ data }: { data: ResultsPageData }) {
   return (
-    <main className="min-h-screen bg-[#111820] text-white">
+    <main className="rs-page-shell min-h-screen text-white">
+      <div className="rs-page-background" aria-hidden="true">
+        <div className="rs-aurora rs-aurora-1" />
+        <div className="rs-aurora rs-aurora-2" />
+        <div className="rs-aurora rs-aurora-3" />
+        <div className="rs-aurora rs-aurora-4" />
+        <div className="rs-vignette" />
+      </div>
       <ResultsTopMenu />
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
+      <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
         <ResultsHeroSection hero={data.hero} />
 
         <ResultsBlockTabsSection blocks={data.blocks} />
