@@ -26,8 +26,6 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
       <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
         <ResultsHeroSection hero={data.hero} />
 
-        <ResultsBlockTabsSection blocks={data.blocks} />
-
         <ResultsTransitionSection transition={data.transition} />
 
         <ResultsSolutionSection
@@ -37,6 +35,8 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
         />
 
         <ResultsScenariosSection scenarios={data.scenarios} />
+
+        <ResultsBlockTabsSection blocks={data.blocks} />
 
         <ResultsEvidenceSection evidence={data.evidence} baseRevenue={data.hero.cashIn} />
 

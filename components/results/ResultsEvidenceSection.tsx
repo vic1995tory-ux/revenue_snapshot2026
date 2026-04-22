@@ -219,60 +219,69 @@ export function ResultsEvidenceSection({
   baseRevenue?: string;
 }) {
   return (
-    <section className="rounded-[32px] bg-[#121923] p-6 md:p-8">
-      <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
-        Данные
-      </div>
-      <h2 className="mt-2 text-[36px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[48px]">
-        Метрики
-      </h2>
+    <details className="group rounded-[32px] bg-[#121923] p-6 md:p-8" open>
+      <summary className="rs-toggle-summary flex cursor-pointer list-none items-start justify-between gap-5">
+        <div>
+          <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
+            Данные
+          </div>
+          <h2 className="mt-2 text-[36px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[48px]">
+            Метрики
+          </h2>
+        </div>
+        <div className="mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[24px] text-[#f7d237] transition group-open:rotate-45">
+          +
+        </div>
+      </summary>
 
-      <div className="mt-8 grid gap-9 lg:grid-cols-2">
-        {evidence.charts.map((chart) =>
-          chart.id === "seasonality_peaks" ? (
-            <SeasonalityChart key={chart.id} chart={chart} baseRevenue={baseRevenue} />
-          ) : (
-            <EvidenceChart key={chart.id} chart={chart} />
-          ),
-        )}
-      </div>
+      <div className="mt-8">
+        <div className="grid gap-9 lg:grid-cols-2">
+          {evidence.charts.map((chart) =>
+            chart.id === "seasonality_peaks" ? (
+              <SeasonalityChart key={chart.id} chart={chart} baseRevenue={baseRevenue} />
+            ) : (
+              <EvidenceChart key={chart.id} chart={chart} />
+            ),
+          )}
+        </div>
 
-      <div className="mt-10 grid gap-10">
-        {evidence.tables.map((table) => (
-          <div key={table.id}>
-            <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-              {table.title}
-            </div>
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full min-w-[720px] text-left text-sm">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    {table.columns.map((column) => (
-                      <th
-                        key={column}
-                        className="py-3 pr-5 font-normal text-white/44"
-                      >
-                        {column}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {table.rows.map((row, index) => (
-                    <tr key={`${table.id}-${index}`} className="border-b border-white/7 last:border-b-0">
+        <div className="mt-10 grid gap-10">
+          {evidence.tables.map((table) => (
+            <div key={table.id}>
+              <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
+                {table.title}
+              </div>
+              <div className="mt-4 overflow-x-auto">
+                <table className="w-full min-w-[720px] text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-white/10">
                       {table.columns.map((column) => (
-                        <td key={column} className="py-3 pr-5 text-white/78">
-                          {String(row[column] ?? "")}
-                        </td>
+                        <th
+                          key={column}
+                          className="py-3 pr-5 font-normal text-white/44"
+                        >
+                          {column}
+                        </th>
                       ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {table.rows.map((row, index) => (
+                      <tr key={`${table.id}-${index}`} className="border-b border-white/7 last:border-b-0">
+                        {table.columns.map((column) => (
+                          <td key={column} className="py-3 pr-5 text-white/78">
+                            {String(row[column] ?? "")}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
-    </section>
+    </details>
   );
 }

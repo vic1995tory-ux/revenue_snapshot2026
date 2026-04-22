@@ -211,8 +211,18 @@ function SolutionStageSystem({
           return (
             <div
               key={`${phase.period}-${phase.title}`}
-              className="rounded-[26px] bg-[#151e29] p-5 md:p-6"
+              className="relative overflow-hidden rounded-[26px] bg-[#151e29] p-5 md:p-6"
             >
+              <div className="pointer-events-none absolute inset-0 opacity-[0.09]">
+                <Image
+                  src="/hero.svg"
+                  alt=""
+                  fill
+                  className="object-cover object-left"
+                />
+              </div>
+              <div className="pointer-events-none absolute inset-0 bg-[#151e29]/72" />
+              <div className="relative z-10">
               <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
@@ -342,6 +352,7 @@ function SolutionStageSystem({
                   <MoveRight size={20} />
                 </div>
               ) : null}
+              </div>
             </div>
           );
         })}

@@ -9,13 +9,20 @@ export function ResultsReliabilitySection({
   reliability: ReliabilityData;
 }) {
   return (
-    <section className="rounded-[32px] bg-[#121923] p-6 md:p-8">
-      <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
-        Надёжность
-      </div>
-      <h2 className="mt-2 text-[36px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[48px]">
-        Риски
-      </h2>
+    <details className="group rounded-[32px] bg-[#121923] p-6 md:p-8" open>
+      <summary className="rs-toggle-summary flex cursor-pointer list-none items-start justify-between gap-5">
+        <div>
+          <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
+            Надёжность
+          </div>
+          <h2 className="mt-2 text-[36px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[48px]">
+            Риски
+          </h2>
+        </div>
+        <div className="mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/10 text-[24px] text-[#f7d237] transition group-open:rotate-45">
+          +
+        </div>
+      </summary>
 
       <div className="mt-7 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
         <div>
@@ -57,6 +64,6 @@ export function ResultsReliabilitySection({
       <p className="mt-7 max-w-[980px] text-[15px] leading-[1.7] text-white/54">
         {reliability.confidenceNote}
       </p>
-    </section>
+    </details>
   );
 }

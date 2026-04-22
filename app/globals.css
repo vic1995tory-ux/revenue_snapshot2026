@@ -61,6 +61,10 @@ body {
   background: radial-gradient(circle at center, transparent 42%, rgba(10,21,38,0.24) 72%, rgba(10,21,38,0.74) 100%);
 }
 
+.rs-toggle-summary::-webkit-details-marker {
+  display: none;
+}
+
 /* ----------------------------- */
 /* SNAPSHOT GRID */
 /* ----------------------------- */
