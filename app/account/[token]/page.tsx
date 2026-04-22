@@ -56,6 +56,8 @@ const POSITION_WEBHOOK_URL =
   "https://hook.us2.make.com/z5en2sa55efywylbva4w5sc57mawkrpb";
 
 const DEFAULT_MAX_LAUNCHES = 3;
+const DEMO_ACCOUNT_TOKEN = "demo";
+const PREORDER_PAYMENT_URL = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
 
 const WHATSAPP_HELP_URL =
   "https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0";
@@ -118,6 +120,7 @@ export default function CabinetPage() {
   const params = useParams<{ token: string }>();
   const router = useRouter();
   const token = String(params?.token ?? "");
+  const isDemoAccount = token.toLowerCase() === DEMO_ACCOUNT_TOKEN;
 
   const [faqOpen, setFaqOpen] = useState(false);
   const [savingPosition, setSavingPosition] = useState(false);
@@ -590,6 +593,45 @@ export default function CabinetPage() {
         </div>
       </section>
 
+      {isDemoAccount ? (
+        <section style={styles.releaseSection}>
+          <div className="release-preorder-card" style={styles.releaseCard}>
+            <div>
+              <div style={styles.releaseKicker}>Релиз 4 апреля</div>
+              <h2 style={styles.releaseTitle}>Online Playground preorder</h2>
+              <p style={styles.releaseText}>
+                Предзаказ демо-доступа к Revenue Snapshot с личным кабинетом и
+                примерами результатов.
+              </p>
+            </div>
+
+            <div style={styles.releaseMetaGrid}>
+              <div style={styles.releaseMetaItem}>
+                <div style={styles.releaseMetaLabel}>Цена</div>
+                <div style={styles.releaseMetaValue}>$103</div>
+              </div>
+              <div style={styles.releaseMetaItem}>
+                <div style={styles.releaseMetaLabel}>Всего мест</div>
+                <div style={styles.releaseMetaValue}>13</div>
+              </div>
+              <div style={styles.releaseMetaItem}>
+                <div style={styles.releaseMetaLabel}>Уже забронировано</div>
+                <div style={styles.releaseMetaValue}>4</div>
+              </div>
+            </div>
+
+            <a
+              href={PREORDER_PAYMENT_URL}
+              target="_blank"
+              rel="noreferrer"
+              style={styles.releaseButton}
+            >
+              Предзаказ
+            </a>
+          </div>
+        </section>
+      ) : null}
+
       <section style={styles.resultsSection}>
         <div style={styles.resultsHeader}>
           <div style={{ ...styles.colDate, ...styles.resultHeaderCell }}>Date</div>
@@ -643,14 +685,31 @@ export default function CabinetPage() {
               </div>
 
               <div style={styles.colActions}>
-                <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
-                  <button type="button" style={styles.actionButton}>
+                {item.resultUrl ? (
+                  <a
+                    href={item.resultUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      ...styles.actionButton,
+                      display: "inline-flex",
+                      justifyContent: "center",
+                      textDecoration: "none",
+                      cursor: "pointer",
+                    }}
+                  >
                     Открыть
-                  </button>
-                  <div className="action-tooltip" style={styles.tooltip}>
-                    Функция находится в разработке
+                  </a>
+                ) : (
+                  <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
+                    <button type="button" style={styles.actionButton}>
+                      Открыть
+                    </button>
+                    <div className="action-tooltip" style={styles.tooltip}>
+                      Функция находится в разработке
+                    </div>
                   </div>
-                </div>
+                )}
 
                 <div className="action-tooltip-wrap" style={styles.actionTooltipWrap}>
                   <button type="button" style={styles.actionGhostButton}>
@@ -884,6 +943,10 @@ export default function CabinetPage() {
             grid-template-columns: 1fr !important;
           }
 
+          .release-preorder-card {
+            grid-template-columns: 1fr !important;
+          }
+
           div[style*="grid-template-columns: 0.85fr 1.45fr 1fr 1fr 1.1fr 0.8fr"] {
             grid-template-columns: 1fr !important;
           }
@@ -896,6 +959,10 @@ export default function CabinetPage() {
         }
 
         @media (max-width: 640px) {
+          .release-preorder-card div[style*="grid-template-columns: repeat(3"] {
+            grid-template-columns: 1fr !important;
+          }
+
           input,
           textarea,
           button,
@@ -1216,6 +1283,84 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: "10px",
     fontSize: "14px",
     color: "#d8dce7",
+  },
+  releaseSection: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "22px auto 0",
+  },
+  releaseCard: {
+    display: "grid",
+    gridTemplateColumns: "1.1fr 1fr auto",
+    gap: "22px",
+    alignItems: "center",
+    borderRadius: "28px",
+    padding: "24px 26px",
+    background:
+      "linear-gradient(135deg, rgba(247,210,55,0.14), rgba(71,182,246,0.08) 48%, rgba(255,255,255,0.06))",
+    border: "1px solid rgba(247,210,55,0.22)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+  },
+  releaseKicker: {
+    fontSize: "12px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#f7d237",
+    fontWeight: 800,
+    marginBottom: "10px",
+  },
+  releaseTitle: {
+    margin: 0,
+    fontSize: "28px",
+    lineHeight: 1.08,
+    color: "#fff",
+  },
+  releaseText: {
+    margin: "10px 0 0",
+    maxWidth: "520px",
+    fontSize: "15px",
+    lineHeight: 1.6,
+    color: "rgba(255,255,255,0.72)",
+  },
+  releaseMetaGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: "10px",
+  },
+  releaseMetaItem: {
+    minHeight: "86px",
+    borderRadius: "18px",
+    padding: "14px",
+    background: "rgba(255,255,255,0.07)",
+    border: "1px solid rgba(255,255,255,0.09)",
+  },
+  releaseMetaLabel: {
+    fontSize: "12px",
+    lineHeight: 1.35,
+    color: "rgba(255,255,255,0.58)",
+  },
+  releaseMetaValue: {
+    marginTop: "8px",
+    fontSize: "26px",
+    lineHeight: 1,
+    fontWeight: 800,
+    color: "#fff",
+  },
+  releaseButton: {
+    minWidth: "150px",
+    minHeight: "48px",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: "999px",
+    padding: "0 22px",
+    background: "#f7d237",
+    color: "#0b1d3a",
+    fontSize: "15px",
+    fontWeight: 800,
+    textDecoration: "none",
+    boxShadow: "0 14px 28px rgba(247,210,55,0.18)",
   },
   launchProgressTrack: {
     marginTop: "18px",

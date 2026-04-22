@@ -1023,6 +1023,10 @@ function StartCard({
   mobileIcon,
   price,
   href,
+  ctaLabel = "Оплатить",
+  disabled = false,
+  secondaryLabel,
+  secondaryHref,
   priceDesktop,
   priceMobile,
   buttonDesktop,
@@ -1034,6 +1038,10 @@ function StartCard({
   mobileIcon?: string;
   price: string;
   href: string;
+  ctaLabel?: string;
+  disabled?: boolean;
+  secondaryLabel?: string;
+  secondaryHref?: string;
   priceDesktop: OverlayBox;
   priceMobile?: OverlayBox;
   buttonDesktop: OverlayBox;
@@ -1041,28 +1049,26 @@ function StartCard({
   onPay?: (url: string) => void;
   stats?: Array<{ label: string; value: string }>;
 }) {
-  const ctaLabel = title === "On Rec" ? "Оплатить" : "Оплатить";
-
-  const styleVars = {
-    ["--price-top" as any]: priceDesktop.top ?? "auto",
-    ["--price-right" as any]: priceDesktop.right ?? "auto",
-    ["--price-bottom" as any]: priceDesktop.bottom ?? "auto",
-    ["--price-left" as any]: priceDesktop.left ?? "auto",
-    ["--button-top" as any]: buttonDesktop.top ?? "auto",
-    ["--button-right" as any]: buttonDesktop.right ?? "auto",
-    ["--button-bottom" as any]: buttonDesktop.bottom ?? "auto",
-    ["--button-left" as any]: buttonDesktop.left ?? "auto",
-    ["--button-width" as any]: buttonDesktop.width ?? "auto",
-    ["--price-top-mobile" as any]: priceMobile?.top ?? priceDesktop.top ?? "auto",
-    ["--price-right-mobile" as any]: priceMobile?.right ?? priceDesktop.right ?? "auto",
-    ["--price-bottom-mobile" as any]: priceMobile?.bottom ?? priceDesktop.bottom ?? "auto",
-    ["--price-left-mobile" as any]: priceMobile?.left ?? priceDesktop.left ?? "auto",
-    ["--button-top-mobile" as any]: buttonMobile?.top ?? buttonDesktop.top ?? "auto",
-    ["--button-right-mobile" as any]: buttonMobile?.right ?? buttonDesktop.right ?? "auto",
-    ["--button-bottom-mobile" as any]: buttonMobile?.bottom ?? buttonDesktop.bottom ?? "auto",
-    ["--button-left-mobile" as any]: buttonMobile?.left ?? buttonDesktop.left ?? "auto",
-    ["--button-width-mobile" as any]: buttonMobile?.width ?? buttonDesktop.width ?? "auto",
-  } as CSSProperties;
+  const styleVars: CSSProperties & Record<`--${string}`, string> = {
+    "--price-top": priceDesktop.top ?? "auto",
+    "--price-right": priceDesktop.right ?? "auto",
+    "--price-bottom": priceDesktop.bottom ?? "auto",
+    "--price-left": priceDesktop.left ?? "auto",
+    "--button-top": buttonDesktop.top ?? "auto",
+    "--button-right": buttonDesktop.right ?? "auto",
+    "--button-bottom": buttonDesktop.bottom ?? "auto",
+    "--button-left": buttonDesktop.left ?? "auto",
+    "--button-width": buttonDesktop.width ?? "auto",
+    "--price-top-mobile": priceMobile?.top ?? priceDesktop.top ?? "auto",
+    "--price-right-mobile": priceMobile?.right ?? priceDesktop.right ?? "auto",
+    "--price-bottom-mobile": priceMobile?.bottom ?? priceDesktop.bottom ?? "auto",
+    "--price-left-mobile": priceMobile?.left ?? priceDesktop.left ?? "auto",
+    "--button-top-mobile": buttonMobile?.top ?? buttonDesktop.top ?? "auto",
+    "--button-right-mobile": buttonMobile?.right ?? buttonDesktop.right ?? "auto",
+    "--button-bottom-mobile": buttonMobile?.bottom ?? buttonDesktop.bottom ?? "auto",
+    "--button-left-mobile": buttonMobile?.left ?? buttonDesktop.left ?? "auto",
+    "--button-width-mobile": buttonMobile?.width ?? buttonDesktop.width ?? "auto",
+  };
 
   return (
     <div className="start-card tilt-card" style={styleVars}>
@@ -1074,17 +1080,34 @@ function StartCard({
         <div className="start-card-overlay start-card-overlay-plain">
           <div className="start-card-bottom-simple">
             <div className="start-card-price-float">{price}</div>
-            <a
-              href={href}
-              className="start-card-btn start-card-btn-floating"
-              onClick={(e) => {
-                if (!onPay) return;
-                e.preventDefault();
-                onPay(href);
-              }}
-            >
-              {ctaLabel}
-            </a>
+            <div className="start-card-actions-floating">
+              {disabled ? (
+                <button
+                  type="button"
+                  className="start-card-btn start-card-btn-disabled"
+                  disabled
+                >
+                  {ctaLabel}
+                </button>
+              ) : (
+                <a
+                  href={href}
+                  className="start-card-btn"
+                  onClick={(e) => {
+                    if (!onPay) return;
+                    e.preventDefault();
+                    onPay(href);
+                  }}
+                >
+                  {ctaLabel}
+                </a>
+              )}
+              {secondaryLabel && secondaryHref ? (
+                <Link href={secondaryHref} className="start-card-btn start-card-btn-secondary">
+                  {secondaryLabel}
+                </Link>
+              ) : null}
+            </div>
           </div>
         </div>
       </div>
@@ -1379,6 +1402,7 @@ const [history, setHistory] = useState<
   ];
   const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
   const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
+  const demoAccountUrl = "/account/demo";
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
@@ -1392,8 +1416,12 @@ const [history, setHistory] = useState<
           title: "Online-playground",
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
-          price: "$114",
+          price: "$148",
           href: payUrl,
+          ctaLabel: "coming soon",
+          disabled: true,
+          secondaryLabel: "get a demo",
+          secondaryHref: demoAccountUrl,
         }
       : {
           title: "On Rec",
@@ -1401,6 +1429,10 @@ const [history, setHistory] = useState<
           mobileIcon: "/on-rec_mobile.svg",
           price: "$770",
           href: onRecUrl,
+          ctaLabel: "Оплатить",
+          disabled: false,
+          secondaryLabel: undefined,
+          secondaryHref: undefined,
         };
 
   const faqItems = [
@@ -2398,12 +2430,16 @@ const handleReset = () => {
                     title="Online-playground"
                     icon="/online_playground_desc.svg"
                     mobileIcon="/online-playground_mobile.svg"
-                    price="$114"
+                    price="$148"
                     href={payUrl}
+                    ctaLabel="coming soon"
+                    disabled
+                    secondaryLabel="get a demo"
+                    secondaryHref={demoAccountUrl}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
-                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "58%" }}
+                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "72%" }}
                     onPay={handlePay}
                   />
                   <StartCard
@@ -2447,10 +2483,14 @@ const handleReset = () => {
                     mobileIcon={selectedOfferCard.mobileIcon}
                     price={selectedOfferCard.price}
                     href={selectedOfferCard.href}
+                    ctaLabel={selectedOfferCard.ctaLabel}
+                    disabled={selectedOfferCard.disabled}
+                    secondaryLabel={selectedOfferCard.secondaryLabel}
+                    secondaryHref={selectedOfferCard.secondaryHref}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
                     priceMobile={{ top: "73%", right: "6.4%" }}
-                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
-                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: selectedOffer === "playground" ? "58%" : "35%" }}
+                    buttonMobile={{ left: "6.4%", bottom: "11.2%", width: selectedOffer === "playground" ? "72%" : "48%" }}
                     onPay={handlePay}
                   />
                 </div>
@@ -4290,12 +4330,6 @@ const handleReset = () => {
           text-shadow: 0 10px 28px rgba(0,0,0,.22);
         }
         .start-card-btn {
-          position: absolute;
-          top: var(--button-top, auto);
-          right: var(--button-right, auto);
-          bottom: var(--button-bottom, auto);
-          left: var(--button-left, auto);
-          width: var(--button-width, auto);
           z-index: 6;
           pointer-events: auto;
           display: inline-flex;
@@ -4314,6 +4348,37 @@ const handleReset = () => {
           animation: none;
           pointer-events: auto;
           white-space: nowrap;
+        }
+        .start-card-actions-floating {
+          position: absolute;
+          top: var(--button-top, auto);
+          right: var(--button-right, auto);
+          bottom: var(--button-bottom, auto);
+          left: var(--button-left, auto);
+          width: var(--button-width, auto);
+          z-index: 6;
+          pointer-events: auto;
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .start-card-actions-floating .start-card-btn {
+          flex: 1 1 0;
+          min-width: 0;
+          text-align: center;
+        }
+        .start-card-btn-disabled {
+          cursor: not-allowed;
+          color: rgba(255,255,255,.62);
+          background: linear-gradient(180deg, rgba(156,163,175,.36), rgba(75,85,99,.34));
+          border-color: rgba(255,255,255,.13);
+          box-shadow: inset 0 1px 0 rgba(255,255,255,.1);
+        }
+        .start-card-btn-secondary {
+          background: linear-gradient(90deg, #f7d237 0%, #ffdf62 100%);
+          color: #0b1d3a;
+          border-color: rgba(255,255,255,.24);
+          box-shadow: 0 10px 26px rgba(247,210,55,.18), inset 0 1px 0 rgba(255,255,255,.26);
         }
 .tariff-comparison-grid {
   display: grid;
@@ -5283,14 +5348,17 @@ const handleReset = () => {
             font-size: clamp(28px, 10vw, 40px);
           }
           .start-card-btn {
+            min-height: 38px;
+            padding: 0 14px;
+            font-size: 12px;
+          }
+          .start-card-actions-floating {
             top: var(--button-top-mobile, var(--button-top, auto));
             right: var(--button-right-mobile, var(--button-right, auto));
             bottom: var(--button-bottom-mobile, var(--button-bottom, auto));
             left: var(--button-left-mobile, var(--button-left, auto));
             width: var(--button-width-mobile, var(--button-width, auto));
-            min-height: 38px;
-            padding: 0 14px;
-            font-size: 12px;
+            gap: 7px;
           }
           .hero-chart-float { max-width: 100%; }
           .hero-chart-box,

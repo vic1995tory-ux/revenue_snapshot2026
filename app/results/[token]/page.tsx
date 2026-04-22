@@ -7,8 +7,9 @@ export default async function Page({
   params: Promise<{ token: string }>;
 }) {
   const { token } = await params;
+  const demoResultTokens = new Set(["mock-token", "demo-result-1", "demo-result-2"]);
 
-  if (token !== "mock-token") {
+  if (!demoResultTokens.has(token)) {
     return (
       <main
         style={{

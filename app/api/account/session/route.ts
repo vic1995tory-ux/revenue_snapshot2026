@@ -6,6 +6,50 @@ const MAKE_ACCOUNT_SESSION_WEBHOOK_URL =
 
 const DEFAULT_LAUNCH_LIMIT = 3;
 
+const DEMO_ACCOUNT_TOKEN = "demo";
+
+const demoAccountData = {
+  fullName: "Demo Account",
+  companyName: "Revenue Snapshot Demo",
+  position: "Founder",
+  positionLocked: true,
+  expiresAt: new Date("2027-04-04T00:00:00.000Z").toISOString(),
+  companySummary:
+    "Демо-аккаунт с двумя примерами результатов Revenue Snapshot.",
+  launchCount: 2,
+  launchLimit: DEFAULT_LAUNCH_LIMIT,
+  results: [
+    {
+      id: "demo-result-1",
+      date: "04.04.2026",
+      executiveSummary:
+        "Бизнес ограничен не спросом, а обработкой входящего потока и управленческой фокусировкой.",
+      mainLever: "Собрать единый входной offer и сократить handoff между продажей и исполнением.",
+      riskZone: "Рост нагрузки без стабилизации маржи.",
+      comment: "Пример результата для service business.",
+      resultUrl: "/results/demo-result-1",
+      status: "result_ready",
+    },
+    {
+      id: "demo-result-2",
+      date: "04.04.2026",
+      executiveSummary:
+        "Основной потенциал находится в пересборке продуктовой линейки и повышении качества повторных продаж.",
+      mainLever: "Выделить самый маржинальный сегмент и закрепить roadmap на 90 дней.",
+      riskZone: "Размытый фокус команды и долгий цикл принятия решений.",
+      comment: "Пример результата для product-led команды.",
+      resultUrl: "/results/demo-result-2",
+      status: "result_ready",
+    },
+  ],
+};
+
+type UnknownRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null;
+}
+
 function tryParseJson(raw: string) {
   try {
     return JSON.parse(raw);
@@ -54,6 +98,13 @@ export async function GET(req: NextRequest) {
       );
     }
 
+    if (token.toLowerCase() === DEMO_ACCOUNT_TOKEN) {
+      return NextResponse.json({
+        ok: true,
+        data: demoAccountData,
+      });
+    }
+
     const makePayload = {
       action: "account_session",
       access_token: token,
@@ -69,7 +120,7 @@ export async function GET(req: NextRequest) {
     });
 
     const contentType = makeRes.headers.get("content-type") || "";
-    let makeData: any = {};
+    let makeData: unknown = {};
     let rawText = "";
 
     if (contentType.includes("application/json")) {
@@ -115,38 +166,45 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const source = makeData?.data ?? makeData ?? {};
+    const sourceCandidate = isRecord(makeData) && "data" in makeData
+      ? makeData.data
+      : makeData;
+    const source = isRecord(sourceCandidate) ? sourceCandidate : {};
 
     const normalizedResults = Array.isArray(source?.results)
-      ? source.results.map((item: any, index: number) => ({
-          id: toStringSafe(item?.id, String(index + 1)),
-          date: toStringSafe(item?.date, ""),
+      ? source.results.map((rawItem, index: number) => {
+        const item = isRecord(rawItem) ? rawItem : {};
+
+        return {
+          id: toStringSafe(item.id, String(index + 1)),
+          date: toStringSafe(item.date, ""),
           executiveSummary: toStringSafe(
-            item?.executiveSummary ??
-              item?.executive_summary ??
-              item?.summary,
+            item.executiveSummary ??
+              item.executive_summary ??
+              item.summary,
             ""
           ),
           mainLever: toStringSafe(
-            item?.mainLever ??
-              item?.main_lever,
+            item.mainLever ??
+              item.main_lever,
             ""
           ),
           riskZone: toStringSafe(
-            item?.riskZone ??
-              item?.risk_zone,
+            item.riskZone ??
+              item.risk_zone,
             ""
           ),
-          comment: toStringSafe(item?.comment, ""),
+          comment: toStringSafe(item.comment, ""),
           resultUrl: toStringSafe(
-            item?.resultUrl ??
-              item?.result_url ??
-              item?.url ??
-              item?.link,
+            item.resultUrl ??
+              item.result_url ??
+              item.url ??
+              item.link,
             ""
           ),
-          status: toStringSafe(item?.status, "result_ready"),
-        }))
+          status: toStringSafe(item.status, "result_ready"),
+        };
+      })
       : [];
 
     const launchCountRaw =
