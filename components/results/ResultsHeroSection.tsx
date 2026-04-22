@@ -78,7 +78,7 @@ function MinimalTooltip({
         : "—";
 
   return (
-    <div className="min-w-[180px] rounded-[18px] border border-[#c7a93b]/20 bg-[#081427]/95 p-3 shadow-2xl backdrop-blur-xl">
+    <div className="min-w-[180px] rounded-[18px] bg-[#081427]/95 p-3 shadow-2xl backdrop-blur-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
         Data point
       </div>
@@ -120,7 +120,7 @@ function ProductTooltip({
   const value = typeof point?.value === "number" ? point.value : 0;
 
   return (
-    <div className="max-w-[320px] rounded-[18px] border border-[#c7a93b]/20 bg-[#081427]/95 p-4 shadow-2xl backdrop-blur-xl">
+    <div className="max-w-[320px] rounded-[18px] bg-[#081427]/95 p-4 shadow-2xl backdrop-blur-xl">
       <div className="text-xs uppercase tracking-[0.18em] text-[#c7a93b]">
         Data point
       </div>
@@ -148,12 +148,12 @@ function HeroCard({
   return (
     <div
       className={cn(
-        "rounded-[24px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-5 backdrop-blur-xl",
+        "rounded-[24px] bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))] p-5 backdrop-blur-xl",
         className
       )}
     >
       <div className="flex items-center gap-2 text-white/48">
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#c7a93b]/10 text-[#c7a93b]">
           {icon}
         </div>
         <div className="text-[12px] uppercase tracking-[0.18em]">{label}</div>
@@ -208,7 +208,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
   ].filter(Boolean);
 
   return (
-    <section className="relative overflow-hidden rounded-[36px] border border-white/10 bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
+    <section className="relative overflow-hidden rounded-[36px] bg-[#071426] px-5 py-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] md:px-7 md:py-7">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(199,169,59,0.16),transparent_26%),radial-gradient(circle_at_bottom_right,rgba(199,169,59,0.08),transparent_24%)]" />
 
       <motion.div
@@ -217,7 +217,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
         transition={{ duration: 0.45 }}
         className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]"
       >
-        <div className="relative overflow-hidden rounded-[30px] border border-white/10 bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
+        <div className="relative overflow-hidden rounded-[30px] bg-white/[0.04] p-6 backdrop-blur-xl md:p-8">
           <div className="pointer-events-none absolute inset-y-0 left-0 w-full opacity-[0.14]">
             <Image
               src="/hero.svg"
@@ -235,10 +235,10 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
               <ConfidenceDots level={hero.confidenceLevel} />
             </div>
 
-            <SectionLabel>Business snapshot</SectionLabel>
+            <SectionLabel>Снимок</SectionLabel>
 
             <h1 className="mt-3 max-w-[760px] text-[38px] font-semibold leading-[0.92] tracking-[-0.05em] text-white md:text-[56px]">
-              Revenue Snapshot
+              Диагностика
             </h1>
 
             <p className="mt-5 max-w-[780px] text-[19px] leading-[1.28] text-white/88 md:text-[21px]">
@@ -270,7 +270,7 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
             <div className="mt-7 grid gap-4 md:grid-cols-2">
               <HeroCard
                 icon={<TrendingUp size={16} />}
-                label="Growth limit"
+                label="Ограничение"
                 value={hero.growthLimit}
                 subvalue={
                   hero.currentPosition ||
@@ -296,17 +296,17 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.05 }}
-            className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+            className="rounded-[30px] bg-white/[0.04] p-5 backdrop-blur-xl"
           >
             <div className="mb-4 flex items-center justify-between gap-3">
               <div>
-                <SectionLabel>Products</SectionLabel>
+                <SectionLabel>Продукты</SectionLabel>
                 <div className="mt-2 text-lg font-semibold text-white">
-                  Product margins
+                  Маржинальность
                 </div>
               </div>
 
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#c7a93b]/10 text-[#c7a93b]">
                 <BarChart3 size={18} />
               </div>
             </div>
@@ -351,17 +351,17 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.55, delay: 0.08 }}
-              className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+              className="rounded-[30px] bg-white/[0.04] p-5 backdrop-blur-xl"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <SectionLabel>Flow</SectionLabel>
+                  <SectionLabel>Поток</SectionLabel>
                   <div className="mt-2 text-lg font-semibold text-white">
-                    Lead → client conversion
+                    Конверсия
                   </div>
                 </div>
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#c7a93b]/10 text-[#c7a93b]">
                   <Percent size={18} />
                 </div>
               </div>
@@ -429,17 +429,17 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.12 }}
-              className="rounded-[30px] border border-white/10 bg-white/[0.04] p-5 backdrop-blur-xl"
+              className="rounded-[30px] bg-white/[0.04] p-5 backdrop-blur-xl"
             >
               <div className="mb-4 flex items-center justify-between gap-3">
                 <div>
-                  <SectionLabel>Acquisition</SectionLabel>
+                  <SectionLabel>Каналы</SectionLabel>
                   <div className="mt-2 text-lg font-semibold text-white">
-                    Channel mix
+                    Доли
                   </div>
                 </div>
 
-                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[#c7a93b]/20 bg-[#c7a93b]/10 text-[#c7a93b]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#c7a93b]/10 text-[#c7a93b]">
                   <MapPin size={18} />
                 </div>
               </div>
@@ -478,11 +478,11 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
       </motion.div>
 
       <div className="mt-5 grid gap-4 md:grid-cols-3">
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
+        <div className="rounded-[22px] bg-white/[0.035] px-4 py-4">
           <div className="flex items-center gap-2 text-white/50">
             <BriefcaseBusiness size={15} className="text-[#c7a93b]" />
             <span className="text-[11px] uppercase tracking-[0.18em]">
-              Snapshot
+              Снимок
             </span>
           </div>
           <div className="mt-3 text-sm leading-6 text-white/76">
@@ -490,11 +490,11 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
           </div>
         </div>
 
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
+        <div className="rounded-[22px] bg-white/[0.035] px-4 py-4">
           <div className="flex items-center gap-2 text-white/50">
             <TrendingUp size={15} className="text-[#c7a93b]" />
             <span className="text-[11px] uppercase tracking-[0.18em]">
-              Current position
+              Позиция
             </span>
           </div>
           <div className="mt-3 text-sm leading-6 text-white/76">
@@ -502,11 +502,11 @@ export function ResultsHeroSection({ hero }: { hero: HeroData }) {
           </div>
         </div>
 
-        <div className="rounded-[22px] border border-white/10 bg-white/[0.035] px-4 py-4">
+        <div className="rounded-[22px] bg-white/[0.035] px-4 py-4">
           <div className="flex items-center gap-2 text-white/50">
             <Users size={15} className="text-[#c7a93b]" />
             <span className="text-[11px] uppercase tracking-[0.18em]">
-              Business facts
+              Факты
             </span>
           </div>
           <div className="mt-3 text-sm leading-6 text-white/76">

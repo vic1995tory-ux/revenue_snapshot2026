@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import type { ReactNode } from "react";
 import type {
   ForecastsData,
@@ -387,10 +388,20 @@ export function ResultsSolutionSection({
   return (
     <section className="rounded-[32px] bg-white/5 p-6 backdrop-blur-xl md:p-8">
       <div className="flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+        <div className="relative overflow-hidden rounded-[30px] bg-[#081932] p-6 md:p-7">
+          <div className="pointer-events-none absolute inset-0 opacity-[0.13]">
+            <Image
+              src="/hero.svg"
+              alt=""
+              fill
+              className="object-cover object-left"
+            />
+          </div>
+
+          <div className="relative z-10 flex items-start justify-between gap-4">
           <div className="max-w-[980px]">
             <div className="text-sm uppercase tracking-[0.16em] text-[#f7d237]">
-              Solution
+              Решение
             </div>
 
             <h2 className="mt-3 text-[32px] font-semibold leading-[0.96] tracking-[-0.04em] text-white md:text-[52px]">
@@ -404,6 +415,7 @@ export function ResultsSolutionSection({
 
           <div className="shrink-0 pt-1">
             <ConfidenceDots level={solution.confidenceLevel} />
+          </div>
           </div>
         </div>
 
