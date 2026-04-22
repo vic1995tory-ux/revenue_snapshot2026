@@ -30,7 +30,7 @@ function getPhaseTone(index: number): PriorityTone {
 function getPhaseToneClasses(tone: PriorityTone) {
   if (tone === "high") {
     return {
-      badge: "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
+      badge: "bg-[#f7d237]/12 text-[#f7d237]",
       bar: "from-[#f7d237] to-[#d4b11d]",
       dot: "bg-[#f7d237]",
       label: "Immediate priority",
@@ -39,7 +39,7 @@ function getPhaseToneClasses(tone: PriorityTone) {
 
   if (tone === "medium") {
     return {
-      badge: "border-white/15 bg-white/[0.08] text-white/80",
+      badge: "bg-white/[0.08] text-white/80",
       bar: "from-[#8fa8ff] to-[#5f79d9]",
       dot: "bg-[#8fa8ff]",
       label: "Second priority",
@@ -47,7 +47,7 @@ function getPhaseToneClasses(tone: PriorityTone) {
   }
 
   return {
-    badge: "border-white/10 bg-white/[0.05] text-white/65",
+    badge: "bg-white/[0.05] text-white/65",
     bar: "from-[#5f6b85] to-[#3e4960]",
     dot: "bg-white/35",
     label: "Later phase",
@@ -72,7 +72,7 @@ function SolutionSignalCard({
   icon: ReactNode;
 }) {
   return (
-    <div className="rounded-[24px] border border-white/10 bg-[#0b2148] p-5">
+    <div className="rounded-[24px] bg-[#0b2148] p-5">
       <div className="flex items-start justify-between gap-4">
         <div className="text-sm text-white/52">{eyebrow}</div>
         <div className="mt-0.5 text-white/40">{icon}</div>
@@ -90,9 +90,8 @@ function SolutionSignalCard({
 }
 
 function getLinkedSolutionCard(index: number, cards: SolutionCard[]) {
-  if (index === 0) return cards[1] ?? cards[0];
-  if (index === 1) return cards[0] ?? cards[2];
-  return cards[3] ?? cards[0];
+  if (!cards.length) return undefined;
+  return cards[index % cards.length];
 }
 
 function getStagePriority(
@@ -102,49 +101,54 @@ function getStagePriority(
   return priorities[index];
 }
 
-function getStageKpis(
-  index: number,
-  kpis: SolutionKPI[],
-  forecasts: ForecastsData,
-) {
-  if (index === 0) {
-    return [
-      kpis.find((item) => item.label === "Capacity load") ?? {
-        label: "Capacity load",
-        current: forecasts.costs.current,
-        target: forecasts.costs.target,
-        change: `${forecasts.costs.delta}%`,
-      },
-    ];
-  }
+function chunkByStage<T>(items: T[], stageCount: number, index: number) {
+  if (!items.length || stageCount <= 0) return [];
 
-  if (index === 1) {
-    return [
-      kpis.find((item) => item.label === "Conversion"),
-      kpis.find((item) => item.label === "Revenue") ?? {
-        label: "Revenue",
-        current: forecasts.revenue.current,
-        target: forecasts.revenue.target,
-        change: `+${forecasts.revenue.delta}%`,
-      },
-    ].filter(Boolean) as SolutionKPI[];
-  }
+  const baseSize = Math.floor(items.length / stageCount);
+  const remainder = items.length % stageCount;
+  const start =
+    index * baseSize + Math.min(index, remainder);
+  const size = baseSize + (index < remainder ? 1 : 0);
 
+  return items.slice(start, start + size);
+}
+
+function buildForecastKpis(forecasts: ForecastsData): SolutionKPI[] {
   return [
-    kpis.find((item) => item.label === "Profit") ?? {
+    {
+      label: "Revenue",
+      current: forecasts.revenue.current,
+      target: forecasts.revenue.target,
+      change: `${forecasts.revenue.delta > 0 ? "+" : ""}${forecasts.revenue.delta}%`,
+    },
+    {
+      label: "Costs / load",
+      current: forecasts.costs.current,
+      target: forecasts.costs.target,
+      change: `${forecasts.costs.delta > 0 ? "+" : ""}${forecasts.costs.delta}%`,
+    },
+    {
       label: "Profit",
       current: forecasts.profit.current,
       target: forecasts.profit.target,
-      change: `+${forecasts.profit.delta}%`,
+      change: `${forecasts.profit.delta > 0 ? "+" : ""}${forecasts.profit.delta}%`,
     },
-    kpis.find((item) => item.label === "Revenue"),
-  ].filter(Boolean) as SolutionKPI[];
+  ];
+}
+
+function getStageKpis(
+  index: number,
+  stageCount: number,
+  kpis: SolutionKPI[],
+  forecasts: ForecastsData,
+) {
+  const allKpis = kpis.length ? kpis : buildForecastKpis(forecasts);
+  return chunkByStage(allKpis, stageCount, index);
 }
 
 function getStageControlPoints(roadmap: RoadmapData, index: number) {
   const points = roadmap.controlPoints ?? [];
-  const chunkSize = Math.ceil(points.length / Math.max(roadmap.phases.length, 1));
-  return points.slice(index * chunkSize, index * chunkSize + chunkSize);
+  return chunkByStage(points, roadmap.phases.length, index);
 }
 
 function SolutionStageSystem({
@@ -160,7 +164,7 @@ function SolutionStageSystem({
   const kpis = solution.kpis ?? [];
 
   return (
-    <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
+    <div className="rounded-[28px] bg-white/[0.03] p-5 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
@@ -178,7 +182,7 @@ function SolutionStageSystem({
       </div>
 
       {solution.decisionRule ? (
-        <div className="mt-6 rounded-[22px] border border-white/10 bg-[#0a1b38] p-4">
+        <div className="mt-6 rounded-[22px] bg-[#0a1b38] p-4">
           <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
             Decision rule
           </div>
@@ -194,19 +198,24 @@ function SolutionStageSystem({
           const styles = getPhaseToneClasses(tone);
           const linkedCard = getLinkedSolutionCard(index, solution.cards);
           const priority = getStagePriority(index, priorities);
-          const stageKpis = getStageKpis(index, kpis, forecasts);
+          const stageKpis = getStageKpis(
+            index,
+            roadmap.phases.length,
+            kpis,
+            forecasts,
+          );
           const controlPoints = getStageControlPoints(roadmap, index);
 
           return (
             <div
               key={`${phase.period}-${phase.title}`}
-              className="rounded-[26px] border border-white/10 bg-[#0a1b38] p-5 md:p-6"
+              className="rounded-[26px] bg-[#0a1b38] p-5 md:p-6"
             >
               <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                 <div>
                   <div className="flex flex-wrap items-center gap-3">
                     <span
-                      className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
+                      className={`rounded-full px-3 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
                     >
                       Stage {index + 1}: {phase.period}
                     </span>
@@ -225,7 +234,7 @@ function SolutionStageSystem({
                   </div>
 
                   {linkedCard ? (
-                    <div className="mt-5 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+                    <div className="mt-5 rounded-[20px] bg-white/[0.04] p-4">
                       <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
                         Linked solution piece
                       </div>
@@ -243,7 +252,7 @@ function SolutionStageSystem({
 
                 <div className="grid gap-4">
                   {priority ? (
-                    <div className="rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+                    <div className="rounded-[20px] bg-white/[0.04] p-4">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-white/40">
                         <ArrowRight size={14} />
                         Priority action
@@ -261,7 +270,7 @@ function SolutionStageSystem({
                     {stageKpis.map((item) => (
                       <div
                         key={`${phase.period}-${item.label}`}
-                        className="rounded-[18px] border border-white/10 bg-[#091934] p-4"
+                        className="rounded-[18px] bg-[#091934] p-4"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
@@ -309,10 +318,10 @@ function SolutionStageSystem({
               </div>
 
               <div className="mt-5 grid gap-3 lg:grid-cols-3">
-                {phase.tasks.slice(0, 3).map((task) => (
+                {phase.tasks.map((task) => (
                   <div
                     key={`${phase.period}-${task.action}`}
-                    className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4"
+                    className="rounded-[18px] bg-white/[0.03] p-4"
                   >
                     <div className="text-[11px] uppercase tracking-[0.12em] text-white/35">
                       {task.label}
@@ -329,7 +338,7 @@ function SolutionStageSystem({
                   {controlPoints.map((point) => (
                     <div
                       key={`${phase.period}-${point.metric}`}
-                      className="rounded-[18px] border border-white/8 bg-white/[0.025] p-4"
+                      className="rounded-[18px] bg-white/[0.025] p-4"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
@@ -376,7 +385,7 @@ export function ResultsSolutionSection({
   const priorityLabels = (solution.priorities ?? []).slice(0, 3);
 
   return (
-    <section className="rounded-[32px] border border-white/10 bg-white/5 p-6 backdrop-blur-xl md:p-8">
+    <section className="rounded-[32px] bg-white/5 p-6 backdrop-blur-xl md:p-8">
       <div className="flex flex-col gap-6">
         <div className="flex items-start justify-between gap-4">
           <div className="max-w-[980px]">
@@ -440,7 +449,7 @@ export function ResultsSolutionSection({
           </div>
 
           <div className="xl:col-span-4">
-            <div className="h-full rounded-[28px] border border-white/10 bg-[#0a1b38] p-5">
+            <div className="h-full rounded-[28px] bg-[#0a1b38] p-5">
               <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
                 Decision rule
               </div>
@@ -457,7 +466,7 @@ export function ResultsSolutionSection({
 
               <div className="mt-6 space-y-3">
                 {priorityLabels[0] ? (
-                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="rounded-[18px] bg-white/[0.04] px-4 py-3">
                     <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
                       First
                     </div>
@@ -468,7 +477,7 @@ export function ResultsSolutionSection({
                 ) : null}
 
                 {priorityLabels[1] ? (
-                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="rounded-[18px] bg-white/[0.04] px-4 py-3">
                     <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
                       Then
                     </div>
@@ -479,7 +488,7 @@ export function ResultsSolutionSection({
                 ) : null}
 
                 {priorityLabels[2] ? (
-                  <div className="rounded-[18px] border border-white/8 bg-white/[0.04] px-4 py-3">
+                  <div className="rounded-[18px] bg-white/[0.04] px-4 py-3">
                     <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
                       Then
                     </div>
