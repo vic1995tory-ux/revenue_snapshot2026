@@ -65,6 +65,82 @@ body {
   display: none;
 }
 
+.rs-question-nav {
+  position: sticky;
+  top: 82px;
+  z-index: 25;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 64px;
+  padding: 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(13, 19, 27, 0.62);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255,255,255,0.06);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
+}
+
+.rs-question-btn {
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 0 18px;
+  border: 1px solid rgba(255,255,255,0.11);
+  background: rgba(255,255,255,0.045);
+  color: rgba(255,255,255,0.72);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+  transition: transform 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.rs-question-btn:hover {
+  transform: translateY(-1px);
+  color: #ffffff;
+  background: rgba(255,255,255,0.08);
+}
+
+.rs-question-btn.is-active {
+  border-color: rgba(247,210,55,0.72);
+  background: #f7d237;
+  color: #111820;
+}
+
+.rs-focus-match,
+.rs-focus-muted {
+  transition: filter 0.24s ease, opacity 0.24s ease, transform 0.24s ease;
+}
+
+.rs-focus-match {
+  position: relative;
+  z-index: 3;
+  opacity: 1;
+  filter: none;
+}
+
+.rs-focus-muted {
+  cursor: pointer;
+  opacity: 0.22;
+  filter: blur(6px) saturate(0.62);
+  transform: scale(0.992);
+}
+
+@media (max-width: 768px) {
+  .rs-question-nav {
+    top: 72px;
+    border-radius: 24px;
+  }
+
+  .rs-question-btn {
+    flex: 1 1 calc(50% - 8px);
+    padding: 0 12px;
+    font-size: 13px;
+  }
+}
+
 /* ----------------------------- */
 /* SNAPSHOT GRID */
 /* ----------------------------- */

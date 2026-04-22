@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { ResultsHeroSection } from "./ResultsHeroSection";
 import { ResultsSolutionSection } from "./ResultsSolutionSection";
 import { ResultsTransitionSection } from "./ResultsTransitionSection";
@@ -12,7 +13,23 @@ import { ResultsOverallSummarySection } from "./ResultsOverallSummarySection";
 import { ResultsTopMenu } from "./ResultsTopMenu";
 import type { ResultsPageData } from "@/lib/results/types";
 
+type FocusTopic = "problem" | "solution" | "plan" | "now";
+
+const focusNavItems: Array<{ id: FocusTopic; label: string }> = [
+  { id: "problem", label: "В чем проблема?" },
+  { id: "solution", label: "Как решить?" },
+  { id: "plan", label: "Какой план?" },
+  { id: "now", label: "А сейчас-то что происходит?" },
+];
+
+function focusClass(activeTopic: FocusTopic | null, topics: FocusTopic[]) {
+  if (!activeTopic) return "";
+  return topics.includes(activeTopic) ? "rs-focus-match" : "rs-focus-muted";
+}
+
 export function ResultsPage({ data }: { data: ResultsPageData }) {
+  const [activeTopic, setActiveTopic] = useState<FocusTopic | null>(null);
+
   return (
     <main className="rs-page-shell min-h-screen text-white">
       <div className="rs-page-background" aria-hidden="true">
@@ -24,27 +41,60 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
       </div>
       <ResultsTopMenu />
       <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
-        <ResultsHeroSection hero={data.hero} />
+        <section className={focusClass(activeTopic, ["now", "problem"])} onClick={() => activeTopic && !["now", "problem"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsHeroSection hero={data.hero} />
+        </section>
 
-        <ResultsTransitionSection transition={data.transition} />
+        <nav className="rs-question-nav">
+          {focusNavItems.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`rs-question-btn ${activeTopic === item.id ? "is-active" : ""}`}
+              onClick={() =>
+                setActiveTopic((current) => (current === item.id ? null : item.id))
+              }
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
 
-        <ResultsSolutionSection
-          solution={data.solution}
-          roadmap={data.roadmap}
-          forecasts={data.forecasts}
-        />
+        <section className={focusClass(activeTopic, ["solution", "plan"])} onClick={() => activeTopic && !["solution", "plan"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsTransitionSection transition={data.transition} />
+        </section>
 
-        <ResultsScenariosSection scenarios={data.scenarios} />
+        <section className={focusClass(activeTopic, ["solution", "plan"])} onClick={() => activeTopic && !["solution", "plan"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsSolutionSection
+            solution={data.solution}
+            roadmap={data.roadmap}
+            forecasts={data.forecasts}
+          />
+        </section>
 
-        <ResultsBlockTabsSection blocks={data.blocks} />
+        <section className={focusClass(activeTopic, ["plan", "now"])} onClick={() => activeTopic && !["plan", "now"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsScenariosSection scenarios={data.scenarios} />
+        </section>
 
-        <ResultsEvidenceSection evidence={data.evidence} baseRevenue={data.hero.cashIn} />
+        <section className={focusClass(activeTopic, ["problem", "now"])} onClick={() => activeTopic && !["problem", "now"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsBlockTabsSection blocks={data.blocks} />
+        </section>
 
-        <ResultsReliabilitySection reliability={data.reliability} />
+        <section className={focusClass(activeTopic, ["now", "problem"])} onClick={() => activeTopic && !["now", "problem"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsEvidenceSection evidence={data.evidence} baseRevenue={data.hero.cashIn} />
+        </section>
 
-        <ResultsBusinessContextSection context={data.businessContext} />
+        <section className={focusClass(activeTopic, ["problem"])} onClick={() => activeTopic && !["problem"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsReliabilitySection reliability={data.reliability} />
+        </section>
 
-        <ResultsOverallSummarySection summary={data.overallSummary} />
+        <section className={focusClass(activeTopic, ["now"])} onClick={() => activeTopic && !["now"].includes(activeTopic) && setActiveTopic(null)}>
+          <ResultsBusinessContextSection context={data.businessContext} />
+        </section>
+
+        <section className={focusClass(activeTopic, ["now", "problem", "solution", "plan"])} onClick={() => activeTopic && setActiveTopic(null)}>
+          <ResultsOverallSummarySection summary={data.overallSummary} />
+        </section>
       </div>
     </main>
   );

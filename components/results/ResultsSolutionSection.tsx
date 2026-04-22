@@ -262,7 +262,7 @@ function SolutionStageSystem({
                   ) : null}
                 </div>
 
-                <div className="grid gap-4">
+                <div className="flex h-full flex-col gap-4">
                   {priority ? (
                     <div className="rounded-[20px] bg-[#0d131b] p-4">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-white/40">
@@ -290,7 +290,7 @@ function SolutionStageSystem({
                     ))}
                   </div>
 
-                  <div>
+                  <div className="mt-auto pt-1">
                     <div className="mb-2 text-[11px] uppercase tracking-[0.12em] text-white/38">
                       Execution weight
                     </div>
