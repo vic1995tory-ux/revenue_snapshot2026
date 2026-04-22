@@ -2072,6 +2072,7 @@ const handleReset = () => {
             <a href="#preview" className="header-link" onClick={() => setMobileMenuOpen(false)}>Интерактивное превью</a>
             <a href="#results" className="header-link" onClick={() => setMobileMenuOpen(false)}>Что вы получите</a>
             <a href="#analysis" className="header-link" onClick={() => setMobileMenuOpen(false)}>Как проходит анализ</a>
+            <Link href="/services" className="header-link" onClick={() => setMobileMenuOpen(false)}>Услуги</Link>
           </nav>
 
           <div className={`header-actions ${mobileMenuOpen ? "is-open" : ""}`}>

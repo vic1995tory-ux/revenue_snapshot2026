@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 
@@ -403,6 +404,14 @@ export default function CabinetPage() {
         </div>
 
         <div style={styles.headerRight}>
+          <Link href="/" style={styles.headerGhostLink}>
+            Главная
+          </Link>
+
+          <Link href="/services" style={styles.headerGhostLink}>
+            Услуги
+          </Link>
+
           <a
             href={WHATSAPP_HELP_URL}
             target="_blank"
@@ -1034,6 +1043,19 @@ const styles: Record<string, React.CSSProperties> = {
     fontWeight: 700,
     fontSize: "14px",
     cursor: "pointer",
+  },
+  headerGhostLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    borderRadius: "999px",
+    padding: "12px 16px",
+    fontWeight: 700,
+    fontSize: "14px",
+    textDecoration: "none",
   },
   hero: {
     position: "relative",
