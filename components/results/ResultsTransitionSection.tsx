@@ -137,6 +137,7 @@ export function ResultsTransitionSection({
       </p>
 
       <div className="mt-8 grid gap-10">
+        <div className="rounded-[30px] bg-[#0d131b] p-5 md:p-6">
         <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
           <div className="grid gap-5">
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
@@ -193,34 +194,55 @@ export function ResultsTransitionSection({
             </div>
           ) : null}
         </div>
+        </div>
 
+        <div className="rounded-[30px] bg-[#0d131b] p-5 md:p-6">
         <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
-          {revenue ? (
-            <GrowthKpiCard
-              title={revenue.metric}
-              current={revenue.current}
-              target={revenue.expected}
-              delta={revenue.delta}
-              driver={revenue.driver}
-            />
-          ) : null}
+          <div className="grid gap-4">
+            {revenue ? (
+              <GrowthKpiCard
+                title={revenue.metric}
+                current={revenue.current}
+                target={revenue.expected}
+                delta={revenue.delta}
+                driver={revenue.driver}
+              />
+            ) : null}
+            {profit ? (
+              <GrowthKpiCard
+                title={profit.metric}
+                current={profit.current}
+                target={profit.expected}
+                delta={profit.delta}
+                driver={profit.driver}
+              />
+            ) : null}
+          </div>
           <div>
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-              Revenue
+              Доход / прибыль
             </div>
-            <div className="mt-4 h-[260px]">
+            <div className="mt-4 h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={revenueTimeline}>
+                <AreaChart data={financeTimeline}>
                   <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
                   <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} />
+                  <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} tickFormatter={(value) => formatMoney(Number(value))} />
                   <Tooltip content={<TransitionTooltip />} />
                   <Area
                     type="monotone"
                     dataKey="revenue"
                     name="Revenue"
                     stroke="#f7d237"
-                    fill="rgba(247,210,55,0.18)"
+                    fill="rgba(247,210,55,0.16)"
+                    strokeWidth={3}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="profit"
+                    name="Profit"
+                    stroke="#57d6a3"
+                    fill="rgba(87,214,163,0.12)"
                     strokeWidth={3}
                   />
                 </AreaChart>
@@ -228,7 +250,9 @@ export function ResultsTransitionSection({
             </div>
           </div>
         </div>
+        </div>
 
+        <div className="rounded-[30px] bg-[#0d131b] p-5 md:p-6">
         <div className="grid items-center gap-7 xl:grid-cols-[1.08fr_0.92fr]">
           <div>
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
@@ -274,34 +298,6 @@ export function ResultsTransitionSection({
             ) : null}
           </div>
         </div>
-
-        <div className="grid items-center gap-7 xl:grid-cols-[0.92fr_1.08fr]">
-          {profit ? (
-            <GrowthKpiCard
-              title={profit.metric}
-              current={profit.current}
-              target={profit.expected}
-              delta={profit.delta}
-              driver={profit.driver}
-            />
-          ) : null}
-          <div>
-            <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-              Доход / прибыль
-            </div>
-            <div className="mt-4 h-[260px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={financeTimeline}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.07)" vertical={false} />
-                  <XAxis dataKey="month" tick={{ fill: "rgba(255,255,255,0.58)", fontSize: 12 }} />
-                  <YAxis tick={{ fill: "rgba(255,255,255,0.38)", fontSize: 12 }} tickFormatter={(value) => formatMoney(Number(value))} />
-                  <Tooltip content={<TransitionTooltip />} />
-                  <Line type="monotone" dataKey="revenue" name="Revenue" stroke="#f7d237" strokeWidth={3} />
-                  <Line type="monotone" dataKey="profit" name="Profit" stroke="#57d6a3" strokeWidth={3} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
         </div>
       </div>
     </section>

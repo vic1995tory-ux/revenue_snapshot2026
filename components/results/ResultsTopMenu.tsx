@@ -11,11 +11,10 @@ export function ResultsTopMenu() {
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
-    <header className="sticky top-4 z-30 mx-auto flex w-full max-w-[1440px] justify-end px-5 pt-4">
-      <nav className="flex flex-wrap items-center justify-end gap-2 rounded-full border border-white/10 bg-[#0d131b]/82 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl">
+      <div className="rs-top-actions flex flex-wrap items-center justify-end gap-2 border border-white/10 bg-[#0d131b]/82 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl">
         <a
           href="/cabinet-login"
-          className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-white/78 transition hover:bg-white/8 hover:text-white"
+          className="inline-flex h-10 items-center gap-2 rounded-[18px] px-4 text-sm font-medium text-white/78 transition hover:bg-white/8 hover:text-white"
         >
           <UserRound size={16} />
           Profile
@@ -24,7 +23,7 @@ export function ResultsTopMenu() {
         <div className="relative">
           <button
             type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-full px-4 text-sm font-medium text-white/78 transition hover:bg-white/8 hover:text-white"
+            className="inline-flex h-10 items-center gap-2 rounded-[18px] px-4 text-sm font-medium text-white/78 transition hover:bg-white/8 hover:text-white"
             onClick={() => {
               setCalendarOpen((value) => !value);
               setHelpOpen(false);
@@ -66,7 +65,7 @@ export function ResultsTopMenu() {
         <div className="relative">
           <button
             type="button"
-            className="inline-flex h-10 items-center gap-2 rounded-full bg-[#f7d237] px-4 text-sm font-semibold text-[#111820] transition hover:bg-[#ffe15a]"
+            className="inline-flex h-10 items-center gap-2 rounded-[18px] bg-[#f7d237] px-4 text-sm font-semibold text-[#111820] transition hover:bg-[#ffe15a]"
             onClick={() => {
               setHelpOpen((value) => !value);
               setCalendarOpen(false);
@@ -99,7 +98,6 @@ export function ResultsTopMenu() {
             </div>
           ) : null}
         </div>
-      </nav>
-    </header>
+      </div>
   );
 }

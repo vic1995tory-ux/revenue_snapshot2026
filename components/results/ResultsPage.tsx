@@ -39,25 +39,27 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
         <div className="rs-aurora rs-aurora-4" />
         <div className="rs-vignette" />
       </div>
-      <ResultsTopMenu />
       <div className="relative z-[2] mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
         <section className={focusClass(activeTopic, ["now", "problem"])} onClick={() => activeTopic && !["now", "problem"].includes(activeTopic) && setActiveTopic(null)}>
           <ResultsHeroSection hero={data.hero} />
         </section>
 
         <nav className="rs-question-nav">
-          {focusNavItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={`rs-question-btn ${activeTopic === item.id ? "is-active" : ""}`}
-              onClick={() =>
-                setActiveTopic((current) => (current === item.id ? null : item.id))
-              }
-            >
-              {item.label}
-            </button>
-          ))}
+          <div className="rs-question-group">
+            {focusNavItems.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                className={`rs-question-btn ${activeTopic === item.id ? "is-active" : ""}`}
+                onClick={() =>
+                  setActiveTopic((current) => (current === item.id ? null : item.id))
+                }
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <ResultsTopMenu />
         </nav>
 
         <section className={focusClass(activeTopic, ["solution", "plan"])} onClick={() => activeTopic && !["solution", "plan"].includes(activeTopic) && setActiveTopic(null)}>
