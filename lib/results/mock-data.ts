@@ -1928,6 +1928,33 @@ export const resultsMockData: ResultsPageData = {
           resultsPayloadMock.solution.business_impact.scalability_impact,
       },
     ],
+
+    kpis: [
+      {
+        label: "Capacity load",
+        current: "325%",
+        target: "75-100%",
+        change: "-200 to -250 p.p.",
+      },
+      {
+        label: "Conversion",
+        current: "7.69%",
+        target: "12-18%",
+        change: "1.6x-2.3x",
+      },
+      {
+        label: "Revenue",
+        current: "$1.9k cash-in",
+        target: "1.5x-3x",
+        change: "+50% to +200%",
+      },
+      {
+        label: "Profit",
+        current: "$1.0k estimated",
+        target: "1.5x-2x absolute",
+        change: "+50% to +100%+",
+      },
+    ],
   } as ResultsPageData["solution"],
 
 //RoadMap_начало
@@ -1967,19 +1994,19 @@ roadmap: {
 //forecasts_начало
   forecasts: {
     revenue: {
-      current: "1900 USD",
-      target: "N/A",
-      delta: 0,
+      current: "$1.9k cash-in",
+      target: "1.5x-3x",
+      delta: 100,
     },
     costs: {
-      current: "N/A",
-      target: "N/A",
-      delta: 0,
+      current: "325% capacity load",
+      target: "75-100%",
+      delta: -225,
     },
     profit: {
-      current: "1045 USD",
-      target: "N/A",
-      delta: 0,
+      current: "$1.0k estimated",
+      target: "1.5x-2x absolute",
+      delta: 75,
     },
     assumptions: [
       "Сначала снимается bottleneck в processing и ownership.",

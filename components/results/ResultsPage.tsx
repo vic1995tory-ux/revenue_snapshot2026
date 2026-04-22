@@ -2,8 +2,6 @@
 
 import { ResultsHeroSection } from "./ResultsHeroSection";
 import { ResultsSolutionSection } from "./ResultsSolutionSection";
-import { ResultsRoadmapSection } from "./ResultsRoadmapSection";
-import { ResultsForecastsSection } from "./ResultsForecastsSection";
 import { ResultsBusinessContextSection } from "./ResultsBusinessContextSection";
 import { ResultsBlockTabsSection } from "./ResultsBlockTabsSection";
 import { ResultsOverallSummarySection } from "./ResultsOverallSummarySection";
@@ -18,10 +16,9 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
         <ResultsSolutionSection
           solution={data.solution}
           roadmap={data.roadmap}
+          forecasts={data.forecasts}
         />
 
-        <ResultsRoadmapSection roadmap={data.roadmap} />
-        <ResultsForecastsSection forecasts={data.forecasts} />
         <ResultsBusinessContextSection context={data.businessContext} />
 
         <ResultsBlockTabsSection blocks={data.blocks} />

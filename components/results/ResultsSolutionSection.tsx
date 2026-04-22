@@ -1,7 +1,14 @@
 "use client";
 
 import type { ReactNode } from "react";
-import type { RoadmapData, SolutionData } from "@/lib/results/types";
+import type {
+  ForecastsData,
+  RoadmapData,
+  SolutionCard,
+  SolutionData,
+  SolutionKPI,
+  SolutionPriorityItem,
+} from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
 import {
   ArrowRight,
@@ -53,30 +60,6 @@ function getPhaseProgress(index: number) {
   return "w-1/3";
 }
 
-function getPriorityToneClasses(tone: PriorityTone) {
-  if (tone === "high") {
-    return {
-      badge: "border-[#f7d237]/30 bg-[#f7d237]/12 text-[#f7d237]",
-      dot: "bg-[#f7d237]",
-      label: "High priority",
-    };
-  }
-
-  if (tone === "medium") {
-    return {
-      badge: "border-white/15 bg-white/[0.08] text-white/80",
-      dot: "bg-[#8fa8ff]",
-      label: "Medium priority",
-    };
-  }
-
-  return {
-    badge: "border-white/10 bg-white/[0.05] text-white/65",
-    dot: "bg-white/35",
-    label: "Lower priority",
-  };
-}
-
 function SolutionSignalCard({
   eyebrow,
   title,
@@ -106,149 +89,91 @@ function SolutionSignalCard({
   );
 }
 
-function SolutionFlow({
-  roadmap,
-}: {
-  roadmap: RoadmapData;
-}) {
-  return (
-    <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
-      <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-        <div>
-          <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-            Priority flow
-          </div>
-          <h3 className="mt-2 text-[24px] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
-            Task order and execution sequence
-          </h3>
-        </div>
-
-        <div className="text-sm leading-[1.6] text-white/52 md:max-w-[420px] md:text-right">
-          Solution should behave as an operating sequence: first remove overload,
-          then improve conversion, then scale the system.
-        </div>
-      </div>
-
-      <div className="mt-6 hidden items-center gap-3 lg:flex">
-        {roadmap.phases.map((phase, index) => {
-          const tone = getPhaseTone(index);
-          const styles = getPhaseToneClasses(tone);
-
-          return (
-            <div
-              key={`${phase.period}-${phase.title}`}
-              className="flex min-w-0 flex-1 items-center gap-3"
-            >
-              <div className="min-w-0 flex-1 rounded-[20px] border border-white/10 bg-[#0a1b38] p-4">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="text-xs uppercase tracking-[0.14em] text-white/45">
-                    Phase {index + 1}
-                  </div>
-                  <span
-                    className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
-                  >
-                    {styles.label}
-                  </span>
-                </div>
-
-                <div className="mt-3 text-[18px] font-medium leading-[1.3] text-white">
-                  {phase.title}
-                </div>
-
-                <div className="mt-2 text-sm leading-[1.55] text-white/58">
-                  {phase.description}
-                </div>
-
-                <div className="mt-4">
-                  <div className="mb-2 text-[11px] uppercase tracking-[0.12em] text-white/38">
-                    Execution weight
-                  </div>
-                  <div className="h-2 rounded-full bg-white/8">
-                    <div
-                      className={`h-2 rounded-full bg-gradient-to-r ${styles.bar} ${getPhaseProgress(index)}`}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {index < roadmap.phases.length - 1 ? (
-                <div className="shrink-0 text-white/24">
-                  <MoveRight size={18} />
-                </div>
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-6 grid gap-4 lg:hidden">
-        {roadmap.phases.map((phase, index) => {
-          const tone = getPhaseTone(index);
-          const styles = getPhaseToneClasses(tone);
-
-          return (
-            <div
-              key={`${phase.period}-${phase.title}-mobile`}
-              className="rounded-[22px] border border-white/10 bg-[#0a1b38] p-4"
-            >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
-                  <div className="text-xs uppercase tracking-[0.14em] text-white/45">
-                    Phase {index + 1}
-                  </div>
-                </div>
-
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
-                >
-                  {styles.label}
-                </span>
-              </div>
-
-              <div className="mt-3 text-[17px] font-medium leading-[1.35] text-white">
-                {phase.title}
-              </div>
-
-              <div className="mt-2 text-sm leading-[1.55] text-white/58">
-                {phase.description}
-              </div>
-
-              <div className="mt-4 h-2 rounded-full bg-white/8">
-                <div
-                  className={`h-2 rounded-full bg-gradient-to-r ${styles.bar} ${getPhaseProgress(index)}`}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
+function getLinkedSolutionCard(index: number, cards: SolutionCard[]) {
+  if (index === 0) return cards[1] ?? cards[0];
+  if (index === 1) return cards[0] ?? cards[2];
+  return cards[3] ?? cards[0];
 }
 
-function SolutionExecutionMap({
+function getStagePriority(
+  index: number,
+  priorities: SolutionPriorityItem[],
+) {
+  return priorities[index];
+}
+
+function getStageKpis(
+  index: number,
+  kpis: SolutionKPI[],
+  forecasts: ForecastsData,
+) {
+  if (index === 0) {
+    return [
+      kpis.find((item) => item.label === "Capacity load") ?? {
+        label: "Capacity load",
+        current: forecasts.costs.current,
+        target: forecasts.costs.target,
+        change: `${forecasts.costs.delta}%`,
+      },
+    ];
+  }
+
+  if (index === 1) {
+    return [
+      kpis.find((item) => item.label === "Conversion"),
+      kpis.find((item) => item.label === "Revenue") ?? {
+        label: "Revenue",
+        current: forecasts.revenue.current,
+        target: forecasts.revenue.target,
+        change: `+${forecasts.revenue.delta}%`,
+      },
+    ].filter(Boolean) as SolutionKPI[];
+  }
+
+  return [
+    kpis.find((item) => item.label === "Profit") ?? {
+      label: "Profit",
+      current: forecasts.profit.current,
+      target: forecasts.profit.target,
+      change: `+${forecasts.profit.delta}%`,
+    },
+    kpis.find((item) => item.label === "Revenue"),
+  ].filter(Boolean) as SolutionKPI[];
+}
+
+function getStageControlPoints(roadmap: RoadmapData, index: number) {
+  const points = roadmap.controlPoints ?? [];
+  const chunkSize = Math.ceil(points.length / Math.max(roadmap.phases.length, 1));
+  return points.slice(index * chunkSize, index * chunkSize + chunkSize);
+}
+
+function SolutionStageSystem({
   solution,
+  roadmap,
+  forecasts,
 }: {
   solution: SolutionData;
+  roadmap: RoadmapData;
+  forecasts: ForecastsData;
 }) {
   const priorities = solution.priorities ?? [];
-  const outcomes = solution.expectedOutcomes ?? [];
+  const kpis = solution.kpis ?? [];
 
   return (
     <div className="rounded-[28px] border border-white/10 bg-white/[0.03] p-5 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-            Execution map
+            Solution system
           </div>
           <h3 className="mt-2 text-[24px] font-semibold leading-[1.05] tracking-[-0.03em] text-white">
-            What needs to be executed inside the solution
+            One logic, three stages, measurable impact
           </h3>
         </div>
 
         <div className="text-sm leading-[1.6] text-white/52 md:max-w-[430px] md:text-right">
-          This layer should show concrete execution priorities, not repeat the roadmap.
+          Solution, roadmap and forecasts are combined by stage: each phase
+          shows what it fixes, what to do, and which numbers should move.
         </div>
       </div>
 
@@ -263,66 +188,177 @@ function SolutionExecutionMap({
         </div>
       ) : null}
 
-      <div className="mt-6 grid gap-4 xl:grid-cols-3">
-        {priorities.map((item, index) => {
-          const tone = item.priority ?? (index === 0 ? "high" : index === 1 ? "medium" : "low");
-          const styles = getPriorityToneClasses(tone);
+      <div className="mt-6 grid gap-5">
+        {roadmap.phases.map((phase, index) => {
+          const tone = getPhaseTone(index);
+          const styles = getPhaseToneClasses(tone);
+          const linkedCard = getLinkedSolutionCard(index, solution.cards);
+          const priority = getStagePriority(index, priorities);
+          const stageKpis = getStageKpis(index, kpis, forecasts);
+          const controlPoints = getStageControlPoints(roadmap, index);
 
           return (
             <div
-              key={`${item.step}-${item.label}`}
-              className="rounded-[24px] border border-white/10 bg-[#0a1b38] p-5"
+              key={`${phase.period}-${phase.title}`}
+              className="rounded-[26px] border border-white/10 bg-[#0a1b38] p-5 md:p-6"
             >
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
-                  <div className="text-xs uppercase tracking-[0.14em] text-white/42">
-                    Step {item.step}
+              <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
+                <div>
+                  <div className="flex flex-wrap items-center gap-3">
+                    <span
+                      className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
+                    >
+                      Stage {index + 1}: {phase.period}
+                    </span>
+                    <span className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.12em] text-white/38">
+                      <span className={`h-2.5 w-2.5 rounded-full ${styles.dot}`} />
+                      {styles.label}
+                    </span>
                   </div>
+
+                  <div className="mt-4 text-[22px] font-semibold leading-[1.16] tracking-[-0.03em] text-white md:text-[28px]">
+                    {phase.title}
+                  </div>
+
+                  <div className="mt-3 text-sm leading-[1.65] text-white/60">
+                    {phase.description}
+                  </div>
+
+                  {linkedCard ? (
+                    <div className="mt-5 rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+                      <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
+                        Linked solution piece
+                      </div>
+                      <div className="mt-2 text-[17px] font-medium leading-[1.35] text-white">
+                        {linkedCard.value}
+                      </div>
+                      {linkedCard.note ? (
+                        <div className="mt-2 text-sm leading-[1.6] text-white/58">
+                          {linkedCard.note}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
 
-                <span
-                  className={`rounded-full border px-2.5 py-1 text-[11px] uppercase tracking-[0.08em] ${styles.badge}`}
-                >
-                  {styles.label}
-                </span>
+                <div className="grid gap-4">
+                  {priority ? (
+                    <div className="rounded-[20px] border border-white/10 bg-white/[0.04] p-4">
+                      <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-white/40">
+                        <ArrowRight size={14} />
+                        Priority action
+                      </div>
+                      <div className="mt-2 text-[17px] font-medium leading-[1.4] text-white">
+                        {priority.label}
+                      </div>
+                      <div className="mt-2 text-sm leading-[1.6] text-white/58">
+                        {priority.description}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="grid gap-3 md:grid-cols-2">
+                    {stageKpis.map((item) => (
+                      <div
+                        key={`${phase.period}-${item.label}`}
+                        className="rounded-[18px] border border-white/10 bg-[#091934] p-4"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
+                            {item.label}
+                          </div>
+                          {item.change ? (
+                            <div className="text-xs font-medium text-emerald-300">
+                              {item.change}
+                            </div>
+                          ) : null}
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-3">
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.12em] text-white/32">
+                              Current
+                            </div>
+                            <div className="mt-1 text-[15px] font-medium text-white">
+                              {item.current ?? "N/A"}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-[11px] uppercase tracking-[0.12em] text-white/32">
+                              Target
+                            </div>
+                            <div className="mt-1 text-[15px] font-medium text-white">
+                              {item.target ?? "N/A"}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div>
+                    <div className="mb-2 text-[11px] uppercase tracking-[0.12em] text-white/38">
+                      Execution weight
+                    </div>
+                    <div className="h-2 rounded-full bg-white/8">
+                      <div
+                        className={`h-2 rounded-full bg-gradient-to-r ${styles.bar} ${getPhaseProgress(index)}`}
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
 
-              <div className="mt-3 text-[19px] font-medium leading-[1.3] text-white">
-                {item.label}
+              <div className="mt-5 grid gap-3 lg:grid-cols-3">
+                {phase.tasks.slice(0, 3).map((task) => (
+                  <div
+                    key={`${phase.period}-${task.action}`}
+                    className="rounded-[18px] border border-white/8 bg-white/[0.03] p-4"
+                  >
+                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/35">
+                      {task.label}
+                    </div>
+                    <div className="mt-2 text-sm leading-[1.55] text-white/78">
+                      {task.action}
+                    </div>
+                  </div>
+                ))}
               </div>
 
-              <div className="mt-3 text-sm leading-[1.6] text-white/60">
-                {item.description}
-              </div>
+              {controlPoints.length ? (
+                <div className="mt-5 grid gap-3 md:grid-cols-2">
+                  {controlPoints.map((point) => (
+                    <div
+                      key={`${phase.period}-${point.metric}`}
+                      className="rounded-[18px] border border-white/8 bg-white/[0.025] p-4"
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
+                          Control point
+                        </div>
+                        {point.confidenceLevel ? (
+                          <ConfidenceDots level={point.confidenceLevel} />
+                        ) : null}
+                      </div>
+                      <div className="mt-2 text-[15px] font-medium text-white">
+                        {point.metric}
+                      </div>
+                      <div className="mt-2 text-sm leading-[1.55] text-white/58">
+                        {point.signal}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
+              {index < roadmap.phases.length - 1 ? (
+                <div className="mt-5 flex justify-center text-white/24">
+                  <MoveRight size={20} />
+                </div>
+              ) : null}
             </div>
           );
         })}
       </div>
-
-      {outcomes.length ? (
-        <div className="mt-6">
-          <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-            Expected outcomes
-          </div>
-
-          <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {outcomes.map((item) => (
-              <div
-                key={item.label}
-                className="rounded-[20px] border border-white/10 bg-[#0a1b38] p-4"
-              >
-                <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-                  {item.label}
-                </div>
-                <div className="mt-2 text-sm leading-[1.6] text-white/76">
-                  {item.description}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }
@@ -330,9 +366,11 @@ function SolutionExecutionMap({
 export function ResultsSolutionSection({
   solution,
   roadmap,
+  forecasts,
 }: {
   solution: SolutionData;
   roadmap: RoadmapData;
+  forecasts: ForecastsData;
 }) {
   const [leverCard, constraintCard, lossCard, modelShiftCard] = solution.cards;
   const priorityLabels = (solution.priorities ?? []).slice(0, 3);
@@ -455,9 +493,11 @@ export function ResultsSolutionSection({
           </div>
         </div>
 
-        <SolutionFlow roadmap={roadmap} />
-
-        <SolutionExecutionMap solution={solution} />
+        <SolutionStageSystem
+          solution={solution}
+          roadmap={roadmap}
+          forecasts={forecasts}
+        />
       </div>
     </section>
   );
