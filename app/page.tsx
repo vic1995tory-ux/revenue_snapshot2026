@@ -1382,9 +1382,7 @@ const [history, setHistory] = useState<
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
-  const paymentRecoveryUrl = `https://wa.me/995555163833?text=${encodeURIComponent(
-    "Я случайно закрыла PayPal после оплаты. Проверьте, пожалуйста, мою запись и, если найдёте оплату, отправьте повторно ссылку на завершение регистрации."
-  )}`;
+  const paymentRecoveryUrl = "/payment-recovery";
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
 
   const selectedOfferConfig = TARIFF_COMPARE_CONFIG[selectedOffer];
@@ -2576,8 +2574,6 @@ const handleReset = () => {
             <div className="payment-overlay-actions payment-overlay-actions-stacked">
               <a
                 href={paymentRecoveryUrl}
-                target="_blank"
-                rel="noreferrer"
                 className="payment-overlay-btn payment-overlay-btn-secondary payment-overlay-btn-link"
               >
                 Я случайно закрыл PayPal после оплаты
