@@ -11,6 +11,7 @@ import type {
   SolutionPriorityItem,
 } from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
+import { GrowthKpiCard } from "./GrowthKpiCard";
 import {
   ArrowRight,
   CircleAlert,
@@ -165,7 +166,7 @@ function SolutionStageSystem({
   const kpis = solution.kpis ?? [];
 
   return (
-    <div className="rounded-[28px] bg-white/[0.03] p-5 md:p-6">
+    <div className="rounded-[28px] bg-[#121923] p-5 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
         <div>
           <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
@@ -183,7 +184,7 @@ function SolutionStageSystem({
       </div>
 
       {solution.decisionRule ? (
-        <div className="mt-6 rounded-[22px] bg-[#171f2a] p-4">
+        <div className="mt-6 rounded-[22px] bg-[#0d131b] p-4">
           <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
             Decision rule
           </div>
@@ -210,7 +211,7 @@ function SolutionStageSystem({
           return (
             <div
               key={`${phase.period}-${phase.title}`}
-              className="rounded-[26px] bg-[#171f2a] p-5 md:p-6"
+              className="rounded-[26px] bg-[#151e29] p-5 md:p-6"
             >
               <div className="grid gap-5 xl:grid-cols-[0.9fr_1.1fr]">
                 <div>
@@ -235,7 +236,7 @@ function SolutionStageSystem({
                   </div>
 
                   {linkedCard ? (
-                    <div className="mt-5 rounded-[20px] bg-white/[0.04] p-4">
+                    <div className="mt-5 rounded-[20px] bg-[#0d131b] p-4">
                       <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
                         Linked solution piece
                       </div>
@@ -253,7 +254,7 @@ function SolutionStageSystem({
 
                 <div className="grid gap-4">
                   {priority ? (
-                    <div className="rounded-[20px] bg-white/[0.04] p-4">
+                    <div className="rounded-[20px] bg-[#0d131b] p-4">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.12em] text-white/40">
                         <ArrowRight size={14} />
                         Priority action
@@ -269,39 +270,13 @@ function SolutionStageSystem({
 
                   <div className="grid gap-3 md:grid-cols-2">
                     {stageKpis.map((item) => (
-                      <div
+                      <GrowthKpiCard
                         key={`${phase.period}-${item.label}`}
-                        className="rounded-[18px] bg-[#111820] p-4"
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-                            {item.label}
-                          </div>
-                          {item.change ? (
-                            <div className="text-xs font-medium text-emerald-300">
-                              {item.change}
-                            </div>
-                          ) : null}
-                        </div>
-                        <div className="mt-3 grid grid-cols-2 gap-3">
-                          <div>
-                            <div className="text-[11px] uppercase tracking-[0.12em] text-white/32">
-                              Current
-                            </div>
-                            <div className="mt-1 text-[15px] font-medium text-white">
-                              {item.current ?? "N/A"}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-[11px] uppercase tracking-[0.12em] text-white/32">
-                              Target
-                            </div>
-                            <div className="mt-1 text-[15px] font-medium text-white">
-                              {item.target ?? "N/A"}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                        title={item.label}
+                        current={item.current}
+                        target={item.target}
+                        delta={item.change}
+                      />
                     ))}
                   </div>
 
@@ -318,20 +293,25 @@ function SolutionStageSystem({
                 </div>
               </div>
 
-              <div className="mt-5 grid gap-3 lg:grid-cols-3">
-                {phase.tasks.map((task) => (
+              <div className="mt-6 overflow-hidden border-t border-white/10">
+                <div className="grid md:grid-cols-2 xl:grid-cols-3">
+                {phase.tasks.map((task, taskIndex) => (
                   <div
                     key={`${phase.period}-${task.action}`}
-                    className="rounded-[18px] bg-white/[0.03] p-4"
+                    className="min-h-[210px] border-b border-white/10 p-5 md:p-6 xl:border-r xl:[&:nth-child(3n)]:border-r-0"
                   >
-                    <div className="text-[11px] uppercase tracking-[0.12em] text-white/35">
+                    <div className="text-[54px] font-semibold leading-none tracking-[-0.05em] text-white/22">
+                      {String(taskIndex + 1).padStart(2, "0")}
+                    </div>
+                    <div className="mt-7 text-[11px] uppercase tracking-[0.16em] text-[#f7d237]">
                       {task.label}
                     </div>
-                    <div className="mt-2 text-sm leading-[1.55] text-white/78">
+                    <div className="mt-3 text-[17px] font-medium leading-[1.5] text-white/84">
                       {task.action}
                     </div>
                   </div>
                 ))}
+                </div>
               </div>
 
               {controlPoints.length ? (
@@ -339,7 +319,7 @@ function SolutionStageSystem({
                   {controlPoints.map((point) => (
                     <div
                       key={`${phase.period}-${point.metric}`}
-                      className="rounded-[18px] bg-white/[0.025] p-4"
+                      className="rounded-[18px] bg-[#0d131b] p-4"
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="text-[11px] uppercase tracking-[0.12em] text-[#f7d237]">
@@ -386,9 +366,9 @@ export function ResultsSolutionSection({
   const priorityLabels = (solution.priorities ?? []).slice(0, 3);
 
   return (
-    <section className="rounded-[32px] bg-white/5 p-6 backdrop-blur-xl md:p-8">
+    <section className="rounded-[32px] bg-[#121923] p-6 backdrop-blur-xl md:p-8">
       <div className="flex flex-col gap-6">
-        <div className="relative overflow-hidden rounded-[30px] bg-[#171f2a] p-6 md:p-7">
+        <div className="relative overflow-hidden rounded-[30px] bg-[#151e29] p-6 md:p-7">
           <div className="pointer-events-none absolute inset-0 opacity-[0.13]">
             <Image
               src="/hero.svg"
@@ -461,7 +441,7 @@ export function ResultsSolutionSection({
           </div>
 
           <div className="xl:col-span-4">
-            <div className="h-full rounded-[28px] bg-[#171f2a] p-5">
+            <div className="h-full rounded-[28px] bg-[#0d131b] p-5">
               <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
                 Decision rule
               </div>

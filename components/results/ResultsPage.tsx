@@ -9,12 +9,14 @@ import { ResultsReliabilitySection } from "./ResultsReliabilitySection";
 import { ResultsBusinessContextSection } from "./ResultsBusinessContextSection";
 import { ResultsBlockTabsSection } from "./ResultsBlockTabsSection";
 import { ResultsOverallSummarySection } from "./ResultsOverallSummarySection";
+import { ResultsTopMenu } from "./ResultsTopMenu";
 import type { ResultsPageData } from "@/lib/results/types";
 
 export function ResultsPage({ data }: { data: ResultsPageData }) {
   return (
     <main className="min-h-screen bg-[#111820] text-white">
-      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-10">
+      <ResultsTopMenu />
+      <div className="mx-auto flex w-full max-w-[1440px] flex-col gap-8 px-5 pb-16 pt-6">
         <ResultsHeroSection hero={data.hero} />
 
         <ResultsBlockTabsSection blocks={data.blocks} />
@@ -29,7 +31,7 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
 
         <ResultsScenariosSection scenarios={data.scenarios} />
 
-        <ResultsEvidenceSection evidence={data.evidence} />
+        <ResultsEvidenceSection evidence={data.evidence} baseRevenue={data.hero.cashIn} />
 
         <ResultsReliabilitySection reliability={data.reliability} />
 

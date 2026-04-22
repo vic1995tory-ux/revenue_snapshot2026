@@ -2,6 +2,7 @@
 
 import type { TransitionData } from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
+import { GrowthKpiCard } from "./GrowthKpiCard";
 import {
   Area,
   AreaChart,
@@ -168,21 +169,18 @@ export function ResultsTransitionSection({
             </div>
           </div>
 
-          <table className="w-full text-left text-sm">
-            <tbody>
-              {transition.kpiChanges.map((item) => (
-                <tr key={item.metric} className="border-b border-white/7 last:border-b-0">
-                  <th className="py-3 pr-4 font-normal text-white/50">
-                    {item.metric}
-                  </th>
-                  <td className="py-3 text-white">{item.current}</td>
-                  <td className="py-3 text-right text-[#f7d237]">
-                    {item.delta}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="grid gap-4">
+            {transition.kpiChanges.map((item) => (
+              <GrowthKpiCard
+                key={item.metric}
+                title={item.metric}
+                current={item.current}
+                target={item.expected}
+                delta={item.delta}
+                driver={item.driver}
+              />
+            ))}
+          </div>
         </div>
 
         <div className="grid gap-7">

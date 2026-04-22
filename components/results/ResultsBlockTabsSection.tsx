@@ -4,16 +4,6 @@ import Image from "next/image";
 import { useMemo } from "react";
 import type { AnalyticalBlockData } from "@/lib/results/types";
 import { ConfidenceDots } from "./ConfidenceDots";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 
 const BLOCK_ORDER = [
   "strategy",
@@ -35,52 +25,7 @@ const BLOCK_TITLES: Record<string, string> = {
   economics: "Экономика",
 };
 
-const colors = ["#f7d237", "#57d6a3", "#d4a373", "#e9c46a", "#b8c0aa"];
-
-function extractNumber(value: string) {
-  const match = value.replace(",", ".").match(/-?\d+(\.\d+)?/);
-  if (!match) return null;
-  const number = Number(match[0]);
-  return Number.isFinite(number) ? Math.abs(number) : null;
-}
-
-function chartDataFromSignals(block: AnalyticalBlockData) {
-  return block.keySignals
-    .map((signal) => ({
-      name: signal.label,
-      value: extractNumber(signal.value),
-      raw: signal.value,
-    }))
-    .filter((item): item is { name: string; value: number; raw: string } =>
-      item.value !== null && item.value > 0
-    );
-}
-
-function SignalTooltip({
-  active,
-  payload,
-}: {
-  active?: boolean;
-  payload?: Array<{ payload?: { name?: string; raw?: string } }>;
-}) {
-  if (!active || !payload?.length) return null;
-
-  const item = payload[0]?.payload;
-
-  return (
-    <div className="rounded-[16px] bg-[#111820]/95 p-3 shadow-2xl">
-      <div className="text-xs uppercase tracking-[0.16em] text-[#f7d237]">
-        Показатель
-      </div>
-      <div className="mt-2 text-sm font-medium text-white">
-        {item?.name}: {item?.raw}
-      </div>
-    </div>
-  );
-}
-
 function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
-  const chartData = chartDataFromSignals(block);
   const title = BLOCK_TITLES[block.id] ?? block.title;
 
   return (
@@ -135,9 +80,9 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
                   Показатели
                 </h3>
               </div>
-              {chartData.length ? (
+              {block.keySignals.length ? (
                 <div className="text-sm text-white/45">
-                  {chartData.length} числ.
+                  {block.keySignals.length} сигн.
                 </div>
               ) : null}
             </div>
@@ -159,48 +104,6 @@ function AnalyticalBlockCard({ block }: { block: AnalyticalBlockData }) {
               </table>
             </div>
           </div>
-
-          {chartData.length >= 2 ? (
-            <div>
-              <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
-                Сравнение
-              </div>
-              <div className="mt-4 h-[230px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} barCategoryGap={14}>
-                    <CartesianGrid
-                      stroke="rgba(255,255,255,0.06)"
-                      vertical={false}
-                    />
-                    <XAxis
-                      dataKey="name"
-                      tick={{ fill: "rgba(255,255,255,0.62)", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                      interval={0}
-                    />
-                    <YAxis
-                      tick={{ fill: "rgba(255,255,255,0.36)", fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <Tooltip
-                      content={<SignalTooltip />}
-                      cursor={{ fill: "rgba(255,255,255,0.035)" }}
-                    />
-                    <Bar dataKey="value" radius={[8, 8, 3, 3]}>
-                      {chartData.map((item, index) => (
-                        <Cell
-                          key={`${item.name}-${item.raw}`}
-                          fill={colors[index % colors.length]}
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-          ) : null}
 
           <div>
             <div className="text-sm uppercase tracking-[0.14em] text-[#f7d237]">
