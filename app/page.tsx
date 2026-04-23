@@ -3,12 +3,18 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import {
+  CONSENT_EVENT,
+  readStoredConsent,
+  type ConsentState,
+} from "@/lib/consent";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    fbq?: (...args: unknown[]) => void;
   }
 }
 
@@ -1346,6 +1352,11 @@ function StageCarousel() {
 
 
 export default function Home() {
+  const homepageTrackedRef = useRef(false);
+  const [consentState, setConsentState] = useState<ConsentState>({
+    analytics: false,
+    marketing: false,
+  });
   const [clientsInput, setClientsInput] = useState("20");
   const [checkInput, setCheckInput] = useState("2000");
   const [marginInput, setMarginInput] = useState("30");
@@ -1433,10 +1444,38 @@ const [history, setHistory] = useState<
   const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
 
   useEffect(() => {
+    const applyConsent = (nextConsent: ConsentState | null) => {
+      const normalized = nextConsent ?? { analytics: false, marketing: false };
+      setConsentState(normalized);
+
+      if (typeof window.gtag === "function") {
+        window.gtag("consent", "update", {
+          analytics_storage: normalized.analytics ? "granted" : "denied",
+          ad_storage: normalized.marketing ? "granted" : "denied",
+          ad_user_data: normalized.marketing ? "granted" : "denied",
+          ad_personalization: normalized.marketing ? "granted" : "denied",
+        });
+      }
+    };
+
+    applyConsent(readStoredConsent());
+
+    const handleConsent = (event: Event) => {
+      applyConsent((event as CustomEvent<ConsentState>).detail);
+    };
+
+    window.addEventListener(CONSENT_EVENT, handleConsent);
+    return () => window.removeEventListener(CONSENT_EVENT, handleConsent);
+  }, []);
+
+  useEffect(() => {
+    if (!consentState.analytics || homepageTrackedRef.current) return;
+
     trackEvent("homepage_view", {
       page_title: "Revenue Snapshot Home",
     });
-  }, []);
+    homepageTrackedRef.current = true;
+  }, [consentState.analytics]);
 
   const selectedOfferConfig = TARIFF_COMPARE_CONFIG[selectedOffer];
   const selectedOfferCard =
@@ -1690,6 +1729,12 @@ const strategyOptions = [
       value: plan === "onrec" ? 770 : 148,
       plan,
       checkout_provider: "paypal",
+    });
+    window.fbq?.("track", "InitiateCheckout", {
+      currency: "USD",
+      value: plan === "onrec" ? 770 : 148,
+      content_name: plan === "onrec" ? "On Rec" : "Online Playground",
+      content_type: "product",
     });
     window.open(paypalUrl, "_blank", "noopener,noreferrer");
     setPaymentState("waiting");
@@ -2099,7 +2144,29 @@ const handleReset = () => {
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('js', new Date());
-          gtag('config', '${GA_ID}');
+          gtag('consent', 'default', {
+            analytics_storage: 'denied',
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            wait_for_update: 500
+          });
+          gtag('config', '${GA_ID}', {
+            anonymize_ip: true,
+            send_page_view: false
+          });
+          try {
+            var storedConsentRaw = window.localStorage.getItem('growth_avenue_consent_v1');
+            if (storedConsentRaw) {
+              var storedConsent = JSON.parse(storedConsentRaw);
+              gtag('consent', 'update', {
+                analytics_storage: storedConsent.analytics ? 'granted' : 'denied',
+                ad_storage: storedConsent.marketing ? 'granted' : 'denied',
+                ad_user_data: storedConsent.marketing ? 'granted' : 'denied',
+                ad_personalization: storedConsent.marketing ? 'granted' : 'denied'
+              });
+            }
+          } catch (e) {}
         `}
       </Script>
 
