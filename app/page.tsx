@@ -1,8 +1,28 @@
 "use client";
 
 import Link from "next/link";
+import Script from "next/script";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[];
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+
+const GA_ID = "G-3C4NMTKDRJ";
+
+function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
+  if (typeof window === "undefined" || typeof window.gtag !== "function") return;
+
+  window.gtag("event", eventName, {
+    page_location: window.location.href,
+    page_path: window.location.pathname,
+    ...params,
+  });
+}
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -1411,6 +1431,12 @@ const [history, setHistory] = useState<
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
   const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
 
+  useEffect(() => {
+    trackEvent("homepage_view", {
+      page_title: "Revenue Snapshot Home",
+    });
+  }, []);
+
   const selectedOfferConfig = TARIFF_COMPARE_CONFIG[selectedOffer];
   const selectedOfferCard =
     selectedOffer === "playground"
@@ -1646,7 +1672,13 @@ const strategyOptions = [
   },
 ];
 
-  const handlePay = (paypalUrl: string) => {
+  const handlePay = (paypalUrl: string, plan: "playground" | "onrec" = "playground") => {
+    trackEvent("begin_checkout", {
+      currency: "USD",
+      value: plan === "onrec" ? 770 : 148,
+      plan,
+      checkout_provider: "paypal",
+    });
     window.open(paypalUrl, "_blank", "noopener,noreferrer");
     setPaymentState("waiting");
   };
@@ -2006,6 +2038,10 @@ const handleReset = () => {
   const handleStrategySelect = (key: StrategyKey) => {
     pushHistory();
 
+    trackEvent("preview_strategy_select", {
+      strategy: key,
+    });
+
     if (selectedStrategy === key) {
       setSelectedStrategy(null);
       return;
@@ -2041,7 +2077,19 @@ const handleReset = () => {
 
   return (
     <main className="page-shell" id="top">
-   
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="afterInteractive"
+      />
+      <Script id="google-analytics-homepage" strategy="afterInteractive">
+        {`
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          window.gtag = gtag;
+          gtag('js', new Date());
+          gtag('config', '${GA_ID}');
+        `}
+      </Script>
 
       <div className="page-background" aria-hidden="true">
         <div className="aurora aurora-1" />
@@ -2082,16 +2130,51 @@ const handleReset = () => {
               type="button"
               className="header-faq-btn"
               onClick={() => {
+                trackEvent("faq_open", { location: "header" });
                 setFaqOpen(true);
                 setMobileMenuOpen(false);
               }}
             >
               FAQ
             </button>
-            <a href={loginUrl} className="header-login-btn" onClick={() => setMobileMenuOpen(false)}>Profile</a>
-            <a href="#tariffs" className="tg-gradient-btn header-cta" onClick={() => setMobileMenuOpen(false)}>Начать</a>
-            <a href={tgContactUrl} className="header-pill" target="_blank" rel="noreferrer">TG</a>
-            <a href={waContactUrl} className="header-pill" target="_blank" rel="noreferrer">WA</a>
+            <a
+              href={loginUrl}
+              className="header-login-btn"
+              onClick={() => {
+                trackEvent("login_click", { location: "header" });
+                setMobileMenuOpen(false);
+              }}
+            >
+              Profile
+            </a>
+            <a
+              href="#tariffs"
+              className="tg-gradient-btn header-cta"
+              onClick={() => {
+                trackEvent("cta_click", { cta_name: "start", location: "header" });
+                setMobileMenuOpen(false);
+              }}
+            >
+              Начать
+            </a>
+            <a
+              href={tgContactUrl}
+              className="header-pill"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackEvent("generate_lead", { method: "telegram", location: "header" })}
+            >
+              TG
+            </a>
+            <a
+              href={waContactUrl}
+              className="header-pill"
+              target="_blank"
+              rel="noreferrer"
+              onClick={() => trackEvent("generate_lead", { method: "whatsapp", location: "header" })}
+            >
+              WA
+            </a>
           </div>
         </div>
       </header>
@@ -2120,8 +2203,20 @@ const handleReset = () => {
               </div>
 
               <div className="hero-actions-row">
-                <a href="#tariffs" className="tg-gradient-btn inline-flex">Начать</a>
-                <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
+                <a
+                  href="#tariffs"
+                  className="tg-gradient-btn inline-flex"
+                  onClick={() => trackEvent("cta_click", { cta_name: "start", location: "hero" })}
+                >
+                  Начать
+                </a>
+                <a
+                  href="#preview"
+                  className="ghost-link ghost-link-dark inline-flex"
+                  onClick={() => trackEvent("cta_click", { cta_name: "try_demo", location: "hero" })}
+                >
+                  Попробовать демо
+                </a>
               </div>
             </div>
 
@@ -2179,7 +2274,13 @@ const handleReset = () => {
               <div className="journey-demo-copy">
                 Чтобы понять логику модели до полного анализа — попробуйте упрощённую демо-версию ниже.
               </div>
-              <a href="#preview" className="ghost-link ghost-link-dark inline-flex">Попробовать демо</a>
+              <a
+                href="#preview"
+                className="ghost-link ghost-link-dark inline-flex"
+                onClick={() => trackEvent("cta_click", { cta_name: "try_demo", location: "journey_bridge" })}
+              >
+                Попробовать демо
+              </a>
             </div>
           </div>
         </section>
@@ -2337,7 +2438,13 @@ const handleReset = () => {
               type="button"
               className={`preview-mobile-fab ${hasPreviewInteraction ? "is-pulsing" : ""} ${previewMobileFloatingVisible ? "is-visible" : ""}`}
               aria-label="Открыть Snapshot reserve"
-              onClick={() => setPreviewMobilePopupOpen(true)}
+              onClick={() => {
+                trackEvent("cta_click", {
+                  cta_name: "open_preview_popup",
+                  location: "mobile_floating",
+                });
+                setPreviewMobilePopupOpen(true);
+              }}
             >
               S
             </button>
@@ -2376,7 +2483,11 @@ const handleReset = () => {
                 </div>
               </div>
 
-              <button type="button" className="tg-gradient-btn mt-5 block w-full text-center" onClick={() => handlePay(payUrl)}>
+              <button
+                type="button"
+                className="tg-gradient-btn mt-5 block w-full text-center"
+                onClick={() => handlePay(payUrl, "playground")}
+              >
                 Попробовать Snapshot
               </button>
             </aside>
@@ -2403,7 +2514,13 @@ const handleReset = () => {
             <div className="results-roadmap-note">
               После получения и изучения результатов у Вас есть возможность назначить <span>30-минутную встречу</span> с нашими C-level специалистами в сфере Маркетинга и Продаж <span>для декомпозиции результатов</span>.
             </div>
-            <button type="button" className="result-doc-start-btn results-start-btn" onClick={() => handlePay(payUrl)}>Начать</button>
+            <button
+              type="button"
+              className="result-doc-start-btn results-start-btn"
+              onClick={() => handlePay(payUrl, "playground")}
+            >
+              Начать
+            </button>
           </div>
         </section>
 
@@ -2443,7 +2560,7 @@ const handleReset = () => {
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "58%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "72%" }}
-                    onPay={handlePay}
+                    onPay={(url) => handlePay(url, "playground")}
                   />
                   <StartCard
                     title="On Rec"
@@ -2455,7 +2572,7 @@ const handleReset = () => {
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
-                    onPay={handlePay}
+                    onPay={(url) => handlePay(url, "onrec")}
                   />
                 </div>
                 <TariffDetailsComparison />
@@ -2494,7 +2611,9 @@ const handleReset = () => {
                     priceMobile={{ top: "73%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: selectedOffer === "playground" ? "58%" : "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: selectedOffer === "playground" ? "72%" : "48%" }}
-                    onPay={handlePay}
+                    onPay={(url) =>
+                      handlePay(url, selectedOffer === "playground" ? "playground" : "onrec")
+                    }
                   />
                 </div>
 
@@ -2586,7 +2705,7 @@ const handleReset = () => {
               className="tg-gradient-btn mt-5 block w-full text-center"
               onClick={() => {
                 setPreviewMobilePopupOpen(false);
-                handlePay(payUrl);
+                handlePay(payUrl, "playground");
               }}
             >
               Попробовать Snapshot
