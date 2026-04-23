@@ -636,41 +636,39 @@ export default function CabinetPage() {
         </div>
       </section>
 
-      {isDemoAccount ? (
-        <section style={styles.releaseSection}>
-          <div className="release-preorder-card" style={styles.releaseCard}>
-            <div>
-              <div style={styles.releaseKicker}>{playgroundPricing.releaseLabel}</div>
-              <h2 style={styles.releaseTitle}>{playgroundPricing.title}</h2>
-              <p style={styles.releaseText}>{playgroundPricing.description}</p>
-            </div>
-
-            <div style={styles.releaseMetaGrid}>
-              {playgroundPricing.tiers.map((tier) => (
-                <div
-                  key={tier.label}
-                  style={{
-                    ...styles.releaseMetaItem,
-                    ...(tier.active ? styles.releaseMetaItemActive : {}),
-                  }}
-                >
-                  <div style={styles.releaseMetaLabel}>{tier.label}</div>
-                  <div style={styles.releaseMetaValue}>${tier.price}</div>
-                </div>
-              ))}
-            </div>
-
-            <a
-              href={playgroundPricing.payUrl}
-              target="_blank"
-              rel="noreferrer"
-              style={styles.releaseButton}
-            >
-              {playgroundPricing.buttonLabel}
-            </a>
+      <section style={styles.releaseSection}>
+        <div className="release-preorder-card" style={styles.releaseCard}>
+          <div>
+            <div style={styles.releaseKicker}>{playgroundPricing.releaseLabel}</div>
+            <h2 style={styles.releaseTitle}>{playgroundPricing.title}</h2>
+            <p style={styles.releaseText}>{playgroundPricing.description}</p>
           </div>
-        </section>
-      ) : null}
+
+          <div style={styles.releaseMetaGrid}>
+            {playgroundPricing.tiers.map((tier) => (
+              <div
+                key={tier.label}
+                style={{
+                  ...styles.releaseMetaItem,
+                  ...(tier.active ? styles.releaseMetaItemActive : {}),
+                }}
+              >
+                <div style={styles.releaseMetaLabel}>{tier.label}</div>
+                <div style={styles.releaseMetaValue}>${tier.price}</div>
+              </div>
+            ))}
+          </div>
+
+          <a
+            href={playgroundPricing.payUrl}
+            target="_blank"
+            rel="noreferrer"
+            style={styles.releaseButton}
+          >
+            {playgroundPricing.buttonLabel}
+          </a>
+        </div>
+      </section>
 
       <section style={styles.resultsSection}>
         <div style={styles.resultsHeader}>
