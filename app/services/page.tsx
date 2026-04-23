@@ -3,10 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 
 const TG_CONTACT_URL = "https://t.me/growth_avenue_company";
 const WA_PHONE = "995555163833";
 const PROFILE_URL = "https://revenue-snapshot2026.vercel.app/cabinet-login";
+const playgroundPricing = getPlaygroundPricingSnapshot();
 
 type Service = {
   title: string;
@@ -140,7 +142,7 @@ const tools: Tool[] = [
     description:
       "Интерактивная диагностика экономики бизнеса: ограничения роста, точки потерь, рычаги усиления и управленческий roadmap в личном кабинете.",
     prices: [
-      { label: "Online Playground", value: "$148" },
+      { label: "Online Playground", value: playgroundPricing.currentPriceLabel },
       { label: "On Rec", value: "$770" },
     ],
     points: [

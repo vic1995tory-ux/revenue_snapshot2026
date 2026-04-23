@@ -39,5 +39,5 @@ export default async function Page({
     );
   }
 
-  return <ResultsPage data={resultsMockData} />;
+  return <ResultsPage data={resultsMockData} profileHref="/account/demo" />;
 }

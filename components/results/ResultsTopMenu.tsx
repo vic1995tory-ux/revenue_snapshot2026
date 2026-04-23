@@ -6,14 +6,18 @@ import { CalendarDays, HelpCircle, Send, UserRound } from "lucide-react";
 const tgContactUrl = "https://t.me/growth_avenue_company";
 const waContactUrl = "https://wa.me/995555163833";
 
-export function ResultsTopMenu() {
+export function ResultsTopMenu({
+  profileHref = "/cabinet-login",
+}: {
+  profileHref?: string;
+}) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
 
   return (
       <div className="rs-top-actions flex flex-wrap items-center justify-end gap-2 border border-white/10 bg-[#0d131b]/82 p-2 shadow-2xl shadow-black/25 backdrop-blur-xl">
         <a
-          href="/cabinet-login"
+          href={profileHref}
           className="inline-flex h-10 items-center gap-2 rounded-[18px] px-4 text-sm font-medium text-white/78 transition hover:bg-white/8 hover:text-white"
         >
           <UserRound size={16} />

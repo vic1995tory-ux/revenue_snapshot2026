@@ -27,7 +27,13 @@ function focusClass(activeTopic: FocusTopic | null, topics: FocusTopic[]) {
   return topics.includes(activeTopic) ? "rs-focus-match" : "rs-focus-muted";
 }
 
-export function ResultsPage({ data }: { data: ResultsPageData }) {
+export function ResultsPage({
+  data,
+  profileHref,
+}: {
+  data: ResultsPageData;
+  profileHref?: string;
+}) {
   const [activeTopic, setActiveTopic] = useState<FocusTopic | null>(null);
 
   return (
@@ -59,7 +65,7 @@ export function ResultsPage({ data }: { data: ResultsPageData }) {
               </button>
             ))}
           </div>
-          <ResultsTopMenu />
+          <ResultsTopMenu profileHref={profileHref} />
         </nav>
 
         <section className={focusClass(activeTopic, ["solution", "plan"])} onClick={() => activeTopic && !["solution", "plan"].includes(activeTopic) && setActiveTopic(null)}>

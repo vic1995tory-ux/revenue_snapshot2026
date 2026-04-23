@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 
 function fmtMoney(n: number) {
   return new Intl.NumberFormat("ru-RU", {
@@ -1408,6 +1409,7 @@ const [history, setHistory] = useState<
   const waContactUrl = "https://wa.me/995555163833";
   const paymentRecoveryUrl = "/payment-recovery";
   const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
 
   const selectedOfferConfig = TARIFF_COMPARE_CONFIG[selectedOffer];
   const selectedOfferCard =
@@ -1416,10 +1418,10 @@ const [history, setHistory] = useState<
           title: "Online-playground",
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
-          price: "$148",
+          price: playgroundPricing.currentPriceLabel,
           href: payUrl,
-          ctaLabel: "coming soon",
-          disabled: true,
+          ctaLabel: "Оплатить",
+          disabled: false,
           secondaryLabel: "get a demo",
           secondaryHref: demoAccountUrl,
         }

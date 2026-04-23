@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 
 type ResultRow = {
   id: string;
@@ -58,7 +59,6 @@ const POSITION_WEBHOOK_URL =
 
 const DEFAULT_MAX_LAUNCHES = 3;
 const DEMO_ACCOUNT_TOKEN = "demo";
-const PREORDER_PAYMENT_URL = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
 
 const WHATSAPP_HELP_URL =
   "https://api.whatsapp.com/send/?phone=995555163833&text&type=phone_number&app_absent=0";
@@ -66,6 +66,35 @@ const WHATSAPP_HELP_URL =
 const WHATSAPP_DELETE_URL = `https://api.whatsapp.com/send/?phone=995555163833&text=${encodeURIComponent(
   "Прошу очистить данные в моем аккаунте"
 )}&type=phone_number&app_absent=0`;
+
+const TOKEN_SERVICE_LABELS: Array<[string, string]> = [
+  ["on_rec", "On Rec Revenue Snapshot"],
+  ["pg", "Playground Revenue Snapshot"],
+  ["ss", "Strat Session"],
+  ["gs", "Growth Strategy"],
+  ["mvp", "MVP"],
+  ["ls", "Leading Strategy"],
+  ["men", "Mentoring"],
+  ["sa", "Sales Architecture"],
+];
+
+function getPurchasedServiceLabel(token: string, isDemoAccount: boolean) {
+  if (isDemoAccount) return "Revenue Snapshot";
+
+  const normalized = token.trim().toLowerCase();
+
+  for (const [prefix, label] of TOKEN_SERVICE_LABELS) {
+    if (
+      normalized === prefix ||
+      normalized.startsWith(`${prefix}_`) ||
+      normalized.startsWith(`${prefix}-`)
+    ) {
+      return label;
+    }
+  }
+
+  return "Revenue Snapshot";
+}
 
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -122,6 +151,11 @@ export default function CabinetPage() {
   const router = useRouter();
   const token = String(params?.token ?? "");
   const isDemoAccount = token.toLowerCase() === DEMO_ACCOUNT_TOKEN;
+  const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
+  const purchasedServiceLabel = useMemo(
+    () => getPurchasedServiceLabel(token, isDemoAccount),
+    [token, isDemoAccount]
+  );
 
   const [faqOpen, setFaqOpen] = useState(false);
   const [savingPosition, setSavingPosition] = useState(false);
@@ -606,36 +640,33 @@ export default function CabinetPage() {
         <section style={styles.releaseSection}>
           <div className="release-preorder-card" style={styles.releaseCard}>
             <div>
-              <div style={styles.releaseKicker}>Релиз 4 апреля</div>
-              <h2 style={styles.releaseTitle}>Online Playground preorder</h2>
-              <p style={styles.releaseText}>
-                Предзаказ демо-доступа к Revenue Snapshot с личным кабинетом и
-                примерами результатов.
-              </p>
+              <div style={styles.releaseKicker}>{playgroundPricing.releaseLabel}</div>
+              <h2 style={styles.releaseTitle}>{playgroundPricing.title}</h2>
+              <p style={styles.releaseText}>{playgroundPricing.description}</p>
             </div>
 
             <div style={styles.releaseMetaGrid}>
-              <div style={styles.releaseMetaItem}>
-                <div style={styles.releaseMetaLabel}>Цена</div>
-                <div style={styles.releaseMetaValue}>$103</div>
-              </div>
-              <div style={styles.releaseMetaItem}>
-                <div style={styles.releaseMetaLabel}>Всего мест</div>
-                <div style={styles.releaseMetaValue}>13</div>
-              </div>
-              <div style={styles.releaseMetaItem}>
-                <div style={styles.releaseMetaLabel}>Уже забронировано</div>
-                <div style={styles.releaseMetaValue}>4</div>
-              </div>
+              {playgroundPricing.tiers.map((tier) => (
+                <div
+                  key={tier.label}
+                  style={{
+                    ...styles.releaseMetaItem,
+                    ...(tier.active ? styles.releaseMetaItemActive : {}),
+                  }}
+                >
+                  <div style={styles.releaseMetaLabel}>{tier.label}</div>
+                  <div style={styles.releaseMetaValue}>${tier.price}</div>
+                </div>
+              ))}
             </div>
 
             <a
-              href={PREORDER_PAYMENT_URL}
+              href={playgroundPricing.payUrl}
               target="_blank"
               rel="noreferrer"
               style={styles.releaseButton}
             >
-              Предзаказ
+              {playgroundPricing.buttonLabel}
             </a>
           </div>
         </section>
@@ -643,7 +674,7 @@ export default function CabinetPage() {
 
       <section style={styles.resultsSection}>
         <div style={styles.resultsHeader}>
-          <div style={{ ...styles.colDate, ...styles.resultHeaderCell }}>Date</div>
+          <div style={{ ...styles.colDate, ...styles.resultHeaderCell }}>Date / Service</div>
           <div style={{ ...styles.colSummary, ...styles.resultHeaderCell }}>
             Executive summary
           </div>
@@ -670,7 +701,10 @@ export default function CabinetPage() {
         ) : (
           data.results.map((item) => (
             <div key={item.id} style={styles.resultRow}>
-              <div style={styles.colDate}>{item.date}</div>
+              <div style={styles.colDate}>
+                <div style={styles.resultDateText}>{item.date}</div>
+                <div style={styles.resultServiceTag}>{purchasedServiceLabel}</div>
+              </div>
 
               <div style={styles.colSummary}>
                 <div style={styles.resultTextClamp}>{item.executiveSummary}</div>
@@ -1357,6 +1391,12 @@ const styles: Record<string, React.CSSProperties> = {
     background: "rgba(255,255,255,0.07)",
     border: "1px solid rgba(255,255,255,0.09)",
   },
+  releaseMetaItemActive: {
+    border: "1px solid rgba(247,210,55,0.42)",
+    background:
+      "linear-gradient(180deg, rgba(247,210,55,0.18) 0%, rgba(255,255,255,0.08) 100%)",
+    boxShadow: "0 0 0 1px rgba(247,210,55,0.08) inset",
+  },
   releaseMetaLabel: {
     fontSize: "12px",
     lineHeight: 1.35,
@@ -1433,7 +1473,27 @@ const styles: Record<string, React.CSSProperties> = {
     borderBottom: "1px solid rgba(255,255,255,0.06)",
     alignItems: "start",
   },
-  colDate: {},
+  colDate: {
+    display: "grid",
+    gap: "8px",
+  },
+  resultDateText: {
+    fontSize: "18px",
+    color: "#f4f7ff",
+  },
+  resultServiceTag: {
+    display: "inline-flex",
+    alignItems: "center",
+    width: "fit-content",
+    borderRadius: "999px",
+    border: "1px solid rgba(247,210,55,0.16)",
+    background: "rgba(247,210,55,0.08)",
+    padding: "6px 10px",
+    fontSize: "11px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#f7d237",
+  },
   colSummary: {},
   colLever: {},
   colRisk: {},
