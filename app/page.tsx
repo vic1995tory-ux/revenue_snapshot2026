@@ -827,6 +827,7 @@ type TariffSection = {
 };
 
 type TariffOfferKey = "playground" | "onrec";
+const CHECKOUT_CONTEXT_STORAGE_KEY = "rs_checkout_context";
 
 type TariffOfferConfig = {
   title: string;
@@ -1673,6 +1674,17 @@ const strategyOptions = [
 ];
 
   const handlePay = (paypalUrl: string, plan: "playground" | "onrec" = "playground") => {
+    try {
+      window.localStorage.setItem(
+        CHECKOUT_CONTEXT_STORAGE_KEY,
+        JSON.stringify({
+          servicePlan: plan,
+          serviceCode: plan === "onrec" ? "on_rec" : "pg",
+          savedAt: new Date().toISOString(),
+        })
+      );
+    } catch {}
+
     trackEvent("begin_checkout", {
       currency: "USD",
       value: plan === "onrec" ? 770 : 148,

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
+import { getPurchasedServiceLabel } from "@/lib/purchase-service";
 
 type ResultRow = {
   id: string;
@@ -66,35 +67,6 @@ const WHATSAPP_HELP_URL =
 const WHATSAPP_DELETE_URL = `https://api.whatsapp.com/send/?phone=995555163833&text=${encodeURIComponent(
   "Прошу очистить данные в моем аккаунте"
 )}&type=phone_number&app_absent=0`;
-
-const TOKEN_SERVICE_LABELS: Array<[string, string]> = [
-  ["on_rec", "On Rec Revenue Snapshot"],
-  ["pg", "Playground Revenue Snapshot"],
-  ["ss", "Strat Session"],
-  ["gs", "Growth Strategy"],
-  ["mvp", "MVP"],
-  ["ls", "Leading Strategy"],
-  ["men", "Mentoring"],
-  ["sa", "Sales Architecture"],
-];
-
-function getPurchasedServiceLabel(token: string, isDemoAccount: boolean) {
-  if (isDemoAccount) return "Revenue Snapshot";
-
-  const normalized = token.trim().toLowerCase();
-
-  for (const [prefix, label] of TOKEN_SERVICE_LABELS) {
-    if (
-      normalized === prefix ||
-      normalized.startsWith(`${prefix}_`) ||
-      normalized.startsWith(`${prefix}-`)
-    ) {
-      return label;
-    }
-  }
-
-  return "Revenue Snapshot";
-}
 
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {

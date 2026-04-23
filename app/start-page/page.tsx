@@ -7,6 +7,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 type ResolveResponse = {
   ok: boolean;
   access_token?: string;
+  service_code?: string;
+  create_on_rec_result?: boolean;
   launch_count?: number;
   launch_limit?: number;
   created?: boolean | null;
@@ -22,6 +24,25 @@ type StartResponse = {
   error?: string;
   access_token?: string;
 };
+
+const CHECKOUT_CONTEXT_STORAGE_KEY = "rs_checkout_context";
+
+function readCheckoutContext() {
+  if (typeof window === "undefined") return { servicePlan: "" };
+
+  try {
+    const raw = window.localStorage.getItem(CHECKOUT_CONTEXT_STORAGE_KEY);
+    if (!raw) return { servicePlan: "" };
+
+    const parsed = JSON.parse(raw) as { servicePlan?: string } | null;
+    return {
+      servicePlan:
+        typeof parsed?.servicePlan === "string" ? parsed.servicePlan : "",
+    };
+  } catch {
+    return { servicePlan: "" };
+  }
+}
 
 function formatTimeLeft(expiresAt?: string) {
   if (!expiresAt) return "—";
@@ -133,6 +154,12 @@ function StartPageContent() {
   const st = useMemo(() => searchParams.get("st") || "", [searchParams]);
   const amt = useMemo(() => searchParams.get("amt") || "", [searchParams]);
   const cc = useMemo(() => searchParams.get("cc") || "", [searchParams]);
+  const [checkoutServicePlan, setCheckoutServicePlan] = useState("");
+
+  useEffect(() => {
+    const context = readCheckoutContext();
+    setCheckoutServicePlan(context.servicePlan || "");
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -169,6 +196,13 @@ function StartPageContent() {
             amt,
             cc,
             current_url: currentUrl,
+            service_plan: checkoutServicePlan || null,
+            service_code:
+              checkoutServicePlan === "onrec"
+                ? "on_rec"
+                : checkoutServicePlan === "playground"
+                  ? "pg"
+                  : null,
           }),
           cache: "no-store",
         });
@@ -203,7 +237,7 @@ function StartPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [tx, st, amt, cc]);
+  }, [tx, st, amt, cc, checkoutServicePlan]);
 
   function handleLogoMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -294,6 +328,14 @@ function StartPageContent() {
         password_hash: passwordHash,
         password_version: "sha256-v1",
         start_page_link: currentUrl,
+        service_plan: checkoutServicePlan || null,
+        service_code:
+          resolved?.service_code ||
+          (checkoutServicePlan === "onrec"
+            ? "on_rec"
+            : checkoutServicePlan === "playground"
+              ? "pg"
+              : null),
       };
 
 const res = await fetch("/api/paypal/start-action", {

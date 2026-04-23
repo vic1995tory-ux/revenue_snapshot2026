@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  getServiceCodeFromPlan,
+  getServiceCodeFromToken,
+} from "@/lib/purchase-service";
 
 const MAKE_START_ACTION_WEBHOOK_URL =
   process.env.MAKE_START_ACTION_WEBHOOK_URL ||
@@ -21,6 +25,10 @@ function isSha256Hex(value: string) {
   return /^[a-f0-9]{64}$/i.test(value);
 }
 
+type WebhookJson = Record<string, unknown> & {
+  data?: Record<string, unknown>;
+};
+
 export async function POST(req: NextRequest) {
   try {
     if (!MAKE_START_ACTION_WEBHOOK_URL) {
@@ -40,6 +48,15 @@ export async function POST(req: NextRequest) {
 
       payment_id: toTrimmedString(body?.payment_id),
       access_token: toTrimmedString(body?.access_token),
+      service_plan: toTrimmedString(body?.service_plan) || null,
+      service_code:
+        getServiceCodeFromPlan(
+          toTrimmedString(body?.service_code) ||
+            toTrimmedString(body?.service_plan) ||
+            null
+        ) ||
+        getServiceCodeFromToken(toTrimmedString(body?.access_token)) ||
+        null,
 
       full_name: toTrimmedString(body?.full_name),
       company_name: toTrimmedString(body?.company_name),
@@ -52,7 +69,10 @@ export async function POST(req: NextRequest) {
       password_version: toTrimmedString(body?.password_version) || "sha256-v1",
 
       start_page_link: toTrimmedString(body?.start_page_link),
+      create_on_rec_result: false,
     };
+
+    payload.create_on_rec_result = payload.service_code === "on_rec";
 
     if (!payload.access_token) {
       return NextResponse.json(
@@ -123,7 +143,7 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = webhookRes.headers.get("content-type") || "";
-    let webhookData: any = {};
+    let webhookData: WebhookJson = {};
     let rawText = "";
 
     if (contentType.includes("application/json")) {

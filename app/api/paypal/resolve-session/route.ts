@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { getServiceCodeFromPlan, type PurchaseServiceCode } from "@/lib/purchase-service";
 
 const MAKE_RESOLVE_WEBHOOK_URL =
   process.env.MAKE_RESOLVE_WEBHOOK_URL ||
   "https://hook.us2.make.com/m1ep9hxrd16zwufpp8yfyj1sm9qcjkhr";
 
-function generateFallbackToken() {
-  return "rs_" + crypto.randomUUID().replace(/-/g, "");
+function generateFallbackToken(serviceCode: PurchaseServiceCode | null) {
+  const prefix = serviceCode || "rs";
+  return `${prefix}_` + crypto.randomUUID().replace(/-/g, "");
 }
 
 function addDays(date: Date, days: number) {
@@ -70,6 +72,10 @@ function normalizePaymentStatus(rawStatus: string) {
   return "pending";
 }
 
+type WebhookJson = Record<string, unknown> & {
+  data?: Record<string, unknown>;
+};
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
 
@@ -104,6 +110,11 @@ export async function POST(req: NextRequest) {
     const amt = toTrimmedString(body?.amt ?? body?.gross_amount);
     const cc = toTrimmedString(body?.cc ?? body?.currency);
     const currentUrl = toTrimmedString(body?.current_url);
+    const servicePlan = toTrimmedString(body?.service_plan);
+    const serviceCode =
+      getServiceCodeFromPlan(
+        toTrimmedString(body?.service_code) || servicePlan || null
+      ) || null;
 
     if (!tx) {
       return NextResponse.json(
@@ -118,7 +129,7 @@ export async function POST(req: NextRequest) {
     const normalizedStatus = normalizePaymentStatus(st);
     const parsedAmount = parseAmount(amt);
 
-    const fallbackToken = generateFallbackToken();
+    const fallbackToken = generateFallbackToken(serviceCode);
     const expiresAt = addDays(new Date(), 365).toISOString();
 
     const makePayload = {
@@ -131,6 +142,9 @@ export async function POST(req: NextRequest) {
       gross_amount: parsedAmount,
       currency: cc || null,
       source: "paypal",
+      service_plan: servicePlan || null,
+      service_code: serviceCode,
+      create_on_rec_result: serviceCode === "on_rec",
 
       access_token: fallbackToken,
       access_expires_at: expiresAt,
@@ -155,7 +169,7 @@ export async function POST(req: NextRequest) {
     });
 
     const contentType = makeRes.headers.get("content-type") || "";
-    let makeData: any = {};
+    let makeData: WebhookJson = {};
     let rawText = "";
 
     if (contentType.includes("application/json")) {
@@ -231,6 +245,14 @@ export async function POST(req: NextRequest) {
       payment_id: tx,
       payment_status: normalizedStatus,
       access_expires_at: expiresAtResolved,
+      service_code:
+        makeData?.service_code ??
+        makeData?.data?.service_code ??
+        serviceCode,
+      create_on_rec_result:
+        makeData?.create_on_rec_result ??
+        makeData?.data?.create_on_rec_result ??
+        (serviceCode === "on_rec"),
     });
   } catch (error) {
     console.error("resolve-session error:", error);
