@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Plus } from "lucide-react";
+import { CircleAlert, Plus } from "lucide-react";
 import {
   buildDefaultAccountTools,
   getToolByKey,
@@ -679,6 +679,7 @@ export default function CabinetPage() {
             return (
               <article
                 key={tool.key}
+                className="account-tool-card"
                 style={{
                   ...styles.toolCard,
                   ...(tool.isActive ? styles.toolCardActive : styles.toolCardLocked),
@@ -705,28 +706,38 @@ export default function CabinetPage() {
                         : styles.toolCardVisualOverlayLocked),
                     }}
                   />
-                </div>
-
-                <div style={styles.toolCardBody}>
-                  <div style={styles.toolCardTop}>
+                  <div style={styles.toolCardHeader}>
                     <div>
                       <div style={styles.toolVariant}>{tool.variant}</div>
                       <h3 style={styles.toolTitle}>{tool.title}</h3>
                     </div>
-                    <div
-                      style={{
-                        ...styles.toolStatus,
-                        ...(tool.isActive
-                          ? styles.toolStatusActive
-                          : styles.toolStatusLocked),
-                      }}
-                    >
-                      {tool.isActive ? "active" : "locked"}
+                    <div style={styles.toolCardHeaderActions}>
+                      <div
+                        style={{
+                          ...styles.toolStatus,
+                          ...(tool.isActive
+                            ? styles.toolStatusActive
+                            : styles.toolStatusLocked),
+                        }}
+                      >
+                        {tool.isActive ? "active" : "locked"}
+                      </div>
+                      <button
+                        type="button"
+                        className="account-tool-tooltip-trigger"
+                        style={styles.toolInfoButton}
+                        aria-label={`Описание ${tool.title}`}
+                      >
+                        <CircleAlert size={15} />
+                      </button>
+                      <div className="account-tool-tooltip" style={styles.toolTooltip}>
+                        {tool.description}
+                      </div>
                     </div>
                   </div>
+                </div>
 
-                  <p style={styles.toolDescription}>{tool.description}</p>
-
+                <div style={styles.toolCardBody}>
                   {isPlaygroundSnapshot ? (
                     <div style={styles.toolMetricBlock}>
                       <div style={styles.toolMetricLabel}>Запуски Snapshot</div>
@@ -1113,6 +1124,22 @@ export default function CabinetPage() {
       )}
 
       <style jsx global>{`
+        .account-tool-card:hover {
+          transform: translateY(-6px);
+          border-color: rgba(247, 210, 55, 0.18);
+          box-shadow: 0 28px 56px rgba(0, 0, 0, 0.28);
+        }
+
+        .account-tool-card:hover img {
+          transform: scale(1.06);
+        }
+
+        .account-tool-tooltip-trigger:hover + .account-tool-tooltip,
+        .account-tool-tooltip-trigger:focus-visible + .account-tool-tooltip {
+          opacity: 1;
+          transform: translateY(0);
+        }
+
         .action-tooltip-wrap:hover .action-tooltip,
         .action-tooltip-wrap:focus-within .action-tooltip {
           opacity: 1;
@@ -1496,12 +1523,13 @@ const styles: Record<string, React.CSSProperties> = {
   toolCard: {
     position: "relative",
     display: "grid",
-    gridTemplateRows: "126px 1fr",
-    borderRadius: "26px",
+    gridTemplateRows: "108px 1fr",
+    borderRadius: "22px",
     overflow: "hidden",
     border: "1px solid rgba(255,255,255,0.08)",
     boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
-    minHeight: "360px",
+    minHeight: "272px",
+    transition: "transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease",
   },
   toolCardActive: {
     background: "rgba(255,255,255,0.06)",
@@ -1513,10 +1541,27 @@ const styles: Record<string, React.CSSProperties> = {
     position: "relative",
     overflow: "hidden",
   },
+  toolCardHeader: {
+    position: "absolute",
+    inset: "0 0 auto 0",
+    zIndex: 2,
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "12px",
+    alignItems: "start",
+    padding: "16px 16px 14px",
+  },
+  toolCardHeaderActions: {
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+  },
   toolCardVisualImage: {
     objectFit: "cover",
     objectPosition: "center",
     transform: "scale(1.02)",
+    transition: "transform 0.4s ease, filter 0.28s ease, opacity 0.28s ease",
   },
   toolCardVisualImageActive: {
     filter: "none",
@@ -1540,8 +1585,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   toolCardBody: {
     display: "grid",
-    gap: "14px",
-    padding: "16px",
+    gap: "12px",
+    padding: "14px 14px 14px",
     alignContent: "start",
   },
   toolCardTop: {
@@ -1556,13 +1601,14 @@ const styles: Record<string, React.CSSProperties> = {
     textTransform: "uppercase",
     color: "#f7d237",
     fontWeight: 800,
-    marginBottom: "8px",
+    marginBottom: "6px",
   },
   toolTitle: {
     margin: 0,
-    fontSize: "22px",
-    lineHeight: 1.08,
+    fontSize: "18px",
+    lineHeight: 1.06,
     color: "#fff",
+    maxWidth: "180px",
   },
   toolStatus: {
     borderRadius: "999px",
@@ -1589,11 +1635,43 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1.65,
     color: "rgba(255,255,255,0.74)",
   },
+  toolInfoButton: {
+    width: "32px",
+    height: "32px",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(8, 17, 30, 0.4)",
+    color: "#fff",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    cursor: "help",
+    backdropFilter: "blur(12px)",
+  },
+  toolTooltip: {
+    position: "absolute",
+    top: "calc(100% + 10px)",
+    right: 0,
+    zIndex: 3,
+    width: "220px",
+    borderRadius: "16px",
+    padding: "12px 14px",
+    background: "rgba(8,17,30,0.94)",
+    border: "1px solid rgba(255,255,255,0.12)",
+    boxShadow: "0 22px 48px rgba(0,0,0,0.35)",
+    color: "rgba(255,255,255,0.82)",
+    fontSize: "12px",
+    lineHeight: 1.55,
+    opacity: 0,
+    pointerEvents: "none",
+    transform: "translateY(8px)",
+    transition: "opacity 0.18s ease, transform 0.18s ease",
+  },
   toolMetricBlock: {
-    borderRadius: "18px",
+    borderRadius: "16px",
     background: "rgba(255,255,255,0.04)",
     border: "1px solid rgba(255,255,255,0.08)",
-    padding: "12px",
+    padding: "11px 12px",
   },
   toolMetricLabel: {
     fontSize: "11px",
@@ -1603,7 +1681,7 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: "10px",
   },
   toolMetricValue: {
-    fontSize: "28px",
+    fontSize: "24px",
     lineHeight: 1,
     fontWeight: 800,
     color: "#fff",
@@ -1615,8 +1693,8 @@ const styles: Record<string, React.CSSProperties> = {
     color: "rgba(255,255,255,0.62)",
   },
   toolProgressTrack: {
-    marginTop: "12px",
-    height: "8px",
+    marginTop: "10px",
+    height: "7px",
     width: "100%",
     borderRadius: "999px",
     background: "rgba(255,255,255,0.08)",
@@ -1639,10 +1717,10 @@ const styles: Record<string, React.CSSProperties> = {
   toolPlayButton: {
     minWidth: 0,
     width: "100%",
-    height: "48px",
-    borderRadius: "16px",
+    height: "44px",
+    borderRadius: "14px",
     padding: "0 18px",
-    fontSize: "15px",
+    fontSize: "14px",
     fontWeight: 800,
   },
   toolLockedActions: {

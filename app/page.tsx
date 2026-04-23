@@ -14,6 +14,33 @@ declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
+    paypal?: {
+      Buttons: (config: {
+        style?: Record<string, unknown>;
+        createOrder: (
+          data: unknown,
+          actions: {
+            order: {
+              create: (payload: Record<string, unknown>) => Promise<string>;
+              capture: () => Promise<Record<string, unknown>>;
+            };
+          }
+        ) => Promise<string>;
+        onClick?: () => void;
+        onApprove: (
+          data: { orderID?: string },
+          actions: {
+            order: {
+              capture: () => Promise<Record<string, unknown>>;
+            };
+          }
+        ) => Promise<void>;
+        onError?: (error: unknown) => void;
+      }) => {
+        render: (selector: HTMLElement | string) => Promise<void>;
+        close?: () => void;
+      };
+    };
   }
 }
 
@@ -640,69 +667,6 @@ function TagList({
   );
 }
 
-function TariffParagraphContent({
-  section,
-}: {
-  section: {
-    label: string;
-    items?: string[];
-    notes?: string[];
-    render?: "list" | "tags" | "icon-tags" | "yellow-tags";
-    iconKind?: React.ComponentProps<typeof ChipIcon>["kind"];
-  };
-}) {
-  return (
-    <div className="tariff-paragraph-content">
-      <h3 className="tariff-paragraph-title">{section.label}</h3>
-
-      {section.items?.length ? (
-        section.render === "tags" ? (
-          <TagList
-            items={section.items}
-            variant="soft"
-            icon={section.iconKind ?? "custom"}
-          />
-        ) : section.render === "icon-tags" ? (
-          <TagList
-            items={section.items}
-            variant="icon-solid"
-            icon={section.iconKind ?? "custom"}
-          />
-        ) : section.render === "yellow-tags" ? (
-          <TagList
-            items={section.items}
-            variant="yellow"
-            icon={section.iconKind ?? "custom"}
-          />
-        ) : (
-          <div className="tariff-check-list">
-            {section.items.map((item) => (
-              <div key={item} className="tariff-check-item">
-                <span className="tariff-check-mark">
-                  <ChipIcon kind={section.iconKind ?? "custom"} />
-                </span>
-                <span>{item}</span>
-              </div>
-            ))}
-          </div>
-        )
-      ) : null}
-
-      {section.notes?.length ? (
-        <div className="tariff-note-list">
-          {section.notes.map((note) => (
-            <div key={note} className="tariff-note-item">
-              <span className="tariff-note-bullet">•</span>
-              <span>{note}</span>
-            </div>
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-
 function TariffCompareBlock({
   section,
 }: {
@@ -1043,6 +1007,180 @@ type OverlayBox = {
 };
 
 type PaymentState = "idle" | "waiting";
+type PayPlan = "playground" | "onrec";
+
+const PAYPAL_CLIENT_ID =
+  process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
+  "BAAhz9xcUqSNpy8eOX3LdpB-ZjYn1uN9rFRDWd4LydYq0I1X12kwyxbtJUAMQgIvypHW1T9244aYMkdpEQ";
+
+function getPlanPriceValue(plan: PayPlan, playgroundPrice: string) {
+  if (plan === "onrec") return 770;
+  const parsed = Number(playgroundPrice.replace(/[^\d.]/g, ""));
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 93;
+}
+
+function extractCaptureDetails(capture: Record<string, unknown>) {
+  const purchaseUnits = Array.isArray(capture.purchase_units)
+    ? capture.purchase_units
+    : [];
+  const firstUnit =
+    purchaseUnits.length > 0 &&
+    typeof purchaseUnits[0] === "object" &&
+    purchaseUnits[0] !== null
+      ? (purchaseUnits[0] as Record<string, unknown>)
+      : null;
+  const payments =
+    firstUnit && typeof firstUnit.payments === "object" && firstUnit.payments !== null
+      ? (firstUnit.payments as Record<string, unknown>)
+      : null;
+  const captures = payments && Array.isArray(payments.captures) ? payments.captures : [];
+  const firstCapture =
+    captures.length > 0 && typeof captures[0] === "object" && captures[0] !== null
+      ? (captures[0] as Record<string, unknown>)
+      : null;
+  const amount =
+    firstCapture && typeof firstCapture.amount === "object" && firstCapture.amount !== null
+      ? (firstCapture.amount as Record<string, unknown>)
+      : null;
+
+  return {
+    tx:
+      (typeof firstCapture?.id === "string" && firstCapture.id) ||
+      (typeof capture.id === "string" && capture.id) ||
+      "",
+    st:
+      (typeof firstCapture?.status === "string" && firstCapture.status) ||
+      (typeof capture.status === "string" && capture.status) ||
+      "COMPLETED",
+    amt:
+      (typeof amount?.value === "string" && amount.value) ||
+      "",
+    cc:
+      (typeof amount?.currency_code === "string" && amount.currency_code) ||
+      "USD",
+  };
+}
+
+function PayPalSmartButton({
+  plan,
+  amount,
+  playgroundPriceLabel,
+  onSuccess,
+}: {
+  plan: PayPlan;
+  amount: number;
+  playgroundPriceLabel: string;
+  onSuccess: (details: { tx: string; st: string; amt: string; cc: string }, plan: PayPlan) => void;
+}) {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [sdkReady, setSdkReady] = useState(
+    () => typeof window !== "undefined" && Boolean(window.paypal?.Buttons)
+  );
+  const [sdkError, setSdkError] = useState("");
+
+  useEffect(() => {
+    const existing = document.querySelector('script[data-paypal-sdk="true"]');
+
+    const handleReady = () => {
+      if (window.paypal?.Buttons) setSdkReady(true);
+    };
+
+    if (window.paypal?.Buttons) return;
+
+    if (existing) {
+      existing.addEventListener("load", handleReady);
+      return () => existing.removeEventListener("load", handleReady);
+    }
+
+    const script = document.createElement("script");
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
+    script.async = true;
+    script.dataset.paypalSdk = "true";
+    script.addEventListener("load", handleReady);
+    script.addEventListener("error", () => {
+      setSdkError("Не удалось загрузить PayPal SDK.");
+    });
+    document.body.appendChild(script);
+
+    return () => {
+      script.removeEventListener("load", handleReady);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!sdkReady || !containerRef.current || !window.paypal?.Buttons) return;
+
+    containerRef.current.innerHTML = "";
+
+    const button = window.paypal.Buttons({
+      style: {
+        layout: "horizontal",
+        shape: "pill",
+        color: "gold",
+        height: 44,
+        label: "pay",
+        tagline: false,
+      },
+      onClick: () => {
+        try {
+          window.localStorage.setItem(
+            CHECKOUT_CONTEXT_STORAGE_KEY,
+            JSON.stringify({
+              servicePlan: plan,
+              serviceCode: plan === "onrec" ? "on_rec" : "pg",
+              savedAt: new Date().toISOString(),
+            })
+          );
+        } catch {}
+
+        trackEvent("begin_checkout", {
+          currency: "USD",
+          value: amount,
+          plan,
+          checkout_provider: "paypal_sdk",
+        });
+        window.fbq?.("track", "InitiateCheckout", {
+          currency: "USD",
+          value: amount,
+          content_name: plan === "onrec" ? "On Rec" : `Online Playground ${playgroundPriceLabel}`,
+          content_type: "product",
+        });
+      },
+      createOrder: async (_data, actions) => {
+        return actions.order.create({
+          intent: "CAPTURE",
+          purchase_units: [
+            {
+              amount: {
+                currency_code: "USD",
+                value: amount.toFixed(2),
+              },
+              description: plan === "onrec" ? "On Rec Revenue Snapshot" : "Online Playground Revenue Snapshot",
+              custom_id: plan === "onrec" ? "on_rec" : "pg",
+            },
+          ],
+        });
+      },
+      onApprove: async (_data, actions) => {
+        const capture = await actions.order.capture();
+        const details = extractCaptureDetails(capture);
+        onSuccess(details, plan);
+      },
+      onError: () => {
+        setSdkError("PayPal не завершил оплату. Попробуйте ещё раз.");
+      },
+    });
+
+    void button.render(containerRef.current);
+  }, [amount, onSuccess, plan, playgroundPriceLabel, sdkReady]);
+
+  return (
+    <div className="paypal-sdk-slot">
+      <div ref={containerRef} />
+      {sdkError ? <div className="paypal-sdk-error">{sdkError}</div> : null}
+    </div>
+  );
+}
 
 function StartCard({
   title,
@@ -1059,6 +1197,9 @@ function StartCard({
   buttonDesktop,
   buttonMobile,
   onPay,
+  plan,
+  usePaypalSdk = false,
+  playgroundPriceLabel,
 }: {
   title: string;
   icon: string;
@@ -1074,6 +1215,9 @@ function StartCard({
   buttonDesktop: OverlayBox;
   buttonMobile?: OverlayBox;
   onPay?: (url: string) => void;
+  plan?: PayPlan;
+  usePaypalSdk?: boolean;
+  playgroundPriceLabel?: string;
   stats?: Array<{ label: string; value: string }>;
 }) {
   const styleVars: CSSProperties & Record<`--${string}`, string> = {
@@ -1116,6 +1260,21 @@ function StartCard({
                 >
                   {ctaLabel}
                 </button>
+              ) : usePaypalSdk && plan ? (
+                <PayPalSmartButton
+                  plan={plan}
+                  amount={getPlanPriceValue(plan, playgroundPriceLabel ?? price)}
+                  playgroundPriceLabel={playgroundPriceLabel ?? price}
+                  onSuccess={(details) => {
+                    const query = new URLSearchParams({
+                      tx: details.tx,
+                      st: details.st,
+                      amt: details.amt,
+                      cc: details.cc,
+                    });
+                    window.location.href = `/start-page?${query.toString()}`;
+                  }}
+                />
               ) : (
                 <a
                   href={href}
@@ -1141,16 +1300,6 @@ function StartCard({
     </div>
   );
 }
-
-type StageItem = {
-  niche: string;
-  stage: string;
-  summary: string;
-  focus: string;
-  metrics: Array<{ label: string; value: string }>;
-  bars: Array<{ label: string; fact: number; plan: number }>;
-};
-
 
 function StageCarousel() {
   const items = [
@@ -1227,6 +1376,7 @@ function StageCarousel() {
   const [isSnapReset, setIsSnapReset] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentIndex(visibleCount);
     setIsAnimating(false);
     setIsSnapReset(true);
@@ -2628,16 +2778,18 @@ const handleReset = () => {
                     title="Online-playground"
                     icon="/online_playground_desc.svg"
                     mobileIcon="/online-playground_mobile.svg"
-                    price="$148"
+                    price={playgroundPricing.currentPriceLabel}
                     href={payUrl}
-                    ctaLabel="coming soon"
-                    disabled
+                    ctaLabel="Оплатить"
                     secondaryLabel="get a demo"
                     secondaryHref={demoAccountUrl}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "58%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "72%" }}
+                    plan="playground"
+                    usePaypalSdk
+                    playgroundPriceLabel={playgroundPricing.currentPriceLabel}
                     onPay={(url) => handlePay(url, "playground")}
                   />
                   <StartCard
@@ -2650,6 +2802,8 @@ const handleReset = () => {
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
+                    plan="onrec"
+                    usePaypalSdk
                     onPay={(url) => handlePay(url, "onrec")}
                   />
                 </div>
@@ -2689,6 +2843,9 @@ const handleReset = () => {
                     priceMobile={{ top: "73%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: selectedOffer === "playground" ? "58%" : "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: selectedOffer === "playground" ? "72%" : "48%" }}
+                    plan={selectedOffer === "playground" ? "playground" : "onrec"}
+                    usePaypalSdk
+                    playgroundPriceLabel={playgroundPricing.currentPriceLabel}
                     onPay={(url) =>
                       handlePay(url, selectedOffer === "playground" ? "playground" : "onrec")
                     }
@@ -4566,6 +4723,20 @@ const handleReset = () => {
           flex: 1 1 0;
           min-width: 0;
           text-align: center;
+        }
+        .paypal-sdk-slot {
+          flex: 1 1 0;
+          min-width: 0;
+        }
+        .paypal-sdk-slot > div:first-child {
+          min-height: 42px;
+        }
+        .paypal-sdk-error {
+          margin-top: 8px;
+          color: #ffb4b4;
+          font-size: 12px;
+          line-height: 1.45;
+          text-shadow: 0 1px 6px rgba(0,0,0,.22);
         }
         .start-card-btn-disabled {
           cursor: not-allowed;
