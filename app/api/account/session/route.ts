@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildDefaultAccountTools,
+  type AccountTool,
+  type AccountToolKey,
+} from "@/lib/account-tools";
+import { type PurchaseServiceCode } from "@/lib/purchase-service";
 
 const MAKE_ACCOUNT_SESSION_WEBHOOK_URL =
   process.env.MAKE_ACCOUNT_SESSION_WEBHOOK_URL ||
@@ -42,6 +48,25 @@ const demoAccountData = {
       status: "result_ready",
     },
   ],
+  tools: buildDefaultAccountTools({
+    token: DEMO_ACCOUNT_TOKEN,
+    isDemoAccount: true,
+    launchCount: 2,
+    launchLimit: DEFAULT_LAUNCH_LIMIT,
+  }),
+};
+
+type NormalizedAccountSessionData = {
+  fullName: string;
+  companyName: string;
+  position: string;
+  positionLocked: boolean;
+  expiresAt: string;
+  companySummary: string;
+  launchCount: number;
+  launchLimit: number;
+  tools: AccountTool[];
+  results: typeof demoAccountData.results;
 };
 
 type UnknownRecord = Record<string, unknown>;
@@ -81,6 +106,41 @@ function toNumberSafe(value: unknown, fallback = 0) {
     if (Number.isFinite(parsed)) return parsed;
   }
   return fallback;
+}
+
+function toNullableString(value: unknown) {
+  const result = toStringSafe(value, "").trim();
+  return result.length ? result : undefined;
+}
+
+function toToolKey(value: unknown): AccountToolKey | null {
+  const normalized = toStringSafe(value, "").trim().toLowerCase();
+  if (
+    normalized === "rs_playground" ||
+    normalized === "rs_onrec" ||
+    normalized === "selltimer" ||
+    normalized === "forecaster"
+  ) {
+    return normalized as AccountToolKey;
+  }
+  return null;
+}
+
+function toServiceCode(value: unknown): PurchaseServiceCode | null {
+  const normalized = toStringSafe(value, "").trim().toLowerCase();
+  if (
+    normalized === "pg" ||
+    normalized === "on_rec" ||
+    normalized === "ss" ||
+    normalized === "gs" ||
+    normalized === "mvp" ||
+    normalized === "ls" ||
+    normalized === "men" ||
+    normalized === "sa"
+  ) {
+    return normalized as PurchaseServiceCode;
+  }
+  return null;
 }
 
 export async function GET(req: NextRequest) {
@@ -216,7 +276,22 @@ export async function GET(req: NextRequest) {
       source?.launchLimit ??
       source?.launch_limit;
 
-    const normalized = {
+    const normalizedLaunchCount = toNumberSafe(
+      launchCountRaw,
+      normalizedResults.length
+    );
+    const normalizedLaunchLimit = toNumberSafe(
+      launchLimitRaw,
+      DEFAULT_LAUNCH_LIMIT
+    );
+    const defaultTools = buildDefaultAccountTools({
+      token,
+      isDemoAccount: false,
+      launchCount: normalizedLaunchCount,
+      launchLimit: normalizedLaunchLimit,
+    });
+
+    const normalized: NormalizedAccountSessionData = {
       fullName: toStringSafe(
         source?.fullName ??
           source?.full_name ??
@@ -246,10 +321,67 @@ export async function GET(req: NextRequest) {
           source?.company_summary,
         ""
       ),
-      launchCount: toNumberSafe(launchCountRaw, normalizedResults.length),
-      launchLimit: toNumberSafe(launchLimitRaw, DEFAULT_LAUNCH_LIMIT),
+      launchCount: normalizedLaunchCount,
+      launchLimit: normalizedLaunchLimit,
+      tools: [],
       results: normalizedResults,
     };
+
+    const incomingTools = Array.isArray(source?.tools) ? source.tools : [];
+
+    const mappedTools = incomingTools.reduce<AccountTool[]>((acc, rawTool) => {
+        const tool = isRecord(rawTool) ? rawTool : {};
+        const key = toToolKey(tool.key ?? tool.id ?? tool.slug);
+        if (!key) return acc;
+
+        const fallbackTool = defaultTools.find((item) => item.key === key);
+
+        acc.push({
+          key,
+          title: toStringSafe(tool.title, fallbackTool?.title ?? "Tool"),
+          variant: toStringSafe(
+            tool.variant ?? tool.label,
+            fallbackTool?.variant ?? ""
+          ),
+          description: toStringSafe(
+            tool.description,
+            fallbackTool?.description ?? ""
+          ),
+          isActive: toBooleanSafe(
+            tool.isActive ?? tool.is_active ?? tool.paid,
+            fallbackTool?.isActive ?? false
+          ),
+          isLocked: toBooleanSafe(
+            tool.isLocked ?? tool.is_locked,
+            !(fallbackTool?.isActive ?? false)
+          ),
+          launchCount:
+            key === "rs_playground"
+              ? toNumberSafe(
+                  tool.launchCount ?? tool.launch_count,
+                  normalized.launchCount
+                )
+              : undefined,
+          launchLimit:
+            key === "rs_playground"
+              ? toNumberSafe(
+                  tool.launchLimit ?? tool.launch_limit,
+                  normalized.launchLimit
+                )
+              : undefined,
+          accessUrl: toNullableString(
+            tool.accessUrl ?? tool.access_url ?? fallbackTool?.accessUrl
+          ),
+          serviceCode:
+            toServiceCode(tool.serviceCode ?? tool.service_code) ??
+            fallbackTool?.serviceCode ??
+            null,
+        } satisfies AccountTool);
+
+        return acc;
+      }, []);
+
+    normalized.tools = mappedTools.length > 0 ? mappedTools : defaultTools;
 
     return NextResponse.json({
       ok: true,

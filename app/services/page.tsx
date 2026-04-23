@@ -342,7 +342,7 @@ export default function ServicesPage() {
         </aside>
       </section>
 
-      <section className="tools-section" aria-label="Инструменты Growth Avenue">
+      <section id="tools" className="tools-section" aria-label="Инструменты Growth Avenue">
         <div className="section-title-row section-title-row-light">
           <span>Tools</span>
           <h2>Инструменты</h2>

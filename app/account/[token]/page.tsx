@@ -4,6 +4,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { Plus } from "lucide-react";
+import {
+  buildDefaultAccountTools,
+  getToolByKey,
+  type AccountTool,
+} from "@/lib/account-tools";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 import { getPurchasedServiceLabel } from "@/lib/purchase-service";
 
@@ -27,6 +33,7 @@ type CabinetData = {
   companySummary: string;
   launchCount: number;
   launchLimit: number;
+  tools: AccountTool[];
   results: ResultRow[];
 };
 
@@ -42,6 +49,18 @@ type AccountSessionResponse = {
     companySummary?: string;
     launchCount?: number;
     launchLimit?: number;
+    tools?: Array<{
+      key?: string;
+      title?: string;
+      variant?: string;
+      description?: string;
+      isActive?: boolean;
+      isLocked?: boolean;
+      launchCount?: number;
+      launchLimit?: number;
+      accessUrl?: string;
+      serviceCode?: string;
+    }>;
     results?: Array<{
       id?: string | number;
       date?: string;
@@ -67,6 +86,7 @@ const WHATSAPP_HELP_URL =
 const WHATSAPP_DELETE_URL = `https://api.whatsapp.com/send/?phone=995555163833&text=${encodeURIComponent(
   "Прошу очистить данные в моем аккаунте"
 )}&type=phone_number&app_absent=0`;
+const SERVICES_TOOLS_URL = "/services#tools";
 
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
@@ -145,6 +165,7 @@ export default function CabinetPage() {
     companySummary: "",
     launchCount: 0,
     launchLimit: DEFAULT_MAX_LAUNCHES,
+    tools: [],
     results: [],
   });
 
@@ -202,6 +223,46 @@ export default function CabinetPage() {
             ? cabinet.launchCount
             : normalizedResults.length;
 
+        const fallbackTools = buildDefaultAccountTools({
+          token,
+          isDemoAccount,
+          launchCount,
+          launchLimit,
+        });
+
+        const tools = fallbackTools.map((tool) => {
+          const sourceTool =
+            Array.isArray(cabinet.tools) && cabinet.tools.length > 0
+              ? cabinet.tools.find((raw) => raw?.key === tool.key)
+              : undefined;
+
+          return {
+            ...tool,
+            title: String(sourceTool?.title ?? tool.title),
+            variant: String(sourceTool?.variant ?? tool.variant),
+            description: String(sourceTool?.description ?? tool.description),
+            isActive: Boolean(sourceTool?.isActive ?? tool.isActive),
+            isLocked: Boolean(
+              sourceTool?.isLocked ??
+                !Boolean(sourceTool?.isActive ?? tool.isActive)
+            ),
+            launchCount:
+              typeof sourceTool?.launchCount === "number" &&
+              Number.isFinite(sourceTool.launchCount)
+                ? sourceTool.launchCount
+                : tool.launchCount,
+            launchLimit:
+              typeof sourceTool?.launchLimit === "number" &&
+              Number.isFinite(sourceTool.launchLimit)
+                ? sourceTool.launchLimit
+                : tool.launchLimit,
+            accessUrl:
+              typeof sourceTool?.accessUrl === "string"
+                ? sourceTool.accessUrl
+                : tool.accessUrl,
+          };
+        });
+
         setData({
           fullName: String(cabinet.fullName ?? "Имя Фамилия"),
           companyName: String(cabinet.companyName ?? "Название компании"),
@@ -214,6 +275,7 @@ export default function CabinetPage() {
           companySummary: String(cabinet.companySummary ?? ""),
           launchCount,
           launchLimit,
+          tools,
           results: normalizedResults,
         });
 
@@ -234,11 +296,19 @@ export default function CabinetPage() {
     if (token) {
       void loadCabinet();
     }
-  }, [token]);
+  }, [token, isDemoAccount]);
 
   const launchesUsed = data.launchCount;
   const maxLaunches = data.launchLimit || DEFAULT_MAX_LAUNCHES;
-  const launchesLeft = Math.max(0, maxLaunches - launchesUsed);
+  const snapshotPlaygroundTool = getToolByKey(data.tools, "rs_playground");
+  const snapshotLaunchesUsed =
+    snapshotPlaygroundTool?.launchCount ?? launchesUsed;
+  const snapshotLaunchLimit =
+    snapshotPlaygroundTool?.launchLimit ?? maxLaunches;
+  const snapshotLaunchesLeft = Math.max(
+    0,
+    snapshotLaunchLimit - snapshotLaunchesUsed
+  );
 
   const expiration = useMemo(() => {
     const now = Date.now();
@@ -313,8 +383,28 @@ export default function CabinetPage() {
     }));
   }
 
+  function handleToolPlay(tool: AccountTool) {
+    if (!tool.isActive || tool.isLocked) return;
+
+    if (tool.key === "rs_playground") {
+      void handleNewLaunch();
+      return;
+    }
+
+    if (tool.accessUrl) {
+      router.push(tool.accessUrl);
+    }
+  }
+
   async function handleNewLaunch() {
-    if (launchesUsed >= maxLaunches || !token || startingLaunch) return;
+    if (
+      !snapshotPlaygroundTool?.isActive ||
+      snapshotLaunchesUsed >= snapshotLaunchLimit ||
+      !token ||
+      startingLaunch
+    ) {
+      return;
+    }
 
     try {
       setStartingLaunch(true);
@@ -338,15 +428,17 @@ export default function CabinetPage() {
       const payload = {
         action: "launch_started",
         access_token: token,
+        tool_key: "rs_playground",
+        service_code: "pg",
         launch_attempt_id: launchAttemptId,
         started_at: new Date().toISOString(),
         full_name: data.fullName,
         company_name: data.companyName,
         position: data.position,
         position_locked: data.positionLocked,
-        launches_used: launchesUsed,
-        launches_left: launchesLeft,
-        launch_limit: maxLaunches,
+        launches_used: snapshotLaunchesUsed,
+        launches_left: snapshotLaunchesLeft,
+        launch_limit: snapshotLaunchLimit,
         expires_at: data.expiresAt,
         company_summary: data.companySummary,
         results_count: data.results.length,
@@ -549,62 +641,171 @@ export default function CabinetPage() {
         </div>
       </section>
 
-      <section style={styles.cardsSection}>
-        <div style={styles.infoCard}>
-          <div style={styles.cardHeading}>Company summary</div>
-
-          {loadingCabinet ? (
-            <div style={styles.placeholderText}>Загрузка...</div>
-          ) : data.companySummary ? (
-            <div style={styles.cardText}>{data.companySummary}</div>
-          ) : (
-            <div style={styles.placeholderText}>
-              Появится после первого запуска
+      <section style={styles.toolsSection}>
+        <div style={styles.toolsSectionHeader}>
+          <div>
+            <div style={styles.toolsKicker}>INSTRUMENTS</div>
+            <h2 style={styles.toolsTitle}>Доступные инструменты кабинета</h2>
+          </div>
+          {data.companySummary ? (
+            <div style={styles.toolsSummary}>
+              {data.companySummary}
             </div>
-          )}
+          ) : null}
         </div>
 
-        <div style={styles.launchesCard}>
-          <div style={styles.launchesTop}>
-            <div>
-              <div style={styles.cardHeading}>Launches</div>
+        <div style={styles.toolsGrid}>
+          {data.tools.map((tool) => {
+            const isPlaygroundSnapshot = tool.key === "rs_playground";
+            const isOnRecSnapshot = tool.key === "rs_onrec";
+            const currentLaunchCount =
+              typeof tool.launchCount === "number"
+                ? tool.launchCount
+                : snapshotLaunchesUsed;
+            const currentLaunchLimit =
+              typeof tool.launchLimit === "number"
+                ? tool.launchLimit
+                : snapshotLaunchLimit;
+            const currentLaunchProgress =
+              currentLaunchLimit > 0
+                ? Math.min(100, (currentLaunchCount / currentLaunchLimit) * 100)
+                : 0;
+            const playDisabled =
+              !tool.isActive ||
+              tool.isLocked ||
+              (isPlaygroundSnapshot &&
+                (currentLaunchCount >= currentLaunchLimit || startingLaunch));
 
-              <div style={styles.launchesValue}>
-                {launchesUsed}/{maxLaunches}
-              </div>
+            return (
+              <article
+                key={tool.key}
+                style={{
+                  ...styles.toolCard,
+                  ...(tool.isActive ? styles.toolCardActive : styles.toolCardLocked),
+                }}
+              >
+                <div style={styles.toolCardVisual}>
+                  <Image
+                    src="/acc_pic1.svg"
+                    alt=""
+                    fill
+                    priority={tool.key === "rs_playground"}
+                    style={{
+                      ...styles.toolCardVisualImage,
+                      ...(tool.isActive
+                        ? styles.toolCardVisualImageActive
+                        : styles.toolCardVisualImageLocked),
+                    }}
+                  />
+                  <div
+                    style={{
+                      ...styles.toolCardVisualOverlay,
+                      ...(tool.isActive
+                        ? styles.toolCardVisualOverlayActive
+                        : styles.toolCardVisualOverlayLocked),
+                    }}
+                  />
+                </div>
 
-              <div style={styles.launchesMeta}>
-                Осталось запусков: {launchesLeft}
-              </div>
-            </div>
+                <div style={styles.toolCardBody}>
+                  <div style={styles.toolCardTop}>
+                    <div>
+                      <div style={styles.toolVariant}>{tool.variant}</div>
+                      <h3 style={styles.toolTitle}>{tool.title}</h3>
+                    </div>
+                    <div
+                      style={{
+                        ...styles.toolStatus,
+                        ...(tool.isActive
+                          ? styles.toolStatusActive
+                          : styles.toolStatusLocked),
+                      }}
+                    >
+                      {tool.isActive ? "active" : "locked"}
+                    </div>
+                  </div>
 
-            <button
-              type="button"
-              style={{
-                ...styles.playButton,
-                opacity: launchesUsed >= maxLaunches || startingLaunch ? 0.55 : 1,
-                cursor:
-                  launchesUsed >= maxLaunches || startingLaunch
-                    ? "not-allowed"
-                    : "pointer",
-              }}
-              disabled={launchesUsed >= maxLaunches || startingLaunch}
-              onClick={handleNewLaunch}
-              title="Начать запуск"
-              aria-label="Начать запуск"
-            >
-              {startingLaunch ? "..." : "▶"}
-            </button>
-          </div>
+                  <p style={styles.toolDescription}>{tool.description}</p>
 
-          <div style={styles.launchProgressTrack}>
-            <div
-              style={{
-                ...styles.launchProgressFill,
-                width: `${(launchesUsed / maxLaunches) * 100}%`,
-              }}
-            />
-          </div>
+                  {isPlaygroundSnapshot ? (
+                    <div style={styles.toolMetricBlock}>
+                      <div style={styles.toolMetricLabel}>Запуски Snapshot</div>
+                      <div style={styles.toolMetricValue}>
+                        {currentLaunchCount}/{currentLaunchLimit}
+                      </div>
+                      <div style={styles.toolMetricSub}>
+                        Осталось запусков:{" "}
+                        {Math.max(0, currentLaunchLimit - currentLaunchCount)}
+                      </div>
+                      <div style={styles.toolProgressTrack}>
+                        <div
+                          style={{
+                            ...styles.toolProgressFill,
+                            width: `${currentLaunchProgress}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
+                  ) : isOnRecSnapshot && tool.isActive ? (
+                    <div style={styles.toolMetricBlock}>
+                      <div style={styles.toolMetricLabel}>Формат доступа</div>
+                      <div style={styles.toolMetricValue}>Result access</div>
+                      <div style={styles.toolMetricSub}>
+                        Доступ к персональной странице результата и рабочему контуру.
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={styles.toolMetricBlock}>
+                      <div style={styles.toolMetricLabel}>Статус</div>
+                      <div style={styles.toolMetricValue}>Coming soon</div>
+                      <div style={styles.toolMetricSub}>
+                        Инструмент появится в кабинете после релиза и обновления доступа.
+                      </div>
+                    </div>
+                  )}
+
+                  <div style={styles.toolActions}>
+                    <button
+                      type="button"
+                      style={{
+                        ...styles.playButton,
+                        ...styles.toolPlayButton,
+                        opacity: playDisabled ? 0.45 : 1,
+                        cursor: playDisabled ? "not-allowed" : "pointer",
+                      }}
+                      disabled={playDisabled}
+                      onClick={() => handleToolPlay(tool)}
+                      title="Открыть инструмент"
+                      aria-label={`Открыть ${tool.title}`}
+                    >
+                      {startingLaunch && isPlaygroundSnapshot ? "..." : "Play"}
+                    </button>
+
+                    {!tool.isActive ? (
+                      <div style={styles.toolLockedActions}>
+                        <button type="button" style={styles.comingSoonButton}>
+                          coming soon
+                        </button>
+                        <Link
+                          href={SERVICES_TOOLS_URL}
+                          style={styles.plusButton}
+                          aria-label="Перейти к инструментам"
+                        >
+                          <Plus size={16} />
+                        </Link>
+                      </div>
+                    ) : (
+                      <div style={styles.toolAccessNote}>
+                        {isPlaygroundSnapshot
+                          ? "Интерактивный запуск из кабинета"
+                          : "Переход к result page"}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -952,11 +1153,15 @@ export default function CabinetPage() {
             grid-template-columns: 1fr !important;
           }
 
-          section[style*="grid-template-columns: 1fr 0.52fr"] {
+          .release-preorder-card {
             grid-template-columns: 1fr !important;
           }
 
-          .release-preorder-card {
+          div[style*="grid-template-columns: repeat(4, minmax(0, 1fr))"] {
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+          }
+
+          div[style*="grid-template-columns: 1fr auto"] {
             grid-template-columns: 1fr !important;
           }
 
@@ -973,6 +1178,10 @@ export default function CabinetPage() {
 
         @media (max-width: 640px) {
           .release-preorder-card div[style*="grid-template-columns: repeat(3"] {
+            grid-template-columns: 1fr !important;
+          }
+
+          div[style*="grid-template-columns: repeat(4, minmax(0, 1fr))"] {
             grid-template-columns: 1fr !important;
           }
 
@@ -1244,6 +1453,232 @@ const styles: Record<string, React.CSSProperties> = {
     display: "grid",
     gridTemplateColumns: "1fr 0.52fr",
     gap: "22px",
+  },
+  toolsSection: {
+    position: "relative",
+    zIndex: 1,
+    maxWidth: "1320px",
+    margin: "22px auto 0",
+  },
+  toolsSectionHeader: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "18px",
+    alignItems: "end",
+    marginBottom: "14px",
+  },
+  toolsKicker: {
+    fontSize: "12px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#f7d237",
+    fontWeight: 800,
+    marginBottom: "8px",
+  },
+  toolsTitle: {
+    margin: 0,
+    fontSize: "28px",
+    lineHeight: 1.08,
+    color: "#fff",
+  },
+  toolsSummary: {
+    maxWidth: "420px",
+    fontSize: "13px",
+    lineHeight: 1.7,
+    color: "rgba(255,255,255,0.62)",
+    textAlign: "right",
+  },
+  toolsGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: "14px",
+  },
+  toolCard: {
+    position: "relative",
+    display: "grid",
+    gridTemplateRows: "126px 1fr",
+    borderRadius: "26px",
+    overflow: "hidden",
+    border: "1px solid rgba(255,255,255,0.08)",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
+    minHeight: "360px",
+  },
+  toolCardActive: {
+    background: "rgba(255,255,255,0.06)",
+  },
+  toolCardLocked: {
+    background: "rgba(255,255,255,0.03)",
+  },
+  toolCardVisual: {
+    position: "relative",
+    overflow: "hidden",
+  },
+  toolCardVisualImage: {
+    objectFit: "cover",
+    objectPosition: "center",
+    transform: "scale(1.02)",
+  },
+  toolCardVisualImageActive: {
+    filter: "none",
+    opacity: 0.96,
+  },
+  toolCardVisualImageLocked: {
+    filter: "grayscale(1)",
+    opacity: 0.42,
+  },
+  toolCardVisualOverlay: {
+    position: "absolute",
+    inset: 0,
+  },
+  toolCardVisualOverlayActive: {
+    background:
+      "linear-gradient(180deg, rgba(8,17,30,0.08) 0%, rgba(8,17,30,0.58) 100%)",
+  },
+  toolCardVisualOverlayLocked: {
+    background:
+      "linear-gradient(180deg, rgba(12,18,26,0.4) 0%, rgba(12,18,26,0.82) 100%)",
+  },
+  toolCardBody: {
+    display: "grid",
+    gap: "14px",
+    padding: "16px",
+    alignContent: "start",
+  },
+  toolCardTop: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "12px",
+    alignItems: "start",
+  },
+  toolVariant: {
+    fontSize: "11px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "#f7d237",
+    fontWeight: 800,
+    marginBottom: "8px",
+  },
+  toolTitle: {
+    margin: 0,
+    fontSize: "22px",
+    lineHeight: 1.08,
+    color: "#fff",
+  },
+  toolStatus: {
+    borderRadius: "999px",
+    padding: "7px 10px",
+    fontSize: "10px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    fontWeight: 800,
+    whiteSpace: "nowrap",
+  },
+  toolStatusActive: {
+    border: "1px solid rgba(247,210,55,0.16)",
+    background: "rgba(247,210,55,0.08)",
+    color: "#f7d237",
+  },
+  toolStatusLocked: {
+    border: "1px solid rgba(255,255,255,0.08)",
+    background: "rgba(255,255,255,0.04)",
+    color: "rgba(255,255,255,0.54)",
+  },
+  toolDescription: {
+    margin: 0,
+    fontSize: "13px",
+    lineHeight: 1.65,
+    color: "rgba(255,255,255,0.74)",
+  },
+  toolMetricBlock: {
+    borderRadius: "18px",
+    background: "rgba(255,255,255,0.04)",
+    border: "1px solid rgba(255,255,255,0.08)",
+    padding: "12px",
+  },
+  toolMetricLabel: {
+    fontSize: "11px",
+    letterSpacing: "0.12em",
+    textTransform: "uppercase",
+    color: "rgba(255,255,255,0.48)",
+    marginBottom: "10px",
+  },
+  toolMetricValue: {
+    fontSize: "28px",
+    lineHeight: 1,
+    fontWeight: 800,
+    color: "#fff",
+  },
+  toolMetricSub: {
+    marginTop: "8px",
+    fontSize: "12px",
+    lineHeight: 1.55,
+    color: "rgba(255,255,255,0.62)",
+  },
+  toolProgressTrack: {
+    marginTop: "12px",
+    height: "8px",
+    width: "100%",
+    borderRadius: "999px",
+    background: "rgba(255,255,255,0.08)",
+    overflow: "hidden",
+  },
+  toolProgressFill: {
+    height: "100%",
+    borderRadius: "999px",
+    background:
+      "linear-gradient(90deg, #47b6f6 0%, #7c84ff 55%, #f7d237 100%)",
+    transition: "width 0.35s ease",
+  },
+  toolActions: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto",
+    gap: "10px",
+    alignItems: "center",
+    marginTop: "auto",
+  },
+  toolPlayButton: {
+    minWidth: 0,
+    width: "100%",
+    height: "48px",
+    borderRadius: "16px",
+    padding: "0 18px",
+    fontSize: "15px",
+    fontWeight: 800,
+  },
+  toolLockedActions: {
+    display: "inline-flex",
+    alignItems: "center",
+    gap: "8px",
+  },
+  comingSoonButton: {
+    minHeight: "42px",
+    borderRadius: "999px",
+    padding: "0 14px",
+    border: "1px solid rgba(255,255,255,0.1)",
+    background: "rgba(255,255,255,0.05)",
+    color: "rgba(255,255,255,0.66)",
+    fontSize: "12px",
+    fontWeight: 700,
+    textTransform: "uppercase",
+    letterSpacing: "0.08em",
+  },
+  plusButton: {
+    width: "42px",
+    height: "42px",
+    borderRadius: "999px",
+    border: "1px solid rgba(255,255,255,0.12)",
+    background: "rgba(255,255,255,0.06)",
+    color: "#fff",
+    display: "inline-flex",
+    alignItems: "center",
+    justifyContent: "center",
+    textDecoration: "none",
+  },
+  toolAccessNote: {
+    fontSize: "12px",
+    lineHeight: 1.45,
+    color: "rgba(255,255,255,0.52)",
+    textAlign: "right",
   },
   infoCard: {
     borderRadius: "28px",

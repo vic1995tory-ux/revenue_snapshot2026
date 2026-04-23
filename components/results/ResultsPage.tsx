@@ -38,6 +38,18 @@ export function ResultsPage({
 
   return (
     <main className="rs-page-shell min-h-screen text-white">
+      <div className="results-mobile-placeholder">
+        <div className="results-mobile-placeholder__inner">
+          <div className="results-mobile-placeholder__kicker">Revenue Snapshot</div>
+          <h1 className="results-mobile-placeholder__title">
+            Отображается только на десктоп версии
+          </h1>
+          <p className="results-mobile-placeholder__copy">
+            Для просмотра результата открой эту страницу с ноутбука или десктопа.
+          </p>
+        </div>
+      </div>
+      <div className="results-desktop-shell">
       <div className="rs-page-background" aria-hidden="true">
         <div className="rs-aurora rs-aurora-1" />
         <div className="rs-aurora rs-aurora-2" />
@@ -104,6 +116,60 @@ export function ResultsPage({
           <ResultsOverallSummarySection summary={data.overallSummary} />
         </section>
       </div>
+      </div>
+      <style jsx global>{`
+        @media (max-width: 1023px) {
+          .results-desktop-shell {
+            display: none;
+          }
+
+          .results-mobile-placeholder {
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+          }
+
+          .results-mobile-placeholder__inner {
+            width: 100%;
+            max-width: 560px;
+            border-radius: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(13, 19, 27, 0.88);
+            padding: 28px 24px;
+            text-align: center;
+            box-shadow: 0 24px 70px rgba(0, 0, 0, 0.28);
+          }
+
+          .results-mobile-placeholder__kicker {
+            font-size: 11px;
+            letter-spacing: 0.24em;
+            text-transform: uppercase;
+            color: #c7a93b;
+          }
+
+          .results-mobile-placeholder__title {
+            margin: 14px 0 0;
+            font-size: 34px;
+            line-height: 1.02;
+            letter-spacing: -0.04em;
+            color: #fff;
+          }
+
+          .results-mobile-placeholder__copy {
+            margin: 14px 0 0;
+            font-size: 16px;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.68);
+          }
+        }
+
+        @media (min-width: 1024px) {
+          .results-mobile-placeholder {
+            display: none;
+          }
+        }
+      `}</style>
     </main>
   );
 }
