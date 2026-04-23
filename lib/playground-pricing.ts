@@ -15,7 +15,8 @@ export type PlaygroundPricingSnapshot = {
   tiers: PlaygroundPricingTier[];
 };
 
-const PAYPAL_PLAYGROUND_URL = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
+const WA_PLAYGROUND_URL =
+  "https://wa.me/995555163833?text=%D0%A5%D0%BE%D1%87%D1%83%20%D0%BE%D0%BF%D0%BB%D0%B0%D1%82%D0%B8%D1%82%D1%8C%20Online%20Playground";
 
 function atUtcDate(year: number, month: number, day: number) {
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
@@ -24,7 +25,7 @@ function atUtcDate(year: number, month: number, day: number) {
 export function getPlaygroundPricingSnapshot(now = new Date()): PlaygroundPricingSnapshot {
   const year = now.getUTCFullYear();
   const firstTierEnd = atUtcDate(year, 5, 8);
-  const secondTierEnd = atUtcDate(year, 5, 16);
+  const secondTierEnd = atUtcDate(year, 5, 18);
 
   let currentPrice = 147;
   let activeIndex = 2;
@@ -45,11 +46,11 @@ export function getPlaygroundPricingSnapshot(now = new Date()): PlaygroundPricin
     currentPrice,
     currentPriceLabel: `$${currentPrice}`,
     buttonLabel: "Оплатить",
-    payUrl: PAYPAL_PLAYGROUND_URL,
+    payUrl: WA_PLAYGROUND_URL,
     tiers: [
       { label: "До 7 мая", price: 93, active: activeIndex === 0 },
       { label: "8-15 мая", price: 115, active: activeIndex === 1 },
-      { label: "С 16 мая", price: 147, active: activeIndex === 2 },
+      { label: "С 18 мая", price: 147, active: activeIndex === 2 },
     ],
   };
 }
