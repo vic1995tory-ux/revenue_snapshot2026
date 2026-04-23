@@ -1,4 +1,6 @@
 import { ResultsPage } from "@/components/results/ResultsPage";
+import { OnRecResultsPage } from "@/components/onrec-results/OnRecResultsPage";
+import { onRecResultsMockData } from "@/lib/onrec-results/mock-data";
 import { resultsMockData } from "@/lib/results/mock-data";
 
 export default async function Page({
@@ -8,6 +10,20 @@ export default async function Page({
 }) {
   const { token } = await params;
   const demoResultTokens = new Set(["mock-token", "demo-result-1", "demo-result-2"]);
+  const normalizedToken = token.trim().toLowerCase();
+
+  if (
+    normalizedToken === "on_rec" ||
+    normalizedToken.startsWith("on_rec_") ||
+    normalizedToken.startsWith("on_rec-")
+  ) {
+    return (
+      <OnRecResultsPage
+        data={onRecResultsMockData}
+        profileHref={`/account/${token}`}
+      />
+    );
+  }
 
   if (!demoResultTokens.has(token)) {
     return (
