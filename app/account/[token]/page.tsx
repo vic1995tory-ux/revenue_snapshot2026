@@ -10,8 +10,9 @@ import {
   getToolByKey,
   type AccountTool,
 } from "@/lib/account-tools";
+import { ExpandedCheckoutModal } from "@/components/payments/ExpandedCheckoutModal";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
-import { getPurchasedServiceLabel } from "@/lib/purchase-service";
+import { getPurchasedServiceLabel, type CheckoutPlan } from "@/lib/purchase-service";
 
 type ResultRow = {
   id: string;
@@ -179,6 +180,7 @@ export default function CabinetPage() {
   const [loadingCabinet, setLoadingCabinet] = useState(true);
   const [startingLaunch, setStartingLaunch] = useState(false);
   const [error, setError] = useState("");
+  const [checkoutPlan, setCheckoutPlan] = useState<CheckoutPlan | null>(null);
 
   const [data, setData] = useState<CabinetData>({
     fullName: "Имя Фамилия",
@@ -869,14 +871,13 @@ export default function CabinetPage() {
             ))}
           </div>
 
-          <a
-            href={playgroundPricing.payUrl}
-            target="_blank"
-            rel="noreferrer"
-            style={styles.releaseButton}
+          <button
+            type="button"
+            onClick={() => setCheckoutPlan("playground")}
+            style={{ ...styles.releaseButton, border: 0, cursor: "pointer" }}
           >
             {playgroundPricing.buttonLabel}
-          </a>
+          </button>
         </div>
       </section>
 
@@ -1148,6 +1149,18 @@ export default function CabinetPage() {
           </div>
         </div>
       )}
+
+      <ExpandedCheckoutModal
+        open={checkoutPlan !== null}
+        plan={checkoutPlan ?? "playground"}
+        amount={checkoutPlan === "onrec" ? 770 : playgroundPricing.currentPrice}
+        title={
+          checkoutPlan === "onrec"
+            ? "On Rec Revenue Snapshot"
+            : "Online Playground Revenue Snapshot"
+        }
+        onClose={() => setCheckoutPlan(null)}
+      />
 
       <style jsx global>{`
         .account-tool-card-active:hover {

@@ -3,44 +3,19 @@
 import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { ExpandedCheckoutModal } from "@/components/payments/ExpandedCheckoutModal";
 import {
   CONSENT_EVENT,
   readStoredConsent,
   type ConsentState,
 } from "@/lib/consent";
 import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
+import { type CheckoutPlan } from "@/lib/purchase-service";
 
 declare global {
   interface Window {
     dataLayer?: unknown[];
     gtag?: (...args: unknown[]) => void;
-    paypal?: {
-      Buttons: (config: {
-        style?: Record<string, unknown>;
-        createOrder: (
-          data: unknown,
-          actions: {
-            order: {
-              create: (payload: Record<string, unknown>) => Promise<string>;
-              capture: () => Promise<Record<string, unknown>>;
-            };
-          }
-        ) => Promise<string>;
-        onClick?: () => void;
-        onApprove: (
-          data: { orderID?: string },
-          actions: {
-            order: {
-              capture: () => Promise<Record<string, unknown>>;
-            };
-          }
-        ) => Promise<void>;
-        onError?: (error: unknown) => void;
-      }) => {
-        render: (selector: HTMLElement | string) => Promise<void>;
-        close?: () => void;
-      };
-    };
   }
 }
 
@@ -797,6 +772,11 @@ type TariffSection = {
 
 type TariffOfferKey = "playground" | "onrec";
 const CHECKOUT_CONTEXT_STORAGE_KEY = "rs_checkout_context";
+type CheckoutState = {
+  plan: CheckoutPlan;
+  amount: number;
+  title: string;
+} | null;
 
 type TariffOfferConfig = {
   title: string;
@@ -1006,188 +986,11 @@ type OverlayBox = {
   width?: string;
 };
 
-type PaymentState = "idle" | "waiting";
-type PayPlan = "playground" | "onrec";
-
-const PAYPAL_CLIENT_ID =
-  process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ||
-  "BAAhz9xcUqSNpy8eOX3LdpB-ZjYn1uN9rFRDWd4LydYq0I1X12kwyxbtJUAMQgIvypHW1T9244aYMkdpEQ";
-
-function getPlanPriceValue(plan: PayPlan, playgroundPrice: string) {
-  if (plan === "onrec") return 770;
-  const parsed = Number(playgroundPrice.replace(/[^\d.]/g, ""));
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 93;
-}
-
-function extractCaptureDetails(capture: Record<string, unknown>) {
-  const purchaseUnits = Array.isArray(capture.purchase_units)
-    ? capture.purchase_units
-    : [];
-  const firstUnit =
-    purchaseUnits.length > 0 &&
-    typeof purchaseUnits[0] === "object" &&
-    purchaseUnits[0] !== null
-      ? (purchaseUnits[0] as Record<string, unknown>)
-      : null;
-  const payments =
-    firstUnit && typeof firstUnit.payments === "object" && firstUnit.payments !== null
-      ? (firstUnit.payments as Record<string, unknown>)
-      : null;
-  const captures = payments && Array.isArray(payments.captures) ? payments.captures : [];
-  const firstCapture =
-    captures.length > 0 && typeof captures[0] === "object" && captures[0] !== null
-      ? (captures[0] as Record<string, unknown>)
-      : null;
-  const amount =
-    firstCapture && typeof firstCapture.amount === "object" && firstCapture.amount !== null
-      ? (firstCapture.amount as Record<string, unknown>)
-      : null;
-
-  return {
-    tx:
-      (typeof firstCapture?.id === "string" && firstCapture.id) ||
-      (typeof capture.id === "string" && capture.id) ||
-      "",
-    st:
-      (typeof firstCapture?.status === "string" && firstCapture.status) ||
-      (typeof capture.status === "string" && capture.status) ||
-      "COMPLETED",
-    amt:
-      (typeof amount?.value === "string" && amount.value) ||
-      "",
-    cc:
-      (typeof amount?.currency_code === "string" && amount.currency_code) ||
-      "USD",
-  };
-}
-
-function PayPalSmartButton({
-  plan,
-  amount,
-  playgroundPriceLabel,
-  onSuccess,
-}: {
-  plan: PayPlan;
-  amount: number;
-  playgroundPriceLabel: string;
-  onSuccess: (details: { tx: string; st: string; amt: string; cc: string }, plan: PayPlan) => void;
-}) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const [sdkReady, setSdkReady] = useState(
-    () => typeof window !== "undefined" && Boolean(window.paypal?.Buttons)
-  );
-  const [sdkError, setSdkError] = useState("");
-
-  useEffect(() => {
-    const existing = document.querySelector('script[data-paypal-sdk="true"]');
-
-    const handleReady = () => {
-      if (window.paypal?.Buttons) setSdkReady(true);
-    };
-
-    if (window.paypal?.Buttons) return;
-
-    if (existing) {
-      existing.addEventListener("load", handleReady);
-      return () => existing.removeEventListener("load", handleReady);
-    }
-
-    const script = document.createElement("script");
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD&intent=capture`;
-    script.async = true;
-    script.dataset.paypalSdk = "true";
-    script.addEventListener("load", handleReady);
-    script.addEventListener("error", () => {
-      setSdkError("Не удалось загрузить PayPal SDK.");
-    });
-    document.body.appendChild(script);
-
-    return () => {
-      script.removeEventListener("load", handleReady);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!sdkReady || !containerRef.current || !window.paypal?.Buttons) return;
-
-    containerRef.current.innerHTML = "";
-
-    const button = window.paypal.Buttons({
-      style: {
-        layout: "horizontal",
-        shape: "pill",
-        color: "gold",
-        height: 44,
-        label: "pay",
-        tagline: false,
-      },
-      onClick: () => {
-        try {
-          window.localStorage.setItem(
-            CHECKOUT_CONTEXT_STORAGE_KEY,
-            JSON.stringify({
-              servicePlan: plan,
-              serviceCode: plan === "onrec" ? "on_rec" : "pg",
-              savedAt: new Date().toISOString(),
-            })
-          );
-        } catch {}
-
-        trackEvent("begin_checkout", {
-          currency: "USD",
-          value: amount,
-          plan,
-          checkout_provider: "paypal_sdk",
-        });
-        window.fbq?.("track", "InitiateCheckout", {
-          currency: "USD",
-          value: amount,
-          content_name: plan === "onrec" ? "On Rec" : `Online Playground ${playgroundPriceLabel}`,
-          content_type: "product",
-        });
-      },
-      createOrder: async (_data, actions) => {
-        return actions.order.create({
-          intent: "CAPTURE",
-          purchase_units: [
-            {
-              amount: {
-                currency_code: "USD",
-                value: amount.toFixed(2),
-              },
-              description: plan === "onrec" ? "On Rec Revenue Snapshot" : "Online Playground Revenue Snapshot",
-              custom_id: plan === "onrec" ? "on_rec" : "pg",
-            },
-          ],
-        });
-      },
-      onApprove: async (_data, actions) => {
-        const capture = await actions.order.capture();
-        const details = extractCaptureDetails(capture);
-        onSuccess(details, plan);
-      },
-      onError: () => {
-        setSdkError("PayPal не завершил оплату. Попробуйте ещё раз.");
-      },
-    });
-
-    void button.render(containerRef.current);
-  }, [amount, onSuccess, plan, playgroundPriceLabel, sdkReady]);
-
-  return (
-    <div className="paypal-sdk-slot">
-      <div ref={containerRef} />
-      {sdkError ? <div className="paypal-sdk-error">{sdkError}</div> : null}
-    </div>
-  );
-}
-
 function StartCard({
   title,
   icon,
   mobileIcon,
   price,
-  href,
   ctaLabel = "Оплатить",
   disabled = false,
   secondaryLabel,
@@ -1197,15 +1000,11 @@ function StartCard({
   buttonDesktop,
   buttonMobile,
   onPay,
-  plan,
-  usePaypalSdk = false,
-  playgroundPriceLabel,
 }: {
   title: string;
   icon: string;
   mobileIcon?: string;
   price: string;
-  href: string;
   ctaLabel?: string;
   disabled?: boolean;
   secondaryLabel?: string;
@@ -1214,10 +1013,7 @@ function StartCard({
   priceMobile?: OverlayBox;
   buttonDesktop: OverlayBox;
   buttonMobile?: OverlayBox;
-  onPay?: (url: string) => void;
-  plan?: PayPlan;
-  usePaypalSdk?: boolean;
-  playgroundPriceLabel?: string;
+  onPay?: () => void;
   stats?: Array<{ label: string; value: string }>;
 }) {
   const styleVars: CSSProperties & Record<`--${string}`, string> = {
@@ -1260,33 +1056,14 @@ function StartCard({
                 >
                   {ctaLabel}
                 </button>
-              ) : usePaypalSdk && plan ? (
-                <PayPalSmartButton
-                  plan={plan}
-                  amount={getPlanPriceValue(plan, playgroundPriceLabel ?? price)}
-                  playgroundPriceLabel={playgroundPriceLabel ?? price}
-                  onSuccess={(details) => {
-                    const query = new URLSearchParams({
-                      tx: details.tx,
-                      st: details.st,
-                      amt: details.amt,
-                      cc: details.cc,
-                    });
-                    window.location.href = `/start-page?${query.toString()}`;
-                  }}
-                />
               ) : (
-                <a
-                  href={href}
+                <button
+                  type="button"
                   className="start-card-btn"
-                  onClick={(e) => {
-                    if (!onPay) return;
-                    e.preventDefault();
-                    onPay(href);
-                  }}
+                  onClick={onPay}
                 >
                   {ctaLabel}
-                </a>
+                </button>
               )}
               {secondaryLabel && secondaryHref ? (
                 <Link href={secondaryHref} className="start-card-btn start-card-btn-secondary">
@@ -1582,14 +1359,11 @@ const [history, setHistory] = useState<
       text: "3 запуска, разные бизнесы, интерактивные результаты, PDF и спецусловия на новые инструменты.",
     },
   ];
-  const payUrl = "https://www.paypal.com/ncp/payment/J573NHRDCJQZC";
-  const onRecUrl = "https://www.paypal.com/ncp/payment/GQLFG3CYUHM82";
   const demoAccountUrl = "/account/demo";
   const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
-  const paymentRecoveryUrl = "/payment-recovery";
-  const [paymentState, setPaymentState] = useState<PaymentState>("idle");
+  const [checkoutState, setCheckoutState] = useState<CheckoutState>(null);
   const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
 
   useEffect(() => {
@@ -1634,7 +1408,6 @@ const [history, setHistory] = useState<
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
           price: playgroundPricing.currentPriceLabel,
-          href: payUrl,
           ctaLabel: "Оплатить",
           disabled: false,
           secondaryLabel: "get a demo",
@@ -1645,7 +1418,6 @@ const [history, setHistory] = useState<
           icon: "/onrec_desc.svg",
           mobileIcon: "/on-rec_mobile.svg",
           price: "$770",
-          href: onRecUrl,
           ctaLabel: "Оплатить",
           disabled: false,
           secondaryLabel: undefined,
@@ -1861,7 +1633,9 @@ const strategyOptions = [
   },
 ];
 
-  const handlePay = (paypalUrl: string, plan: "playground" | "onrec" = "playground") => {
+  const handlePay = (plan: CheckoutPlan = "playground") => {
+    const amount = plan === "onrec" ? 770 : playgroundPricing.currentPrice;
+
     try {
       window.localStorage.setItem(
         CHECKOUT_CONTEXT_STORAGE_KEY,
@@ -1875,22 +1649,24 @@ const strategyOptions = [
 
     trackEvent("begin_checkout", {
       currency: "USD",
-      value: plan === "onrec" ? 770 : 148,
+      value: amount,
       plan,
-      checkout_provider: "paypal",
+      checkout_provider: "paypal_expanded",
     });
     window.fbq?.("track", "InitiateCheckout", {
       currency: "USD",
-      value: plan === "onrec" ? 770 : 148,
+      value: amount,
       content_name: plan === "onrec" ? "On Rec" : "Online Playground",
       content_type: "product",
     });
-    window.open(paypalUrl, "_blank", "noopener,noreferrer");
-    setPaymentState("waiting");
-  };
-
-  const closePaymentOverlay = () => {
-    setPaymentState("idle");
+    setCheckoutState({
+      plan,
+      amount,
+      title:
+        plan === "onrec"
+          ? "On Rec Revenue Snapshot"
+          : "Online Playground Revenue Snapshot",
+    });
   };
 
   useEffect(() => {
@@ -2714,7 +2490,7 @@ const handleReset = () => {
               <button
                 type="button"
                 className="tg-gradient-btn mt-5 block w-full text-center"
-                onClick={() => handlePay(payUrl, "playground")}
+                onClick={() => handlePay("playground")}
               >
                 Попробовать Snapshot
               </button>
@@ -2745,7 +2521,7 @@ const handleReset = () => {
             <button
               type="button"
               className="result-doc-start-btn results-start-btn"
-              onClick={() => handlePay(payUrl, "playground")}
+              onClick={() => handlePay("playground")}
             >
               Начать
             </button>
@@ -2779,7 +2555,6 @@ const handleReset = () => {
                     icon="/online_playground_desc.svg"
                     mobileIcon="/online-playground_mobile.svg"
                     price={playgroundPricing.currentPriceLabel}
-                    href={payUrl}
                     ctaLabel="Оплатить"
                     secondaryLabel="get a demo"
                     secondaryHref={demoAccountUrl}
@@ -2787,24 +2562,18 @@ const handleReset = () => {
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "58%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "72%" }}
-                    plan="playground"
-                    usePaypalSdk
-                    playgroundPriceLabel={playgroundPricing.currentPriceLabel}
-                    onPay={(url) => handlePay(url, "playground")}
+                    onPay={() => handlePay("playground")}
                   />
                   <StartCard
                     title="On Rec"
                     icon="/onrec_desc.svg"
                     mobileIcon="/on-rec_mobile.svg"
                     price="$770"
-                    href={onRecUrl}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: "48%" }}
-                    plan="onrec"
-                    usePaypalSdk
-                    onPay={(url) => handlePay(url, "onrec")}
+                    onPay={() => handlePay("onrec")}
                   />
                 </div>
                 <TariffDetailsComparison />
@@ -2834,7 +2603,6 @@ const handleReset = () => {
                     icon={selectedOfferCard.icon}
                     mobileIcon={selectedOfferCard.mobileIcon}
                     price={selectedOfferCard.price}
-                    href={selectedOfferCard.href}
                     ctaLabel={selectedOfferCard.ctaLabel}
                     disabled={selectedOfferCard.disabled}
                     secondaryLabel={selectedOfferCard.secondaryLabel}
@@ -2843,11 +2611,8 @@ const handleReset = () => {
                     priceMobile={{ top: "73%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: selectedOffer === "playground" ? "58%" : "35%" }}
                     buttonMobile={{ left: "6.4%", bottom: "11.2%", width: selectedOffer === "playground" ? "72%" : "48%" }}
-                    plan={selectedOffer === "playground" ? "playground" : "onrec"}
-                    usePaypalSdk
-                    playgroundPriceLabel={playgroundPricing.currentPriceLabel}
-                    onPay={(url) =>
-                      handlePay(url, selectedOffer === "playground" ? "playground" : "onrec")
+                    onPay={() =>
+                      handlePay(selectedOffer === "playground" ? "playground" : "onrec")
                     }
                   />
                 </div>
@@ -2940,7 +2705,7 @@ const handleReset = () => {
               className="tg-gradient-btn mt-5 block w-full text-center"
               onClick={() => {
                 setPreviewMobilePopupOpen(false);
-                handlePay(payUrl, "playground");
+                handlePay("playground");
               }}
             >
               Попробовать Snapshot
@@ -2948,44 +2713,13 @@ const handleReset = () => {
           </div>
         </div>
       )}
-
-      {paymentState !== "idle" && (
-        <div className="payment-overlay-root" role="dialog" aria-modal="true" aria-label="Ожидание оплаты">
-          <div className="payment-overlay-backdrop" />
-          <div className="payment-overlay-card">
-            <div className="payment-overlay-status-row">
-              <div className="payment-status-pill is-waiting">
-                <span className="payment-status-dot" />
-                <span>Ожидание оплаты</span>
-              </div>
-            </div>
-
-            <h2 className="payment-overlay-title">Открыто окно PayPal</h2>
-            <p className="payment-overlay-copy">
-              После успешной оплаты PayPal перенаправит вас на страницу создания личного кабинета.
-            </p>
-            <div className="payment-overlay-note">
-              Не закрывайте это окно, если оно вам не мешает. Попап останется открыт до тех пор,
-              пока вы сами не нажмёте «Всё ок. Готово» или не закроете страницу.
-            </div>
-            <div className="payment-overlay-actions payment-overlay-actions-stacked">
-              <a
-                href={paymentRecoveryUrl}
-                className="payment-overlay-btn payment-overlay-btn-secondary payment-overlay-btn-link"
-              >
-                Я случайно закрыл PayPal после оплаты
-              </a>
-              <button
-                type="button"
-                className="payment-overlay-btn payment-overlay-btn-primary"
-                onClick={closePaymentOverlay}
-              >
-                Всё ок. Готово
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ExpandedCheckoutModal
+        open={checkoutState !== null}
+        plan={checkoutState?.plan ?? "playground"}
+        amount={checkoutState?.amount ?? playgroundPricing.currentPrice}
+        title={checkoutState?.title ?? "Online Playground Revenue Snapshot"}
+        onClose={() => setCheckoutState(null)}
+      />
 
       {faqOpen && (
         <div className="faq-modal-root" role="dialog" aria-modal="true" aria-label="FAQ">
