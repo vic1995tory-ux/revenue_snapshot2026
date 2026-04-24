@@ -88,6 +88,30 @@ const WHATSAPP_DELETE_URL = `https://api.whatsapp.com/send/?phone=995555163833&t
 )}&type=phone_number&app_absent=0`;
 const SERVICES_TOOLS_URL = "/services#tools";
 
+function handleToolCardMove(
+  event: React.MouseEvent<HTMLElement>,
+  isInteractive: boolean
+) {
+  if (!isInteractive) return;
+
+  const card = event.currentTarget;
+  const rect = card.getBoundingClientRect();
+  const x = event.clientX - rect.left;
+  const y = event.clientY - rect.top;
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+
+  const rotateY = ((x - centerX) / centerX) * 8;
+  const rotateX = ((centerY - y) / centerY) * 7;
+
+  card.style.transform =
+    `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.012)`;
+}
+
+function resetToolCardTilt(event: React.MouseEvent<HTMLElement>) {
+  event.currentTarget.style.transform = "";
+}
+
 function makeAttemptId() {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -679,7 +703,9 @@ export default function CabinetPage() {
             return (
               <article
                 key={tool.key}
-                className="account-tool-card"
+                className={`account-tool-card ${tool.isActive ? "account-tool-card-active" : "account-tool-card-locked"}`}
+                onMouseMove={(event) => handleToolCardMove(event, tool.isActive)}
+                onMouseLeave={resetToolCardTilt}
                 style={{
                   ...styles.toolCard,
                   ...(tool.isActive ? styles.toolCardActive : styles.toolCardLocked),
@@ -1124,13 +1150,13 @@ export default function CabinetPage() {
       )}
 
       <style jsx global>{`
-        .account-tool-card:hover {
+        .account-tool-card-active:hover {
           transform: translateY(-6px);
           border-color: rgba(247, 210, 55, 0.18);
           box-shadow: 0 28px 56px rgba(0, 0, 0, 0.28);
         }
 
-        .account-tool-card:hover img {
+        .account-tool-card-active:hover img {
           transform: scale(1.06);
         }
 
