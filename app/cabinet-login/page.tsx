@@ -20,7 +20,7 @@ export default function CabinetLoginPage() {
 
     try {
       const cleanLogin = login.trim();
-      const cleanPassword = password.trim();
+      const cleanPassword = password;
 
       if (!cleanLogin) {
         throw new Error("Введите логин.");

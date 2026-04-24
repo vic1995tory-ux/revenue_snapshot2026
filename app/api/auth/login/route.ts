@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getIronSession } from "iron-session";
 import { getSessionOptions, type AppSessionData } from "@/lib/session";
+import { derivePasswordAttempt } from "@/lib/passwords";
 
 const MAKE_LOGIN_WEBHOOK_URL =
   process.env.MAKE_LOGIN_WEBHOOK_URL ||
   "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb";
+
+const MAKE_LOGIN_LOOKUP_WEBHOOK_URL =
+  process.env.MAKE_LOGIN_LOOKUP_WEBHOOK_URL || "";
 
 type MakeLoginResponse = {
   ok?: boolean;
@@ -16,6 +20,10 @@ type MakeLoginResponse = {
   fullName?: unknown;
   company_name?: unknown;
   companyName?: unknown;
+  password_salt?: unknown;
+  passwordSalt?: unknown;
+  password_version?: unknown;
+  passwordVersion?: unknown;
   data?: MakeLoginResponse;
 };
 
@@ -30,6 +38,23 @@ function tryParseJson(raw: string): MakeLoginResponse | null {
 function toStringSafe(value: unknown, fallback = "") {
   if (value === null || value === undefined) return fallback;
   return String(value);
+}
+
+async function readMakeJson(res: Response) {
+  const contentType = res.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return (await res.json()) as MakeLoginResponse;
+  }
+
+  const rawText = await res.text();
+  const parsed = tryParseJson(rawText);
+
+  if (!parsed) {
+    throw new Error("Сервис логина вернул невалидный ответ.");
+  }
+
+  return parsed;
 }
 
 export async function POST(req: NextRequest) {
@@ -53,6 +78,65 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    if (!MAKE_LOGIN_LOOKUP_WEBHOOK_URL) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            "Secure login lookup webhook is not configured. Configure MAKE_LOGIN_LOOKUP_WEBHOOK_URL.",
+        },
+        { status: 503 }
+      );
+    }
+
+    const lookupRes = await fetch(MAKE_LOGIN_LOOKUP_WEBHOOK_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        action: "login_lookup",
+        login,
+      }),
+      cache: "no-store",
+    });
+
+    const lookupData = await readMakeJson(lookupRes);
+
+    if (!lookupRes.ok || !lookupData?.ok) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error:
+            lookupData?.error ||
+            "Либо пользователя с таким логином не существует, либо пароль неверный.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const passwordSalt = toStringSafe(
+      lookupData?.password_salt ??
+        lookupData?.passwordSalt ??
+        lookupData?.data?.password_salt ??
+        lookupData?.data?.passwordSalt,
+      ""
+    );
+
+    const passwordVersion = toStringSafe(
+      lookupData?.password_version ??
+        lookupData?.passwordVersion ??
+        lookupData?.data?.password_version ??
+        lookupData?.data?.passwordVersion,
+      ""
+    );
+
+    const passwordAttempt = await derivePasswordAttempt(
+      password,
+      passwordSalt,
+      passwordVersion
+    );
+
     const makeRes = await fetch(MAKE_LOGIN_WEBHOOK_URL, {
       method: "POST",
       headers: {
@@ -61,34 +145,14 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         action: "login",
         login,
-        password,
+        password_hash: passwordAttempt.password_hash,
+        password_salt: passwordAttempt.password_salt,
+        password_version: passwordAttempt.password_version,
       }),
       cache: "no-store",
     });
 
-    const contentType = makeRes.headers.get("content-type") || "";
-    let makeData: MakeLoginResponse | null = {};
-    let rawText = "";
-
-    if (contentType.includes("application/json")) {
-      makeData = (await makeRes.json()) as MakeLoginResponse;
-    } else {
-      rawText = await makeRes.text();
-      makeData = tryParseJson(rawText);
-
-      if (!makeData) {
-        return NextResponse.json(
-          {
-            ok: false,
-            error: "Сервис логина вернул невалидный ответ.",
-            make_status: makeRes.status,
-            make_content_type: contentType || null,
-            make_response_preview: rawText.slice(0, 500),
-          },
-          { status: 502 }
-        );
-      }
-    }
+    const makeData = await readMakeJson(makeRes);
 
     if (!makeRes.ok || !makeData?.ok) {
       return NextResponse.json(

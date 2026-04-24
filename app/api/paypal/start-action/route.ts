@@ -3,6 +3,7 @@ import {
   getServiceCodeFromPlan,
   getServiceCodeFromToken,
 } from "@/lib/purchase-service";
+import { createPasswordRecord } from "@/lib/passwords";
 
 const MAKE_START_ACTION_WEBHOOK_URL =
   process.env.MAKE_START_ACTION_WEBHOOK_URL ||
@@ -21,8 +22,9 @@ function toTrimmedString(value: unknown) {
   return String(value).trim();
 }
 
-function isSha256Hex(value: string) {
-  return /^[a-f0-9]{64}$/i.test(value);
+function toStringValue(value: unknown) {
+  if (value === null || value === undefined) return "";
+  return String(value);
 }
 
 type WebhookJson = Record<string, unknown> & {
@@ -65,8 +67,7 @@ export async function POST(req: NextRequest) {
       login: toTrimmedString(body?.login).toLowerCase(),
       unique_login: toTrimmedString(body?.unique_login).toLowerCase(),
 
-      password_hash: toTrimmedString(body?.password_hash),
-      password_version: toTrimmedString(body?.password_version) || "sha256-v1",
+      password: toStringValue(body?.password),
 
       start_page_link: toTrimmedString(body?.start_page_link),
       create_on_rec_result: false,
@@ -116,29 +117,40 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!payload.password_hash) {
+    if (!payload.password) {
       return NextResponse.json(
-        { ok: false, error: "Missing password hash." },
+        { ok: false, error: "Missing password." },
         { status: 400 }
       );
     }
 
-    if (!isSha256Hex(payload.password_hash)) {
+    const passwordRecord = await createPasswordRecord(payload.password);
+
+    if (!passwordRecord.password_hash || !passwordRecord.password_salt) {
       return NextResponse.json(
         {
           ok: false,
-          error: "Invalid password hash format.",
+          error: "Failed to create password hash.",
         },
         { status: 400 }
       );
     }
+
+    const webhookPayload = {
+      ...payload,
+      password_hash: passwordRecord.password_hash,
+      password_salt: passwordRecord.password_salt,
+      password_version: passwordRecord.password_version,
+    };
+
+    delete (webhookPayload as { password?: string }).password;
 
     const webhookRes = await fetch(MAKE_START_ACTION_WEBHOOK_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(webhookPayload),
       cache: "no-store",
     });
 

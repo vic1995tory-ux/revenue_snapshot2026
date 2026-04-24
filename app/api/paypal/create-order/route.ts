@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPayPalOrder } from "@/lib/paypal-expanded";
+import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 import { getServiceCodeFromPlan, type CheckoutPlan } from "@/lib/purchase-service";
 
 function normalizePlan(value: unknown): CheckoutPlan {
@@ -11,14 +12,8 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     const plan = normalizePlan(body?.plan);
-    const amount = Number(body?.amount);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return NextResponse.json(
-        { ok: false, error: "amount must be a positive number" },
-        { status: 400 }
-      );
-    }
+    const amount =
+      plan === "onrec" ? 770 : getPlaygroundPricingSnapshot().currentPrice;
 
     const order = await createPayPalOrder({ plan, amount });
 
@@ -26,6 +21,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       id: order.id,
       plan,
+      amount,
       service_code: getServiceCodeFromPlan(plan),
     });
   } catch (error) {
@@ -39,4 +35,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

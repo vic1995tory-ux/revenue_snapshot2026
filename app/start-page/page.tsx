@@ -63,15 +63,6 @@ function formatTimeLeft(expiresAt?: string) {
   return `${minutes} мин.`;
 }
 
-async function sha256Hex(value: string) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(value);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return Array.from(new Uint8Array(digest))
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
-}
-
 function normalizeLogin(value: string) {
   return value.trim().toLowerCase();
 }
@@ -101,7 +92,7 @@ function validateWhatsapp(value: string) {
 }
 
 function validatePassword(value: string) {
-  const password = value.trim();
+  const password = value;
 
   if (password.length < 8) {
     return "Пароль должен быть не короче 8 символов.";
@@ -151,6 +142,7 @@ function StartPageContent() {
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const tx = useMemo(() => searchParams.get("tx") || "", [searchParams]);
+  const oid = useMemo(() => searchParams.get("oid") || "", [searchParams]);
   const st = useMemo(() => searchParams.get("st") || "", [searchParams]);
   const amt = useMemo(() => searchParams.get("amt") || "", [searchParams]);
   const cc = useMemo(() => searchParams.get("cc") || "", [searchParams]);
@@ -173,15 +165,6 @@ function StartPageContent() {
           throw new Error("Не найден Payment ID в ссылке.");
         }
 
-        const normalizedStatus = String(st).trim().toUpperCase();
-        const isPaid =
-          normalizedStatus === "COMPLETED" ||
-          normalizedStatus === "CONFIRMED";
-
-        if (!isPaid) {
-          throw new Error("Оплата не подтверждена.");
-        }
-
         const currentUrl =
           typeof window !== "undefined" ? window.location.href : "";
 
@@ -192,6 +175,7 @@ function StartPageContent() {
           },
           body: JSON.stringify({
             tx,
+            oid,
             st,
             amt,
             cc,
@@ -237,7 +221,7 @@ function StartPageContent() {
     return () => {
       cancelled = true;
     };
-  }, [tx, st, amt, cc, checkoutServicePlan]);
+  }, [tx, oid, st, amt, cc, checkoutServicePlan]);
 
   function handleLogoMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -303,18 +287,17 @@ function StartPageContent() {
         throw new Error(passwordError);
       }
 
-      if (!confirmPassword.trim()) {
+      if (!confirmPassword) {
         throw new Error("Подтвердите пароль.");
       }
 
-      if (password.trim() !== confirmPassword.trim()) {
+      if (password !== confirmPassword) {
         throw new Error("Пароли не совпадают.");
       }
 
       const currentUrl =
         typeof window !== "undefined" ? window.location.href : "";
 
-      const passwordHash = await sha256Hex(password.trim());
       const uniqueLogin = buildUniqueLogin(cleanLogin);
 
       const payload = {
@@ -325,8 +308,7 @@ function StartPageContent() {
         whatsapp: sanitizeWhatsapp(whatsapp),
         login: cleanLogin,
         unique_login: uniqueLogin,
-        password_hash: passwordHash,
-        password_version: "sha256-v1",
+        password,
         start_page_link: currentUrl,
         service_plan: checkoutServicePlan || null,
         service_code:

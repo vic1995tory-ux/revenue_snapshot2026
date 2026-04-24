@@ -165,6 +165,7 @@ export function ExpandedCheckoutModal({
         st?: string;
         amt?: string;
         cc?: string;
+        order_id?: string;
         error?: string;
       };
 
@@ -175,6 +176,7 @@ export function ExpandedCheckoutModal({
       onSuccess?.();
       const query = new URLSearchParams({
         tx: data.tx,
+        oid: data.order_id || orderID,
         st: data.st || "COMPLETED",
         amt: data.amt || amount.toFixed(2),
         cc: data.cc || "USD",

@@ -115,3 +115,56 @@ export async function capturePayPalOrder(orderID: string) {
   return data;
 }
 
+export async function getPayPalCaptureDetails(captureID: string) {
+  const accessToken = await getPayPalAccessToken();
+
+  const response = await fetch(
+    `${PAYPAL_BASE_URL}/v2/payments/captures/${captureID}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  const data = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw new Error(
+      (typeof data?.message === "string" && data.message) ||
+        "Failed to fetch PayPal capture details."
+    );
+  }
+
+  return data;
+}
+
+export async function getPayPalOrderDetails(orderID: string) {
+  const accessToken = await getPayPalAccessToken();
+
+  const response = await fetch(
+    `${PAYPAL_BASE_URL}/v2/checkout/orders/${orderID}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      cache: "no-store",
+    }
+  );
+
+  const data = (await response.json()) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw new Error(
+      (typeof data?.message === "string" && data.message) ||
+        "Failed to fetch PayPal order details."
+    );
+  }
+
+  return data;
+}

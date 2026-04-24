@@ -65,6 +65,7 @@ export async function POST(req: NextRequest) {
       ok: true,
       plan,
       orderID,
+      order_id: orderID,
       capture,
       ...details,
     });
@@ -79,4 +80,3 @@ export async function POST(req: NextRequest) {
     );
   }
 }
-

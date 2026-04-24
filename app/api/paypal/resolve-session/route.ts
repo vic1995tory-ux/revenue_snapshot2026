@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { getServiceCodeFromPlan, type PurchaseServiceCode } from "@/lib/purchase-service";
+import {
+  getPayPalCaptureDetails,
+  getPayPalOrderDetails,
+} from "@/lib/paypal-expanded";
+import {
+  getServiceCodeFromPlan,
+  type PurchaseServiceCode,
+} from "@/lib/purchase-service";
 
 const MAKE_RESOLVE_WEBHOOK_URL =
   process.env.MAKE_RESOLVE_WEBHOOK_URL ||
@@ -30,10 +37,10 @@ function toTrimmedString(value: unknown) {
   return String(value).trim();
 }
 
-function parseAmount(value: string) {
-  if (!value) return null;
+function parseAmount(value: unknown) {
+  if (value === null || value === undefined) return null;
 
-  const normalized = value.replace(",", ".").replace(/[^\d.-]/g, "");
+  const normalized = String(value).replace(",", ".").replace(/[^\d.-]/g, "");
   const parsed = Number(normalized);
 
   return Number.isFinite(parsed) ? parsed : null;
@@ -72,6 +79,38 @@ function normalizePaymentStatus(rawStatus: string) {
   return "pending";
 }
 
+function toRecord(value: unknown): Record<string, unknown> | null {
+  return typeof value === "object" && value !== null
+    ? (value as Record<string, unknown>)
+    : null;
+}
+
+function resolveCaptureOrderId(capture: Record<string, unknown>) {
+  const supplemental = toRecord(capture.supplementary_data);
+  const relatedIds = toRecord(supplemental?.related_ids);
+
+  return toTrimmedString(relatedIds?.order_id);
+}
+
+function extractOrderVerification(order: Record<string, unknown>) {
+  const purchaseUnits = Array.isArray(order.purchase_units) ? order.purchase_units : [];
+  const firstUnit = toRecord(purchaseUnits[0]);
+  const amount = toRecord(firstUnit?.amount);
+  const payments = toRecord(firstUnit?.payments);
+  const captures = Array.isArray(payments?.captures) ? payments?.captures : [];
+  const firstCapture = toRecord(captures[0]);
+
+  return {
+    orderId: toTrimmedString(order.id),
+    orderStatus: toTrimmedString(order.status),
+    customId: toTrimmedString(firstUnit?.custom_id),
+    amountValue: parseAmount(amount?.value),
+    currencyCode: toTrimmedString(amount?.currency_code).toUpperCase(),
+    captureId: toTrimmedString(firstCapture?.id),
+    captureStatus: toTrimmedString(firstCapture?.status),
+  };
+}
+
 type WebhookJson = Record<string, unknown> & {
   data?: Record<string, unknown>;
 };
@@ -84,9 +123,7 @@ export async function GET(req: NextRequest) {
     route: "paypal resolve-session is alive",
     received: {
       tx: searchParams.get("tx"),
-      st: searchParams.get("st"),
-      amt: searchParams.get("amt"),
-      cc: searchParams.get("cc"),
+      oid: searchParams.get("oid"),
     },
   });
 }
@@ -105,18 +142,16 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
 
-    const tx = toTrimmedString(body?.tx ?? body?.payment_id);
-    const st = toTrimmedString(body?.st ?? body?.payment_status);
-    const amt = toTrimmedString(body?.amt ?? body?.gross_amount);
-    const cc = toTrimmedString(body?.cc ?? body?.currency);
+    const captureId = toTrimmedString(body?.tx ?? body?.payment_id);
+    const orderIdFromBody = toTrimmedString(body?.oid ?? body?.order_id);
     const currentUrl = toTrimmedString(body?.current_url);
     const servicePlan = toTrimmedString(body?.service_plan);
-    const serviceCode =
+    const requestedServiceCode =
       getServiceCodeFromPlan(
         toTrimmedString(body?.service_code) || servicePlan || null
       ) || null;
 
-    if (!tx) {
+    if (!captureId) {
       return NextResponse.json(
         {
           ok: false,
@@ -126,25 +161,115 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const normalizedStatus = normalizePaymentStatus(st);
-    const parsedAmount = parseAmount(amt);
+    const capture = await getPayPalCaptureDetails(captureId);
+    const captureStatus = toTrimmedString(capture.status).toUpperCase();
 
-    const fallbackToken = generateFallbackToken(serviceCode);
+    if (captureStatus !== "COMPLETED") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "PayPal capture is not completed.",
+        },
+        { status: 402 }
+      );
+    }
+
+    const resolvedOrderId = orderIdFromBody || resolveCaptureOrderId(capture);
+
+    if (!resolvedOrderId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "PayPal order id was not found for this capture.",
+        },
+        { status: 502 }
+      );
+    }
+
+    const order = await getPayPalOrderDetails(resolvedOrderId);
+    const verification = extractOrderVerification(order);
+
+    if (verification.orderStatus.toUpperCase() !== "COMPLETED") {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "PayPal order is not completed.",
+        },
+        { status: 402 }
+      );
+    }
+
+    if (verification.captureId && verification.captureId !== captureId) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Capture mismatch detected.",
+        },
+        { status: 409 }
+      );
+    }
+
+    const verifiedServiceCode =
+      getServiceCodeFromPlan(verification.customId) || requestedServiceCode;
+
+    if (!verifiedServiceCode) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "PayPal order does not contain a valid service code.",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (requestedServiceCode && requestedServiceCode !== verifiedServiceCode) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Requested service does not match the verified PayPal order.",
+        },
+        { status: 409 }
+      );
+    }
+
+    if (!verification.amountValue || verification.amountValue <= 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Verified PayPal amount is invalid.",
+        },
+        { status: 422 }
+      );
+    }
+
+    if (!verification.currencyCode) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "Verified PayPal currency is missing.",
+        },
+        { status: 422 }
+      );
+    }
+
+    const normalizedStatus = normalizePaymentStatus(captureStatus);
+    const fallbackToken = generateFallbackToken(verifiedServiceCode);
     const expiresAt = addDays(new Date(), 365).toISOString();
 
     const makePayload = {
       action: "resolve_session",
 
-      payment_id: tx,
-      paypal_status_raw: st,
+      payment_id: captureId,
+      order_id: verification.orderId,
+      paypal_status_raw: captureStatus,
       payment_status: normalizedStatus,
 
-      gross_amount: parsedAmount,
-      currency: cc || null,
+      gross_amount: verification.amountValue,
+      currency: verification.currencyCode,
       source: "paypal",
       service_plan: servicePlan || null,
-      service_code: serviceCode,
-      create_on_rec_result: serviceCode === "on_rec",
+      service_code: verifiedServiceCode,
+      create_on_rec_result: verifiedServiceCode === "on_rec",
 
       access_token: fallbackToken,
       access_expires_at: expiresAt,
@@ -154,6 +279,13 @@ export async function POST(req: NextRequest) {
       status: "active",
 
       start_page_link: currentUrl || null,
+
+      verified_by_paypal: true,
+      verified_capture_id: captureId,
+      verified_order_id: verification.orderId,
+      verified_custom_id: verification.customId || verifiedServiceCode,
+      verified_capture_status: captureStatus,
+      verified_order_status: verification.orderStatus,
 
       created_at: new Date().toISOString(),
       raw_payload: body,
@@ -242,17 +374,19 @@ export async function POST(req: NextRequest) {
       launch_limit: resolvedLaunchLimit,
       created: makeData?.created ?? makeData?.data?.created ?? null,
       page_id: makeData?.page_id ?? makeData?.data?.page_id ?? null,
-      payment_id: tx,
+      payment_id: captureId,
       payment_status: normalizedStatus,
       access_expires_at: expiresAtResolved,
+      order_id: verification.orderId,
+      verified_by_paypal: true,
       service_code:
         makeData?.service_code ??
         makeData?.data?.service_code ??
-        serviceCode,
+        verifiedServiceCode,
       create_on_rec_result:
         makeData?.create_on_rec_result ??
         makeData?.data?.create_on_rec_result ??
-        (serviceCode === "on_rec"),
+        (verifiedServiceCode === "on_rec"),
     });
   } catch (error) {
     console.error("resolve-session error:", error);
@@ -260,7 +394,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         ok: false,
-        error: "resolve-session failed",
+        error:
+          error instanceof Error ? error.message : "resolve-session failed",
       },
       { status: 500 }
     );
