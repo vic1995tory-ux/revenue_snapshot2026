@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Script from "next/script";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { ExpandedCheckoutModal } from "@/components/payments/ExpandedCheckoutModal";
 import {
@@ -18,8 +17,6 @@ declare global {
     gtag?: (...args: unknown[]) => void;
   }
 }
-
-const GA_ID = "G-3C4NMTKDRJ";
 
 function trackEvent(eventName: string, params: Record<string, unknown> = {}) {
   if (typeof window === "undefined" || typeof window.gtag !== "function") return;
@@ -1365,6 +1362,8 @@ const [history, setHistory] = useState<
   const waContactUrl = "https://wa.me/995555163833";
   const [checkoutState, setCheckoutState] = useState<CheckoutState>(null);
   const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
+  const playgroundCheckoutEnabled = playgroundPricing.checkoutEnabled;
+  const playgroundCheckoutLabel = playgroundCheckoutEnabled ? "Оплатить" : "С 16 мая";
 
   useEffect(() => {
     const applyConsent = (nextConsent: ConsentState | null) => {
@@ -1408,8 +1407,8 @@ const [history, setHistory] = useState<
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
           price: playgroundPricing.currentPriceLabel,
-          ctaLabel: "Оплатить",
-          disabled: false,
+          ctaLabel: playgroundCheckoutLabel,
+          disabled: !playgroundCheckoutEnabled,
           secondaryLabel: "get a demo",
           secondaryHref: demoAccountUrl,
         }
@@ -1634,6 +1633,10 @@ const strategyOptions = [
 ];
 
   const handlePay = (plan: CheckoutPlan = "playground") => {
+    if (plan === "playground" && !playgroundCheckoutEnabled) {
+      return;
+    }
+
     const amount = plan === "onrec" ? 770 : playgroundPricing.currentPrice;
 
     try {
@@ -1642,6 +1645,7 @@ const strategyOptions = [
         JSON.stringify({
           servicePlan: plan,
           serviceCode: plan === "onrec" ? "on_rec" : "pg",
+          checkoutSource: "homepage",
           savedAt: new Date().toISOString(),
         })
       );
@@ -2059,41 +2063,6 @@ const handleReset = () => {
 
   return (
     <main className="page-shell" id="top">
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics-homepage" strategy="afterInteractive">
-        {`
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
-          window.gtag = gtag;
-          gtag('js', new Date());
-          gtag('consent', 'default', {
-            analytics_storage: 'denied',
-            ad_storage: 'denied',
-            ad_user_data: 'denied',
-            ad_personalization: 'denied',
-            wait_for_update: 500
-          });
-          gtag('config', '${GA_ID}', {
-            anonymize_ip: true,
-            send_page_view: false
-          });
-          try {
-            var storedConsentRaw = window.localStorage.getItem('growth_avenue_consent_v1');
-            if (storedConsentRaw) {
-              var storedConsent = JSON.parse(storedConsentRaw);
-              gtag('consent', 'update', {
-                analytics_storage: storedConsent.analytics ? 'granted' : 'denied',
-                ad_storage: storedConsent.marketing ? 'granted' : 'denied',
-                ad_user_data: storedConsent.marketing ? 'granted' : 'denied',
-                ad_personalization: storedConsent.marketing ? 'granted' : 'denied'
-              });
-            }
-          } catch (e) {}
-        `}
-      </Script>
 
       <div className="page-background" aria-hidden="true">
         <div className="aurora aurora-1" />
@@ -2490,9 +2459,10 @@ const handleReset = () => {
               <button
                 type="button"
                 className="tg-gradient-btn mt-5 block w-full text-center"
+                disabled={!playgroundCheckoutEnabled}
                 onClick={() => handlePay("playground")}
               >
-                Попробовать Snapshot
+                {playgroundCheckoutEnabled ? "Попробовать Snapshot" : "С 16 мая"}
               </button>
             </aside>
           </div>
@@ -2522,8 +2492,9 @@ const handleReset = () => {
               type="button"
               className="result-doc-start-btn results-start-btn"
               onClick={() => handlePay("playground")}
+              disabled={!playgroundCheckoutEnabled}
             >
-              Начать
+              {playgroundCheckoutEnabled ? "Начать" : "С 16 мая"}
             </button>
           </div>
         </section>
@@ -2555,9 +2526,10 @@ const handleReset = () => {
                     icon="/online_playground_desc.svg"
                     mobileIcon="/online-playground_mobile.svg"
                     price={playgroundPricing.currentPriceLabel}
-                    ctaLabel="Оплатить"
+                    ctaLabel={playgroundCheckoutLabel}
                     secondaryLabel="get a demo"
                     secondaryHref={demoAccountUrl}
+                    disabled={!playgroundCheckoutEnabled}
                     priceDesktop={{ top: "18%", right: "6.6%" }}
                     priceMobile={{ top: "88.8%", right: "6.4%" }}
                     buttonDesktop={{ left: "5.8%", bottom: "24.6%", width: "58%" }}
@@ -2703,12 +2675,14 @@ const handleReset = () => {
             <button
               type="button"
               className="tg-gradient-btn mt-5 block w-full text-center"
+              disabled={!playgroundCheckoutEnabled}
               onClick={() => {
+                if (!playgroundCheckoutEnabled) return;
                 setPreviewMobilePopupOpen(false);
                 handlePay("playground");
               }}
             >
-              Попробовать Snapshot
+              {playgroundCheckoutEnabled ? "Попробовать Snapshot" : "С 16 мая"}
             </button>
           </div>
         </div>
@@ -2718,6 +2692,7 @@ const handleReset = () => {
         plan={checkoutState?.plan ?? "playground"}
         amount={checkoutState?.amount ?? playgroundPricing.currentPrice}
         title={checkoutState?.title ?? "Online Playground Revenue Snapshot"}
+        checkoutSource="homepage"
         onClose={() => setCheckoutState(null)}
       />
 

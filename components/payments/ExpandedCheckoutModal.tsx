@@ -36,6 +36,7 @@ type ExpandedCheckoutModalProps = {
   plan: CheckoutPlan;
   amount: number;
   title: string;
+  checkoutSource?: string;
   onClose: () => void;
   onSuccess?: () => void;
 };
@@ -45,6 +46,7 @@ export function ExpandedCheckoutModal({
   plan,
   amount,
   title,
+  checkoutSource = "website",
   onClose,
   onSuccess,
 }: ExpandedCheckoutModalProps) {
@@ -75,11 +77,12 @@ export function ExpandedCheckoutModal({
         JSON.stringify({
           servicePlan: plan,
           serviceCode,
+          checkoutSource,
           savedAt: new Date().toISOString(),
         })
       );
     } catch {}
-  }, [open, plan, serviceCode]);
+  }, [checkoutSource, open, plan, serviceCode]);
 
   useEffect(() => {
     if (!open) return;

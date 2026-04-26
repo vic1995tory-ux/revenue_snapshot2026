@@ -102,11 +102,11 @@ function handleToolCardMove(
   const centerX = rect.width / 2;
   const centerY = rect.height / 2;
 
-  const rotateY = ((x - centerX) / centerX) * 8;
-  const rotateX = ((centerY - y) / centerY) * 7;
+  const rotateY = ((x - centerX) / centerX) * 13.5;
+  const rotateX = ((centerY - y) / centerY) * 12;
 
   card.style.transform =
-    `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-6px) scale(1.012)`;
+    `perspective(1200px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-10px) scale(1.024)`;
 }
 
 function resetToolCardTilt(event: React.MouseEvent<HTMLElement>) {
@@ -516,7 +516,7 @@ export default function CabinetPage() {
       <div className="ambient-gradient-bg" />
 
       <header style={styles.header}>
-        <div style={styles.headerLeft}>
+        <Link href="/" style={styles.headerLeftLink} aria-label="Growth Avenue home">
           <Image
             src="/logo.svg"
             alt="Growth Avenue"
@@ -525,13 +525,9 @@ export default function CabinetPage() {
             style={styles.logo}
             priority
           />
-        </div>
+        </Link>
 
         <div style={styles.headerRight}>
-          <Link href="/" style={styles.headerGhostLink}>
-            Главная
-          </Link>
-
           <Link href="/services" style={styles.headerGhostLink}>
             Услуги
           </Link>
@@ -1159,12 +1155,12 @@ export default function CabinetPage() {
             ? "On Rec Revenue Snapshot"
             : "Online Playground Revenue Snapshot"
         }
+        checkoutSource={isDemoAccount ? "demo_account" : "account"}
         onClose={() => setCheckoutPlan(null)}
       />
 
       <style jsx global>{`
         .account-tool-card-active:hover {
-          transform: translateY(-6px);
           border-color: rgba(247, 210, 55, 0.18);
           box-shadow: 0 28px 56px rgba(0, 0, 0, 0.28);
         }
@@ -1286,6 +1282,11 @@ const styles: Record<string, React.CSSProperties> = {
   headerLeft: {
     display: "flex",
     alignItems: "center",
+  },
+  headerLeftLink: {
+    display: "inline-flex",
+    alignItems: "center",
+    textDecoration: "none",
   },
   headerRight: {
     display: "flex",
@@ -1568,7 +1569,7 @@ const styles: Record<string, React.CSSProperties> = {
     border: "1px solid rgba(255,255,255,0.08)",
     boxShadow: "0 18px 42px rgba(0,0,0,0.18)",
     minHeight: "272px",
-    transition: "transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease",
+    transition: "transform 0.12s ease-out, box-shadow 0.18s ease, border-color 0.18s ease",
   },
   toolCardActive: {
     background: "rgba(255,255,255,0.06)",
@@ -1600,7 +1601,7 @@ const styles: Record<string, React.CSSProperties> = {
     objectFit: "cover",
     objectPosition: "center",
     transform: "scale(1.02)",
-    transition: "transform 0.4s ease, filter 0.28s ease, opacity 0.28s ease",
+    transition: "transform 0.18s ease-out, filter 0.18s ease, opacity 0.18s ease",
   },
   toolCardVisualImageActive: {
     filter: "none",

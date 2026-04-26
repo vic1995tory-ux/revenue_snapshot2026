@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { readStoredConsent } from "@/lib/consent";
 
 type ResolveResponse = {
   ok: boolean;
@@ -26,21 +27,70 @@ type StartResponse = {
 };
 
 const CHECKOUT_CONTEXT_STORAGE_KEY = "rs_checkout_context";
+const DEMO_PURCHASE_EVENT = "demo_pusrchase";
+
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+    fbq?: ((...args: unknown[]) => void) & {
+      callMethod?: (...args: unknown[]) => void;
+      queue?: unknown[];
+      push?: (...args: unknown[]) => void;
+      loaded?: boolean;
+      version?: string;
+    };
+  }
+}
 
 function readCheckoutContext() {
-  if (typeof window === "undefined") return { servicePlan: "" };
+  if (typeof window === "undefined") {
+    return { servicePlan: "", serviceCode: "", checkoutSource: "" };
+  }
 
   try {
     const raw = window.localStorage.getItem(CHECKOUT_CONTEXT_STORAGE_KEY);
-    if (!raw) return { servicePlan: "" };
+    if (!raw) return { servicePlan: "", serviceCode: "", checkoutSource: "" };
 
-    const parsed = JSON.parse(raw) as { servicePlan?: string } | null;
+    const parsed = JSON.parse(raw) as {
+      servicePlan?: string;
+      serviceCode?: string;
+      checkoutSource?: string;
+    } | null;
     return {
       servicePlan:
         typeof parsed?.servicePlan === "string" ? parsed.servicePlan : "",
+      serviceCode:
+        typeof parsed?.serviceCode === "string" ? parsed.serviceCode : "",
+      checkoutSource:
+        typeof parsed?.checkoutSource === "string" ? parsed.checkoutSource : "",
     };
   } catch {
-    return { servicePlan: "" };
+    return { servicePlan: "", serviceCode: "", checkoutSource: "" };
+  }
+}
+
+function trackConfirmedDemoPurchase(params: {
+  tx: string;
+  amount: number;
+  currency: string;
+  serviceCode: string;
+}) {
+  if (typeof window === "undefined") return;
+
+  const consent = readStoredConsent();
+  const payload = {
+    currency: params.currency,
+    value: params.amount,
+    payment_id: params.tx,
+    service_code: params.serviceCode,
+  };
+
+  if (consent?.analytics && typeof window.gtag === "function") {
+    window.gtag("event", DEMO_PURCHASE_EVENT, payload);
+  }
+
+  if (consent?.marketing && typeof window.fbq === "function") {
+    window.fbq("trackCustom", DEMO_PURCHASE_EVENT, payload);
   }
 }
 
@@ -147,10 +197,14 @@ function StartPageContent() {
   const amt = useMemo(() => searchParams.get("amt") || "", [searchParams]);
   const cc = useMemo(() => searchParams.get("cc") || "", [searchParams]);
   const [checkoutServicePlan, setCheckoutServicePlan] = useState("");
+  const [checkoutServiceCode, setCheckoutServiceCode] = useState("");
+  const [checkoutSource, setCheckoutSource] = useState("");
 
   useEffect(() => {
     const context = readCheckoutContext();
     setCheckoutServicePlan(context.servicePlan || "");
+    setCheckoutServiceCode(context.serviceCode || "");
+    setCheckoutSource(context.checkoutSource || "");
   }, []);
 
   useEffect(() => {
@@ -222,6 +276,44 @@ function StartPageContent() {
       cancelled = true;
     };
   }, [tx, oid, st, amt, cc, checkoutServicePlan]);
+
+  useEffect(() => {
+    if (!resolved?.ok || !tx) return;
+    if (checkoutSource !== "demo_account") return;
+
+    const storageKey = `rs_demo_purchase_tracked_${tx}`;
+
+    try {
+      if (window.localStorage.getItem(storageKey) === "1") return;
+    } catch {}
+
+    const numericAmount = Number.parseFloat(amt || "0");
+    const confirmedAmount = Number.isFinite(numericAmount) ? numericAmount : 0;
+    const confirmedCurrency = cc || "USD";
+    const confirmedServiceCode =
+      resolved.service_code ||
+      checkoutServiceCode ||
+      (checkoutServicePlan === "onrec" ? "on_rec" : "pg");
+
+    trackConfirmedDemoPurchase({
+      tx,
+      amount: confirmedAmount,
+      currency: confirmedCurrency,
+      serviceCode: confirmedServiceCode,
+    });
+
+    try {
+      window.localStorage.setItem(storageKey, "1");
+    } catch {}
+  }, [
+    amt,
+    cc,
+    checkoutServiceCode,
+    checkoutServicePlan,
+    checkoutSource,
+    resolved,
+    tx,
+  ]);
 
   function handleLogoMove(e: React.MouseEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();

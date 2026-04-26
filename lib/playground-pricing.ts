@@ -12,6 +12,7 @@ export type PlaygroundPricingSnapshot = {
   currentPriceLabel: string;
   buttonLabel: string;
   payUrl: string;
+  checkoutEnabled: boolean;
   tiers: PlaygroundPricingTier[];
 };
 
@@ -20,6 +21,12 @@ const WA_PLAYGROUND_URL =
 
 function atUtcDate(year: number, month: number, day: number) {
   return new Date(Date.UTC(year, month - 1, day, 0, 0, 0, 0));
+}
+
+export function isPlaygroundCheckoutEnabled(now = new Date()) {
+  const year = now.getUTCFullYear();
+  const checkoutStart = atUtcDate(year, 5, 16);
+  return now >= checkoutStart;
 }
 
 export function getPlaygroundPricingSnapshot(now = new Date()): PlaygroundPricingSnapshot {
@@ -47,6 +54,7 @@ export function getPlaygroundPricingSnapshot(now = new Date()): PlaygroundPricin
     currentPriceLabel: `$${currentPrice}`,
     buttonLabel: "Оплатить",
     payUrl: WA_PLAYGROUND_URL,
+    checkoutEnabled: isPlaygroundCheckoutEnabled(now),
     tiers: [
       { label: "До 7 мая", price: 93, active: activeIndex === 0 },
       { label: "8-15 мая", price: 115, active: activeIndex === 1 },

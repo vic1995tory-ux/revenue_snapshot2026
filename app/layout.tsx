@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import CookieConsent from "@/components/CookieConsent";
+import GoogleAnalyticsConsent from "@/components/GoogleAnalyticsConsent";
 import MetaPixelConsent from "@/components/MetaPixelConsent";
 import "./globals.css";
 
@@ -40,6 +41,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <GoogleAnalyticsConsent />
         <MetaPixelConsent />
         <CookieConsent />
       </body>
