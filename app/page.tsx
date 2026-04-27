@@ -1362,6 +1362,7 @@ const [history, setHistory] = useState<
   const waContactUrl = "https://wa.me/995555163833";
   const [checkoutState, setCheckoutState] = useState<CheckoutState>(null);
   const playgroundPricing = useMemo(() => getPlaygroundPricingSnapshot(), []);
+  const playgroundStorefrontPriceLabel = "$147";
   const playgroundCheckoutEnabled = playgroundPricing.checkoutEnabled;
   const playgroundCheckoutLabel = playgroundCheckoutEnabled ? "Оплатить" : "С 16 мая";
 
@@ -1406,7 +1407,7 @@ const [history, setHistory] = useState<
           title: "Online-playground",
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
-          price: "$147,
+          price: playgroundStorefrontPriceLabel,
           ctaLabel: playgroundCheckoutLabel,
           disabled: !playgroundCheckoutEnabled,
           secondaryLabel: "get a demo",
@@ -2525,7 +2526,7 @@ const handleReset = () => {
                     title="Online-playground"
                     icon="/online_playground_desc.svg"
                     mobileIcon="/online-playground_mobile.svg"
-                    price={playgroundPricing.currentPriceLabel}
+                    price={playgroundStorefrontPriceLabel}
                     ctaLabel={playgroundCheckoutLabel}
                     secondaryLabel="get a demo"
                     secondaryHref={demoAccountUrl}
