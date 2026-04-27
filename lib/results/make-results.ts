@@ -1,9 +1,9 @@
 import type { OnRecResultPageData } from "@/lib/onrec-results/types";
 import type { ResultsPageData } from "@/lib/results/types";
+import { adaptRawResultsPayload } from "./adapters";
 
-const MAKE_RESULTS_WEBHOOK_URL =
-  process.env.MAKE_RESULTS_WEBHOOK_URL ||
-  "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
+const MAKE_RESULTS_FETCH_WEBHOOK_URL =
+  process.env.MAKE_RESULTS_FETCH_WEBHOOK_URL || "";
 
 type UnknownRecord = Record<string, unknown>;
 
@@ -53,7 +53,11 @@ function toDateLabel(value: unknown) {
 }
 
 async function postResultsWebhook(payload: Record<string, unknown>) {
-  const response = await fetch(MAKE_RESULTS_WEBHOOK_URL, {
+  if (!MAKE_RESULTS_FETCH_WEBHOOK_URL) {
+    throw new Error("MAKE_RESULTS_FETCH_WEBHOOK_URL is not configured");
+  }
+
+  const response = await fetch(MAKE_RESULTS_FETCH_WEBHOOK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -175,9 +179,12 @@ export async function fetchResultPayloadForToken(resultToken: string) {
     launch_attempt_id: resultToken,
   });
 
+  const extractedPayload = extractPayloadContainer(response.data);
+  const adaptedPayload = adaptRawResultsPayload(extractedPayload);
+
   return {
     ...response,
-    payload: extractPayloadContainer(response.data),
+    payload: adaptedPayload ?? extractedPayload,
   };
 }
 

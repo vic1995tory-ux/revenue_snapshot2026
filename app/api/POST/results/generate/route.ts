@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const MAKE_RESULTS_WEBHOOK_URL =
+const MAKE_RESULTS_GENERATE_WEBHOOK_URL =
+  process.env.MAKE_RESULTS_GENERATE_WEBHOOK_URL ||
   process.env.MAKE_RESULTS_WEBHOOK_URL ||
   "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
 
@@ -433,7 +434,7 @@ function createTimeoutSignal(timeoutMs: number): AbortSignal {
 }
 
 async function forwardToMake(payload: NormalizedPayload) {
-  const response = await fetch(MAKE_RESULTS_WEBHOOK_URL, {
+  const response = await fetch(MAKE_RESULTS_GENERATE_WEBHOOK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

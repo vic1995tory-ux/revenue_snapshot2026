@@ -129,7 +129,8 @@ Required:
 - `MAKE_RESOLVE_WEBHOOK_URL`
 - `MAKE_START_ACTION_WEBHOOK_URL`
 - `MAKE_ACCOUNT_SESSION_WEBHOOK_URL`
-- `MAKE_RESULTS_WEBHOOK_URL`
+- `MAKE_RESULTS_GENERATE_WEBHOOK_URL` or `MAKE_RESULTS_WEBHOOK_URL`
+- `MAKE_RESULTS_FETCH_WEBHOOK_URL`
 - `MAKE_PAYMENT_RECOVERY_WEBHOOK_URL`
 - `NEXT_PUBLIC_GA_ID`
 - `NEXT_PUBLIC_PAYPAL_CLIENT_ID`
@@ -251,14 +252,28 @@ Provides account data, tools, limits, and results to `/account/[token]`.
 ### 6. Results Generation
 
 Env:
-- `MAKE_RESULTS_WEBHOOK_URL`
+- `MAKE_RESULTS_GENERATE_WEBHOOK_URL` or legacy `MAKE_RESULTS_WEBHOOK_URL`
 
 Receives:
-- draft questionnaire saves;
 - final questionnaire submissions;
 - normalized result-generation payloads.
 
-### 7. Payment Recovery
+Draft questionnaire answers are no longer sent to Make. They are stored temporarily on the server for the lifetime of the active session via `/api/snapshot-draft`.
+
+### 7. Results Fetch
+
+Env:
+- `MAKE_RESULTS_FETCH_WEBHOOK_URL`
+
+Used by:
+- `/api/results/[token]` to fetch a specific result payload
+- `/api/account/session` to optionally enrich the account results table with live rows from Make
+
+Expected actions:
+- `get_result`
+- `list_results`
+
+### 8. Payment Recovery
 
 Env:
 - `MAKE_PAYMENT_RECOVERY_WEBHOOK_URL`

@@ -96,7 +96,7 @@ const BRAND = {
   yellow: "#f7d237",
 };
 
-const SNAPSHOT_WEBHOOK_URL =
+const SNAPSHOT_GENERATE_WEBHOOK_URL =
   "https://hook.us2.make.com/vxp3omwrxvmqa1glcsb4yyv8b07zb1v9";
 
 const FINAL_BODY_DIVIDER =
@@ -1123,34 +1123,8 @@ function buildFinalBodyText(preparedAnswers: Array<{ question: string; answer: s
   return `${FINAL_BODY_DIVIDER}\n\n${body}`;
 }
 
-function buildDraftJsonPayload(params: {
-  accessToken: string;
-  launchAttemptId: string;
-  answers: Answers;
-  preparedAnswers: Array<{ question: string; answer: string }>;
-  progress: {
-    total: number;
-    totalQuestions: number;
-    sectionProgress: Record<string, number>;
-  };
-  draftStep: number;
-}) {
-  return {
-    type: "snapshot_draft",
-    draft: true,
-    status: "draft",
-    access_token: params.accessToken,
-    launch_attempt_id: params.launchAttemptId,
-    draft_step: params.draftStep,
-    draft_updated_at: new Date().toISOString(),
-    progress: params.progress,
-    answers_raw: params.answers,
-    answers_prepared: params.preparedAnswers,
-  };
-}
-
-async function postWebhook(payload: Record<string, unknown>) {
-  const response = await fetch(SNAPSHOT_WEBHOOK_URL, {
+async function postGenerateWebhook(payload: Record<string, unknown>) {
+  const response = await fetch(SNAPSHOT_GENERATE_WEBHOOK_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -1163,6 +1137,38 @@ async function postWebhook(payload: Record<string, unknown>) {
   }
 
   return response;
+}
+
+async function postServerDraft(payload: Record<string, unknown>) {
+  const response = await fetch("/api/snapshot-draft", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Draft save failed with status ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function deleteServerDraft(payload: Record<string, unknown>) {
+  const response = await fetch("/api/snapshot-draft", {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Draft delete failed with status ${response.status}`);
+  }
+
+  return response.json();
 }
 
 function GlassCard({
@@ -3157,31 +3163,45 @@ export default function DiagnosticIntakePage() {
     [answers],
   );
 
-  const draftJsonPayload = useMemo(
-    () =>
-      buildDraftJsonPayload({
-        accessToken,
-        launchAttemptId,
-        answers,
-        preparedAnswers,
-        progress: {
-          total,
-          totalQuestions,
-          sectionProgress,
-        },
-        draftStep: currentDraftStep,
-      }),
-    [
-      accessToken,
-      launchAttemptId,
-      answers,
-      preparedAnswers,
-      total,
-      totalQuestions,
-      sectionProgress,
-      currentDraftStep,
-    ],
-  );
+  useEffect(() => {
+    if (!accessToken || !launchAttemptId) return;
+
+    let isCancelled = false;
+
+    async function loadDraft() {
+      try {
+        const response = await fetch(
+          `/api/snapshot-draft?access_token=${encodeURIComponent(accessToken)}&launch_attempt_id=${encodeURIComponent(launchAttemptId)}`,
+          { cache: "no-store" },
+        );
+
+        if (!response.ok) return;
+
+        const payload = (await response.json()) as {
+          draft?: {
+            answers?: Answers;
+            updatedAt?: string;
+          } | null;
+        };
+
+        if (isCancelled || !payload?.draft?.answers) return;
+
+        setAnswers(payload.draft.answers);
+        setHasUserInteracted(true);
+        if (payload.draft.updatedAt) {
+          setLastDraftSavedAt(payload.draft.updatedAt);
+        }
+      } catch {
+        // noop
+      }
+    }
+
+    void loadDraft();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [accessToken, launchAttemptId]);
 
   const setAnswer = useCallback((key: string, value: any) => {
     setHasUserInteracted(true);
@@ -3211,46 +3231,22 @@ export default function DiagnosticIntakePage() {
     try {
       setDraftError("");
 
-      await postWebhook({
-  action: "save_draft",
-  source: "snapshot-action",
-  access_token: accessToken,
-  launch_attempt_id: launchAttemptId,
-  mode,
-  draft: true,
-  draft_checkbox: true,
-  draft_step: currentDraftStep,
-  draft_updated_at: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
-  progress: {
-    total,
-    totalQuestions,
-    sectionProgress,
-  },
-  answers: preparedAnswers,
-  answers_raw: answers,
-  notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-  draft_payload: draftJsonPayload,
-
-  snapshot_file: {
-    type: "snapshot_draft",
-    source: "snapshot-action",
-    access_token: accessToken,
-    launch_attempt_id: launchAttemptId,
-    mode,
-    draft_step: currentDraftStep,
-    draft_updated_at: new Date().toISOString(),
-    progress: {
-      total,
-      totalQuestions,
-      sectionProgress,
-    },
-    answers_prepared: preparedAnswers,
-    answers_raw: answers,
-    body_json: draftJsonPayload,
-  },
-});
-      setLastDraftSavedAt(new Date().toISOString());
+      const draftResponse = await postServerDraft({
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft_step: currentDraftStep,
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        answers: preparedAnswers,
+        answers_raw: answers,
+      });
+      setLastDraftSavedAt(
+        draftResponse?.draft?.updatedAt ?? new Date().toISOString(),
+      );
     } catch (error) {
       setDraftError(
         error instanceof Error
@@ -3270,7 +3266,6 @@ export default function DiagnosticIntakePage() {
     sectionProgress,
     preparedAnswers,
     answers,
-    draftJsonPayload,
   ]);
 
 
@@ -3286,45 +3281,19 @@ export default function DiagnosticIntakePage() {
 
   useEffect(() => {
     function buildExitPayload() {
-return {
-  action: "save_draft",
-  source: "snapshot-action",
-  access_token: accessToken,
-  launch_attempt_id: launchAttemptId,
-  mode,
-  draft: true,
-  draft_checkbox: true,
-  draft_step: currentDraftStep,
-  draft_updated_at: new Date().toISOString(),
-  createdAt: new Date().toISOString(),
-  progress: {
-    total,
-    totalQuestions,
-    sectionProgress,
-  },
-  answers: preparedAnswers,
-  answers_raw: answers,
-  notion_body_json: JSON.stringify(draftJsonPayload, null, 2),
-  draft_payload: draftJsonPayload,
-
-  snapshot_file: {
-    type: "snapshot_draft",
-    source: "snapshot-action",
-    access_token: accessToken,
-    launch_attempt_id: launchAttemptId,
-    mode,
-    draft_step: currentDraftStep,
-    draft_updated_at: new Date().toISOString(),
-    progress: {
-      total,
-      totalQuestions,
-      sectionProgress,
-    },
-    answers_prepared: preparedAnswers,
-    answers_raw: answers,
-    body_json: draftJsonPayload,
-  },
-};
+      return {
+        access_token: accessToken,
+        launch_attempt_id: launchAttemptId,
+        mode,
+        draft_step: currentDraftStep,
+        progress: {
+          total,
+          totalQuestions,
+          sectionProgress,
+        },
+        answers: preparedAnswers,
+        answers_raw: answers,
+      };
     }
 
     function sendDraftBeacon() {
@@ -3332,7 +3301,7 @@ return {
         return;
 
       navigator.sendBeacon?.(
-        SNAPSHOT_WEBHOOK_URL,
+        "/api/snapshot-draft",
         new Blob([JSON.stringify(buildExitPayload())], {
           type: "application/json",
         }),
@@ -3366,7 +3335,6 @@ return {
     sectionProgress,
     preparedAnswers,
     answers,
-    draftJsonPayload,
   ]);
 
   async function handleSubmit() {
@@ -3380,7 +3348,7 @@ return {
       const finalAnswers = buildPreparedAnswers(answers);
       const finalBodyText = buildFinalBodyText(finalAnswers);
 
-   await postWebhook({
+   await postGenerateWebhook({
   action: "submit_snapshot_answers",
   source: "snapshot-action",
   access_token: accessToken,
@@ -3423,15 +3391,9 @@ return {
 });
 
       try {
-        await postWebhook({
-          action: "clear_draft_after_submit",
-          source: "snapshot-action",
+        await deleteServerDraft({
           access_token: accessToken,
           launch_attempt_id: launchAttemptId,
-          draft: false,
-          draft_checkbox: false,
-          draft_step: null,
-          draft_updated_at: null,
         });
       } catch {
         // noop
@@ -3636,7 +3598,7 @@ return {
                 </div>
 
                 <div className="mt-4 text-xs text-white/42">
-                  Недозаполненные ответы сохраняются в draft при выходе со страницы и переходе в Profile.
+                  Недозаполненные ответы сохраняются на сервере до завершения текущей сессии и восстанавливаются при возврате в анкету.
                 </div>
               </div>
             </GlassCard>

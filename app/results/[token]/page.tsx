@@ -30,8 +30,14 @@ export default async function Page({
     );
   }
 
-  const resultResponse = await fetchResultPayloadForToken(token);
-  const payload = resultResponse.payload;
+  let payload: unknown = null;
+
+  try {
+    const resultResponse = await fetchResultPayloadForToken(token);
+    payload = resultResponse.payload;
+  } catch {
+    payload = null;
+  }
 
   if (isOnRecPageData(payload)) {
     return (

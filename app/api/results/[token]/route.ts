@@ -42,9 +42,16 @@ export async function GET(
     const launchAttemptId =
       url.searchParams.get("launch_attempt_id") ?? undefined;
 
-    const result = await fetchResultPayloadForToken(
-      launchAttemptId || token,
-    );
+    let result;
+
+    try {
+      result = await fetchResultPayloadForToken(launchAttemptId || token);
+    } catch {
+      return NextResponse.json(
+        { error: "Result source is not configured" },
+        { status: 404 },
+      );
+    }
 
     if (!result.ok || !isNonEmptyObject(result.payload)) {
       return NextResponse.json(
