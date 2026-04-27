@@ -1406,7 +1406,7 @@ const [history, setHistory] = useState<
           title: "Online-playground",
           icon: "/online_playground_desc.svg",
           mobileIcon: "/online-playground_mobile.svg",
-          price: playgroundPricing.currentPriceLabel,
+          price: "$147,
           ctaLabel: playgroundCheckoutLabel,
           disabled: !playgroundCheckoutEnabled,
           secondaryLabel: "get a demo",
