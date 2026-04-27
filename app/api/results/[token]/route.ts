@@ -1,68 +1,55 @@
 import { NextRequest, NextResponse } from "next/server";
+import { onRecResultsMockData } from "@/lib/onrec-results/mock-data";
 import { resultsMockData } from "@/lib/results/mock-data";
+import {
+  fetchResultPayloadForToken,
+  isNonEmptyObject,
+} from "@/lib/results/make-results";
 
-type ResultPayload = Record<string, unknown>;
+const DEMO_RESULT_TOKENS = new Set(["mock-token", "demo-result-1", "demo-result-2"]);
 
-type ResultRecord = {
-  token: string;
-  launch_attempt_id?: string;
-  payload: ResultPayload;
-};
-
-// Пока у тебя один mock-result после новой структуры.
-// Позже сюда можно подставить реальные данные из БД / API.
-const MOCK_RESULT: ResultRecord = {
-  token: "mock-token",
-  payload: resultsMockData as ResultPayload,
-};
-
-async function findResult({
-  token,
-  launchAttemptId,
-}: {
-  token?: string;
-  launchAttemptId?: string;
-}): Promise<ResultRecord | null> {
-  const payload = MOCK_RESULT.payload as ResultPayload & {
-    meta?: { launch_attempt_id?: string };
-    launch_attempt_id?: string;
-  };
-
-  const record: ResultRecord = {
-    token: MOCK_RESULT.token,
-    launch_attempt_id:
-      payload.launch_attempt_id ?? payload.meta?.launch_attempt_id,
-    payload,
-  };
-
-  if (token && token === record.token) {
-    return record;
-  }
-
-  if (launchAttemptId && launchAttemptId === record.launch_attempt_id) {
-    return record;
-  }
-
-  return null;
-}
-
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  context: { params: Promise<{ token: string }> },
+) {
   try {
-    const url = new URL(req.url);
+    const { token } = await context.params;
+    const normalizedToken = token.trim().toLowerCase();
 
-    const tokenFromPath = url.pathname.split("/").pop() ?? "";
+    if (DEMO_RESULT_TOKENS.has(token)) {
+      return NextResponse.json(resultsMockData, {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
+    }
+
+    if (
+      normalizedToken === "on_rec_demo" ||
+      normalizedToken === "on_rec" ||
+      normalizedToken === "on_rec_demo_result"
+    ) {
+      return NextResponse.json(onRecResultsMockData, {
+        status: 200,
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      });
+    }
+
+    const url = new URL(req.url);
     const launchAttemptId =
       url.searchParams.get("launch_attempt_id") ?? undefined;
 
-    const result = await findResult({
-      token: tokenFromPath || undefined,
-      launchAttemptId,
-    });
+    const result = await fetchResultPayloadForToken(
+      launchAttemptId || token,
+    );
 
-    if (!result) {
+    if (!result.ok || !isNonEmptyObject(result.payload)) {
       return NextResponse.json(
         { error: "Result not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -77,7 +64,7 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json(
       { error: "Internal server error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

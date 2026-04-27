@@ -4,6 +4,7 @@ import {
   type AccountTool,
   type AccountToolKey,
 } from "@/lib/account-tools";
+import { fetchResultsListForAccount } from "@/lib/results/make-results";
 import { type PurchaseServiceCode } from "@/lib/purchase-service";
 
 const MAKE_ACCOUNT_SESSION_WEBHOOK_URL =
@@ -231,7 +232,7 @@ export async function GET(req: NextRequest) {
       : makeData;
     const source = isRecord(sourceCandidate) ? sourceCandidate : {};
 
-    const normalizedResults = Array.isArray(source?.results)
+    const normalizedResultsFromSession = Array.isArray(source?.results)
       ? source.results.map((rawItem, index: number) => {
         const item = isRecord(rawItem) ? rawItem : {};
 
@@ -266,6 +267,17 @@ export async function GET(req: NextRequest) {
         };
       })
       : [];
+
+    let normalizedResults = normalizedResultsFromSession;
+
+    try {
+      const webhookResultsResponse = await fetchResultsListForAccount(token);
+      if (webhookResultsResponse.ok && webhookResultsResponse.results.length > 0) {
+        normalizedResults = webhookResultsResponse.results;
+      }
+    } catch {
+      // keep session payload results as fallback
+    }
 
     const launchCountRaw =
       source?.launchCount ??
