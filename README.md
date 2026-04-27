@@ -117,6 +117,10 @@ Access is not granted from URL params alone.
 4. Backend sends derived hash to the main login webhook.
 5. Make compares stored hash and returns access token.
 
+`MAKE_LOGIN_LOOKUP_WEBHOOK_URL` may point to the same Make webhook as
+`MAKE_LOGIN_WEBHOOK_URL` as long as the scenario routes requests by the
+`action` field (`login_lookup` vs `login`).
+
 ## Environment Variables
 
 See [.env.example](/Users/victoria/Documents/Codex/2026-04-22-github-plugin-github-openai-curated-revenue/revenue_snapshot2026/.env.example).

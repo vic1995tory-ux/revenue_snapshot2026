@@ -9,7 +9,8 @@ const MAKE_LOGIN_WEBHOOK_URL =
   "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb";
 
 const MAKE_LOGIN_LOOKUP_WEBHOOK_URL =
-  process.env.MAKE_LOGIN_LOOKUP_WEBHOOK_URL || "";
+  process.env.MAKE_LOGIN_LOOKUP_WEBHOOK_URL ||
+  "https://hook.us2.make.com/29vgewdq138z7nlxajc7ozsogq9a3nwb";
 
 type MakeLoginResponse = {
   ok?: boolean;
