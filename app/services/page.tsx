@@ -7,7 +7,7 @@ import { getPlaygroundPricingSnapshot } from "@/lib/playground-pricing";
 
 const TG_CONTACT_URL = "https://t.me/growth_avenue_company";
 const WA_PHONE = "995555163833";
-const PROFILE_URL = "https://revenue-snapshot2026.vercel.app/cabinet-login";
+const PROFILE_URL = "/profile";
 const playgroundPricing = getPlaygroundPricingSnapshot();
 
 type Service = {

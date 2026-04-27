@@ -43,13 +43,13 @@ export default async function Page({
     return (
       <OnRecResultsPage
         data={payload}
-        profileHref={`/account/${token}`}
+        profileHref="/profile"
       />
     );
   }
 
   if (isResultsPageData(payload)) {
-    return <ResultsPage data={payload} profileHref={`/account/${token}`} />;
+    return <ResultsPage data={payload} profileHref="/profile" />;
   }
 
   if (

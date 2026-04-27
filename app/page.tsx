@@ -1357,7 +1357,7 @@ const [history, setHistory] = useState<
     },
   ];
   const demoAccountUrl = "/account/demo";
-  const loginUrl = "https://revenue-snapshot2026.vercel.app/cabinet-login";
+  const loginUrl = "/profile";
   const tgContactUrl = "https://t.me/growth_avenue_company";
   const waContactUrl = "https://wa.me/995555163833";
   const [checkoutState, setCheckoutState] = useState<CheckoutState>(null);

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { getIronSession } from "iron-session";
 import {
   buildDefaultAccountTools,
   type AccountTool,
@@ -6,6 +8,7 @@ import {
 } from "@/lib/account-tools";
 import { fetchResultsListForAccount } from "@/lib/results/make-results";
 import { type PurchaseServiceCode } from "@/lib/purchase-service";
+import { getSessionOptions, type AppSessionData } from "@/lib/session";
 
 const MAKE_ACCOUNT_SESSION_WEBHOOK_URL =
   process.env.MAKE_ACCOUNT_SESSION_WEBHOOK_URL ||
@@ -164,6 +167,35 @@ export async function GET(req: NextRequest) {
         ok: true,
         data: demoAccountData,
       });
+    }
+
+    const cookieStore = await cookies();
+    const session = await getIronSession<AppSessionData>(
+      cookieStore,
+      getSessionOptions()
+    );
+
+    if (!session.isLoggedIn || !session.accessToken) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "auth required",
+          code: "AUTH_REQUIRED",
+        },
+        { status: 401 }
+      );
+    }
+
+    if (session.accessToken !== token) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "forbidden",
+          code: "TOKEN_MISMATCH",
+          redirectUrl: `/account/${encodeURIComponent(session.accessToken)}`,
+        },
+        { status: 403 }
+      );
     }
 
     const makePayload = {

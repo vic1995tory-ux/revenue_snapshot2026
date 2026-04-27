@@ -41,6 +41,8 @@ type CabinetData = {
 type AccountSessionResponse = {
   ok: boolean;
   error?: string;
+  code?: string;
+  redirectUrl?: string;
   data?: {
     fullName?: string;
     companyName?: string;
@@ -203,6 +205,38 @@ export default function CabinetPage() {
         setLoadingCabinet(true);
         setError("");
 
+        if (!isDemoAccount) {
+          const authRes = await fetch("/api/auth/session", {
+            cache: "no-store",
+          });
+
+          const authContentType = authRes.headers.get("content-type") || "";
+          const authPayload =
+            authContentType.includes("application/json")
+              ? await authRes.json()
+              : null;
+
+          if (!authRes.ok) {
+            throw new Error("Не удалось проверить текущую сессию.");
+          }
+
+          const authenticated = Boolean(authPayload?.authenticated);
+          const sessionAccessToken =
+            typeof authPayload?.data?.accessToken === "string"
+              ? authPayload.data.accessToken.trim()
+              : "";
+
+          if (!authenticated || !sessionAccessToken) {
+            router.replace("/cabinet-login");
+            return;
+          }
+
+          if (sessionAccessToken !== token) {
+            router.replace(`/account/${encodeURIComponent(sessionAccessToken)}`);
+            return;
+          }
+        }
+
         const res = await fetch(
           `/api/account/session?token=${encodeURIComponent(token)}`,
           {
@@ -217,6 +251,21 @@ export default function CabinetPage() {
         }
 
         const payload: AccountSessionResponse = await res.json();
+
+        if (res.status === 401) {
+          router.replace("/cabinet-login");
+          return;
+        }
+
+        if (res.status === 403) {
+          const redirectUrl =
+            typeof payload?.redirectUrl === "string" &&
+            payload.redirectUrl.trim()
+              ? payload.redirectUrl.trim()
+              : "/profile";
+          router.replace(redirectUrl);
+          return;
+        }
 
         if (!res.ok || !payload?.ok || !payload?.data) {
           throw new Error(payload?.error || "Не удалось загрузить кабинет.");
@@ -322,7 +371,7 @@ export default function CabinetPage() {
     if (token) {
       void loadCabinet();
     }
-  }, [token, isDemoAccount]);
+  }, [token, isDemoAccount, router]);
 
   const launchesUsed = data.launchCount;
   const maxLaunches = data.launchLimit || DEFAULT_MAX_LAUNCHES;

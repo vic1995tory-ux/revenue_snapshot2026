@@ -7,7 +7,7 @@ const tgContactUrl = "https://t.me/growth_avenue_company";
 const waContactUrl = "https://wa.me/995555163833";
 
 export function ResultsTopMenu({
-  profileHref = "/cabinet-login",
+  profileHref = "/profile",
 }: {
   profileHref?: string;
 }) {
