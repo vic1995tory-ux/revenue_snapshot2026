@@ -1272,6 +1272,45 @@ function StageCarousel() {
   );
 }
 
+function CompanyShowcaseBanner() {
+  return (
+    <section className="company-showcase-shell tilt-card">
+      <div className="company-showcase-frame tilt-inner">
+        <div className="company-showcase-noise" aria-hidden="true" />
+        <div className="company-showcase-copy">
+          <div className="company-showcase-kicker">Growth Avenue Company</div>
+          <div className="company-showcase-title-wrap">
+            <h2 className="company-showcase-title">
+              <span>BizDev</span>
+              <span>Company</span>
+            </h2>
+            <div className="company-showcase-pills">
+              <span className="company-showcase-pill company-showcase-pill-main">
+                Business Applications
+              </span>
+              <span className="company-showcase-pill">Growth Strategy</span>
+            </div>
+          </div>
+          <p className="company-showcase-description">
+            Мы выстраиваем бизнес-девелопмент, архитектуру роста и управленческие
+            контуры для компаний, которым нужна взрослая система, а не хаотичный
+            набор инициатив.
+          </p>
+          <Link href="/about-company" className="company-showcase-cta">
+            Узнать больше
+          </Link>
+        </div>
+
+        <div className="company-showcase-art" aria-hidden="true">
+          <img src="/company.svg" alt="" className="company-showcase-image" />
+          <div className="company-showcase-orbit company-showcase-orbit-a" />
+          <div className="company-showcase-orbit company-showcase-orbit-b" />
+        </div>
+      </div>
+    </section>
+  );
+}
+
 
 
 export default function Home() {
@@ -2154,6 +2193,8 @@ const handleReset = () => {
       </header>
 
       <div className="content-wrap">
+        <CompanyShowcaseBanner />
+
         <section className="hero-section mb-16">
           <div className="hero-grid hero-grid-frame">
             <div className="hero-left">
@@ -2755,6 +2796,14 @@ const handleReset = () => {
           background-size: 140% 140%;
           animation: none;
         }
+        .page-background::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: url("/noise3.png") repeat;
+          opacity: 0.1;
+          mix-blend-mode: soft-light;
+        }
         .content-wrap {
           position: relative;
           z-index: 2;
@@ -2762,6 +2811,153 @@ const handleReset = () => {
           width: 100%;
           margin: 0 auto;
           padding: 108px 20px 40px;
+        }
+        .company-showcase-shell {
+          position: relative;
+          margin-bottom: 20px;
+        }
+        .company-showcase-frame {
+          position: relative;
+          display: grid;
+          grid-template-columns: minmax(0, 0.95fr) minmax(360px, 0.85fr);
+          align-items: center;
+          gap: 24px;
+          min-height: 330px;
+          border-radius: 38px;
+          overflow: hidden;
+          padding: 34px 38px;
+          background:
+            linear-gradient(135deg, rgba(10, 27, 57, 0.95), rgba(10, 24, 47, 0.88)),
+            radial-gradient(circle at 82% 28%, rgba(247,210,55,0.18), transparent 26%);
+          border: 1px solid rgba(255,255,255,.12);
+          box-shadow:
+            0 28px 70px rgba(0,0,0,.24),
+            inset 0 1px 0 rgba(255,255,255,.08);
+          isolation: isolate;
+          transform-style: preserve-3d;
+        }
+        .company-showcase-noise {
+          position: absolute;
+          inset: 0;
+          background: url("/noise3.png") repeat;
+          opacity: .11;
+          mix-blend-mode: soft-light;
+          pointer-events: none;
+        }
+        .company-showcase-copy {
+          position: relative;
+          z-index: 2;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          max-width: 640px;
+        }
+        .company-showcase-kicker {
+          color: #f7d237;
+          font-size: 12px;
+          font-weight: 700;
+          letter-spacing: .24em;
+          text-transform: uppercase;
+        }
+        .company-showcase-title-wrap {
+          display: grid;
+          grid-template-columns: minmax(0, auto) minmax(250px, 1fr);
+          align-items: center;
+          gap: 26px;
+        }
+        .company-showcase-title {
+          display: grid;
+          gap: 0;
+          margin: 0;
+          font-size: clamp(52px, 6vw, 92px);
+          line-height: .9;
+          letter-spacing: -0.05em;
+          color: #fff;
+        }
+        .company-showcase-pills {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+        }
+        .company-showcase-pill {
+          display: inline-flex;
+          align-items: center;
+          min-height: 74px;
+          width: fit-content;
+          max-width: 100%;
+          padding: 0 24px;
+          border-radius: 24px;
+          background: linear-gradient(180deg, #ffd93f 0%, #f3c51e 100%);
+          color: #fff;
+          font-size: clamp(26px, 3vw, 38px);
+          font-weight: 700;
+          line-height: 1;
+          box-shadow: 0 22px 50px rgba(247,210,55,.2);
+          animation: companyPillFloat 6s ease-in-out infinite;
+        }
+        .company-showcase-pill-main { animation-delay: -1s; }
+        .company-showcase-description {
+          max-width: 620px;
+          margin: 0;
+          color: rgba(255,255,255,.82);
+          font-size: 18px;
+          line-height: 1.6;
+        }
+        .company-showcase-cta {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 50px;
+          width: fit-content;
+          padding: 0 22px;
+          border-radius: 999px;
+          background: rgba(255,255,255,.08);
+          border: 1px solid rgba(255,255,255,.16);
+          color: #fff;
+          text-decoration: none;
+          font-size: 15px;
+          font-weight: 700;
+          transition: transform .28s ease, background .28s ease, border-color .28s ease;
+        }
+        .company-showcase-cta:hover {
+          transform: translateY(-2px);
+          background: rgba(255,255,255,.12);
+          border-color: rgba(247,210,55,.45);
+        }
+        .company-showcase-art {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          min-height: 100%;
+          transform: translateZ(30px);
+        }
+        .company-showcase-image {
+          width: 100%;
+          max-width: 670px;
+          filter: drop-shadow(0 24px 44px rgba(0,0,0,.28));
+        }
+        .company-showcase-orbit {
+          position: absolute;
+          border-radius: 999px;
+          border: 1px solid rgba(255,255,255,.12);
+          pointer-events: none;
+        }
+        .company-showcase-orbit-a {
+          width: 180px;
+          height: 180px;
+          top: 24px;
+          right: 80px;
+          animation: companyOrbitSpin 12s linear infinite;
+        }
+        .company-showcase-orbit-b {
+          width: 240px;
+          height: 240px;
+          right: 40px;
+          bottom: 18px;
+          opacity: .5;
+          animation: companyOrbitSpinReverse 16s linear infinite;
         }
         .content-wrap > *, .hero-grid > *, .preview-grid > *, .analysis-grid > *, .cta-card > *, .stage-card-bottom-inner > *, .journey-compact > * { min-width: 0; }
         .header-fixed {
@@ -5155,7 +5351,29 @@ const handleReset = () => {
           50% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 10px rgba(247,210,55,0); opacity: 1; }
           100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 16px 36px rgba(0,0,0,.26), 0 0 0 0 rgba(247,210,55,.08); opacity: .88; }
         }
+        @keyframes companyPillFloat {
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          50% { transform: translate3d(0, -6px, 0); }
+        }
+        @keyframes companyOrbitSpin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+        @keyframes companyOrbitSpinReverse {
+          from { transform: rotate(360deg); }
+          to { transform: rotate(0deg); }
+        }
         @media (max-width: 1280px) {
+          .company-showcase-frame {
+            grid-template-columns: 1fr;
+            min-height: auto;
+          }
+          .company-showcase-art {
+            justify-content: center;
+          }
+          .company-showcase-image {
+            max-width: 620px;
+          }
           .hero-section { min-height: 720px; }
           .hero-main-copy,.section-copy { font-size: 19px; }
           .stage-carousel-item-free { width: min(620px, 62vw); }
@@ -5214,6 +5432,19 @@ const handleReset = () => {
           .preview-section-headline {
             flex-direction: column;
             align-items: flex-start;
+          }
+          .company-showcase-frame {
+            padding: 28px 24px;
+            border-radius: 28px;
+          }
+          .company-showcase-title-wrap {
+            grid-template-columns: 1fr;
+            gap: 18px;
+          }
+          .company-showcase-pill {
+            min-height: 62px;
+            padding: 0 20px;
+            border-radius: 20px;
           }
           .strategy-meta-row,
           .strategy-meta-row.is-soft {
@@ -5886,6 +6117,44 @@ const handleReset = () => {
   }
 }
 @media (max-width: 767px) {
+  .company-showcase-shell {
+    margin-bottom: 14px;
+  }
+
+  .company-showcase-frame {
+    padding: 22px 18px;
+    gap: 18px;
+  }
+
+  .company-showcase-kicker {
+    font-size: 11px;
+    letter-spacing: .18em;
+  }
+
+  .company-showcase-title {
+    font-size: 58px;
+  }
+
+  .company-showcase-pill {
+    width: 100%;
+    min-height: 56px;
+    font-size: 24px;
+  }
+
+  .company-showcase-description {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+
+  .company-showcase-art {
+    justify-content: center;
+  }
+
+  .company-showcase-orbit-a,
+  .company-showcase-orbit-b {
+    display: none;
+  }
+
   .tariff-compare-card {
     padding: 18px 16px 18px;
     border-radius: 24px;
